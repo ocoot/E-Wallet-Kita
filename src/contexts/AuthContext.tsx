@@ -38,7 +38,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signInAsGuest = async () => {
-    await supabase.auth.signInAnonymously();
+    const { error } = await supabase.auth.signInAnonymously();
+    if (error) throw error;
   };
 
   const signOut = async () => {
