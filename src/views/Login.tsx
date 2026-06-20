@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
 import { useToast } from "../contexts/ToastContext";
 import { Wallet, Mail, Lock, User, LogIn, Sparkles, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence, useAnimation } from "motion/react";
@@ -85,11 +85,22 @@ export const Login: React.FC = () => {
         setIsLoading(true);
         
         try {
-            // Placeholder: integrate real supabase email/password auth here
-            showToast("Email Auth not fully implemented yet", "info");
-        } catch(e) {
+          if (isSignUp) {
+            const { error } = await supabase.auth.signUp({ 
+              email, 
+              password, 
+              options: { data: { full_name: displayName } } 
+            });
+            if (error) throw error;
+            showToast("Daftar berhasil! Silahkan periksa email Anda jika diperlukan.", "success");
+          } else {
+            const { error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+            showToast("Masuk berhasil!", "success");
+          }
+        } catch(e: any) {
           audioFeedback.playDullPluck();
-          showToast("Error", "error");
+          showToast(e.message, "error");
         }
         setIsLoading(false);
       }
@@ -111,7 +122,6 @@ export const Login: React.FC = () => {
           await signInAsGuest();
           audioFeedback.playChime();
           showToast(t("toast.welcome_auth"), "success");
-          navigate("/dashboard");
         } catch (e: any) {
           showToast(e.message, "error");
         }
