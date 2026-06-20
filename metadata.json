@@ -1,0 +1,6 @@
+{
+  "name": "E-Wallet Kita",
+  "description": "Aplikasi pencatatan keuangan pribadi rumah tangga dengan pencatatan berbasis AI teks, i18n dwibahasa, dan tema visual instan.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
