@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { authService, UserSession } from "../lib/auth";
+import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
 import { parseAmountFromString } from "../lib/parserUtils";
@@ -24,14 +25,20 @@ import {
 import { motion } from "motion/react";
 
 interface SettingsProps {
-  currentUser: UserSession;
   onUserPrefUpdated: (user: UserSession) => void;
 }
 
 export const Settings: React.FC<SettingsProps> = ({
-  currentUser,
   onUserPrefUpdated
 }) => {
+  const { user } = useAuth();
+  const currentUser: UserSession = {
+    id: user?.id || "",
+    display_name: user?.user_metadata?.full_name || "User",
+    is_guest: user?.is_anonymous || false,
+    preferred_language: "id",
+    preferred_theme: "dark_obsidian"
+  };
   const { locale, setLocale, t } = useLanguage();
   const { theme, setTheme } = useTheme();
   const { showToast } = useToast();

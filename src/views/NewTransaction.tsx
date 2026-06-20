@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { dbService } from "../lib/db";
 import { UserSession } from "../lib/auth";
+import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
 import { Plus, ArrowLeftRight, Calendar, DollarSign, FileText, CheckCircle } from "lucide-react";
@@ -9,16 +10,22 @@ import { motion, useAnimation } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
 interface NewTransactionProps {
-  currentUser: UserSession;
   onTransactionAdded: () => void;
   setActiveTab: (tab: string) => void;
 }
 
 export const NewTransaction: React.FC<NewTransactionProps> = ({
-  currentUser,
   onTransactionAdded,
   setActiveTab
 }) => {
+  const { user } = useAuth();
+  const currentUser: UserSession = {
+    id: user?.id || "",
+    display_name: user?.user_metadata?.full_name || "User",
+    is_guest: user?.is_anonymous || false,
+    preferred_language: "id",
+    preferred_theme: "dark_obsidian"
+  };
   const { t } = useLanguage();
   const { showToast } = useToast();
   const shakeControls = useAnimation();

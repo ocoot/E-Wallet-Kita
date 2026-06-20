@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
 import { 
   Wallet, 
   LayoutDashboard, 
@@ -19,22 +20,20 @@ import {
   Volume2,
   VolumeX
 } from "lucide-react";
-import { UserSession } from "../lib/auth";
 import { audioFeedback } from "../lib/audio";
 
 interface SidebarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  currentUser: UserSession;
   onLogoutClick: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   activeTab,
   setActiveTab,
-  currentUser,
   onLogoutClick
 }) => {
+  const { user } = useAuth();
   const { locale, setLocale, t } = useLanguage();
   const { theme, setTheme } = useTheme();
 
@@ -43,6 +42,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   
   // Mobile drawer overlay state
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // In Supabase, is_guest can be inferred from is_anonymous
+  const isGuest = user?.is_anonymous ?? false;
+  const displayName = user?.user_metadata?.full_name || user?.email || "User";
 
   const menuItems = [
     { id: "dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
@@ -127,16 +130,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Profile widget summary */}
             <div className="p-4 mb-6 rounded-xl border bg-slate-950/40 border-slate-800 light_sakura:bg-rose-100/50 light_sakura:border-rose-200">
               <p className="font-mono text-[10px] text-gray-400 light_sakura:text-rose-600 uppercase tracking-widest">
-                {currentUser.is_guest ? "GUEST ACCOUNT" : "AUTHENTICATED"}
+                {isGuest ? "GUEST ACCOUNT" : "AUTHENTICATED"}
               </p>
               <div className="flex items-center gap-2.5 mt-1">
-                {currentUser.is_guest ? (
+                {isGuest ? (
                   <ShieldAlert size={16} className="text-amber-400" />
                 ) : (
                   <ShieldCheck size={16} className="text-emerald-400 light_sakura:text-emerald-600" />
                 )}
                 <span className="font-sans font-semibold text-sm truncate max-w-[180px] dark_obsidian:text-slate-200 light_sakura:text-slate-900">
-                  {currentUser.display_name}
+                  {displayName}
                 </span>
               </div>
             </div>
@@ -255,22 +258,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {isCollapsed ? (
             <div className="flex justify-center">
               <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-900 text-teal-400 light_sakura:bg-rose-200 light_sakura:text-rose-600">
-                {currentUser.display_name.charAt(0).toUpperCase()}
+                {displayName.charAt(0).toUpperCase()}
               </div>
             </div>
           ) : (
             <div className="p-4 rounded-xl border bg-slate-900/40 border-slate-900 light_sakura:bg-rose-100/40 light_sakura:border-rose-100/70">
               <p className="font-mono text-[9px] text-gray-400 light_sakura:text-rose-500 uppercase tracking-widest">
-                {currentUser.is_guest ? "GUEST MODE ACTIVED" : "VERIFIED MEMBER"}
+                {isGuest ? "GUEST MODE ACTIVED" : "VERIFIED MEMBER"}
               </p>
               <div className="flex items-center gap-2.5 mt-1">
-                {currentUser.is_guest ? (
+                {isGuest ? (
                   <ShieldAlert size={14} className="text-amber-400" />
                 ) : (
                   <ShieldCheck size={14} className="text-emerald-400 light_sakura:text-emerald-600" />
                 )}
                 <span className="font-sans font-semibold text-xs truncate max-w-[150px] text-slate-200 light_sakura:text-slate-800">
-                  {currentUser.display_name}
+                  {displayName}
                 </span>
               </div>
             </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { dbService, Transaction } from "../lib/db";
 import { UserSession } from "../lib/auth";
+import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
@@ -23,16 +24,22 @@ import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
 interface HistoryProps {
-  currentUser: UserSession;
   transactionsUpdatedTrigger: number;
   onTransactionUpdated: () => void;
 }
 
 export const History: React.FC<HistoryProps> = ({
-  currentUser,
   transactionsUpdatedTrigger,
   onTransactionUpdated
 }) => {
+  const { user } = useAuth();
+  const currentUser: UserSession = {
+    id: user?.id || "",
+    display_name: user?.user_metadata?.full_name || "User",
+    is_guest: user?.is_anonymous || false,
+    preferred_language: "id",
+    preferred_theme: "dark_obsidian"
+  };
   const { t } = useLanguage();
   const { showToast } = useToast();
 

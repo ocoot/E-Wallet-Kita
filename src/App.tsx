@@ -19,9 +19,17 @@ const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   
+  const [activeTab, setActiveTab] = useState<string>("dashboard");
+  const [transactionsUpdatedTrigger, setTransactionsUpdatedTrigger] = useState(0);
+
+  const handleTransactionChange = () => {
+    setTransactionsUpdatedTrigger(prev => prev + 1);
+  };
+  
   // Signout prompt control triggers
   const [isSignoutModalOpen, setIsSignoutModalOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
 
   const handleLogoutClick = () => {
     setIsSignoutModalOpen(true);
@@ -51,6 +59,8 @@ const MainLayout: React.FC = () => {
       
       {/*Collapsible responsive Navigation Menu */}
       <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
         onLogoutClick={handleLogoutClick}
       />
 
@@ -58,10 +68,10 @@ const MainLayout: React.FC = () => {
       <main className="flex-1 min-h-screen p-4 sm:p-6 lg:p-8 overflow-y-auto lg:pl-72 max-w-7xl mx-auto w-full">
         <AnimatePresence mode="wait">
           <Routes>
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/transactions/new" element={<NewTransaction />} />
-            <Route path="/transactions" element={<History />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} />} />
+            <Route path="/transactions/new" element={<NewTransaction onTransactionAdded={handleTransactionChange} setActiveTab={setActiveTab} />} />
+            <Route path="/transactions" element={<History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} />} />
+            <Route path="/settings" element={<Settings onUserPrefUpdated={(user) => {}} />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
         </AnimatePresence>
