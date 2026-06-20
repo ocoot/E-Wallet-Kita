@@ -15,9 +15,12 @@ import {
   Globe,
   SunMoon,
   ShieldCheck,
-  ShieldAlert
+  ShieldAlert,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 import { UserSession } from "../lib/auth";
+import { audioFeedback } from "../lib/audio";
 
 interface SidebarProps {
   activeTab: string;
@@ -48,15 +51,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: "settings", label: t("nav.settings"), icon: Settings },
   ];
 
+  const [isMuted, setIsMuted] = useState(audioFeedback.getIsMuted());
+
+  const toggleMute = () => {
+    const nextMute = audioFeedback.toggleMute();
+    setIsMuted(nextMute);
+    if (!nextMute) {
+      audioFeedback.playChime();
+    } else {
+      audioFeedback.playClick();
+    }
+  };
+
   const toggleLanguage = () => {
+    audioFeedback.playClick();
     setLocale(locale === "id" ? "en" : "id");
   };
 
   const toggleTheme = () => {
+    audioFeedback.playClick();
     setTheme(theme === "dark_obsidian" ? "light_sakura" : "dark_obsidian");
   };
 
   const handleNavClick = (tabId: string) => {
+    audioFeedback.playClick();
     setActiveTab(tabId);
     setIsMobileOpen(false); // Close mobile panel
   };
@@ -147,21 +165,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Bottom Controls / Language / Theme switchers */}
             <div className="space-y-4 pt-4 border-t border-slate-800 light_sakura:border-rose-100">
-              {/* Theme & Language inline controller */}
-              <div className="grid grid-cols-2 gap-2">
+              {/* Theme, Language, and Audio inline controller */}
+              <div className="grid grid-cols-3 gap-1.5">
                 <button
                   onClick={toggleLanguage}
-                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                  className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-850 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
                 >
-                  <Globe size={14} />
+                  <Globe size={13} className="mb-0.5" />
                   <span>{locale.toUpperCase()}</span>
                 </button>
                 <button
                   onClick={toggleTheme}
-                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                  className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-850 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
                 >
-                  <SunMoon size={14} />
+                  <SunMoon size={13} className="mb-0.5" />
                   <span>{theme === "dark_obsidian" ? "DARK" : "LIGHT"}</span>
+                </button>
+                <button
+                  onClick={toggleMute}
+                  className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-850 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100 animate-fade-in"
+                  title="Mute / Unmute"
+                >
+                  {isMuted ? (
+                    <VolumeX size={13} className="text-red-400 light_sakura:text-red-500 mb-0.5 animate-pulse" />
+                  ) : (
+                    <Volume2 size={13} className="text-teal-400 light_sakura:text-rose-500 mb-0.5" />
+                  )}
+                  <span>{isMuted ? "MUTED" : "SOUND"}</span>
                 </button>
               </div>
 
@@ -273,24 +303,36 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Footer controls */}
         <div className="p-4 border-t border-slate-900 light_sakura:border-rose-100 space-y-3">
-          {/* Theme & Language inline switcher controls */}
+          {/* Theme, Language, and Sound inline switcher controls */}
           {!isCollapsed ? (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-1">
               <button
                 onClick={toggleLanguage}
                 title={t("settings.language")}
-                className="flex items-center justify-center gap-1.5 py-2 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[10px] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
               >
-                <Globe size={12} />
+                <Globe size={11} className="mb-0.5" />
                 <span>{locale.toUpperCase()}</span>
               </button>
               <button
                 onClick={toggleTheme}
                 title={t("settings.theme")}
-                className="flex items-center justify-center gap-1.5 py-2 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[10px] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
               >
-                <SunMoon size={12} />
+                <SunMoon size={11} className="mb-0.5" />
                 <span>{theme === "dark_obsidian" ? "DARK" : "LIGHT"}</span>
+              </button>
+              <button
+                onClick={toggleMute}
+                title="Toggle Effects Sound"
+                className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[10px] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+              >
+                {isMuted ? (
+                  <VolumeX size={11} className="text-red-400 light_sakura:text-red-500 mb-0.5" />
+                ) : (
+                  <Volume2 size={11} className="text-teal-400 light_sakura:text-rose-500 mb-0.5" />
+                )}
+                <span>{isMuted ? "MUTED" : "SOUND"}</span>
               </button>
             </div>
           ) : (
@@ -308,6 +350,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className="p-2 rounded-xl border border-slate-900 hover:bg-slate-900 text-slate-300 cursor-pointer light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
               >
                 <SunMoon size={14} />
+              </button>
+              <button
+                onClick={toggleMute}
+                title="Mute / Unmute"
+                className="p-2 rounded-xl border border-slate-900 hover:bg-slate-900 text-slate-300 cursor-pointer light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+              >
+                {isMuted ? (
+                  <VolumeX size={14} className="text-red-400 light_sakura:text-red-500" />
+                ) : (
+                  <Volume2 size={14} className="text-teal-400 light_sakura:text-rose-500" />
+                )}
               </button>
             </div>
           )}
