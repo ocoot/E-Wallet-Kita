@@ -5,6 +5,7 @@ import { authService, UserSession } from "../lib/auth";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
 import { parseAmountFromString } from "../lib/parserUtils";
+import { audioFeedback } from "../lib/audio";
 import { 
   User, 
   Globe, 
@@ -73,7 +74,9 @@ export const Settings: React.FC<SettingsProps> = ({
   }, [linkingCode]);
 
   const handleUpdateProfileName = () => {
+    audioFeedback.playClick();
     if (!displayName.trim()) {
+      audioFeedback.playDullPluck();
       showToast("Profile name cannot be blank", "error");
       return;
     }
@@ -81,6 +84,7 @@ export const Settings: React.FC<SettingsProps> = ({
   };
 
   const executeUpdateProfileName = () => {
+    audioFeedback.playChime();
     const updated = authService.updateProfileName(currentUser.id, displayName);
     onUserPrefUpdated(updated);
     setIsProfileModalOpen(false);
@@ -89,11 +93,14 @@ export const Settings: React.FC<SettingsProps> = ({
 
   const handleUpgradeGuest = (e: React.FormEvent) => {
     e.preventDefault();
+    audioFeedback.playClick();
     if (!upgradeEmail.trim() || !upgradeEmail.includes("@")) {
+      audioFeedback.playDullPluck();
       showToast(t("auth.validation_email"), "error");
       return;
     }
     if (!upgradePassword || upgradePassword.length < 6) {
+      audioFeedback.playDullPluck();
       showToast(t("auth.validation_pass"), "error");
       return;
     }
@@ -106,8 +113,10 @@ export const Settings: React.FC<SettingsProps> = ({
     );
 
     if ("error" in res) {
+      audioFeedback.playDullPluck();
       showToast(res.error, "error");
     } else {
+      audioFeedback.playChime();
       showToast(t("toast.success_pref"), "success");
       onUserPrefUpdated(res);
       // Reset inputs
@@ -117,24 +126,43 @@ export const Settings: React.FC<SettingsProps> = ({
   };
 
   // Run Unit Test diagnostics locally (the mandated scenarios!)
+  const [isDiagnosing, setIsDiagnosing] = useState(false);
+  const [diagnosticsProgress, setDiagnosticsProgress] = useState("0%");
+
   const runParserDiagnostics = () => {
-    const scenarios = [
-      "Makan siang 25000",
-      "Gaji 1.5jt",
-      "Belanja sayur 25rb",
-      "Bonus 1k",
-      "Tagihan listrik 350rb"
-    ];
-    const results = scenarios.map(txt => ({
-      input: txt,
-      output: parseAmountFromString(txt)
-    }));
-    setTestResults(results);
-    showToast("Parser unit tests executed cleanly!", "success");
+    audioFeedback.playClick();
+    setIsDiagnosing(true);
+    setDiagnosticsProgress("0%");
+    
+    setTimeout(() => setDiagnosticsProgress("50%"), 100);
+    
+    setTimeout(() => {
+        const scenarios = [
+          "Makan siang 25000",
+          "Gaji 1.5jt",
+          "Belanja sayur 25rb",
+          "Bonus 1k",
+          "Tagihan listrik 350rb"
+        ];
+        const results = scenarios.map(txt => ({
+          input: txt,
+          output: parseAmountFromString(txt)
+        }));
+        setTestResults(results);
+        setDiagnosticsProgress("100%");
+        
+        setTimeout(() => {
+            setIsDiagnosing(false);
+            setDiagnosticsProgress("0%");
+            audioFeedback.playChime();
+            showToast("Parser unit tests executed cleanly!", "success");
+        }, 300);
+    }, 300);
   };
 
   // Telegram Generator code
   const handleGenerateLinkingCode = () => {
+    audioFeedback.playClick();
     // Math random 5 digit sequence
     const code = Math.floor(10000 + Math.random() * 90000).toString();
     setLinkingCode(code);
@@ -144,6 +172,7 @@ export const Settings: React.FC<SettingsProps> = ({
   // Simulated Telegram bot action trigger
   const handleSimulateTelegramWebhookLink = () => {
     if (!linkingCode) return;
+    audioFeedback.playClick();
     
     // Simulate webhook response from /api/telegram/webhook
     showToast("Webhook parsing linking code...", "info");
@@ -167,11 +196,13 @@ export const Settings: React.FC<SettingsProps> = ({
       
       onUserPrefUpdated(updated);
       setLinkingCode(null); // clear
+      audioFeedback.playChime();
       showToast(t("toast.success_link"), "success");
     }, 1200);
   };
 
   const handleUnlinkTelegramClick = () => {
+    audioFeedback.playClick();
     setIsUnlinkModalOpen(true);
   };
 
@@ -195,6 +226,7 @@ export const Settings: React.FC<SettingsProps> = ({
       }
 
       onUserPrefUpdated(updated);
+      audioFeedback.playChime();
       showToast(t("toast.success_unlink"), "success");
     }, 600);
   };
@@ -247,13 +279,15 @@ export const Settings: React.FC<SettingsProps> = ({
                   onChange={(e) => setDisplayName(e.target.value)}
                   className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
                 />
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="button"
                   onClick={handleUpdateProfileName}
                   className="cursor-pointer border border-transparent bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 rounded-xl font-sans text-xs font-semibold text-white tracking-tight transition-all"
                 >
                   {t("settings.btn_update_profile")}
-                </button>
+                </motion.button>
               </div>
             </div>
           </div>
@@ -272,8 +306,13 @@ export const Settings: React.FC<SettingsProps> = ({
               </label>
               
               <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setLocale("id")}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    audioFeedback.playClick();
+                    setLocale("id");
+                  }}
                   className={`py-3 rounded-xl font-sans text-xs font-bold border transition-all cursor-pointer
                     ${locale === "id" 
                       ? "bg-indigo-600/10 border-indigo-500 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:border-rose-550 light_sakura:text-rose-600" 
@@ -281,9 +320,14 @@ export const Settings: React.FC<SettingsProps> = ({
                     }`}
                 >
                   Bahasa Indonesia (ID)
-                </button>
-                <button
-                  onClick={() => setLocale("en")}
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    audioFeedback.playClick();
+                    setLocale("en");
+                  }}
                   className={`py-3 rounded-xl font-sans text-xs font-bold border transition-all cursor-pointer
                     ${locale === "en" 
                       ? "bg-indigo-600/10 border-indigo-500 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:border-rose-550 light_sakura:text-rose-600" 
@@ -291,7 +335,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     }`}
                 >
                   English (EN)
-                </button>
+                </motion.button>
               </div>
             </div>
 
@@ -303,8 +347,13 @@ export const Settings: React.FC<SettingsProps> = ({
               </label>
               
               <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setTheme("dark_obsidian")}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    audioFeedback.playChime();
+                    setTheme("dark_obsidian");
+                  }}
                   className={`py-3 rounded-xl font-sans text-[10px] sm:text-xs font-bold border transition-all cursor-pointer
                     ${theme === "dark_obsidian" 
                       ? "bg-indigo-600/10 border-indigo-500 text-indigo-400" 
@@ -312,9 +361,14 @@ export const Settings: React.FC<SettingsProps> = ({
                     }`}
                 >
                   {t("settings.theme_dark_obsidian")}
-                </button>
-                <button
-                  onClick={() => setTheme("light_sakura")}
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    audioFeedback.playChime();
+                    setTheme("light_sakura");
+                  }}
                   className={`py-3 rounded-xl font-sans text-[10px] sm:text-xs font-bold border transition-all cursor-pointer
                     ${theme === "light_sakura" 
                       ? "bg-rose-500/10 border-rose-500 text-rose-600" 
@@ -322,7 +376,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     }`}
                 >
                   {t("settings.theme_light_sakura")}
-                </button>
+                </motion.button>
               </div>
             </div>
 
@@ -332,18 +386,27 @@ export const Settings: React.FC<SettingsProps> = ({
           <div className="p-6 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-xs space-y-4">
             <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center justify-between">
               <span>{t("settings.diagnostics_sec")}</span>
-              <button
+              <motion.button
+                whileHover={{ scale: 1.15, rotate: 15 }}
+                whileTap={{ scale: 0.90 }}
                 type="button"
                 onClick={runParserDiagnostics}
-                className="cursor-pointer p-1 rounded-lg text-indigo-400 hover:scale-105 active:scale-95 transition-transform"
+                className="cursor-pointer p-1 rounded-lg text-indigo-400"
               >
                 <Play size={16} />
-              </button>
+              </motion.button>
             </h3>
             
             <p className="font-sans text-xs text-gray-400 light_sakura:text-slate-500">
               {t("settings.diagnostics_desc")}
             </p>
+            
+            {/* Progres Bar Diagnostik */}
+            {isDiagnosing && (
+                <div className="h-1 bg-slate-800 rounded-full mt-2 overflow-hidden">
+                    <motion.div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: diagnosticsProgress }} />
+                </div>
+            )}
 
             {testResults.length > 0 && (
               <div className="space-y-2.5 max-h-48 overflow-y-auto">
@@ -395,13 +458,15 @@ export const Settings: React.FC<SettingsProps> = ({
             {!isTelegramLinked ? (
               <div className="space-y-4">
                 {!linkingCode ? (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02, y: -1 }}
+                    whileTap={{ scale: 0.98 }}
                     type="button"
                     onClick={handleGenerateLinkingCode}
-                    className="w-full cursor-pointer py-3 bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white rounded-xl font-sans text-xs font-bold shadow-md transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                    className="w-full cursor-pointer py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold shadow-md transition-all light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
                   >
                     {t("settings.btn_generate_code")}
-                  </button>
+                  </motion.button>
                 ) : (
                   <div className="p-4 rounded-xl border border-dashed border-indigo-500/20 bg-indigo-500/5 light_sakura:border-rose-200 light_sakura:bg-rose-50/40 space-y-4 flex flex-col items-center">
                     <p className="font-sans text-xs text-center text-gray-400 light_sakura:text-slate-600">
@@ -419,25 +484,29 @@ export const Settings: React.FC<SettingsProps> = ({
                     </div>
 
                     {/* Interactive Mock simulation webhook trigger */}
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
                       type="button"
                       onClick={handleSimulateTelegramWebhookLink}
-                      className="w-full cursor-pointer py-2.5 bg-teal-500/10 border border-teal-500/25 text-teal-400 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-teal-500/20 hover:scale-[1.01] active:scale-[0.99] transition-all light_sakura:bg-rose-100 light_sakura:border-rose-300 light_sakura:text-rose-600"
+                      className="w-full cursor-pointer py-2.5 bg-teal-500/10 border border-teal-500/25 text-teal-400 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-teal-500/20 transition-all light_sakura:bg-rose-100 light_sakura:border-rose-300 light_sakura:text-rose-600"
                     >
                       <Sparkles size={14} />
                       <span>Simulasikan Kirim `/link` di Bot</span>
-                    </button>
+                    </motion.button>
                   </div>
                 )}
               </div>
             ) : (
-              <button
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 type="button"
                 onClick={handleUnlinkTelegramClick}
                 className="w-full cursor-pointer py-3 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl font-sans text-xs font-semibold transition-colors"
               >
                 {t("settings.btn_unlink")}
-              </button>
+              </motion.button>
             )}
 
           </div>
@@ -500,12 +569,14 @@ export const Settings: React.FC<SettingsProps> = ({
                 </div>
 
                 {/* Promote submit */}
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   type="submit"
-                  className="w-full cursor-pointer py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold transition-colors shadow-md light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                  className="w-full cursor-pointer py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold transition-all shadow-md light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
                 >
                   {t("settings.btn_upgrade")}
-                </button>
+                </motion.button>
               </form>
             </div>
           )}
@@ -523,7 +594,10 @@ export const Settings: React.FC<SettingsProps> = ({
         confirmLabel="Perbarui Nama"
         cancelLabel={t("common.cancel")}
         onConfirm={executeUpdateProfileName}
-        onCancel={() => setIsProfileModalOpen(false)}
+        onCancel={() => {
+          audioFeedback.playClick();
+          setIsProfileModalOpen(false);
+        }}
       />
 
       {/* Confirmation - Unlink Bot */}
@@ -535,7 +609,10 @@ export const Settings: React.FC<SettingsProps> = ({
         confirmLabel="Unlink Bot"
         cancelLabel={t("common.cancel")}
         onConfirm={executeUnlinkTelegram}
-        onCancel={() => setIsUnlinkModalOpen(false)}
+        onCancel={() => {
+          audioFeedback.playClick();
+          setIsUnlinkModalOpen(false);
+        }}
       />
 
     </div>

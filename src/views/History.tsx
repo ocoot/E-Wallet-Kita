@@ -4,6 +4,7 @@ import { dbService, Transaction } from "../lib/db";
 import { UserSession } from "../lib/auth";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
+import { EmptyState } from "../components/EmptyState";
 import { 
   Calendar, 
   Trash2, 
@@ -210,14 +211,17 @@ export const History: React.FC<HistoryProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-5 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-xs">
         
         {/* Month Selector dropdown */}
-        <div className="space-y-1.5Col">
+        <div className="space-y-1.5">
           <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
             {t("history.filter_month")}
           </label>
           <div className="relative">
             <select
               value={filterMonth}
-              onChange={(e) => setFilterMonth(e.target.value)}
+              onChange={(e) => {
+                audioFeedback.playClick();
+                setFilterMonth(e.target.value);
+              }}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
             >
               {monthOptions.map((opt) => (
@@ -230,7 +234,7 @@ export const History: React.FC<HistoryProps> = ({
         </div>
 
         {/* Text Filter search bar */}
-        <div className="space-y-1.5Col">
+        <div className="space-y-1.5">
           <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
             Cari Deskripsi
           </label>
@@ -242,20 +246,27 @@ export const History: React.FC<HistoryProps> = ({
               type="text"
               placeholder={t("history.search_placeholder")}
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                // Play tiny tick only when starting or clearing filter for lightweight sound feel
+                if (!search || !e.target.value) {
+                  audioFeedback.playClick();
+                }
+                setSearch(e.target.value);
+              }}
               className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
             />
           </div>
         </div>
 
         {/* Dynamic page sizing selector key */}
-        <div className="space-y-1.5Col">
+        <div className="space-y-1.5">
           <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
             {t("history.page_size")}
           </label>
           <select
             value={pageSize}
             onChange={(e) => {
+              audioFeedback.playClick();
               const val = e.target.value;
               setPageSize(val === "all" ? "all" : parseInt(val));
               setCurrentPage(1); // Reset
@@ -277,14 +288,7 @@ export const History: React.FC<HistoryProps> = ({
       <div className="bg-slate-900 border border-slate-900 rounded-3xl transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-sm overflow-hidden">
         
         {paginatedTransactions.length === 0 ? (
-          <div className="py-20 px-4 flex flex-col items-center justify-center text-center">
-            <div className="p-3 bg-slate-950/40 rounded-2xl text-gray-500 mb-3 light_sakura:bg-rose-50/50 light_sakura:text-rose-400">
-              <FileSpreadsheet size={28} />
-            </div>
-            <p className="font-sans text-xs text-gray-400 leading-relaxed light_sakura:text-slate-600">
-              {t("history.no_transactions")}
-            </p>
-          </div>
+          <EmptyState message={t("history.no_transactions")} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse font-sans text-left text-xs">
@@ -304,69 +308,80 @@ export const History: React.FC<HistoryProps> = ({
 
               {/* Data Rows */}
               <tbody className="divide-y divide-slate-800/40 light_sakura:divide-rose-100/30">
-                {paginatedTransactions.map((tx) => {
-                  const isExpense = tx.type === "expense";
-                  return (
-                    <tr 
-                      key={tx.id} 
-                      className="hover:bg-slate-950/15 text-slate-300 transition-colors light_sakura:text-slate-700 light_sakura:hover:bg-rose-50/20"
-                    >
-                      {/* Date */}
-                      <td className="p-4 pl-6 font-mono font-medium text-slate-400 light_sakura:text-slate-500 shrink-0">
-                        {formatDateLabel(tx.transaction_date)}
-                      </td>
-
-                      {/* Cashflow Type badge */}
-                      <td className="p-4">
-                        <span className={`inline-flex px-2 py-1 rounded-md font-bold text-[9px] uppercase tracking-wider
-                          ${isExpense 
-                            ? "bg-red-500/10 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500" 
-                            : "bg-emerald-500/10 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-500"
-                          }`}
-                        >
-                          {isExpense ? t("transaction.expense") : t("transaction.income")}
-                        </span>
-                      </td>
-
-                      {/* Category lookup key */}
-                      <td className="p-4 font-semibold text-slate-200 light_sakura:text-slate-900">
-                        {t(`categories.${tx.category}`)}
-                      </td>
-
-                      {/* Description / source details */}
-                      <td className="p-4 max-w-sm truncate text-gray-400 light_sakura:text-slate-600 font-medium">
-                        {tx.note || <span className="opacity-40 italic">-</span>}
-                      </td>
-
-                      {/* Rupiah amounts */}
-                      <td className={`p-4 font-mono font-semibold text-sm
-                        ${isExpense ? "text-red-400 light_sakura:text-red-600" : "text-emerald-400 light_sakura:text-emerald-600"}`}
+                <AnimatePresence mode="popLayout">
+                  {paginatedTransactions.map((tx, index) => {
+                    const isExpense = tx.type === "expense";
+                    return (
+                      <motion.tr 
+                        key={tx.id} 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ 
+                          type: "spring",
+                          stiffness: 400,
+                          damping: 25,
+                          delay: Math.min(index * 0.025, 0.2) 
+                        }}
+                        className="hover:bg-slate-950/15 text-slate-300 transition-all duration-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50/20"
                       >
-                        {isExpense ? "-" : "+"}
-                        {formatIDR(tx.amount)}
-                      </td>
+                        {/* Date */}
+                        <td className="p-4 pl-6 font-mono font-medium text-slate-400 light_sakura:text-slate-500 shrink-0">
+                          {formatDateLabel(tx.transaction_date)}
+                        </td>
 
-                      {/* Source indicator */}
-                      <td className="p-4 text-xs font-medium text-slate-500 hidden md:table-cell">
-                        <span className="flex items-center gap-1">
-                          {tx.source === "telegram" && <Sparkles size={12} className="text-teal-400" />}
-                          <span>{getSourceIconLabel(tx.source)}</span>
-                        </span>
-                      </td>
+                        {/* Cashflow Type badge */}
+                        <td className="p-4">
+                          <span className={`inline-flex px-2 py-1 rounded-md font-bold text-[9px] uppercase tracking-wider
+                            ${isExpense 
+                              ? "bg-red-500/10 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500" 
+                              : "bg-emerald-500/10 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-500"
+                            }`}
+                          >
+                            {isExpense ? t("transaction.expense") : t("transaction.income")}
+                          </span>
+                        </td>
 
-                      {/* Row Delete option */}
-                      <td className="p-4 pr-6 text-right">
-                        <button
-                          onClick={() => handleDeleteItem(tx.id)}
-                          title="Hapus row log ini"
-                          className="p-1.5 rounded-lg border border-transparent hover:border-red-500/20 text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                        {/* Category lookup key */}
+                        <td className="p-4 font-semibold text-slate-200 light_sakura:text-slate-900">
+                          {t(`categories.${tx.category}`)}
+                        </td>
+
+                        {/* Description / source details */}
+                        <td className="p-4 max-w-sm truncate text-gray-400 light_sakura:text-slate-600 font-medium">
+                          {tx.note || <span className="opacity-40 italic">-</span>}
+                        </td>
+
+                        {/* Rupiah amounts */}
+                        <td className={`p-4 font-mono font-semibold text-sm
+                          ${isExpense ? "text-red-400 light_sakura:text-red-600" : "text-emerald-400 light_sakura:text-emerald-600"}`}
                         >
-                          <Trash2 size={13} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
+                          {isExpense ? "-" : "+"}
+                          {formatIDR(tx.amount)}
+                        </td>
+
+                        {/* Source indicator */}
+                        <td className="p-4 text-xs font-medium text-slate-500 hidden md:table-cell">
+                          <span className="flex items-center gap-1">
+                            {tx.source === "telegram" && <Sparkles size={12} className="text-teal-400" />}
+                            <span>{getSourceIconLabel(tx.source)}</span>
+                          </span>
+                        </td>
+
+                        {/* Row Delete option */}
+                        <td className="p-4 pr-6 text-right">
+                          <button
+                            onClick={() => handleDeleteItem(tx.id)}
+                            title="Hapus row log ini"
+                            className="p-1.5 rounded-lg border border-transparent hover:border-red-500/20 text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
+                </AnimatePresence>
               </tbody>
 
             </table>
@@ -384,7 +399,10 @@ export const History: React.FC<HistoryProps> = ({
             <div className="flex items-center gap-2">
               <button
                 disabled={currentPage === 1}
-                onClick={() => setCurrentPage(curr => Math.max(1, curr - 1))}
+                onClick={() => {
+                  audioFeedback.playClick();
+                  setCurrentPage(curr => Math.max(1, curr - 1));
+                }}
                 className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-800"
               >
                 <ChevronLeft size={14} />
@@ -396,7 +414,10 @@ export const History: React.FC<HistoryProps> = ({
 
               <button
                 disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage(curr => Math.min(totalPages, curr + 1))}
+                onClick={() => {
+                  audioFeedback.playClick();
+                  setCurrentPage(curr => Math.min(totalPages, curr + 1));
+                }}
                 className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-800"
               >
                 <ChevronRight size={14} />

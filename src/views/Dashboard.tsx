@@ -4,6 +4,7 @@ import { dbService, Transaction } from "../lib/db";
 import { UserSession } from "../lib/auth";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
+import { EmptyState } from "../components/EmptyState";
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -17,6 +18,7 @@ import {
   Info
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { audioFeedback } from "../lib/audio";
 
 interface DashboardProps {
   currentUser: UserSession;
@@ -95,6 +97,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     e.preventDefault();
     if (!aiText.trim()) return;
 
+    audioFeedback.playClick();
     setIsAiLoading(true);
     setParsedResult(null);
     showToast(t("toast.loading_parse"), "info");
@@ -119,11 +122,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
         original_text: parsed.original_text || aiText
       });
       
+      audioFeedback.playChime();
       showToast(t("toast.parse_success"), "success");
       setAiText(""); // Clear box
 
     } catch (err) {
       console.error(err);
+      audioFeedback.playDullPluck();
       showToast(t("toast.error_general"), "error");
     } finally {
       setIsAiLoading(false);
@@ -133,9 +138,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const handleConfirmSaveTransaction = () => {
     if (!parsedResult) return;
     if (parsedResult.amount <= 0 || isNaN(parsedResult.amount)) {
+      audioFeedback.playDullPluck();
       showToast(t("toast.invalid_amount"), "error");
       return;
     }
+    audioFeedback.playClick();
     setIsConfirmSaveOpen(true);
   };
 
@@ -156,6 +163,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         new Date().toISOString().split("T")[0] // Today's date YYYY-MM-DD
       );
 
+      audioFeedback.playChime();
       showToast(t("toast.success_save"), "success");
       setParsedResult(null); // Clear preview card
       onTransactionAdded(); // Trigger re-load
@@ -202,12 +210,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Income Card */}
-        <div className="p-6 rounded-3xl border bg-slate-900 border-slate-900 relative overflow-hidden transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 text-white light_sakura:text-slate-800 shadow-xs">
+        <motion.div 
+          onClick={() => audioFeedback.playClick()}
+          whileHover={{ y: -5, scale: 1.02, boxShadow: "0 20px 25px -5px rgba(16, 185, 129, 0.15), 0 8px 10px -6px rgba(16, 185, 129, 0.15)" }}
+          transition={{ type: "spring", stiffness: 350, damping: 18 }}
+          className="p-6 rounded-3xl border bg-slate-900 border-slate-900 relative overflow-hidden transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 text-white light_sakura:text-slate-800 shadow-xs cursor-pointer group"
+        >
           <div className="flex items-center justify-between mb-4">
             <span className="font-sans text-xs font-semibold uppercase tracking-wider text-gray-400 light_sakura:text-slate-500">
               {t("dashboard.income")}
             </span>
-            <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-600">
+            <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-600 transition-transform group-hover:scale-110">
               <TrendingUp size={20} />
             </div>
           </div>
@@ -217,15 +230,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <p className="font-sans text-[11px] text-gray-400 mt-1 light_sakura:text-slate-500">
             Bulan Ini
           </p>
-        </div>
+        </motion.div>
 
         {/* Expense Card */}
-        <div className="p-6 rounded-3xl border bg-slate-900 border-slate-900 relative overflow-hidden transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 text-white light_sakura:text-slate-800 shadow-xs">
+        <motion.div 
+          onClick={() => audioFeedback.playClick()}
+          whileHover={{ y: -5, scale: 1.02, boxShadow: "0 20px 25px -5px rgba(239, 68, 68, 0.15), 0 8px 10px -6px rgba(239, 68, 68, 0.15)" }}
+          transition={{ type: "spring", stiffness: 350, damping: 18 }}
+          className="p-6 rounded-3xl border bg-slate-900 border-slate-900 relative overflow-hidden transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 text-white light_sakura:text-slate-800 shadow-xs cursor-pointer group"
+        >
           <div className="flex items-center justify-between mb-4">
             <span className="font-sans text-xs font-semibold uppercase tracking-wider text-gray-400 light_sakura:text-slate-500">
               {t("dashboard.expense")}
             </span>
-            <div className="p-2 rounded-xl bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-600">
+            <div className="p-2 rounded-xl bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-600 transition-transform group-hover:scale-110">
               <TrendingDown size={20} />
             </div>
           </div>
@@ -235,10 +253,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <p className="font-sans text-[11px] text-gray-400 mt-1 light_sakura:text-slate-500">
             Bulan Ini
           </p>
-        </div>
+        </motion.div>
 
         {/* Net Balance Card */}
-        <div className="p-6 rounded-3xl border bg-slate-900 border-slate-900 relative overflow-hidden transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 text-white light_sakura:text-slate-800 shadow-xs group">
+        <motion.div 
+          onClick={() => audioFeedback.playClick()}
+          whileHover={{ y: -5, scale: 1.02, boxShadow: "0 20px 25px -5px rgba(20, 184, 166, 0.15), 0 8px 10px -6px rgba(20, 184, 166, 0.15)" }}
+          transition={{ type: "spring", stiffness: 350, damping: 18 }}
+          className="p-6 rounded-3xl border bg-slate-900 border-slate-900 relative overflow-hidden transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 text-white light_sakura:text-slate-800 shadow-xs group cursor-pointer"
+        >
           <div className="flex items-center justify-between mb-4 relative z-10">
             <span className="font-sans text-xs font-semibold uppercase tracking-wider text-gray-400 light_sakura:text-slate-500">
               {t("dashboard.balance")}
@@ -279,6 +302,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
+                <motion.circle
+                  cx={120}
+                  cy={35 - ((sparkPoints[sparkPoints.length - 1] - Math.min(...sparkPoints)) / ((Math.max(...sparkPoints) - Math.min(...sparkPoints)) || 1)) * 30}
+                  r="3.5"
+                  fill={summary.balance >= 0 ? "#14b8a6" : "#f43f5e"}
+                  className="stroke-white dark:stroke-slate-900"
+                  strokeWidth="1.5"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: [1, 1.4, 1], opacity: [1, 0.4, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                />
                 <path
                   d={`M 0 40 L ${sparkPoints.map((val, idx) => {
                     const x = (idx / (sparkPoints.length - 1)) * 120;
@@ -293,7 +327,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               </svg>
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
 
       {/* 3. Graphic Chart Trends (Custom high contrast visual SVG bar columns) */}
@@ -303,14 +337,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </h3>
 
         {categoryChartData.length === 0 ? (
-          <div className="py-12 px-4 flex flex-col items-center justify-center text-center">
-            <div className="p-3 bg-slate-950/50 rounded-2xl text-indigo-400 mb-3 light_sakura:bg-rose-50 light_sakura:text-rose-500 border border-slate-9ml0/10 light_sakura:border-rose-100">
-              <TrendingUp size={24} />
-            </div>
-            <p className="font-sans text-xs text-gray-400 max-w-sm leading-relaxed light_sakura:text-slate-600">
-              {t("dashboard.chart_no_data")}
-            </p>
-          </div>
+          <EmptyState message={t("dashboard.chart_no_data")} />
         ) : (
           <div className="space-y-4">
             {categoryChartData.map(c => {
@@ -409,7 +436,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   <span>{t("transaction.preview_title")}</span>
                 </h4>
                 <button
-                  onClick={() => setParsedResult(null)}
+                  onClick={() => {
+                    audioFeedback.playClick();
+                    setParsedResult(null);
+                  }}
                   className="text-gray-400 hover:text-white hover:scale-110 active:scale-90 transition-transform cursor-pointer light_sakura:text-slate-600 light_sakura:hover:text-slate-800"
                 >
                   <X size={15} />
@@ -429,7 +459,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   </label>
                   <select
                     value={parsedResult.type}
-                    onChange={(e) => setParsedResult({ ...parsedResult, type: e.target.value as "income" | "expense" })}
+                    onChange={(e) => {
+                      audioFeedback.playClick();
+                      setParsedResult({ ...parsedResult, type: e.target.value as "income" | "expense" });
+                    }}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-800"
                   >
                     <option value="expense">{t("transaction.expense")}</option>
@@ -444,7 +477,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   </label>
                   <select
                     value={parsedResult.category_key}
-                    onChange={(e) => setParsedResult({ ...parsedResult, category_key: e.target.value })}
+                    onChange={(e) => {
+                      audioFeedback.playClick();
+                      setParsedResult({ ...parsedResult, category_key: e.target.value });
+                    }}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-800"
                   >
                     {categoryKeys.map((key) => (
@@ -464,7 +500,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     type="number"
                     min={0}
                     value={parsedResult.amount}
-                    onChange={(e) => setParsedResult({ ...parsedResult, amount: parseInt(e.target.value) || 0 })}
+                    onChange={(e) => {
+                      audioFeedback.playClick();
+                      setParsedResult({ ...parsedResult, amount: parseInt(e.target.value) || 0 });
+                    }}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-800"
                   />
                 </div>
@@ -478,7 +517,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="flex justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setParsedResult(null)}
+                  onClick={() => {
+                    audioFeedback.playClick();
+                    setParsedResult(null);
+                  }}
                   className="cursor-pointer px-4.5 py-2 hover:bg-slate-950 border border-transparent rounded-xl font-sans text-xs font-semibold text-gray-400 light_sakura:hover:bg-rose-100 light_sakura:text-slate-500"
                 >
                   {t("common.cancel")}

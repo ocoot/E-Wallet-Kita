@@ -5,7 +5,8 @@ import { UserSession } from "../lib/auth";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
 import { Plus, ArrowLeftRight, Calendar, DollarSign, FileText, CheckCircle } from "lucide-react";
-import { motion } from "motion/react";
+import { motion, useAnimation } from "motion/react";
+import { audioFeedback } from "../lib/audio";
 
 interface NewTransactionProps {
   currentUser: UserSession;
@@ -20,6 +21,15 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 }) => {
   const { t } = useLanguage();
   const { showToast } = useToast();
+  const shakeControls = useAnimation();
+
+  // Trigger shake animation
+  const triggerShake = async () => {
+    await shakeControls.start({
+      x: [-5, 5, -5, 5, 0],
+      transition: { duration: 0.4 }
+    });
+  };
 
   const [type, setType] = useState<"income" | "expense">("expense");
   const [category, setCategory] = useState("food_drink");
@@ -51,6 +61,8 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
     // Validations
     if (!amount || amount <= 0 || isNaN(amount)) {
+      audioFeedback.playDullPluck();
+      triggerShake();
       showToast(t("toast.invalid_amount"), "error");
       return;
     }
@@ -59,6 +71,8 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     const today = new Date();
     today.setHours(23, 59, 59, 999); // allow today
     if (enteredDate > today) {
+      audioFeedback.playDullPluck();
+      triggerShake();
       showToast(t("toast.invalid_date"), "error");
       return;
     }
@@ -124,7 +138,8 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         animate={{ opacity: 1, y: 0 }}
         className="p-6 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-xs"
       >
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <motion.div animate={shakeControls}>
+          <form onSubmit={handleSubmit} className="space-y-6">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
@@ -137,7 +152,10 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
-                  onClick={() => setType("expense")}
+                  onClick={() => {
+                    audioFeedback.playClick();
+                    setType("expense");
+                  }}
                   className={`py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer border
                     ${type === "expense" 
                       ? "bg-red-500/10 border-red-500 text-red-400" 
@@ -148,7 +166,10 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setType("income")}
+                  onClick={() => {
+                    audioFeedback.playClick();
+                    setType("income");
+                  }}
                   className={`py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer border
                     ${type === "income" 
                       ? "bg-emerald-500/10 border-emerald-500 text-emerald-400" 
@@ -167,7 +188,10 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
               </label>
               <select
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                onChange={(e) => {
+                  audioFeedback.playClick();
+                  setCategory(e.target.value);
+                }}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 font-sans text-xs text-white outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
               >
                 {activeCategories.map((key) => (
@@ -245,6 +269,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
           </button>
 
         </form>
+        </motion.div>
       </motion.div>
 
       {/* Confirmation Modal */}
@@ -259,7 +284,10 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         confirmLabel={t("common.confirm")}
         cancelLabel={t("common.cancel")}
         onConfirm={handleExecuteSave}
-        onCancel={() => setIsConfirmOpen(false)}
+        onCancel={() => {
+          audioFeedback.playClick();
+          setIsConfirmOpen(false);
+        }}
       />
 
       {/* Loading state indicator */}

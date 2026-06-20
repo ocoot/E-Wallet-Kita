@@ -1,18 +1,19 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
-import { authService, UserSession } from "../lib/auth";
+import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Wallet, Mail, Lock, User, LogIn, Sparkles, AlertCircle } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useAnimation } from "motion/react";
 import { Modal } from "../components/Modal";
+import { audioFeedback } from "../lib/audio";
 
-interface LoginProps {
-  onLoginSuccess: (user: UserSession) => void;
-}
-
-export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
+export const Login: React.FC = () => {
   const { t } = useLanguage();
+  const { signInWithGoogle, signInAsGuest } = useAuth();
+  const navigate = useNavigate();
   const { showToast } = useToast();
+  const shakeControls = useAnimation();
 
   const [isSignUp, setIsSignUp] = useState(false);
   
@@ -23,6 +24,14 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
   // UI States
   const [isLoading, setIsLoading] = useState(false);
+
+  // Trigger shake animation
+  const triggerShake = async () => {
+    await shakeControls.start({
+      x: [-5, 5, -5, 5, 0],
+      transition: { duration: 0.4 }
+    });
+  };
 
   // Confirmation Modal State
   const [confirmModal, setConfirmModal] = useState<{
@@ -39,19 +48,26 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     onConfirm: () => {},
   });
 
-  const handleEmailAuth = (e: React.FormEvent) => {
+  const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    audioFeedback.playClick();
     
     // Validations
     if (!email || !email.includes("@")) {
+      audioFeedback.playDullPluck();
+      triggerShake();
       showToast(t("auth.validation_email"), "error");
       return;
     }
     if (!password || password.length < 6) {
+      audioFeedback.playDullPluck();
+      triggerShake();
       showToast(t("auth.validation_pass"), "error");
       return;
     }
     if (isSignUp && !displayName.trim()) {
+      audioFeedback.playDullPluck();
+      triggerShake();
       showToast("Name is required for registration", "error");
       return;
     }
@@ -63,71 +79,65 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         ? `Apakah Anda yakin ingin mendaftarkan akun baru dengan email ${email}?`
         : `Apakah Anda yakin ingin masuk sesi menggunakan email ${email}?`,
       type: "info",
-      onConfirm: () => {
+      onConfirm: async () => {
+        audioFeedback.playClick();
         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
         setIsLoading(true);
         
-        // Simulate brief network lag for production feel
-        setTimeout(() => {
-          if (isSignUp) {
-            const res = authService.signUpWithEmail(email, displayName, password);
-            if ("error" in res) {
-              showToast(res.error, "error");
-            } else {
-              showToast(t("toast.welcome_signup"), "success");
-              onLoginSuccess(res);
-            }
-          } else {
-            const res = authService.signInWithEmail(email, password);
-            if ("error" in res) {
-              showToast(res.error, "error");
-            } else {
-              showToast(t("toast.welcome_auth"), "success");
-              onLoginSuccess(res);
-            }
-          }
-          setIsLoading(false);
-        }, 1000);
+        try {
+            // Placeholder: integrate real supabase email/password auth here
+            showToast("Email Auth not fully implemented yet", "info");
+        } catch(e) {
+          audioFeedback.playDullPluck();
+          showToast("Error", "error");
+        }
+        setIsLoading(false);
       }
     });
   };
 
-  const handleGuestLogin = () => {
+  const handleGuestLogin = async () => {
+    audioFeedback.playClick();
     setConfirmModal({
       isOpen: true,
       title: "Masuk Mode Tamu (Guest)?",
       description: "Data transaksi disimpan sementara di browser Anda dan bisa hilang jika cache dibersihkan. Lanjutkan masuk?",
       type: "warning",
-      onConfirm: () => {
+      onConfirm: async () => {
+        audioFeedback.playClick();
         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
         setIsLoading(true);
-        setTimeout(() => {
-          const user = authService.signInAsGuest();
+        try {
+          await signInAsGuest();
+          audioFeedback.playChime();
           showToast(t("toast.welcome_auth"), "success");
-          onLoginSuccess(user);
-          setIsLoading(false);
-        }, 1000);
+          navigate("/dashboard");
+        } catch (e: any) {
+          showToast(e.message, "error");
+        }
+        setIsLoading(false);
       }
     });
   };
 
-  const handleGoogleLogin = () => {
+  const handleGoogleLogin = async () => {
+    audioFeedback.playClick();
     setConfirmModal({
       isOpen: true,
       title: "Masuk via Google?",
       description: "Gunakan Akun Google terintegrasi untuk masuk secara instan dan mengamankan progres dompet Anda.",
       type: "info",
-      onConfirm: () => {
+      onConfirm: async () => {
+        audioFeedback.playClick();
         setConfirmModal((prev) => ({ ...prev, isOpen: false }));
         setIsLoading(true);
-        setTimeout(() => {
-          // Using pre-authorized test user email as per platform metadata
-          const testEmail = "financehubmanager@gmail.com";
-          const user = authService.signInWithGoogleMock(testEmail);
-          showToast(t("toast.welcome_auth"), "success");
-          onLoginSuccess(user);
-          setIsLoading(false);
-        }, 1000);
+        try {
+          await signInWithGoogle();
+          // Redirect handled by OAuth flow
+        } catch (e: any) {
+          showToast(e.message, "error");
+        }
+        setIsLoading(false);
       }
     });
   };
@@ -178,7 +188,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   disabled={isLoading}
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-sm outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+                  className="w-full pl-11 pr-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-sm outline-none focus:border-indigo-500 focus:shadow-[0_0_0_4px_rgba(99,102,241,0.1)] transition-all light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 light_sakura:focus:shadow-[0_0_0_4px_rgba(251,113,133,0.1)]"
                 />
               </div>
             </div>
@@ -226,10 +236,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           </div>
 
           {/* Email authenticate button */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             type="submit"
             disabled={isLoading}
-            className="w-full cursor-pointer py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white rounded-xl font-sans text-sm font-semibold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:pointer-events-none mt-2 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+            className="w-full cursor-pointer py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-sm font-semibold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:pointer-events-none mt-2 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
           >
             {isLoading ? (
               <span className="w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin" />
@@ -239,13 +251,16 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 <span>{isSignUp ? t("auth.btn_signup") : t("auth.btn_signin")}</span>
               </>
             )}
-          </button>
+          </motion.button>
         </form>
 
         {/* Toggle sign in vs sign up */}
         <div className="text-center mt-4">
           <button
-            onClick={() => setIsSignUp(!isSignUp)}
+            onClick={() => {
+              audioFeedback.playClick();
+              setIsSignUp(!isSignUp);
+            }}
             disabled={isLoading}
             className="font-sans text-xs text-indigo-400 hover:underline cursor-pointer disabled:opacity-50 light_sakura:text-rose-500"
           >
@@ -265,7 +280,9 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         <div className="space-y-3">
           
           {/* Google log mock */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             type="button"
             onClick={handleGoogleLogin}
             disabled={isLoading}
@@ -279,10 +296,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.08l3.66 2.84c.87-2.6 3.3-4.54 6.16-4.54z" />
             </svg>
             <span>{t("auth.login_google")}</span>
-          </button>
+          </motion.button>
 
           {/* Guest Mode log */}
-          <button
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             type="button"
             onClick={handleGuestLogin}
             disabled={isLoading}
@@ -290,7 +309,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           >
             <Sparkles size={14} />
             <span>{t("auth.login_guest")}</span>
-          </button>
+          </motion.button>
         </div>
 
         {/* Cache disclaimer warning notice for guest credentials */}
@@ -310,7 +329,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         confirmLabel="Ya, Lanjutkan"
         cancelLabel={t("common.cancel")}
         onConfirm={confirmModal.onConfirm}
-        onCancel={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+        onCancel={() => {
+          audioFeedback.playClick();
+          setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+        }}
       />
 
       {/* Premium Full-Screen Loading Overlay */}
