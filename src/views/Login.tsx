@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
@@ -97,6 +98,7 @@ export const Login: React.FC = () => {
             const { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) throw error;
             showToast("Masuk berhasil!", "success");
+            navigate("/dashboard");
           }
         } catch(e: any) {
           audioFeedback.playDullPluck();
@@ -122,6 +124,7 @@ export const Login: React.FC = () => {
           await signInAsGuest();
           audioFeedback.playChime();
           showToast(t("toast.welcome_auth"), "success");
+          navigate("/dashboard");
         } catch (e: any) {
           showToast(e.message, "error");
         }
