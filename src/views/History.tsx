@@ -85,13 +85,19 @@ export const History: React.FC<HistoryProps> = ({
   })();
 
   // Fetch transactions based on Month filter
-  const loadTransactions = () => {
-    const data = dbService.getTransactions(currentUser.id, filterMonth);
-    setTransactions(data);
+  const loadTransactions = async () => {
+    try {
+      const data = await dbService.getTransactions(currentUser.id, filterMonth);
+      setTransactions(data);
+    } catch (err) {
+      console.error('History load error:', err);
+    }
   };
 
   useEffect(() => {
-    loadTransactions();
+    if (currentUser.id) {
+      loadTransactions();
+    }
     setCurrentPage(1); // reset page on filter change
   }, [filterMonth, currentUser.id, transactionsUpdatedTrigger]);
 
@@ -126,12 +132,12 @@ export const History: React.FC<HistoryProps> = ({
     setDeleteTargetId(id);
   };
 
-  const executeDeleteItem = () => {
+  const executeDeleteItem = async () => {
     if (!deleteTargetId) return;
     setIsLoading(true);
 
-    setTimeout(() => {
-      const res = dbService.deleteTransaction(currentUser.id, deleteTargetId);
+    try {
+      const res = await dbService.deleteTransaction(currentUser.id, deleteTargetId);
       if (res) {
         audioFeedback.playChime();
         showToast(t("toast.success_delete"), "success");
@@ -141,11 +147,15 @@ export const History: React.FC<HistoryProps> = ({
         showToast(t("toast.error_general"), "error");
       }
       setDeleteTargetId(null);
+    } catch (err) {
+      console.error(err);
+      showToast(t("toast.error_general"), "error");
+    } finally {
       setIsLoading(false);
-    }, 1200);
+    }
   };
 
-  const executeDeleteAll = () => {
+  const executeDeleteAll = async () => {
     if (deleteAllConfirmText.toUpperCase() !== "HAPUS") {
       audioFeedback.playDullPluck();
       showToast(t("toast.invalid_delete_word"), "error");
@@ -155,14 +165,18 @@ export const History: React.FC<HistoryProps> = ({
     setIsDeleteAllOpen(false);
     setIsLoading(true);
 
-    setTimeout(() => {
-      dbService.purgeAllTransactions(currentUser.id);
+    try {
+      await dbService.purgeAllTransactions(currentUser.id);
       audioFeedback.playChime();
       showToast(t("toast.success_delete_all"), "success");
       setDeleteAllConfirmText("");
       onTransactionUpdated();
+    } catch (err) {
+      console.error(err);
+      showToast(t("toast.error_general"), "error");
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   const formatIDR = (num: number) => {

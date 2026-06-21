@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { authService, UserSession } from "../lib/auth";
+import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
 import { parseAmountFromString } from "../lib/parserUtils";
 import { audioFeedback } from "../lib/audio";
 import { 
-  User, 
+  User as UserIcon, 
   Globe, 
   SunMoon, 
   Send, 
@@ -25,42 +25,49 @@ import {
 import { motion } from "motion/react";
 
 interface SettingsProps {
-  onUserPrefUpdated: (user: UserSession) => void;
+  onUserPrefUpdated: (user: any) => void;
 }
 
 export const Settings: React.FC<SettingsProps> = ({
   onUserPrefUpdated
 }) => {
   const { user } = useAuth();
-  const currentUser: UserSession = {
-    id: user?.id || "",
-    display_name: user?.user_metadata?.full_name || "User",
-    is_guest: user?.is_anonymous || false,
-    preferred_language: "id",
-    preferred_theme: "dark_obsidian"
-  };
   const { locale, setLocale, t } = useLanguage();
   const { theme, setTheme } = useTheme();
   const { showToast } = useToast();
 
   // Profile Edit States
-  const [displayName, setDisplayName] = useState(currentUser.display_name);
+  const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.email?.split('@')[0] || "");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
-  // Guest upgrade states
-  const [upgradeEmail, setUpgradeEmail] = useState("");
-  const [upgradePassword, setUpgradePassword] = useState("");
-  const [upgradeName, setUpgradeName] = useState(currentUser.display_name);
-
-  // Telegram Mock Connection States
+  // Telegram Connection States
   const [linkingCode, setLinkingCode] = useState<string | null>(null);
   const [timerSeconds, setTimerSeconds] = useState(600); // 10 minutes
-  const [isTelegramLinked, setIsTelegramLinked] = useState(!!currentUser.telegram_chat_id);
-  const [telegramChatId, setTelegramChatId] = useState(currentUser.telegram_chat_id || "");
+  const [isTelegramLinked, setIsTelegramLinked] = useState(false);
+  const [telegramChatId, setTelegramChatId] = useState("");
   const [isUnlinkModalOpen, setIsUnlinkModalOpen] = useState(false);
 
   // Diagnostic states
   const [testResults, setTestResults] = useState<{ input: string; output: number }[]>([]);
+
+  // Load user profile from Supabase
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+      
+      if (!error && data) {
+        setDisplayName(data.display_name || displayName);
+        setIsTelegramLinked(!!data.telegram_chat_id);
+        setTelegramChatId(data.telegram_chat_id || "");
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   // 10-minutes active timer tracking for linking codes
   useEffect(() => {
@@ -90,45 +97,21 @@ export const Settings: React.FC<SettingsProps> = ({
     setIsProfileModalOpen(true);
   };
 
-  const executeUpdateProfileName = () => {
+  const executeUpdateProfileName = async () => {
     audioFeedback.playChime();
-    const updated = authService.updateProfileName(currentUser.id, displayName);
-    onUserPrefUpdated(updated);
-    setIsProfileModalOpen(false);
-    showToast(t("toast.success_profile"), "success");
-  };
-
-  const handleUpgradeGuest = (e: React.FormEvent) => {
-    e.preventDefault();
-    audioFeedback.playClick();
-    if (!upgradeEmail.trim() || !upgradeEmail.includes("@")) {
-      audioFeedback.playDullPluck();
-      showToast(t("auth.validation_email"), "error");
-      return;
-    }
-    if (!upgradePassword || upgradePassword.length < 6) {
-      audioFeedback.playDullPluck();
-      showToast(t("auth.validation_pass"), "error");
-      return;
-    }
-
-    const res = authService.upgradeGuestToPermanent(
-      currentUser.id,
-      upgradeEmail,
-      upgradeName,
-      upgradePassword
-    );
-
-    if ("error" in res) {
-      audioFeedback.playDullPluck();
-      showToast(res.error, "error");
-    } else {
-      audioFeedback.playChime();
-      showToast(t("toast.success_pref"), "success");
-      onUserPrefUpdated(res);
-      // Reset inputs
-      setUpgradeEmail("");
-      setUpgradePassword("");
+    
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ display_name: displayName })
+        .eq('id', user?.id);
+      
+      if (error) throw error;
+      
+      setIsProfileModalOpen(false);
+      showToast(t("toast.success_profile"), "success");
+    } catch (err: any) {
+      showToast(err.message, "error");
     }
   };
 
@@ -168,43 +151,59 @@ export const Settings: React.FC<SettingsProps> = ({
   };
 
   // Telegram Generator code
-  const handleGenerateLinkingCode = () => {
+  const handleGenerateLinkingCode = async () => {
     audioFeedback.playClick();
+    if (!user) return;
+
     // Math random 5 digit sequence
     const code = Math.floor(10000 + Math.random() * 90000).toString();
-    setLinkingCode(code);
-    setTimerSeconds(600); // 10 minutes reset
+    
+    try {
+      // Save to Supabase telegram_link_codes
+      const { error } = await supabase
+        .from('telegram_link_codes')
+        .insert({
+          code,
+          user_id: user.id,
+          expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
+        });
+      
+      if (error) throw error;
+
+      setLinkingCode(code);
+      setTimerSeconds(600); // 10 minutes reset
+    } catch (err: any) {
+      showToast("Gagal generate kode: " + err.message, "error");
+    }
   };
 
   // Simulated Telegram bot action trigger
-  const handleSimulateTelegramWebhookLink = () => {
-    if (!linkingCode) return;
+  const handleSimulateTelegramWebhookLink = async () => {
+    if (!linkingCode || !user) return;
     audioFeedback.playClick();
     
-    // Simulate webhook response from /api/telegram/webhook
     showToast("Webhook parsing linking code...", "info");
     
-    setTimeout(() => {
-      const generatedChatId = Math.floor(10000000 + Math.random() * 90000000).toString();
-      setTelegramChatId(generatedChatId);
-      setIsTelegramLinked(true);
-      
-      // Update session record
-      const updated = { ...currentUser, telegram_chat_id: generatedChatId };
-      localStorage.setItem("ewallet_active_user", JSON.stringify(updated));
-      
-      // Also update users array registry
-      const allUsers = authService._getUsers();
-      const idx = allUsers.findIndex(u => u.id === currentUser.id);
-      if (idx !== -1) {
-        allUsers[idx].telegram_chat_id = generatedChatId;
-        authService._saveUsers(allUsers);
+    setTimeout(async () => {
+      try {
+        const generatedChatId = Math.floor(10000000 + Math.random() * 90000000).toString();
+        
+        // Simulating WHAT THE BOT BACKEND WOULD DO:
+        const { error } = await supabase
+          .from('users')
+          .update({ telegram_chat_id: generatedChatId })
+          .eq('id', user.id);
+        
+        if (error) throw error;
+
+        setTelegramChatId(generatedChatId);
+        setIsTelegramLinked(true);
+        setLinkingCode(null); 
+        audioFeedback.playChime();
+        showToast(t("toast.success_link"), "success");
+      } catch (err: any) {
+        showToast(err.message, "error");
       }
-      
-      onUserPrefUpdated(updated);
-      setLinkingCode(null); // clear
-      audioFeedback.playChime();
-      showToast(t("toast.success_link"), "success");
     }, 1200);
   };
 
@@ -213,29 +212,26 @@ export const Settings: React.FC<SettingsProps> = ({
     setIsUnlinkModalOpen(true);
   };
 
-  const executeUnlinkTelegram = () => {
+  const executeUnlinkTelegram = async () => {
     setIsUnlinkModalOpen(false);
     showToast("Unlinking Telegram bot...", "info");
 
-    setTimeout(() => {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update({ telegram_chat_id: null })
+        .eq('id', user?.id);
+      
+      if (error) throw error;
+
       setTelegramChatId("");
       setIsTelegramLinked(false);
 
-      // Update session record
-      const updated = { ...currentUser, telegram_chat_id: undefined };
-      localStorage.setItem("ewallet_active_user", JSON.stringify(updated));
-      
-      const allUsers = authService._getUsers();
-      const idx = allUsers.findIndex(u => u.id === currentUser.id);
-      if (idx !== -1) {
-        delete allUsers[idx].telegram_chat_id;
-        authService._saveUsers(allUsers);
-      }
-
-      onUserPrefUpdated(updated);
       audioFeedback.playChime();
       showToast(t("toast.success_unlink"), "success");
-    }, 600);
+    } catch (err: any) {
+      showToast(err.message, "error");
+    }
   };
 
   // Formatter for timer YYYY-MM
@@ -517,79 +513,7 @@ export const Settings: React.FC<SettingsProps> = ({
             )}
 
           </div>
-
-          {/* Section 4: Promote guest user perm upgraders */}
-          {currentUser.is_guest && (
-            <div className="p-6 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-xs space-y-4">
-              <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100">
-                {t("settings.upgrade_sec")}
-              </h3>
-
-              <p className="font-sans text-xs text-gray-400 leading-relaxed light_sakura:text-slate-500">
-                {t("settings.upgrade_desc")}
-              </p>
-
-              <form onSubmit={handleUpgradeGuest} className="space-y-4">
-                {/* 1. Name */}
-                <div className="space-y-1">
-                  <label className="font-sans text-[10px] font-bold text-gray-400 light_sakura:text-slate-500 uppercase tracking-wider block">
-                    Nama Permanen Anda
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={upgradeName}
-                    onChange={(e) => setUpgradeName(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-                  />
-                </div>
-
-                {/* 2. Email */}
-                <div className="space-y-1">
-                  <label className="font-sans text-[10px] font-bold text-gray-400 light_sakura:text-slate-500 uppercase tracking-wider block">
-                    {t("auth.label_email")}
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    placeholder="nama@domain.com"
-                    value={upgradeEmail}
-                    onChange={(e) => setUpgradeEmail(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-                  />
-                </div>
-
-                {/* 3. Password */}
-                <div className="space-y-1">
-                  <label className="font-sans text-[10px] font-bold text-gray-400 light_sakura:text-slate-500 uppercase tracking-wider block">
-                    {t("auth.label_password")}
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    placeholder="••••••••"
-                    value={upgradePassword}
-                    onChange={(e) => setUpgradePassword(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-                  />
-                </div>
-
-                {/* Promote submit */}
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="submit"
-                  className="w-full cursor-pointer py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold transition-all shadow-md light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
-                >
-                  {t("settings.btn_upgrade")}
-                </motion.button>
-              </form>
-            </div>
-          )}
-
         </div>
-
       </div>
 
       {/* Confirmation - Modify Profiles Name */}

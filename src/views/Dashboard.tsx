@@ -66,38 +66,47 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   // Load current month metrics
   useEffect(() => {
-    const today = new Date();
-    const currentMonthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`; // e.g., "2026-06"
-    
-    const data = dbService.getTransactions(currentUser.id, currentMonthPrefix);
-    setTransactions(data);
+    const loadData = async () => {
+      const today = new Date();
+      const currentMonthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`; // e.g., "2026-06"
+      
+      try {
+        const data = await dbService.getTransactions(currentUser.id, currentMonthPrefix);
+        setTransactions(data);
 
-    // Compute sums
-    let inc = 0;
-    let exp = 0;
-    data.forEach(t => {
-      if (t.type === "income") {
-        inc += t.amount;
-      } else {
-        exp += t.amount;
+        // Compute sums
+        let inc = 0;
+        let exp = 0;
+        data.forEach(t => {
+          if (t.type === "income") {
+            inc += t.amount;
+          } else {
+            exp += t.amount;
+          }
+        });
+
+        setSummary({
+          income: inc,
+          expense: exp,
+          balance: inc - exp
+        });
+
+        // Compute cumulative balance trend (sparkline)
+        const sortedData = [...data].sort((a, b) => a.transaction_date.localeCompare(b.transaction_date));
+        let runBal = 0;
+        const historyPoints = sortedData.map(t => {
+          runBal += (t.type === "income" ? t.amount : -t.amount);
+          return runBal;
+        });
+        setSparkPoints(historyPoints);
+      } catch (err) {
+        console.error('Dashboard load error:', err);
       }
-    });
+    };
 
-    setSummary({
-      income: inc,
-      expense: exp,
-      balance: inc - exp
-    });
-
-    // Compute cumulative balance trend (sparkline)
-    const sortedData = [...data].sort((a, b) => a.transaction_date.localeCompare(b.transaction_date));
-    let runBal = 0;
-    const historyPoints = sortedData.map(t => {
-      runBal += (t.type === "income" ? t.amount : -t.amount);
-      return runBal;
-    });
-    setSparkPoints(historyPoints);
-
+    if (currentUser.id) {
+      loadData();
+    }
   }, [currentUser.id, transactionsUpdatedTrigger]);
 
   const handleAiParse = async (e: React.FormEvent) => {

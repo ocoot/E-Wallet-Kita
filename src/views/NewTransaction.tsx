@@ -88,38 +88,36 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     setIsConfirmOpen(true);
   };
 
-  const handleExecuteSave = () => {
+  const handleExecuteSave = async () => {
     setIsConfirmOpen(false);
     setIsLoading(true);
 
-    setTimeout(() => {
-      try {
-        dbService.saveTransaction(
-          currentUser.id,
-          type,
-          category,
-          Number(amount),
-          note.trim() || null,
-          "manual",
-          date
-        );
+    try {
+      await dbService.saveTransaction(
+        currentUser.id,
+        type,
+        category,
+        Number(amount),
+        note.trim() || null,
+        "manual",
+        date
+      );
 
-        showToast(t("toast.success_save"), "success");
-        
-        // Reset inputs
-        setAmount("");
-        setNote("");
-        setDate(new Date().toISOString().split("T")[0]);
-        
-        onTransactionAdded(); // Trigger global cache updates
-        navigate("/dashboard"); // Go back to dashboard!
-      } catch (err) {
-        console.error(err);
-        showToast(t("toast.error_general"), "error");
-      } finally {
-        setIsLoading(false);
-      }
-    }, 600);
+      showToast(t("toast.success_save"), "success");
+      
+      // Reset inputs
+      setAmount("");
+      setNote("");
+      setDate(new Date().toISOString().split("T")[0]);
+      
+      onTransactionAdded(); // Trigger global cache updates
+      navigate("/dashboard"); // Go back to dashboard!
+    } catch (err) {
+      console.error(err);
+      showToast(t("toast.error_general"), "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Helper currency formatter
