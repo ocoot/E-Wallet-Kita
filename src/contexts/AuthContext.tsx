@@ -25,9 +25,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
+      
+      if (session?.user) {
+        // Sync user record to 'users' table
+        try {
+          const { error } = await supabase
+            .from('users')
+            .upsert({
+              id: session.user.id,
+              display_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+              is_guest: session.user.is_anonymous || false
+            }, {
+              onConflict: 'id',
+              ignoreDuplicates: false
+            });
+          
+          if (error) {
+            // If it's a guest or something, we might get errors if table doesn't allow upsert 
+            // but usually it's fine for public.users
+            console.error("AuthContext: user sync error", error);
+          }
+        } catch (err) {
+          console.error("AuthContext: sync exception", err);
+        }
+      }
+      
       setLoading(false);
     });
 

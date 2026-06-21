@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import idTranslations from "../locales/id.json";
 import enTranslations from "../locales/en.json";
+import { useAuth } from "./AuthContext";
+import { supabase } from "../lib/supabase";
 
 type Locale = "id" | "en";
 
@@ -18,34 +20,48 @@ const translations: Record<Locale, any> = {
 };
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
+  
   // Retrieve from localStorage or check browser preferences
   const [locale, setLocaleState] = useState<Locale>(() => {
     const saved = localStorage.getItem("ewallet_language") as Locale;
     if (saved === "id" || saved === "en") return saved;
-    return "id"; // Default is ID/Indonesian as per Target Persona Ibu Rumah Tangga
+    return "id"; 
   });
 
-  const setLocale = (newLocale: Locale) => {
+  // Sync with Supabase on mount/user change
+  useEffect(() => {
+    const fetchPref = async () => {
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('users')
+        .select('preferred_language')
+        .eq('id', user.id)
+        .single();
+      
+      if (!error && data?.preferred_language) {
+        const dbLocale = data.preferred_language as Locale;
+        if (dbLocale === "id" || dbLocale === "en") {
+          setLocaleState(dbLocale);
+          localStorage.setItem("ewallet_language", dbLocale);
+        }
+      }
+    };
+    fetchPref();
+  }, [user]);
+
+  const setLocale = async (newLocale: Locale) => {
     setLocaleState(newLocale);
     localStorage.setItem("ewallet_language", newLocale);
     
-    // Update live profile preferences in simulated user DB
-    const activeUser = localStorage.getItem("ewallet_active_user");
-    if (activeUser) {
+    if (user) {
       try {
-        const parsed = JSON.parse(activeUser);
-        parsed.preferred_language = newLocale;
-        localStorage.setItem("ewallet_active_user", JSON.stringify(parsed));
-        
-        // Also update in all users list cache
-        const allUsers = JSON.parse(localStorage.getItem("ewallet_users") || "[]");
-        const idx = allUsers.findIndex((u: any) => u.id === parsed.id);
-        if (idx !== -1) {
-          allUsers[idx].preferred_language = newLocale;
-          localStorage.setItem("ewallet_users", JSON.stringify(allUsers));
-        }
+        await supabase
+          .from('users')
+          .update({ preferred_language: newLocale })
+          .eq('id', user.id);
       } catch (err) {
-        console.error("Error updates language preferences cache:", err);
+        console.error("Error syncing language preference:", err);
       }
     }
   };

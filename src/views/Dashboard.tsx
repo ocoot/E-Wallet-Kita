@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
-import { dbService, Transaction } from "../lib/db";
-import { UserSession } from "../lib/auth";
+import { dbService } from "../lib/db";
+import { UserSession, Transaction } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";

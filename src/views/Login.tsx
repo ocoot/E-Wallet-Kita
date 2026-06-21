@@ -114,7 +114,7 @@ export const Login: React.FC = () => {
     setConfirmModal({
       isOpen: true,
       title: "Masuk Mode Tamu (Guest)?",
-      description: "Data transaksi disimpan sementara di browser Anda dan bisa hilang jika cache dibersihkan. Lanjutkan masuk?",
+      description: "Data Anda akan disimpan secara anonim di database awan (Cloud). Anda dapat beralih ke akun permanen nanti untuk keamanan penuh.",
       type: "warning",
       onConfirm: async () => {
         audioFeedback.playClick();

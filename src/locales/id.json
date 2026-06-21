@@ -16,7 +16,7 @@
     "login_subtitle": "Kelola dompet dan catatan keuangan keluarga Anda dengan aman.",
     "login_google": "Masuk dengan Google",
     "login_guest": "Masuk Mode Tamu (Guest)",
-    "guest_disclaimer": "Catatan: Mode Tamu menyimpan data sementara di browser Anda. Data bisa terhapus jika cache dibersihkan atau berganti perangkat.",
+    "guest_disclaimer": "Catatan: Mode Tamu menyimpan data secara anonim di database awan (Cloud). Anda dapat beralih ke akun permanen kapan saja untuk fitur sinkronisasi antar-perangkat yang lebih kuat.",
     "or_divider": "Atau dengan Email & Password",
     "label_email": "Alamat Email",
     "label_password": "Kata Sandi",

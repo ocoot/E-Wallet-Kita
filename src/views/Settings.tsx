@@ -23,9 +23,10 @@ import {
   Info
 } from "lucide-react";
 import { motion } from "motion/react";
+import { UserSession } from "../types";
 
 interface SettingsProps {
-  onUserPrefUpdated: (user: any) => void;
+  onUserPrefUpdated: (user: UserSession) => void;
 }
 
 export const Settings: React.FC<SettingsProps> = ({

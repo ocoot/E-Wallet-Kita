@@ -1,16 +1,5 @@
 import { supabase } from "./supabase";
-
-export interface Transaction {
-  id: string;
-  user_id: string;
-  type: "income" | "expense";
-  category: string;
-  amount: number;
-  note: string | null;
-  source: "manual" | "ai_web" | "telegram";
-  transaction_date: string; // YYYY-MM-DD
-  created_at: string;
-}
+import { Transaction } from "../types";
 
 export const dbService = {
   async getTransactions(userId: string, filterMonth?: string): Promise<Transaction[]> {
@@ -25,8 +14,10 @@ export const dbService = {
 
     if (filterMonth) {
       // filterMonth is "YYYY-MM"
+      const [year, month] = filterMonth.split('-').map(Number);
+      const lastDay = new Date(year, month, 0).getDate();
       const startDate = `${filterMonth}-01`;
-      const endDate = `${filterMonth}-31`; // Supabase will handle this or we can compute real end
+      const endDate = `${filterMonth}-${lastDay}`;
       query = query.gte('transaction_date', startDate).lte('transaction_date', endDate);
     }
 

@@ -16,7 +16,7 @@
     "login_subtitle": "Securely manage your wallet and family financial transactions.",
     "login_google": "Sign In with Google",
     "login_guest": "Sign In as Guest",
-    "guest_disclaimer": "Note: Guest Mode stores data locally. Clearing browser cache or switching devices will cause irrevocable data loss.",
+    "guest_disclaimer": "Note: Guest Mode securely stores data anonymously in the cloud. You can upgrade to a permanent account any time to ensure multi-device synchronization and full security.",
     "or_divider": "Or with Email & Password",
     "label_email": "Email Address",
     "label_password": "Password",
