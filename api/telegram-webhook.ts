@@ -2,6 +2,8 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Type } from '@google/genai';
 
+type Lang = "id" | "en";
+
 // Parse Indonesian amounts (k, rb, jt, etc)
 function parseAmountFromString(text: string): number {
   const cleaned = text.toLowerCase().replace(/\s+/g, '').replace(/,/g, '.');
@@ -42,7 +44,7 @@ if (apiKey) {
   });
 }
 
-// Category labels
+// Category labels (bilingual)
 const botCategoryLabels: Record<string, { id: string; en: string }> = {
   salary: { id: "Gaji", en: "Salary" },
   bonus: { id: "Bonus", en: "Bonus" },
@@ -52,6 +54,265 @@ const botCategoryLabels: Record<string, { id: string; en: string }> = {
   bills: { id: "Tagihan", en: "Bills" },
   other: { id: "Lain-lain", en: "Other" }
 };
+
+function getCategoryLabel(categoryKey: string, lang: Lang): string {
+  return botCategoryLabels[categoryKey]?.[lang] || categoryKey;
+}
+
+function formatIDR(amount: number): string {
+  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(amount);
+}
+
+// ─────────────────────────────────────────────────────────────
+// BOT TRANSLATIONS
+// ─────────────────────────────────────────────────────────────
+const botText = {
+  start: {
+    id: () =>
+      `Halo! Selamat datang di *E-Wallet Kita Bot* 🌸\n\n` +
+      `Saya adalah asisten pintar untuk mencatat keuangan Anda secepat mengirim chat!\n\n` +
+      `Untuk mulai mencatat, silakan *tautkan akun* Anda terlebih dahulu:\n` +
+      `1️⃣ Buka website *E-Wallet Kita*\n` +
+      `2️⃣ Masuk ke halaman *Pengaturan (Settings)*\n` +
+      `3️⃣ Cari bagian *Koneksi Bot Telegram* dan tekan *Buat Kode Tautan*\n` +
+      `4️⃣ Kirim perintah tautan berikut di sini:\n` +
+      `     \`/link <kode_5_digit>\` (Contoh: \`/link 12345\`)\n\n` +
+      `💡 Ketik \`/help\` untuk informasi bantuan commands.`,
+    en: () =>
+      `Hello! Welcome to *E-Wallet Kita Bot* 🌸\n\n` +
+      `I'm a smart assistant to track your finances as fast as sending a chat!\n\n` +
+      `To get started, please *link your account* first:\n` +
+      `1️⃣ Open the *E-Wallet Kita* website\n` +
+      `2️⃣ Go to the *Settings* page\n` +
+      `3️⃣ Find the *Telegram Bot Connection* section and tap *Generate Link Code*\n` +
+      `4️⃣ Send the link command here:\n` +
+      `     \`/link <5_digit_code>\` (Example: \`/link 12345\`)\n\n` +
+      `💡 Type \`/help\` for command information.`,
+  },
+  help: {
+    id: () =>
+      `💡 *Panduan Asisten E-Wallet Kita Bot*:\n\n` +
+      `1️⃣ *Koneksi Akun*:\n` +
+      `     Ketik \`/link <kode_5_digit>\`\n` +
+      `     Contoh: \`/link 58204\`\n\n` +
+      `2️⃣ *Mencatat Keuangan* (Setelah Terhubung):\n` +
+      `     Cukup tulis pesan chat apa saja tentang transaksi Anda!\n` +
+      `     Contoh:\n` +
+      `     • \`Makan siang bersama bu siska 45rb\`\n` +
+      `     • \`Gaji sampingan jualan kue 1.2jt\`\n` +
+      `     • \`Belanja sayur bayam 12k\`\n` +
+      `     • \`Bayar tagihan listrik rumah 250rb\`\n\n` +
+      `3️⃣ *Daftar Perintah (Commands)*:\n` +
+      `     • \`/saldo\` - Melihat status ringkasan saldo bulan ini.\n` +
+      `     • \`/unlink\` - Memutuskan koneksi akun Telegram dari sistem.\n` +
+      `     • \`/help\` - Membuka pesan bantuan petunjuk ini.`,
+    en: () =>
+      `💡 *E-Wallet Kita Bot Guide*:\n\n` +
+      `1️⃣ *Account Connection*:\n` +
+      `     Type \`/link <5_digit_code>\`\n` +
+      `     Example: \`/link 58204\`\n\n` +
+      `2️⃣ *Recording Finances* (After Linking):\n` +
+      `     Just write any chat message about your transaction!\n` +
+      `     Examples:\n` +
+      `     • \`Lunch with colleagues 45rb\`\n` +
+      `     • \`Side income selling cakes 1.2jt\`\n` +
+      `     • \`Bought vegetables 12k\`\n` +
+      `     • \`Paid electricity bill 250rb\`\n\n` +
+      `3️⃣ *Command List*:\n` +
+      `     • \`/saldo\` - View this month's balance summary.\n` +
+      `     • \`/unlink\` - Disconnect your Telegram account from the system.\n` +
+      `     • \`/help\` - Show this help message.`,
+  },
+  linkBadFormat: {
+    id: () => "⚠️ Format perintah salah. Silakan kirim dalam format: `/link <kode_5_digit>` - Contoh: `/link 12345`.",
+    en: () => "⚠️ Invalid command format. Please send in the format: `/link <5_digit_code>` - Example: `/link 12345`.",
+  },
+  linkInternalError: {
+    id: (msg: string) => `⚠️ Terjadi error internal saat menautkan akun: ${msg}`,
+    en: (msg: string) => `⚠️ An internal error occurred while linking your account: ${msg}`,
+  },
+  linkSuccess: {
+    id: (displayName: string) =>
+      `🎉 *Tautan Akun Berhasil Terhubung!* ✅\n\n` +
+      `Halo, *${displayName}*! Chat ini sekarang aman terhubung dengan aplikasi *E-Wallet Kita*.\n\n` +
+      `Sekarang Anda sudah bisa langsung melakukan pencatatan keuangan otomatis. Silakan tulis transaksi pertama Anda!`,
+    en: (displayName: string) =>
+      `🎉 *Account Successfully Linked!* ✅\n\n` +
+      `Hello, *${displayName}*! This chat is now securely linked to the *E-Wallet Kita* app.\n\n` +
+      `You can now record your finances automatically. Go ahead and write your first transaction!`,
+  },
+  linkFailed: {
+    id: (errMsg: string) => `❌ *Gagal Tertaut*\n\n${errMsg}`,
+    en: (errMsg: string) => `❌ *Linking Failed*\n\n${errMsg}`,
+  },
+  linkInvalidCodeFallback: {
+    id: () => "Kode tautan tidak valid atau telah kedaluwarsa.",
+    en: () => "The link code is invalid or has expired.",
+  },
+  unlinkFailed: {
+    id: (msg: string) => `❌ Gagal memutuskan tautan: ${msg}`,
+    en: (msg: string) => `❌ Failed to unlink account: ${msg}`,
+  },
+  unlinkSuccess: {
+    id: () => "👋 *Koneksi bot Telegram dibatalkan.* Hubungan chat ini dengan E-Wallet Kita berhasil diputuskan.",
+    en: () => "👋 *Telegram bot connection removed.* This chat has been successfully unlinked from E-Wallet Kita.",
+  },
+  saldoError: {
+    id: () => "⚠️ Terjadi kesalahan internal saat memuat data saldo.",
+    en: () => "⚠️ An internal error occurred while loading your balance data.",
+  },
+  saldoNotLinked: {
+    id: () => "⚠️ *Akun belum terhubung.* Silakan hubungkan Telegram Anda terlebih dahulu menggunakan perintah `/link <kode>`.",
+    en: () => "⚠️ *Account not linked.* Please link your Telegram first using the `/link <code>` command.",
+  },
+  saldoSummary: {
+    id: (displayName: string, incStr: string, expStr: string, balStr: string) =>
+      `📊 *Ringkasan Keuangan Bulan Ini* 🌸\n\n` +
+      `Halo, *${displayName}*! Berikut adalah laporan keuangan Anda bulan ini:\n\n` +
+      `• *Total Pemasukan*: 📥 \`${incStr}\`\n` +
+      `• *Total Pengeluaran*: 📤 \`${expStr}\`\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n` +
+      `• *Saldo Tabungan*: 💰 *${balStr}*\n\n` +
+      `_Gunakan bot ini untuk terus merekam transaksi harian secara praktis!_`,
+    en: (displayName: string, incStr: string, expStr: string, balStr: string) =>
+      `📊 *This Month's Financial Summary* 🌸\n\n` +
+      `Hello, *${displayName}*! Here's your financial report for this month:\n\n` +
+      `• *Total Income*: 📥 \`${incStr}\`\n` +
+      `• *Total Expense*: 📤 \`${expStr}\`\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n` +
+      `• *Net Balance*: 💰 *${balStr}*\n\n` +
+      `_Keep using this bot to conveniently track your daily transactions!_`,
+  },
+  unknownCommand: {
+    id: () => "⚠️ Perintah tidak dikenali. Silakan ketik `/help` untuk bantuan.",
+    en: () => "⚠️ Unrecognized command. Please type `/help` for assistance.",
+  },
+  profileLookupError: {
+    id: () => "⚠️ Terjadi kegagalan pencarian profil akun.",
+    en: () => "⚠️ Failed to look up your account profile.",
+  },
+  notLinkedForTx: {
+    id: () =>
+      `⚠️ *Akun Belum Terhubung*\n\n` +
+      `Maaf, kami tidak bisa mencatat transaksi Anda karena chat ini belum terhubung ke akun mana pun.\n\n` +
+      `Silakan ketik \`/link <kode_5_digit>\` untuk menautkan akun.`,
+    en: () =>
+      `⚠️ *Account Not Linked*\n\n` +
+      `Sorry, we can't record your transaction because this chat isn't linked to any account yet.\n\n` +
+      `Please type \`/link <5_digit_code>\` to link your account.`,
+  },
+  analyzing: {
+    id: () => "🔄 _Sedang menganalisis catatan keuangan Anda..._",
+    en: () => "🔄 _Analyzing your financial note..._",
+  },
+  amountNotDetected: {
+    id: () =>
+      `⚠️ *Gagal Membaca Nominal*\n\n` +
+      `Kami memahami transaksi Anda bermaksud mencatat sesuatu, namun nominal angka uang tidak berhasil terdeteksi.\n` +
+      `Contoh input benar:\n` +
+      `- "Makan nasi goreng *40rb*"\n` +
+      `- "Beli galon aqua *Rp 20.000*"\n\n` +
+      `Silakan ulangi kembali!`,
+    en: () =>
+      `⚠️ *Couldn't Detect Amount*\n\n` +
+      `We understand you meant to record something, but we couldn't detect a numeric amount.\n` +
+      `Example of valid input:\n` +
+      `- "Fried rice for lunch *40rb*"\n` +
+      `- "Bought water gallon *Rp 20.000*"\n\n` +
+      `Please try again!`,
+  },
+  draftSaveError: {
+    id: () => "⚠️ Terjadi kesalahan internal saat menyimpan draf transaksi. Silakan coba lagi.",
+    en: () => "⚠️ An internal error occurred while saving the transaction draft. Please try again.",
+  },
+  draftPrompt: {
+    id: (typeLabel: string, catLabel: string, currencyStr: string, originalText: string) =>
+      `📝 *Draf Catatan Transaksi*\n` +
+      `Apakah rincian keuangan berikut sudah sesuai?\n\n` +
+      `• *Tipe*: ${typeLabel}\n` +
+      `• *Kategori*: ${catLabel}\n` +
+      `• *Nominal*: *${currencyStr}*\n` +
+      `• *Catatan*: "${originalText}"`,
+    en: (typeLabel: string, catLabel: string, currencyStr: string, originalText: string) =>
+      `📝 *Transaction Draft*\n` +
+      `Does the following financial detail look correct?\n\n` +
+      `• *Type*: ${typeLabel}\n` +
+      `• *Category*: ${catLabel}\n` +
+      `• *Amount*: *${currencyStr}*\n` +
+      `• *Note*: "${originalText}"`,
+  },
+  parseError: {
+    id: () => "⚠️ Maaf, asisten parsing kami mengalami kendala teknis sementara. Mohon coba ulangi beberapa saat lagi.",
+    en: () => "⚠️ Sorry, our parsing assistant is experiencing temporary technical issues. Please try again shortly.",
+  },
+  txTypeIncome: { id: () => "📥 Pemasukan", en: () => "📥 Income" },
+  txTypeExpense: { id: () => "📤 Pengeluaran", en: () => "📤 Expense" },
+  btnConfirm: { id: () => "✅ Benar, Simpan", en: () => "✅ Correct, Save" },
+  btnCancel: { id: () => "❌ Batalkan", en: () => "❌ Cancel" },
+  cbExpired: {
+    id: () => "Transaksi tidak ditemukan atau sudah kadaluwarsa.",
+    en: () => "Transaction not found or has expired.",
+  },
+  msgExpired: {
+    id: () => "❌ *Sesi Konfirmasi Kedaluwarsa*\n_Silakan tulis ulang transaksi keuangan Anda di bawah ini._",
+    en: () => "❌ *Confirmation Session Expired*\n_Please re-write your financial transaction below._",
+  },
+  cbSaveFailed: {
+    id: () => "Gagal menyimpan transaksi.",
+    en: () => "Failed to save transaction.",
+  },
+  msgSaveFailed: {
+    id: (msg: string) => `❌ *Gagal Menyimpan Transaksi*\n_Koneksi database bermasalah: ${msg}_`,
+    en: (msg: string) => `❌ *Failed to Save Transaction*\n_Database connection issue: ${msg}_`,
+  },
+  cbSaveSuccess: {
+    id: () => "Transaksi berhasil dicatat!",
+    en: () => "Transaction successfully recorded!",
+  },
+  msgSaveSuccess: {
+    id: (typeLabel: string, catLabel: string, amountStr: string, originalText: string) =>
+      `✅ *Transaksi Berhasil Disimpan!*\n\n` +
+      `• *Tipe*: ${typeLabel}\n` +
+      `• *Kategori*: ${catLabel}\n` +
+      `• *Jumlah*: *${amountStr}*\n` +
+      `• *Catatan*: "${originalText}"\n\n` +
+      `_Catatan telah tersimpan secara aman ke E-Wallet Kita._ 🌸`,
+    en: (typeLabel: string, catLabel: string, amountStr: string, originalText: string) =>
+      `✅ *Transaction Saved Successfully!*\n\n` +
+      `• *Type*: ${typeLabel}\n` +
+      `• *Category*: ${catLabel}\n` +
+      `• *Amount*: *${amountStr}*\n` +
+      `• *Note*: "${originalText}"\n\n` +
+      `_Your record has been safely saved to E-Wallet Kita._ 🌸`,
+  },
+  cbCancelled: {
+    id: () => "Pencatatan dibatalkan.",
+    en: () => "Recording cancelled.",
+  },
+  msgCancelled: {
+    id: () => "❌ *Pencatatan transaksi telah dibatalkan.*",
+    en: () => "❌ *Transaction recording has been cancelled.*",
+  },
+};
+
+function tr<K extends keyof typeof botText>(key: K, lang: Lang, ...args: Parameters<(typeof botText)[K][Lang]>): string {
+  const entry = botText[key][lang] as (...a: any[]) => string;
+  return entry(...args);
+}
+
+// Resolve the bot's display language for a given chat: prefer the user's saved
+// preference (`users.preferred_language`), default to Indonesian otherwise.
+async function resolveLang(chatId: number): Promise<Lang> {
+  try {
+    const { data } = await supabaseBackend.rpc("get_user_by_telegram_chat_id", {
+      p_chat_id: chatId
+    });
+    const pref = data && data.length > 0 ? data[0]?.preferred_language : null;
+    return pref === "en" ? "en" : "id";
+  } catch {
+    return "id";
+  }
+}
 
 function inferCategoryKey(text: string): string {
   const t = text.toLowerCase();
@@ -245,6 +506,8 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         return;
       }
 
+      const lang = await resolveLang(chatId);
+
       const { data: pendingRows, error: pendingErr } = await supabaseBackend.rpc("get_pending_telegram_tx", {
         p_chat_id: chatId
       });
@@ -257,8 +520,8 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
       if (actionData === "tx_confirm") {
         if (!pending) {
-          await answerTelegramCallback(queryId, "Transaksi tidak ditemukan atau sudah kadaluwarsa.");
-          await editTelegramMessage(chatId, msgId, "❌ *Sesi Konfirmasi Kedaluwarsa*\n_Silakan tulis ulang transaksi keuangan Anda di bawah ini._");
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          await editTelegramMessage(chatId, msgId, tr("msgExpired", lang));
           res.status(200).json({ ok: true });
           return;
         }
@@ -274,31 +537,27 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
         if (error) {
           console.error("❌ RPC insert_telegram_transaction error:", error);
-          await answerTelegramCallback(queryId, "Gagal menyimpan transaksi.");
-          await editTelegramMessage(chatId, msgId, `❌ *Gagal Menyimpan Transaksi*\n_Koneksi database bermasalah: ${error.message}_`);
+          await answerTelegramCallback(queryId, tr("cbSaveFailed", lang));
+          await editTelegramMessage(chatId, msgId, tr("msgSaveFailed", lang, error.message));
         } else {
           await supabaseBackend.rpc("delete_pending_telegram_tx", { p_chat_id: chatId });
-          await answerTelegramCallback(queryId, "Transaksi berhasil dicatat!");
-          
-          const catLabel = botCategoryLabels[pending.category_key]?.id || pending.category_key;
-          const amountStr = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(pending.amount);
+          await answerTelegramCallback(queryId, tr("cbSaveSuccess", lang));
+
+          const catLabel = getCategoryLabel(pending.category_key, lang);
+          const amountStr = formatIDR(pending.amount);
+          const typeLabel = pending.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
 
           await editTelegramMessage(
             chatId,
             msgId,
-            `✅ *Transaksi Berhasil Disimpan!*\n\n` +
-            `• *Tipe*: ${pending.type === "income" ? "📥 Pemasukan" : "📤 Pengeluaran"}\n` +
-            `• *Kategori*: ${catLabel}\n` +
-            `• *Jumlah*: *${amountStr}*\n` +
-            `• *Catatan*: "${pending.original_text}"\n\n` +
-            `_Catatan telah tersimpan secara aman ke E-Wallet Kita._ 🌸`
+            tr("msgSaveSuccess", lang, typeLabel, catLabel, amountStr, pending.original_text)
           );
         }
       } 
       else if (actionData === "tx_cancel") {
         await supabaseBackend.rpc("delete_pending_telegram_tx", { p_chat_id: chatId });
-        await answerTelegramCallback(queryId, "Pencatatan dibatalkan.");
-        await editTelegramMessage(chatId, msgId, "❌ *Pencatatan transaksi telah dibatalkan.*");
+        await answerTelegramCallback(queryId, tr("cbCancelled", lang));
+        await editTelegramMessage(chatId, msgId, tr("msgCancelled", lang));
       }
 
       res.status(200).json({ ok: true });
@@ -309,6 +568,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     if (update.message && update.message.text) {
       const chatId = update.message.chat.id;
       const text = update.message.text.trim();
+      const lang = await resolveLang(chatId);
 
       // COMMANDS CHECK
       if (text.startsWith("/")) {
@@ -316,41 +576,13 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         const command = parts[0].toLowerCase();
 
         if (command === "/start") {
-          await sendTelegramMessage(
-            chatId,
-            `Halo! Selamat datang di *E-Wallet Kita Bot* 🌸\n\n` +
-            `Saya adalah asisten pintar untuk mencatat keuangan Anda secepat mengirim chat!\n\n` +
-            `Untuk mulai mencatat, silakan *tautkan akun* Anda terlebih dahulu:\n` +
-            `1️⃣ Buka website *E-Wallet Kita*\n` +
-            `2️⃣ Masuk ke halaman *Pengaturan (Settings)*\n` +
-            `3️⃣ Cari bagian *Koneksi Bot Telegram* dan tekan *Buat Kode Tautan*\n` +
-            `4️⃣ Kirim perintah tautan berikut di sini:\n` +
-            `     \`/link <kode_5_digit>\` (Contoh: \`/link 12345\`)\n\n` +
-            `💡 Ketik \`/help\` untuk informasi bantuan commands.`
-          );
+          await sendTelegramMessage(chatId, tr("start", lang));
           res.status(200).json({ ok: true });
           return;
         }
 
         if (command === "/help") {
-          await sendTelegramMessage(
-            chatId,
-            `💡 *Panduan Asisten E-Wallet Kita Bot*:\n\n` +
-            `1️⃣ *Koneksi Akun*:\n` +
-            `     Ketik \`/link <kode_5_digit>\`\n` +
-            `     Contoh: \`/link 58204\`\n\n` +
-            `2️⃣ *Mencatat Keuangan* (Setelah Terhubung):\n` +
-            `     Cukup tulis pesan chat apa saja tentang transaksi Anda!\n` +
-            `     Contoh:\n` +
-            `     • \`Makan siang bersama bu siska 45rb\`\n` +
-            `     • \`Gaji sampingan jualan kue 1.2jt\`\n` +
-            `     • \`Belanja sayur bayam 12k\`\n` +
-            `     • \`Bayar tagihan listrik rumah 250rb\`\n\n` +
-            `3️⃣ *Daftar Perintah (Commands)*:\n` +
-            `     • \`/saldo\` - Melihat status ringkasan saldo bulan ini.\n` +
-            `     • \`/unlink\` - Memutuskan koneksi akun Telegram dari sistem.\n` +
-            `     • \`/help\` - Membuka pesan bantuan petunjuk ini.`
-          );
+          await sendTelegramMessage(chatId, tr("help", lang));
           res.status(200).json({ ok: true });
           return;
         }
@@ -359,7 +591,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         if (command === "/link") {
           const code = parts[1];
           if (!code || code.length !== 5) {
-            await sendTelegramMessage(chatId, "⚠️ Format perintah salah. Silakan kirim dalam format: `/link <kode_5_digit>` - Contoh: `/link 12345`.");
+            await sendTelegramMessage(chatId, tr("linkBadFormat", lang));
             res.status(200).json({ ok: true });
             return;
           }
@@ -375,18 +607,13 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
           if (error) {
             console.error("❌ RPC link_telegram_user error:", error);
-            await sendTelegramMessage(chatId, `⚠️ Terjadi error internal saat menautkan akun: ${error.message}`);
+            await sendTelegramMessage(chatId, tr("linkInternalError", lang, error.message));
           } else if (data && data.length > 0 && data[0]?.success) {
-            const displayName = data[0]?.display_name || "Pengguna";
-            await sendTelegramMessage(
-              chatId,
-              `🎉 *Tautan Akun Berhasil Terhubung!* ✅\n\n` +
-              `Halo, *${displayName}*! Chat ini sekarang aman terhubung dengan aplikasi *E-Wallet Kita*.\n\n` +
-              `Sekarang Anda sudah bisa langsung melakukan pencatatan keuangan otomatis. Silakan tulis transaksi pertama Anda!`
-            );
+            const displayName = data[0]?.display_name || (lang === "en" ? "User" : "Pengguna");
+            await sendTelegramMessage(chatId, tr("linkSuccess", lang, displayName));
           } else {
-            const errMsg = data && data.length > 0 && data[0]?.message ? data[0].message : "Kode tautan tidak valid atau telah kedaluwarsa.";
-            await sendTelegramMessage(chatId, `❌ *Gagal Tertaut*\n\n${errMsg}`);
+            const errMsg = data && data.length > 0 && data[0]?.message ? data[0].message : tr("linkInvalidCodeFallback", lang);
+            await sendTelegramMessage(chatId, tr("linkFailed", lang, errMsg));
           }
 
           res.status(200).json({ ok: true });
@@ -399,9 +626,9 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           });
 
           if (error) {
-            await sendTelegramMessage(chatId, `❌ Gagal memutuskan tautan: ${error.message}`);
+            await sendTelegramMessage(chatId, tr("unlinkFailed", lang, error.message));
           } else {
-            await sendTelegramMessage(chatId, "👋 *Koneksi bot Telegram dibatalkan.* Hubungan chat ini dengan E-Wallet Kita berhasil diputuskan.");
+            await sendTelegramMessage(chatId, tr("unlinkSuccess", lang));
           }
           res.status(200).json({ ok: true });
           return;
@@ -414,32 +641,23 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
           if (error) {
             console.error("❌ RPC get_telegram_user_summary error:", error);
-            await sendTelegramMessage(chatId, "⚠️ Terjadi kesalahan internal saat memuat data saldo.");
+            await sendTelegramMessage(chatId, tr("saldoError", lang));
           } else if (!data || data.length === 0 || !data[0]?.display_name) {
-            await sendTelegramMessage(chatId, "⚠️ *Akun belum terhubung.* Silakan hubungkan Telegram Anda terlebih dahulu menggunakan perintah `/link <kode>`.");
+            await sendTelegramMessage(chatId, tr("saldoNotLinked", lang));
           } else {
             const summary = data[0];
-            const incStr = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(summary.total_income);
-            const expStr = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(summary.total_expense);
-            const balStr = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(summary.net_balance);
+            const incStr = formatIDR(summary.total_income);
+            const expStr = formatIDR(summary.total_expense);
+            const balStr = formatIDR(summary.net_balance);
 
-            await sendTelegramMessage(
-              chatId,
-              `📊 *Ringkasan Keuangan Bulan Ini* 🌸\n\n` +
-              `Halo, *${summary.display_name}*! Berikut adalah laporan keuangan Anda bulan ini:\n\n` +
-              `• *Total Pemasukan*: 📥 \`${incStr}\`\n` +
-              `• *Total Pengeluaran*: 📤 \`${expStr}\`\n` +
-              `━━━━━━━━━━━━━━━━━━━━\n` +
-              `• *Saldo Tabungan*: 💰 *${balStr}*\n\n` +
-              `_Gunakan bot ini untuk terus merekam transaksi harian secara praktis!_`
-            );
+            await sendTelegramMessage(chatId, tr("saldoSummary", lang, summary.display_name, incStr, expStr, balStr));
           }
           res.status(200).json({ ok: true });
           return;
         }
 
         // Fallback for unhandled command
-        await sendTelegramMessage(chatId, "⚠️ Perintah tidak dikenali. Silakan ketik `/help` untuk bantuan.");
+        await sendTelegramMessage(chatId, tr("unknownCommand", lang));
         res.status(200).json({ ok: true });
         return;
       }
@@ -451,37 +669,24 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
       if (profileErr) {
         console.error("Profile lookup error:", profileErr);
-        await sendTelegramMessage(chatId, "⚠️ Terjadi kegagalan pencarian profil akun.");
+        await sendTelegramMessage(chatId, tr("profileLookupError", lang));
         res.status(200).json({ ok: true });
         return;
       }
 
       if (!userProfile || userProfile.length === 0) {
-        await sendTelegramMessage(
-          chatId,
-          `⚠️ *Akun Belum Terhubung*\n\n` +
-          `Maaf, kami tidak bisa mencatat transaksi Anda karena chat ini belum terhubung ke akun mana pun.\n\n` +
-          `Silakan ketik \`/link <kode_5_digit>\` untuk menautkan akun.`
-        );
+        await sendTelegramMessage(chatId, tr("notLinkedForTx", lang));
         res.status(200).json({ ok: true });
         return;
       }
 
-      await sendTelegramMessage(chatId, "🔄 _Sedang menganalisis catatan keuangan Anda..._");
+      await sendTelegramMessage(chatId, tr("analyzing", lang));
       
       try {
         const parsed = await parseFinancialQuery(text);
         
         if (parsed.amount <= 0) {
-          await sendTelegramMessage(
-            chatId,
-            `⚠️ *Gagal Membaca Nominal*\n\n` +
-            `Kami memahami transaksi Anda bermaksud mencatat sesuatu, namun nominal angka uang tidak berhasil terdeteksi.\n` +
-            `Contoh input benar:\n` +
-            `- "Makan nasi goreng *40rb*"\n` +
-            `- "Beli galon aqua *Rp 20.000*"\n\n` +
-            `Silakan ulangi kembali!`
-          );
+          await sendTelegramMessage(chatId, tr("amountNotDetected", lang));
           res.status(200).json({ ok: true });
           return;
         }
@@ -496,37 +701,33 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
         if (upsertErr) {
           console.error("❌ RPC upsert_pending_telegram_tx error:", upsertErr);
-          await sendTelegramMessage(chatId, "⚠️ Terjadi kesalahan internal saat menyimpan draf transaksi. Silakan coba lagi.");
+          await sendTelegramMessage(chatId, tr("draftSaveError", lang));
           res.status(200).json({ ok: true });
           return;
         }
 
-        const localizedCat = botCategoryLabels[parsed.category_key]?.id || parsed.category_key;
-        const currencyStr = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(parsed.amount);
+        const localizedCat = getCategoryLabel(parsed.category_key, lang);
+        const currencyStr = formatIDR(parsed.amount);
+        const typeLabel = parsed.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
 
         const promptReplyMarkup = {
           inline_keyboard: [
             [
-              { text: "✅ Benar, Simpan", callback_data: "tx_confirm" },
-              { text: "❌ Batalkan", callback_data: "tx_cancel" }
+              { text: tr("btnConfirm", lang), callback_data: "tx_confirm" },
+              { text: tr("btnCancel", lang), callback_data: "tx_cancel" }
             ]
           ]
         };
 
         await sendTelegramMessage(
           chatId,
-          `📝 *Draf Catatan Transaksi*\n` +
-          `Apakah rincian keuangan berikut sudah sesuai?\n\n` +
-          `• *Tipe*: ${parsed.type === "income" ? "📥 Pemasukan" : "📤 Pengeluaran"}\n` +
-          `• *Kategori*: ${localizedCat}\n` +
-          `• *Nominal*: *${currencyStr}*\n` +
-          `• *Catatan*: "${parsed.original_text}"`,
+          tr("draftPrompt", lang, typeLabel, localizedCat, currencyStr, parsed.original_text),
           promptReplyMarkup
         );
 
       } catch (parseError: any) {
         console.error("Parse Error:", parseError);
-        await sendTelegramMessage(chatId, "⚠️ Maaf, asisten parsing kami mengalami kendala teknis sementara. Mohon coba ulangi beberapa saat lagi.");
+        await sendTelegramMessage(chatId, tr("parseError", lang));
       }
 
       res.status(200).json({ ok: true });
