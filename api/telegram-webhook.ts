@@ -1,7 +1,27 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Type } from '@google/genai';
-import { parseAmountFromString } from '../src/lib/parserUtils';
+
+// Parse Indonesian amounts (k, rb, jt, etc)
+function parseAmountFromString(text: string): number {
+  const cleaned = text.toLowerCase().replace(/\s+/g, '').replace(/,/g, '.');
+  const regex = /([\d.]+)\s*(jt|juta|rb|ribu|k)?/i;
+  const match = cleaned.match(regex);
+  if (!match) return 0;
+  
+  const numValue = parseFloat(match[1]);
+  const suffix = match[2];
+  
+  if (!suffix) return isNaN(numValue) ? 0 : numValue;
+  
+  if (suffix === 'jt' || suffix === 'juta') {
+    return Math.round(numValue * 1000000);
+  }
+  if (suffix === 'rb' || suffix === 'ribu' || suffix === 'k') {
+    return Math.round(numValue * 1000);
+  }
+  return isNaN(numValue) ? 0 : numValue;
+}
 
 // Initialize Supabase
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
