@@ -5,61 +5,87 @@ import { supabase } from '../lib/supabase';
 export const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string[]>([]);
+
+  const log = (msg: string) => {
+    console.log('[AuthCallback]', msg);
+    setDebugInfo(prev => [...prev, msg]);
+  };
 
   useEffect(() => {
     let isMounted = true;
+    let settled = false;
 
-    const finish = (session: any) => {
-      if (!isMounted) return;
+    const finish = (session: any, source: string) => {
+      if (!isMounted || settled) return;
       if (session) {
+        settled = true;
+        log(`Session established via ${source}. Redirecting...`);
         navigate('/dashboard', { replace: true });
       }
     };
 
+    const fail = (msg: string) => {
+      if (!isMounted || settled) return;
+      settled = true;
+      log(`FAILED: ${msg}`);
+      setErrorMsg(msg);
+      setTimeout(() => navigate('/login', { replace: true }), 4000);
+    };
+
     const run = async () => {
-      const code = new URLSearchParams(window.location.search).get('code');
-      const hasHashTokens = window.location.hash.includes('access_token');
+      try {
+        const code = new URLSearchParams(window.location.search).get('code');
+        const hasHashTokens = window.location.hash.includes('access_token');
+        log(`code present: ${!!code} | hash tokens: ${hasHashTokens}`);
 
-      // Case 1: PKCE-style return -> we got a ?code= param that must be
-      // manually exchanged for a session.
-      if (code) {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          console.error('exchangeCodeForSession error:', error);
-          if (isMounted) setErrorMsg(error.message);
-          setTimeout(() => navigate('/login', { replace: true }), 2000);
-          return;
+        if (code) {
+          try {
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+            if (error) {
+              fail(`exchangeCodeForSession returned error: ${error.message}`);
+              return;
+            }
+            finish(data.session, 'exchangeCodeForSession');
+            return;
+          } catch (e: any) {
+            fail(`exchangeCodeForSession threw: ${e?.message || String(e)}`);
+            return;
+          }
         }
-        finish(data.session);
-        return;
-      }
 
-      // Case 2: Implicit-style return -> tokens already in the URL hash.
-      // The Supabase client (detectSessionInUrl: true) auto-parses this on
-      // its own, so we just need to wait for it and read the result.
-      if (hasHashTokens) {
-        const { data: { session } } = await supabase.auth.getSession();
-        finish(session);
-        return;
-      }
+        // No code in query — check if session already exists (hash flow
+        // already auto-processed by detectSessionInUrl, or race with
+        // AuthContext's listener).
+        try {
+          const { data: { session }, error } = await supabase.auth.getSession();
+          if (error) {
+            log(`getSession error (non-fatal): ${error.message}`);
+          }
+          if (session) {
+            finish(session, 'getSession');
+            return;
+          }
+        } catch (e: any) {
+          log(`getSession threw: ${e?.message || String(e)}`);
+        }
 
-      // Case 3: Neither — maybe session was already established by the time
-      // we got here (race with AuthContext's own listener), or genuinely
-      // nothing to process.
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        finish(session);
-      } else {
-        if (isMounted) setErrorMsg('No code or token found in the callback URL.');
-        setTimeout(() => navigate('/login', { replace: true }), 2500);
+        // Nothing worked yet — give the async onAuthStateChange listener a
+        // few seconds to fire before declaring failure.
+        setTimeout(() => {
+          if (!settled) {
+            fail('Timed out: no code, no hash session, no auth event after 6s.');
+          }
+        }, 6000);
+      } catch (e: any) {
+        fail(`Unexpected error in run(): ${e?.message || String(e)}`);
       }
     };
 
-    // Also listen for the async auto-detection in case it resolves slightly
-    // later than our manual check above.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      log(`onAuthStateChange: ${event}`);
       if (event === 'SIGNED_IN' && session) {
-        finish(session);
+        finish(session, 'onAuthStateChange');
       }
     });
 
@@ -72,11 +98,17 @@ export const AuthCallback: React.FC = () => {
   }, [navigate]);
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-slate-950 text-white gap-2">
+    <div className="flex flex-col items-center justify-center h-screen bg-slate-950 text-white gap-3 p-4">
       <div>Completing login...</div>
       {errorMsg && (
-        <div className="text-red-400 text-xs max-w-xs text-center">{errorMsg}</div>
+        <div className="text-red-400 text-xs max-w-sm text-center border border-red-800 rounded p-2 bg-red-950/30">
+          {errorMsg}
+        </div>
       )}
+      <div className="bg-black text-green-400 p-3 rounded w-full max-w-md font-mono text-[10px] overflow-auto max-h-64 border border-green-800">
+        {debugInfo.length === 0 && <div className="text-slate-500">Waiting...</div>}
+        {debugInfo.map((d, i) => <div key={i} className="break-all">{'>'} {d}</div>)}
+      </div>
     </div>
   );
 };
