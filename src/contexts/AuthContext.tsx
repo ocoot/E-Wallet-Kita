@@ -24,15 +24,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("AuthContext: getSession", session);
       setSession(session);
       setUser(session?.user ?? null);
-      // Wait 2s to allow session processing (debug/race condition fix)
-      setTimeout(() => setLoading(false), 2000);
+      
+      // If we are on the auth callback page, don't finish loading yet.
+      // Let the AuthCallback component handle the redirection.
+      if (window.location.pathname === '/auth/callback') {
+        console.log("AuthContext: On callback route, holding loading state...");
+        return;
+      }
+      
+      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("AuthContext: onAuthStateChange", event, session);
       setSession(session);
       setUser(session?.user ?? null);
-      setTimeout(() => setLoading(false), 2000);
+      
+      if (event === 'SIGNED_IN') {
+        setLoading(false);
+      }
     });
 
     return () => subscription.unsubscribe();

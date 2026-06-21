@@ -14,30 +14,82 @@ export const AuthCallback: React.FC = () => {
   useEffect(() => {
     const check = async () => {
       addLog('Running check...');
-      addLog(`Hash present: ${!!window.location.hash}`);
-      addLog(`Hash excerpt: ${window.location.hash.substring(0, 30)}...`);
+      const hash = window.location.hash;
+      addLog(`Hash present: ${!!hash}`);
+      
+      if (hash && hash.includes('access_token=')) {
+        addLog('OAuth token detected in hash. Attempting manual forced parse...');
+        try {
+          const params = new URLSearchParams(hash.substring(1));
+          const accessToken = params.get('access_token');
+          const refreshToken = params.get('refresh_token');
+          
+          if (accessToken) {
+            addLog('Found access_token. Forcing session...');
+            const { data: setData, error: setError } = await supabase.auth.setSession({
+              access_token: accessToken,
+              refresh_token: refreshToken || '',
+            });
+            
+            if (setError) {
+              addLog(`setSession Error: ${setError.message}`);
+            } else if (setData.session) {
+              addLog('Session FORCED successfully. Redirecting...');
+              setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
+              return;
+            }
+          }
+        } catch (e: any) {
+          addLog(`Manual parse error: ${e.message}`);
+        }
+      }
+
       addLog(`LocalStorage Auth Keys: ${Object.keys(localStorage).filter(k => k.includes('auth')).join(', ')}`);
 
       const { data } = await supabase.auth.getSession();
-
       if (data.session) {
-        addLog('Session found immediately. Redirecting in 2s...');
-        setTimeout(() => navigate('/dashboard', { replace: true }), 2000);
+        addLog('Session found via getSession. Redirecting...');
+        setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
         return;
       }
 
-      addLog('No session yet. Waiting 5 seconds for background processing...');
+      addLog('No session yet. Waiting for background processing or events...');
       
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        addLog(`Auth Event: ${event}`);
+        if (session) {
+          addLog('Session received via event! Redirecting...');
+          subscription.unsubscribe();
+          setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
+        }
+      });
+
       setTimeout(async () => {
         const { data: delayedData } = await supabase.auth.getSession();
         addLog(`Session exists after 5s: ${delayedData.session ? 'YES' : 'NO'}`);
-        addLog(`Storage Keys: ${Object.keys(localStorage).join(', ')}`);
-
+        
         if (delayedData.session) {
           addLog('Session found! Redirecting...');
-          setTimeout(() => navigate('/dashboard', { replace: true }), 1500);
+          subscription.unsubscribe();
+          setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
         } else {
-          addLog('STILL NO SESSION. Failing back to login in 5s...');
+          addLog('STILL NO SESSION. Checking for "code" in URL...');
+          const code = new URLSearchParams(window.location.search).get('code');
+          if (code) {
+             addLog('Found "code" param. Manually exchanging...');
+             const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+             if (exchangeError) {
+                addLog(`Exchange Error: ${exchangeError.message}`);
+             } else if (exchangeData.session) {
+                addLog('Exchange Success! Redirecting...');
+                subscription.unsubscribe();
+                setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
+                return;
+             }
+          }
+          
+          addLog('FATAL: Authentication failed. Returning to login in 5s...');
+          subscription.unsubscribe();
           setTimeout(() => navigate('/login', { replace: true }), 5000);
         }
       }, 5000);
