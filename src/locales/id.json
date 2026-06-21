@@ -54,7 +54,12 @@
     "confirm_google_title": "Masuk via Google?",
     "confirm_google_desc": "Gunakan Akun Google terintegrasi untuk masuk secara instan dan mengamankan progres dompet Anda.",
     "toast_blank_name": "Nama harus diisi untuk proses pendaftaran",
-    "toast_signin_success": "Masuk berhasil!"
+    "toast_signin_success": "Masuk berhasil!",
+    "or_divider_instant": "Atau Sesi Instan",
+    "confirm_continue": "Ya, Lanjutkan",
+    "confirm_forgot_password_desc": "Apakah Anda yakin ingin mengirim tautan atur ulang kata sandi ke email {email}?",
+    "loading_signup_desc": "Mendaftarkan dan mengonfigurasi dompet baru Anda...",
+    "loading_signin_desc": "Menghubungkan akun dan memuat lembar transaksi..."
   },
   "dashboard": {
     "welcome": "Halo, {name} 👋",
@@ -108,7 +113,9 @@
     "col_source": "Sumber",
     "col_actions": "Aksi",
     "btn_delete_all": "Kosongkan Riwayat",
-    "search_placeholder": "Cari berdasarkan catatan..."
+    "search_placeholder": "Cari berdasarkan catatan...",
+    "ledger_sync_title": "Menyelaraskan Ledger",
+    "ledger_sync_desc": "Menghapus entri riwayat dan memperbarui saldo utama dompet Anda..."
   },
   "categories": {
     "salary": "Gaji Masuk",
@@ -171,7 +178,8 @@
     "unlink_telegram_desc": "Apakah Anda yakin ingin memutuskan integrasi Telegram? Anda tidak akan bisa mencatat via chat sampai dipasang ulang.",
     "profile_update_title": "Perbarui Nama Profil?",
     "profile_update_desc": "Ganti nama tampilan utama Anda menjadi '{name}'?",
-    "profile_update_confirm": "Perbarui Nama"
+    "profile_update_confirm": "Perbarui Nama",
+    "delete_item_confirm": "Hapus Log"
   },
   "toast": {
     "error_general": "Terjadi kesalahan internal. Silakan coba kembali.",

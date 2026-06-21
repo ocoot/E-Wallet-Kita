@@ -458,7 +458,7 @@ export const History: React.FC<HistoryProps> = ({
           note: deleteTargetId ? (transactions.find(t => t.id === deleteTargetId)?.note || t(`categories.${transactions.find(t => t.id === deleteTargetId)?.category}`)) : ""
         })}
         type="danger"
-        confirmLabel="Hapus Log"
+        confirmLabel={t("confirm.delete_item_confirm")}
         cancelLabel={t("common.cancel")}
         onConfirm={executeDeleteItem}
         onCancel={() => {
@@ -568,10 +568,10 @@ export const History: React.FC<HistoryProps> = ({
               </div>
 
               <h3 className="font-sans font-bold text-base text-white mb-2 light_sakura:text-slate-900">
-                Menyelaraskan Ledger
+                {t("history.ledger_sync_title")}
               </h3>
               <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-600">
-                Menghapus entri riwayat dan memperbarui saldo utama dompet Anda...
+                {t("history.ledger_sync_desc")}
               </p>
             </motion.div>
           </motion.div>

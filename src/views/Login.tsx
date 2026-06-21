@@ -64,7 +64,7 @@ export const Login: React.FC = () => {
     setConfirmModal({
       isOpen: true,
       title: t("auth.forgot_password_title"),
-      description: `Apakah Anda yakin ingin mengirim tautan atur ulang kata sandi ke email ${email}?`,
+      description: t("auth.confirm_forgot_password_desc", { email }),
       type: "info",
       onConfirm: async () => {
         audioFeedback.playClick();
@@ -407,7 +407,7 @@ export const Login: React.FC = () => {
             <div className="relative my-6 flex items-center justify-center">
               <div className="absolute inset-x-0 h-px bg-slate-800 light_sakura:bg-rose-100" />
               <span className="relative z-10 px-4 font-sans text-[10px] uppercase font-semibold text-gray-500 bg-slate-900 light_sakura:bg-white">
-                Atau Sesi Instan
+                {t("auth.or_divider_instant")}
               </span>
             </div>
 
@@ -463,7 +463,7 @@ export const Login: React.FC = () => {
         title={confirmModal.title}
         description={confirmModal.description}
         type={confirmModal.type}
-        confirmLabel="Ya, Lanjutkan"
+        confirmLabel={t("auth.confirm_continue")}
         cancelLabel={t("common.cancel")}
         onConfirm={confirmModal.onConfirm}
         onCancel={() => {
@@ -497,8 +497,8 @@ export const Login: React.FC = () => {
               </h3>
               <p className="font-sans text-xs text-slate-400 light_sakura:text-slate-600 leading-relaxed">
                 {isSignUp 
-                  ? "Mendaftarkan dan mengonfigurasi dompet baru Anda..." 
-                  : "Menghubungkan akun dan memuat lembar transaksi..."}
+                  ? t("auth.loading_signup_desc") 
+                  : t("auth.loading_signin_desc")}
               </p>
             </motion.div>
           </motion.div>

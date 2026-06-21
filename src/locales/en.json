@@ -54,7 +54,12 @@
     "confirm_google_title": "Sign In via Google?",
     "confirm_google_desc": "Use your integrated Google Account to sign in instantly and secure your wallet progress.",
     "toast_blank_name": "Full name is required for registration",
-    "toast_signin_success": "Signed in successfully!"
+    "toast_signin_success": "Signed in successfully!",
+    "or_divider_instant": "Or Instant Session",
+    "confirm_continue": "Yes, Continue",
+    "confirm_forgot_password_desc": "Are you sure you want to send a password reset link to email {email}?",
+    "loading_signup_desc": "Registering and configuring your new wallet...",
+    "loading_signin_desc": "Connecting your account and loading transaction ledger..."
   },
   "dashboard": {
     "welcome": "Welcome back, {name} 👋",
@@ -108,7 +113,9 @@
     "col_source": "Source",
     "col_actions": "Actions",
     "btn_delete_all": "Empty Entire History",
-    "search_placeholder": "Search by note description..."
+    "search_placeholder": "Search by note description...",
+    "ledger_sync_title": "Synchronizing Ledger",
+    "ledger_sync_desc": "Erase history entries and sync wallet main balances..."
   },
   "categories": {
     "salary": "Salary Inflow",
@@ -171,7 +178,8 @@
     "unlink_telegram_desc": "Are you sure you want to disconnect Telegram? Interactive chat logging will be disabled.",
     "profile_update_title": "Update Main Display Name?",
     "profile_update_desc": "Change your profile name to '{name}'?",
-    "profile_update_confirm": "Update Name"
+    "profile_update_confirm": "Update Name",
+    "delete_item_confirm": "Delete Log"
   },
   "toast": {
     "error_general": "A technical error occurred. Please try again.",

@@ -538,7 +538,7 @@ export const Settings: React.FC<SettingsProps> = ({
         title={t("confirm.unlink_telegram_title")}
         description={t("confirm.unlink_telegram_desc")}
         type="danger"
-        confirmLabel="Unlink Bot"
+        confirmLabel={t("settings.btn_unlink")}
         cancelLabel={t("common.cancel")}
         onConfirm={executeUnlinkTelegram}
         onCancel={() => {
