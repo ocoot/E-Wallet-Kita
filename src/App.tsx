@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { LanguageProvider } from "./contexts/LanguageContext";
+import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { ToastProvider, useToast } from "./contexts/ToastContext";
 import { useAuth } from "./contexts/AuthContext";
@@ -20,6 +20,7 @@ const MainLayout: React.FC = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { t } = useLanguage();
   
   const [transactionsUpdatedTrigger, setTransactionsUpdatedTrigger] = useState(0);
 
@@ -43,7 +44,7 @@ const MainLayout: React.FC = () => {
     try {
       await signOut();
       navigate('/login');
-      showToast("Logged out successfully", "success");
+      showToast(t("toast.logout_done"), "success");
     } catch (e: any) {
       showToast(e.message, "error");
     } finally {
@@ -87,11 +88,11 @@ const MainLayout: React.FC = () => {
       {/* Safety Sign-out Modal dialog prompt */}
       <Modal
         isOpen={isSignoutModalOpen}
-        title="Logout"
-        description="Are you sure you want to end your session?"
+        title={t("confirm.logout_title")}
+        description={t("confirm.logout_desc")}
         type="warning"
-        confirmLabel="Logout"
-        cancelLabel="Cancel"
+        confirmLabel={t("nav.logout")}
+        cancelLabel={t("common.cancel")}
         onConfirm={executeSignout}
         onCancel={() => setIsSignoutModalOpen(false)}
       />

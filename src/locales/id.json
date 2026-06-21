@@ -38,7 +38,23 @@
     "confirm_password_label": "Konfirmasi Kata Sandi Baru",
     "reset_submit_btn": "Perbarui Kata Sandi",
     "reset_success_toast": "Kata sandi berhasil diperbarui!",
-    "passwords_dont_match": "Kata sandi tidak cocok!"
+    "passwords_dont_match": "Kata sandi tidak cocok!",
+    "guest_badge": "Mode Tamu",
+    "placeholder_email": "email@domain.com",
+    "placeholder_display_name": "Ketik nama Anda...",
+    "label_display_name": "Nama Lengkap / Tampilan",
+    "finishing_up": "Sedang Menyiapkan",
+    "sync_dashboard": "Sinkronisasi dasbor keuangan Anda...",
+    "confirm_signup_title": "Konfirmasi Daftar Akun",
+    "confirm_login_title": "Konfirmasi Masuk Sesi",
+    "confirm_signup_desc": "Apakah Anda yakin ingin mendaftarkan akun baru dengan email {email}?",
+    "confirm_login_desc": "Apakah Anda yakin ingin masuk sesi menggunakan email {email}?",
+    "confirm_guest_title": "Masuk Mode Tamu (Guest)?",
+    "confirm_guest_desc": "Data Anda akan disimpan secara anonim di database awan (Cloud). Anda dapat beralih ke akun permanen nanti untuk keamanan penuh.",
+    "confirm_google_title": "Masuk via Google?",
+    "confirm_google_desc": "Gunakan Akun Google terintegrasi untuk masuk secara instan dan mengamankan progres dompet Anda.",
+    "toast_blank_name": "Nama harus diisi untuk proses pendaftaran",
+    "toast_signin_success": "Masuk berhasil!"
   },
   "dashboard": {
     "welcome": "Halo, {name} 👋",
@@ -46,15 +62,19 @@
     "income": "Pemasukan",
     "expense": "Pengeluaran",
     "balance": "Saldo Bersih",
+    "this_month": "Bulan Ini",
+    "net_balance_desc": "Sisa tabungan bersih Anda",
     "chart_title": "Tren Pengeluaran vs Pemasukan Hari Ini",
     "chart_no_data": "Tulis transaksi manual atau catat pakai AI cepat di bawah ini untuk melihat grafik!",
     "ai_box_title": "Pecatataan Cepat berbasis AI (Gemini)",
+    "ai_box_desc": "Metode utama untuk pencatatan cepat. Cukup ketik teks transaksi bebas Anda apa adanya di bawah ini:",
     "ai_box_placeholder": "Contoh: \"Makan siang 25rb\" atau \"Gaji 1.5jt\" atau \"Tagihan listrik 350ribu\"",
     "ai_box_btn": "Proses dengan AI",
     "quick_input_sec": "Pencatatan AI"
   },
   "transaction": {
     "add_title": "Catat Transaksi Manual",
+    "add_desc": "Masukkan detail transaksi arus kas rumah tangga Anda secara rapi.",
     "edit_title": "Koreksi Catatan",
     "label_type": "Jenis Transaksi",
     "label_category": "Kategori",
@@ -74,8 +94,12 @@
   },
   "history": {
     "title": "Riwayat Transaksi Keuangan",
+    "desc": "Mencakup daftar pemasukan dan pengeluaran Anda tiap bulan secara urut.",
     "filter_month": "Pilih Bulan & Tahun",
+    "search_label": "Cari Deskripsi",
     "page_size": "Tampilkan baris",
+    "show_all": "Tampilkan Semua (All)",
+    "pagination_info": "Tampil {current} dari {total} baris logs",
     "no_transactions": "Belum ada catatan transaksi di bulan ini.",
     "col_date": "Tanggal",
     "col_type": "Tipe",
@@ -97,6 +121,7 @@
   },
   "settings": {
     "title": "Pengaturan Sistem",
+    "desc": "Kelola preferensi bahasa, tema, integrasi, dan akun permanent Anda.",
     "profile_section": "Profil Pengguna",
     "display_name": "Nama Tampilan",
     "btn_update_profile": "Perbarui Nama",
@@ -120,7 +145,8 @@
     "diagnostics_desc": "Verifikasi akurasi regulasi parser singkatan nominal secara lokal.",
     "btn_run_tests": "Jalankan Tes Parser",
     "test_input": "Input Teks",
-    "test_output": "Jumlah Dolar/Rupiah Terdeteksi"
+    "test_output": "Jumlah Dolar/Rupiah Terdeteksi",
+    "btn_simulate_bot": "Simulasikan Kirim /link di Bot"
   },
   "common": {
     "cancel": "Batal",
@@ -132,6 +158,8 @@
     "no": "Tidak"
   },
   "confirm": {
+    "logout_title": "Keluar Sesi",
+    "logout_desc": "Apakah Anda yakin ingin mengakhiri sesi Anda?",
     "delete_item_title": "Hapus Catatan Transaksi?",
     "delete_item_desc": "Tindakan ini tidak bisa dibatalkan. Menghapus transaksi senilai {amount} untuk '{note}'.",
     "delete_all_title": "⚠️ KOSONGKAN SELURUH CATATAN?",
@@ -142,7 +170,8 @@
     "unlink_telegram_title": "Putuskan Bot Telegram?",
     "unlink_telegram_desc": "Apakah Anda yakin ingin memutuskan integrasi Telegram? Anda tidak akan bisa mencatat via chat sampai dipasang ulang.",
     "profile_update_title": "Perbarui Nama Profil?",
-    "profile_update_desc": "Ganti nama tampilan utama Anda menjadi '{name}'?"
+    "profile_update_desc": "Ganti nama tampilan utama Anda menjadi '{name}'?",
+    "profile_update_confirm": "Perbarui Nama"
   },
   "toast": {
     "error_general": "Terjadi kesalahan internal. Silakan coba kembali.",
@@ -160,7 +189,12 @@
     "invalid_date": "Tanggal transaksi tidak boleh berupa masa depan.",
     "welcome_auth": "Selamat datang! Anda sukses masuk sesi.",
     "welcome_signup": "Registrasi berhasil! Sesi login Anda telah siap.",
-    "logout_done": "Sesi Anda telah diakhiri."
+    "logout_done": "Sesi Anda telah diakhiri.",
+    "toast_blank_profile_name": "Nama profil tidak boleh kosong",
+    "toast_test_success": "Tes unit diagnostik parser berjalan dengan sukses!",
+    "toast_generate_code_error": "Gagal membuat kode penghubung: {message}",
+    "toast_simulating_webhook": "Memproses simulasi pengiriman webhook dari bot...",
+    "toast_unlinking_telegram": "Memutuskan koneksi bot Telegram..."
   },
   "months": {
     "m1": "Januari",

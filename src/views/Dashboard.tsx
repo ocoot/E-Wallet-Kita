@@ -217,7 +217,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {currentUser.is_guest && (
           <div className="self-start md:self-center bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-2 font-sans text-xs font-semibold text-amber-500 flex items-center gap-2">
             <Info size={14} />
-            <span>Mode Tamu</span>
+            <span>{t("auth.guest_badge")}</span>
           </div>
         )}
       </div>
@@ -244,7 +244,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {formatIDR(summary.income)}
           </p>
           <p className="font-sans text-[11px] text-gray-400 mt-1 light_sakura:text-slate-500">
-            Bulan Ini
+            {t("dashboard.this_month")}
           </p>
         </motion.div>
 
@@ -267,7 +267,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {formatIDR(summary.expense)}
           </p>
           <p className="font-sans text-[11px] text-gray-400 mt-1 light_sakura:text-slate-500">
-            Bulan Ini
+            {t("dashboard.this_month")}
           </p>
         </motion.div>
 
@@ -290,7 +290,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             {formatIDR(summary.balance)}
           </p>
           <p className="font-sans text-[11px] text-gray-400 mt-1 light_sakura:text-slate-500 relative z-10">
-            Sisa tabungan bersih Anda
+            {t("dashboard.net_balance_desc")}
           </p>
 
           {/* Sparkline Vector Trend Chart */}
@@ -403,7 +403,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </h3>
         </div>
         <p className="font-sans text-xs text-gray-400 mb-4 leading-relaxed light_sakura:text-slate-500">
-          Metode teras untuk input cepat. Cukup ketik teks transaksi bebas Anda apa adanya di bawah ini:
+          {t("dashboard.ai_box_desc")}
         </p>
 
         <form onSubmit={handleAiParse} className="relative flex items-center">

@@ -38,7 +38,23 @@
     "confirm_password_label": "Confirm New Password",
     "reset_submit_btn": "Update Password",
     "reset_success_toast": "Password updated successfully!",
-    "passwords_dont_match": "Passwords do not match!"
+    "passwords_dont_match": "Passwords do not match!",
+    "guest_badge": "Guest Mode",
+    "placeholder_email": "email@domain.com",
+    "placeholder_display_name": "Type your name...",
+    "label_display_name": "Full Name / Display Name",
+    "finishing_up": "Finishing up",
+    "sync_dashboard": "Synchronizing your financial dashboard...",
+    "confirm_signup_title": "Confirm Account Registration",
+    "confirm_login_title": "Confirm Session Sign In",
+    "confirm_signup_desc": "Are you sure you want to sign up a new account with email {email}?",
+    "confirm_login_desc": "Are you sure you want to sign in using email {email}?",
+    "confirm_guest_title": "Sign In as Guest?",
+    "confirm_guest_desc": "Your data will be stored anonymously in the cloud database. You can upgrade to a permanent account later for full security.",
+    "confirm_google_title": "Sign In via Google?",
+    "confirm_google_desc": "Use your integrated Google Account to sign in instantly and secure your wallet progress.",
+    "toast_blank_name": "Full name is required for registration",
+    "toast_signin_success": "Signed in successfully!"
   },
   "dashboard": {
     "welcome": "Welcome back, {name} 👋",
@@ -46,15 +62,19 @@
     "income": "Income",
     "expense": "Expense",
     "balance": "Net Balance",
+    "this_month": "This Month",
+    "net_balance_desc": "Your net savings remaining balance",
     "chart_title": "Income vs Expense Visual Trends",
     "chart_no_data": "Log a manual transaction or use AI quick insert below to display visual trends!",
     "ai_box_title": "AI Quick Financial Entry (Gemini)",
+    "ai_box_desc": "The primary method for quick input. Just type your freeform transaction text as-is below:",
     "ai_box_placeholder": "Example: \"Lunch 25k\" or \"Salary 1.5jt\" or \"Electricity bill 350rb\"",
     "ai_box_btn": "Process with AI",
     "quick_input_sec": "AI Processing Box"
   },
   "transaction": {
     "add_title": "Log Manual Transaction",
+    "add_desc": "Enter your household cash flow transaction details neatly.",
     "edit_title": "Adjust Transaction",
     "label_type": "Transaction type",
     "label_category": "Category Classification",
@@ -74,8 +94,12 @@
   },
   "history": {
     "title": "Cashbook Ledger & History",
+    "desc": "Includes list of your monthly income and expenses sorted in order.",
     "filter_month": "Select Month & Year",
+    "search_label": "Search Description",
     "page_size": "Show rows",
+    "show_all": "Show All",
+    "pagination_info": "Showing {current} of {total} log entries",
     "no_transactions": "No records found for the selected month.",
     "col_date": "Date",
     "col_type": "Type",
@@ -97,6 +121,7 @@
   },
   "settings": {
     "title": "System Settings",
+    "desc": "Manage language, theme, integrations, and permanent account preferences.",
     "profile_section": "User Profile",
     "display_name": "Display Name",
     "btn_update_profile": "Save Name Changes",
@@ -120,7 +145,8 @@
     "diagnostics_desc": "Locally verify the multiplier abbreviation parser engine on sample inputs.",
     "btn_run_tests": "Run String Tests",
     "test_input": "Input String",
-    "test_output": "Parsed Numeric Amount"
+    "test_output": "Parsed Numeric Amount",
+    "btn_simulate_bot": "Simulate Bot /link Command"
   },
   "common": {
     "cancel": "Cancel",
@@ -132,6 +158,8 @@
     "no": "No"
   },
   "confirm": {
+    "logout_title": "Log Out",
+    "logout_desc": "Are you sure you want to end your session?",
     "delete_item_title": "Delete Transaction Record?",
     "delete_item_desc": "This operation is irreversible. Deleting transaction of {amount} for '{note}'.",
     "delete_all_title": "⚠️ PERMANENTLY ERASE ALL RECORDS?",
@@ -142,7 +170,8 @@
     "unlink_telegram_title": "Unlink Telegram Bot?",
     "unlink_telegram_desc": "Are you sure you want to disconnect Telegram? Interactive chat logging will be disabled.",
     "profile_update_title": "Update Main Display Name?",
-    "profile_update_desc": "Change your profile name to '{name}'?"
+    "profile_update_desc": "Change your profile name to '{name}'?",
+    "profile_update_confirm": "Update Name"
   },
   "toast": {
     "error_general": "A technical error occurred. Please try again.",
@@ -160,7 +189,12 @@
     "invalid_date": "Transaction date cannot be set in the future.",
     "welcome_auth": "Welcome! Successfully logged in.",
     "welcome_signup": "Account created! Sesi login ready.",
-    "logout_done": "Session has been terminated."
+    "logout_done": "Session has been terminated.",
+    "toast_blank_profile_name": "Profile display name cannot be blank",
+    "toast_test_success": "Diagnostic parser unit tests executed successfully!",
+    "toast_generate_code_error": "Failed to generate linking code: {message}",
+    "toast_simulating_webhook": "Processing simulated webhook event from Telegram bot...",
+    "toast_unlinking_telegram": "Disconnecting Telegram bot linkage..."
   },
   "months": {
     "m1": "January",

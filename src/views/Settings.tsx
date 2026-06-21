@@ -92,7 +92,7 @@ export const Settings: React.FC<SettingsProps> = ({
     audioFeedback.playClick();
     if (!displayName.trim()) {
       audioFeedback.playDullPluck();
-      showToast("Profile name cannot be blank", "error");
+      showToast(t("settings.toast_blank_profile_name"), "error");
       return;
     }
     setIsProfileModalOpen(true);
@@ -146,7 +146,7 @@ export const Settings: React.FC<SettingsProps> = ({
             setIsDiagnosing(false);
             setDiagnosticsProgress("0%");
             audioFeedback.playChime();
-            showToast("Parser unit tests executed cleanly!", "success");
+            showToast(t("settings.toast_test_success"), "success");
         }, 300);
     }, 300);
   };
@@ -174,7 +174,7 @@ export const Settings: React.FC<SettingsProps> = ({
       setLinkingCode(code);
       setTimerSeconds(600); // 10 minutes reset
     } catch (err: any) {
-      showToast("Gagal generate kode: " + err.message, "error");
+      showToast(t("settings.toast_generate_code_error", { message: err.message }), "error");
     }
   };
 
@@ -183,7 +183,7 @@ export const Settings: React.FC<SettingsProps> = ({
     if (!linkingCode || !user) return;
     audioFeedback.playClick();
     
-    showToast("Webhook parsing linking code...", "info");
+    showToast(t("settings.toast_simulating_webhook"), "info");
     
     setTimeout(async () => {
       try {
@@ -215,7 +215,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
   const executeUnlinkTelegram = async () => {
     setIsUnlinkModalOpen(false);
-    showToast("Unlinking Telegram bot...", "info");
+    showToast(t("settings.toast_unlinking_telegram"), "info");
 
     try {
       const { error } = await supabase
@@ -255,7 +255,7 @@ export const Settings: React.FC<SettingsProps> = ({
           {t("settings.title")}
         </h2>
         <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500 font-medium">
-          Kelola preferensi bahasa, tema, integrasi, dan akun permanent Anda.
+          {t("settings.desc")}
         </p>
       </div>
 
@@ -496,7 +496,7 @@ export const Settings: React.FC<SettingsProps> = ({
                       className="w-full cursor-pointer py-2.5 bg-teal-500/10 border border-teal-500/25 text-teal-400 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-teal-500/20 transition-all light_sakura:bg-rose-100 light_sakura:border-rose-300 light_sakura:text-rose-600"
                     >
                       <Sparkles size={14} />
-                      <span>Simulasikan Kirim `/link` di Bot</span>
+                      <span>{t("settings.btn_simulate_bot")}</span>
                     </motion.button>
                   </div>
                 )}
@@ -523,7 +523,7 @@ export const Settings: React.FC<SettingsProps> = ({
         title={t("confirm.profile_update_title")}
         description={t("confirm.profile_update_desc", { name: displayName })}
         type="info"
-        confirmLabel="Perbarui Nama"
+        confirmLabel={t("confirm.profile_update_confirm")}
         cancelLabel={t("common.cancel")}
         onConfirm={executeUpdateProfileName}
         onCancel={() => {

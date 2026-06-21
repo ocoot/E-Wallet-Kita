@@ -2,9 +2,11 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Loader2 } from 'lucide-react';
+import { useLanguage } from '../contexts/LanguageContext';
 
 export const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   useEffect(() => {
     const handleAuthCallback = async () => {
@@ -64,8 +66,8 @@ export const AuthCallback: React.FC = () => {
       <div className="flex flex-col items-center gap-4 animate-in fade-in duration-700">
         <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
         <div className="text-center space-y-1">
-          <h1 className="text-lg font-medium tracking-tight">Finishing up</h1>
-          <p className="text-slate-400 text-sm">Synchronizing your financial dashboard...</p>
+          <h1 className="text-lg font-medium tracking-tight">{t("auth.finishing_up")}</h1>
+          <p className="text-slate-400 text-sm">{t("auth.sync_dashboard")}</p>
         </div>
       </div>
     </div>

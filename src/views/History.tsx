@@ -213,7 +213,7 @@ export const History: React.FC<HistoryProps> = ({
             {t("history.title")}
           </h2>
           <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
-            Mencakup daftar pemasukan dan pengeluaran Anda tiap bulan secara urut.
+            {t("history.desc")}
           </p>
         </div>
         
@@ -257,7 +257,7 @@ export const History: React.FC<HistoryProps> = ({
         {/* Text Filter search bar */}
         <div className="space-y-1.5">
           <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
-            Cari Deskripsi
+            {t("history.search_label")}
           </label>
           <div className="relative">
             <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
@@ -299,7 +299,7 @@ export const History: React.FC<HistoryProps> = ({
             <option value={15}>15</option>
             <option value={20}>20</option>
             <option value={50}>50</option>
-            <option value="all">Tampilkan Semua (All)</option>
+            <option value="all">{t("history.show_all")}</option>
           </select>
         </div>
 
@@ -413,7 +413,7 @@ export const History: React.FC<HistoryProps> = ({
         {totalPages > 1 && (
           <div className="p-4 bg-slate-950/20 border-t border-slate-800/50 flex items-center justify-between font-sans text-xs text-gray-400 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
             <span>
-              Tampil {paginatedTransactions.length} dari {totalItems} baris logs
+              {t("history.pagination_info", { current: paginatedTransactions.length, total: totalItems })}
             </span>
 
             {/* Pagination Controls */}

@@ -134,7 +134,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
           {t("transaction.add_title")}
         </h2>
         <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
-          Masukkan detail transaksi arus kas rumah tangga Anda secara rapi.
+          {t("transaction.add_desc")}
         </p>
       </div>
 

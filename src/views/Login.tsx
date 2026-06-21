@@ -106,16 +106,16 @@ export const Login: React.FC = () => {
     if (isSignUp && !displayName.trim()) {
       audioFeedback.playDullPluck();
       triggerShake();
-      showToast("Name is required for registration", "error");
+      showToast(t("auth.toast_blank_name"), "error");
       return;
     }
 
     setConfirmModal({
       isOpen: true,
-      title: isSignUp ? "Konfirmasi Daftar Akun" : "Konfirmasi Masuk Sesi",
+      title: isSignUp ? t("auth.confirm_signup_title") : t("auth.confirm_login_title"),
       description: isSignUp 
-        ? `Apakah Anda yakin ingin mendaftarkan akun baru dengan email ${email}?`
-        : `Apakah Anda yakin ingin masuk sesi menggunakan email ${email}?`,
+        ? t("auth.confirm_signup_desc", { email })
+        : t("auth.confirm_login_desc", { email }),
       type: "info",
       onConfirm: async () => {
         audioFeedback.playClick();
@@ -130,11 +130,11 @@ export const Login: React.FC = () => {
               options: { data: { full_name: displayName } } 
             });
             if (error) throw error;
-            showToast("Daftar berhasil! Silahkan periksa email Anda jika diperlukan.", "success");
+            showToast(t("toast.welcome_signup"), "success");
           } else {
             const { error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) throw error;
-            showToast("Masuk berhasil!", "success");
+            showToast(t("auth.toast_signin_success"), "success");
             navigate("/dashboard");
           }
         } catch(e: any) {
@@ -150,8 +150,8 @@ export const Login: React.FC = () => {
     audioFeedback.playClick();
     setConfirmModal({
       isOpen: true,
-      title: "Masuk Mode Tamu (Guest)?",
-      description: "Data Anda akan disimpan secara anonim di database awan (Cloud). Anda dapat beralih ke akun permanen nanti untuk keamanan penuh.",
+      title: t("auth.confirm_guest_title"),
+      description: t("auth.confirm_guest_desc"),
       type: "warning",
       onConfirm: async () => {
         audioFeedback.playClick();
@@ -174,8 +174,8 @@ export const Login: React.FC = () => {
     audioFeedback.playClick();
     setConfirmModal({
       isOpen: true,
-      title: "Masuk via Google?",
-      description: "Gunakan Akun Google terintegrasi untuk masuk secara instan dan mengamankan progres dompet Anda.",
+      title: t("auth.confirm_google_title"),
+      description: t("auth.confirm_google_desc"),
       type: "info",
       onConfirm: async () => {
         audioFeedback.playClick();
@@ -233,7 +233,7 @@ export const Login: React.FC = () => {
                   <input
                     type="email"
                     required
-                    placeholder="email@domain.com"
+                    placeholder={t("auth.placeholder_email")}
                     disabled={isLoading}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -295,16 +295,16 @@ export const Login: React.FC = () => {
               {isSignUp && (
                 <div className="space-y-1.5">
                   <label className="font-sans text-xs font-semibold tracking-wider text-gray-400 light_sakura:text-slate-600 uppercase">
-                    Nama Lengkap / Tampilan
+                    {t("auth.label_display_name")}
                   </label>
                   <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+                     <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
                       <User size={16} />
                     </span>
                     <input
                       type="text"
                       required
-                      placeholder="Ketik nama Anda..."
+                      placeholder={t("auth.placeholder_display_name")}
                       disabled={isLoading}
                       value={displayName}
                       onChange={(e) => setDisplayName(e.target.value)}
@@ -325,7 +325,7 @@ export const Login: React.FC = () => {
                   <input
                     type="email"
                     required
-                    placeholder="email@domain.com"
+                    placeholder={t("auth.placeholder_email")}
                     disabled={isLoading}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
