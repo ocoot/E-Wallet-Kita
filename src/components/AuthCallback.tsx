@@ -1,43 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 export const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
-  const [logs, setLogs] = useState<string[]>([]);
-  const addLog = (msg: string) => setLogs(prev => [...prev, msg]);
 
   useEffect(() => {
-    const handleCallback = async () => {
-      const code = new URLSearchParams(window.location.search).get('code');
-      addLog(`URL Param 'code': ${!!code ? 'Found' : 'Missing'}`);
-      
-      if (!code) {
-        addLog('Error: No code found in URL');
-        return;
+    // IMPORTANT: Do NOT manually call exchangeCodeForSession() here.
+    // Supabase's Google OAuth flow completes the code exchange with Google
+    // server-side, then redirects back to this app with session tokens
+    // already embedded in the URL hash (#access_token=...&refresh_token=...).
+    // The Supabase client (initialized with `detectSessionInUrl: true`)
+    // automatically parses that hash and establishes the session — no
+    // manual exchange step is needed or possible (there is no `code` param
+    // to exchange in this flow).
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        navigate('/dashboard', { replace: true });
+      } else if (event === 'SIGNED_OUT') {
+        navigate('/login', { replace: true });
       }
+    });
 
-      const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-      
-      if (error) {
-        addLog(`Exchange Error: ${error.message}`);
-        console.error('Callback error:', error);
-      } else {
-        addLog('Session Exchange Success');
-        navigate('/dashboard');
+    // In case the session was already resolved before this effect ran.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate('/dashboard', { replace: true });
       }
-    };
+    });
 
-    handleCallback();
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
-  return (
-    <div className="flex flex-col items-center justify-center h-screen bg-slate-950 text-white p-4">
-      <div className="mb-4">Completing login...</div>
-      <div className="bg-black text-green-400 p-4 rounded w-full max-w-md font-mono text-xs overflow-auto h-64 border border-green-800">
-        <h2 className="font-bold border-b border-green-800 mb-2">DEBUG LOGS</h2>
-        {logs.map((log, i) => <div key={i}>{'>'} {log}</div>)}
-      </div>
-    </div>
-  );
+  return <div className="flex items-center justify-center h-screen bg-slate-950 text-white">Completing login...</div>;
 };
