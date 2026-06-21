@@ -7,6 +7,8 @@ export const AuthCallback: React.FC = () => {
 
   useEffect(() => {
     const check = async () => {
+      console.log('[AuthCallback] Hash:', window.location.hash);
+      console.log('[AuthCallback] Auth Keys in LocalStorage:', Object.keys(localStorage).filter(k => k.includes('auth')));
       console.log('[AuthCallback] Running check...');
       const { data } = await supabase.auth.getSession();
 
