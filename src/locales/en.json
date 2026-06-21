@@ -31,7 +31,14 @@
     "forgot_password_desc": "Enter your email address to receive password reset instructions.",
     "forgot_password_btn": "Send Reset Link",
     "forgot_password_success": "Password reset instructions have been sent to your email!",
-    "forgot_password_back": "Back to Sign In"
+    "forgot_password_back": "Back to Sign In",
+    "reset_password_title": "Set New Password",
+    "reset_password_desc": "Please enter your new password below.",
+    "new_password_label": "New Password",
+    "confirm_password_label": "Confirm New Password",
+    "reset_submit_btn": "Update Password",
+    "reset_success_toast": "Password updated successfully!",
+    "passwords_dont_match": "Passwords do not match!"
   },
   "dashboard": {
     "welcome": "Welcome back, {name} 👋",

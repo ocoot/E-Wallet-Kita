@@ -31,7 +31,14 @@
     "forgot_password_desc": "Masukkan alamat email Anda untuk menerima tautan pengaturan ulang kata sandi.",
     "forgot_password_btn": "Kirim Link Atur Ulang",
     "forgot_password_success": "Tautan pengaturan ulang kata sandi telah dikirim ke email Anda!",
-    "forgot_password_back": "Kembali ke Masuk Sesi"
+    "forgot_password_back": "Kembali ke Masuk Sesi",
+    "reset_password_title": "Atur Kata Sandi Baru",
+    "reset_password_desc": "Silakan masukkan kata sandi baru Anda di bawah ini.",
+    "new_password_label": "Kata Sandi Baru",
+    "confirm_password_label": "Konfirmasi Kata Sandi Baru",
+    "reset_submit_btn": "Perbarui Kata Sandi",
+    "reset_success_toast": "Kata sandi berhasil diperbarui!",
+    "passwords_dont_match": "Kata sandi tidak cocok!"
   },
   "dashboard": {
     "welcome": "Halo, {name} 👋",

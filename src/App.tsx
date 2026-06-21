@@ -12,6 +12,7 @@ import { NewTransaction } from "./views/NewTransaction";
 import { History } from "./views/History";
 import { Settings } from "./views/Settings";
 import { Modal } from "./components/Modal";
+import { ResetPasswordModal } from "./components/ResetPasswordModal";
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut } from "lucide-react";
 
@@ -116,6 +117,8 @@ const MainLayout: React.FC = () => {
 };
 
 export default function App() {
+  const { isRecoveringPassword, setIsRecoveringPassword } = useAuth();
+
   return (
     <ThemeProvider>
       <LanguageProvider>
@@ -125,6 +128,10 @@ export default function App() {
              <Route path="/auth/callback" element={<AuthCallback />} />
              <Route path="/*" element={<MainLayout />} />
           </Routes>
+          <ResetPasswordModal 
+            isOpen={isRecoveringPassword} 
+            onClose={() => setIsRecoveringPassword(false)} 
+          />
         </ToastProvider>
       </LanguageProvider>
     </ThemeProvider>
