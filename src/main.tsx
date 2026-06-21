@@ -5,16 +5,13 @@ import App from './App.tsx';
 import './index.css';
 import {AuthProvider} from './contexts/AuthContext';
 import './i18n.ts';
-import eruda from 'eruda';
-
-if (import.meta.env.PROD || true) { // Force enable for debugging
-  eruda.init();
-}
 
 createRoot(document.getElementById('root')!).render(
-  <BrowserRouter>
-    <AuthProvider>
-      <App />
-    </AuthProvider>
-  </BrowserRouter>,
+  <StrictMode>
+    <BrowserRouter>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    </BrowserRouter>
+  </StrictMode>,
 );

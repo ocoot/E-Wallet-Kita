@@ -19,30 +19,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("AuthContext: Current hash:", window.location.hash);
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log("AuthContext: getSession", session);
+      console.debug("AuthContext: session initialized");
       setSession(session);
       setUser(session?.user ?? null);
-      
-      // Always allow the app to render on the callback route so AuthCallback can do its job
-      if (window.location.pathname === '/auth/callback') {
-        console.log("AuthContext: On callback route, releasing loading state for AuthCallback...");
-        setLoading(false);
-        return;
-      }
-      
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log("AuthContext: onAuthStateChange", event, session);
+      console.debug("AuthContext: onAuthStateChange", event);
       setSession(session);
       setUser(session?.user ?? null);
-      
-      if (event === 'SIGNED_IN') {
-        setLoading(false);
-      }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
