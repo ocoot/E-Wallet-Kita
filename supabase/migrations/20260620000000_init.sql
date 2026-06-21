@@ -108,3 +108,200 @@ CREATE POLICY "Allow read access to all catalog categories"
     ON public.categories FOR SELECT
     TO authenticated, anon
     USING (true);
+
+-- 5. RPC Security Definer Functions for Telegram Webhook Integration (Bypasses RLS Safely via Security Definer)
+
+-- A. Link Telegram user using single-use 5-digit code
+CREATE OR REPLACE FUNCTION public.link_telegram_user(
+    p_code TEXT,
+    p_chat_id BIGINT
+)
+RETURNS TABLE (
+    success BOOLEAN,
+    message TEXT,
+    user_id UUID,
+    display_name TEXT
+)
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_user_id UUID;
+    v_display_name TEXT;
+    v_exists BOOLEAN := FALSE;
+BEGIN
+    -- Check if code exists, is not used, and is not expired
+    SELECT t.user_id, u.display_name, TRUE
+    INTO v_user_id, v_display_name, v_exists
+    FROM public.telegram_link_codes t
+    JOIN public.users u ON t.user_id = u.id
+    WHERE t.code = p_code AND t.used = FALSE AND t.expires_at > NOW()
+    LIMIT 1;
+
+    IF v_exists IS NOT TRUE THEN
+        RETURN QUERY SELECT FALSE, 'Kode tidak valid atau sudah kedaluwarsa.'::TEXT, NULL::UUID, NULL::TEXT;
+        RETURN;
+    END IF;
+
+    -- Update telegram_chat_id in users table
+    UPDATE public.users
+    SET telegram_chat_id = p_chat_id
+    WHERE id = v_user_id;
+
+    -- Mark code as used
+    UPDATE public.telegram_link_codes
+    SET used = TRUE
+    WHERE code = p_code;
+
+    RETURN QUERY SELECT TRUE, 'Akun Telegram berhasil ditautkan!'::TEXT, v_user_id, v_display_name;
+END;
+$$;
+
+-- B. Unlink Telegram user
+CREATE OR REPLACE FUNCTION public.unlink_telegram_user(
+    p_chat_id BIGINT
+)
+RETURNS BOOLEAN
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE public.users
+    SET telegram_chat_id = NULL
+    WHERE telegram_chat_id = p_chat_id;
+    
+    RETURN FOUND;
+END;
+$$;
+
+-- C. Find user profile by Telegram chat ID
+CREATE OR REPLACE FUNCTION public.get_user_by_telegram_chat_id(
+    p_chat_id BIGINT
+)
+RETURNS TABLE (
+    id UUID,
+    display_name TEXT,
+    preferred_language TEXT
+)
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT u.id, u.display_name, u.preferred_language
+    FROM public.users u
+    WHERE u.telegram_chat_id = p_chat_id
+    LIMIT 1;
+END;
+$$;
+
+-- D. Insert a transaction from Telegram
+CREATE OR REPLACE FUNCTION public.insert_telegram_transaction(
+    p_chat_id BIGINT,
+    p_type TEXT,
+    p_category TEXT,
+    p_amount NUMERIC,
+    p_note TEXT,
+    p_date DATE
+)
+RETURNS TABLE (
+    id UUID,
+    user_id UUID,
+    type TEXT,
+    category TEXT,
+    amount NUMERIC,
+    note TEXT,
+    source TEXT,
+    transaction_date DATE,
+    created_at TIMESTAMPTZ
+)
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_user_id UUID;
+BEGIN
+    -- Log user_id lookup
+    SELECT u.id INTO v_user_id FROM public.users u WHERE u.telegram_chat_id = p_chat_id LIMIT 1;
+    
+    IF v_user_id IS NULL THEN
+        RAISE EXCEPTION 'User not found for telegram_chat_id %', p_chat_id;
+    END IF;
+
+    RETURN QUERY
+    INSERT INTO public.transactions (
+        user_id,
+        type,
+        category,
+        amount,
+        note,
+        source,
+        transaction_date
+    ) VALUES (
+        v_user_id,
+        p_type,
+        p_category,
+        p_amount,
+        p_note,
+        'telegram',
+        COALESCE(p_date, CURRENT_DATE)
+    )
+    RETURNING *;
+END;
+$$;
+
+-- E. Retrieve monthly financial summary for Telegram
+CREATE OR REPLACE FUNCTION public.get_telegram_user_summary(
+    p_chat_id BIGINT
+)
+RETURNS TABLE (
+    total_income NUMERIC,
+    total_expense NUMERIC,
+    net_balance NUMERIC,
+    display_name TEXT
+)
+SECURITY DEFINER
+SET search_path = public
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_user_id UUID;
+    v_display_name TEXT;
+    v_inc NUMERIC := 0;
+    v_exp NUMERIC := 0;
+    v_start_date DATE := date_trunc('month', CURRENT_DATE)::DATE;
+    v_end_date DATE := (date_trunc('month', CURRENT_DATE) + interval '1 month' - interval '1 day')::DATE;
+BEGIN
+    -- Query user profile
+    SELECT u.id, u.display_name INTO v_user_id, v_display_name
+    FROM public.users u
+    WHERE u.telegram_chat_id = p_chat_id
+    LIMIT 1;
+
+    IF v_user_id IS NULL THEN
+        RETURN;
+    END IF;
+
+    -- Calculate current month income
+    SELECT COALESCE(SUM(amount), 0) INTO v_inc
+    FROM public.transactions
+    WHERE user_id = v_user_id 
+      AND type = 'income' 
+      AND transaction_date >= v_start_date 
+      AND transaction_date <= v_end_date;
+
+    -- Calculate current month expense
+    SELECT COALESCE(SUM(amount), 0) INTO v_exp
+    FROM public.transactions
+    WHERE user_id = v_user_id 
+      AND type = 'expense' 
+      AND transaction_date >= v_start_date 
+      AND transaction_date <= v_end_date;
+
+    RETURN QUERY SELECT v_inc, v_exp, (v_inc - v_exp), v_display_name;
+END;
+$$;
