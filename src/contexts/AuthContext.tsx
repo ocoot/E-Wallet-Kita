@@ -42,9 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       provider: 'google',
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
-        skipBrowserRedirect: false,
-        flowType: 'pkce',
-      } as any
+      }
     });
   };
 

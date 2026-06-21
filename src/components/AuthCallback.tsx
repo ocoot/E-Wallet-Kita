@@ -37,7 +37,9 @@ export const AuthCallback: React.FC = () => {
       try {
         const code = new URLSearchParams(window.location.search).get('code');
         const hasHashTokens = window.location.hash.includes('access_token');
+        console.log('[AuthCallback] Hash:', window.location.hash);
         log(`code present: ${!!code} | hash tokens: ${hasHashTokens}`);
+        if (hasHashTokens) log(`Hash contains: ${window.location.hash.substring(0, 20)}...`);
 
         if (code) {
           try {
