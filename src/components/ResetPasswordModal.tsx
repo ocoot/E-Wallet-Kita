@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useTranslation } from "react-i18next";
+import { useLanguage } from "../contexts/LanguageContext";
 import { supabase } from "../lib/supabase";
 import { useToast } from "../contexts/ToastContext";
 import { audioFeedback } from "../lib/audio";
@@ -12,7 +12,7 @@ interface ResetPasswordModalProps {
 }
 
 export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, onClose }) => {
-  const { t } = useTranslation();
+  const { t } = useLanguage();
   const { showToast } = useToast();
 
   const [password, setPassword] = useState("");
