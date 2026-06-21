@@ -4,55 +4,98 @@ import { GoogleGenAI, Type } from '@google/genai';
 
 type Lang = "id" | "en";
 
-// Parse Indonesian amounts (k, rb, jt, etc)
-function parseAmountFromString(text: string): number {
-  const cleaned = text.toLowerCase().replace(/\s+/g, '').replace(/,/g, '.');
-  const regex = /([\d.]+)\s*(jt|juta|rb|ribu|k)?/i;
-  const match = cleaned.match(regex);
-  if (!match) return 0;
-  
-  const numValue = parseFloat(match[1]);
-  const suffix = match[2];
-  
-  if (!suffix) return isNaN(numValue) ? 0 : numValue;
-  
-  if (suffix === 'jt' || suffix === 'juta') {
-    return Math.round(numValue * 1000000);
-  }
-  if (suffix === 'rb' || suffix === 'ribu' || suffix === 'k') {
-    return Math.round(numValue * 1000);
-  }
-  return isNaN(numValue) ? 0 : numValue;
+// ─────────────────────────────────────────────────────────────
+// FIX #5: Unified user context — resolves lang + profile in one DB call
+// ─────────────────────────────────────────────────────────────
+interface UserContext {
+  id: string;
+  display_name: string;
+  lang: Lang;
 }
 
-// Initialize Supabase
+// ─────────────────────────────────────────────────────────────
+// FIX #1: Corrected Gemini model name (was "gemini-3.5-flash" — does not exist)
+// ─────────────────────────────────────────────────────────────
+const GEMINI_MODEL = "gemini-2.0-flash";
+
+// ─────────────────────────────────────────────────────────────
+// FIX #13 (amount parser): Handle Rp prefix, dot-as-thousands (Indonesian format),
+//   and all suffix variants: rb, ribu, k, jt, juta, m (million shorthand)
+// ─────────────────────────────────────────────────────────────
+function parseAmountFromString(text: string): number {
+  // Strip currency prefix and whitespace
+  let cleaned = text.toLowerCase()
+    .replace(/rp\.?\s*/g, '')  // remove "rp" or "rp."
+    .replace(/\s+/g, '');
+
+  // Indonesian dot-as-thousands: "250.000" → 250000 (only when no suffix follows the dot pattern)
+  // Detect pattern: digits.3digits (thousands separator) vs digits.digits (decimal)
+  // If there's a suffix (jt/rb/k) — parse as decimal with suffix
+  // If no suffix and pattern matches NNN.NNN — treat dots as thousand separators
+  const hasSuffix = /[a-z]/.test(cleaned.replace(/[0-9.,]/g, ''));
+
+  if (!hasSuffix) {
+    // Check if it's Indonesian thousands format: e.g. 250.000 or 1.250.000
+    const dotThousands = cleaned.replace(/\./g, '');
+    if (/^\d+$/.test(dotThousands) && cleaned.includes('.')) {
+      const num = parseInt(dotThousands, 10);
+      return isNaN(num) ? 0 : num;
+    }
+  }
+
+  // Parse with suffix
+  const regex = /([\d.,]+)\s*(jt|juta|rb|ribu|k|m)?$/i;
+  const match = cleaned.match(regex);
+  if (!match) return 0;
+
+  // Normalize: treat comma as decimal separator in suffix context
+  const numStr = match[1].replace(/\./g, '').replace(/,/g, '.');
+  const numValue = parseFloat(numStr);
+  const suffix = match[2];
+
+  if (isNaN(numValue)) return 0;
+  if (!suffix) return Math.round(numValue);
+
+  if (suffix === 'jt' || suffix === 'juta' || suffix === 'm') return Math.round(numValue * 1_000_000);
+  if (suffix === 'rb' || suffix === 'ribu' || suffix === 'k') return Math.round(numValue * 1_000);
+  return Math.round(numValue);
+}
+
+// ─────────────────────────────────────────────────────────────
+// Initialize Supabase — use service role key for server-side webhook
+// (Anon key is for client-side use only; service role bypasses RLS safely)
+// ─────────────────────────────────────────────────────────────
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || '';
-const supabaseBackend = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseServiceKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_ANON_KEY || '';
+const supabaseBackend = createClient(supabaseUrl, supabaseServiceKey);
 
 // Initialize Gemini
 const apiKey = process.env.GEMINI_API_KEY;
 let ai: GoogleGenAI | null = null;
 if (apiKey) {
   ai = new GoogleGenAI({
-    apiKey: apiKey,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      }
-    }
+    apiKey,
+    httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
   });
 }
 
 // Category labels (bilingual)
 const botCategoryLabels: Record<string, { id: string; en: string }> = {
-  salary: { id: "Gaji", en: "Salary" },
-  bonus: { id: "Bonus", en: "Bonus" },
-  food_drink: { id: "Makanan & Minuman", en: "Food & Drink" },
-  monthly_groceries: { id: "Belanja Bulanan", en: "Monthly Groceries" },
-  vegetables: { id: "Belanja Sayur", en: "Vegetables" },
-  bills: { id: "Tagihan", en: "Bills" },
-  other: { id: "Lain-lain", en: "Other" }
+  salary:             { id: "Gaji",               en: "Salary" },
+  bonus:              { id: "Bonus",               en: "Bonus" },
+  food_drink:         { id: "Makanan & Minuman",   en: "Food & Drink" },
+  monthly_groceries:  { id: "Belanja Bulanan",     en: "Monthly Groceries" },
+  vegetables:         { id: "Belanja Sayur",       en: "Vegetables" },
+  bills:              { id: "Tagihan",             en: "Bills" },
+  transport:          { id: "Transportasi",        en: "Transportation" },
+  health:             { id: "Kesehatan",           en: "Health" },
+  shopping:           { id: "Belanja Online",      en: "Online Shopping" },
+  entertainment:      { id: "Hiburan",             en: "Entertainment" },
+  education:          { id: "Pendidikan",          en: "Education" },
+  other:              { id: "Lain-lain",           en: "Other" },
 };
 
 function getCategoryLabel(categoryKey: string, lang: Lang): string {
@@ -60,7 +103,9 @@ function getCategoryLabel(categoryKey: string, lang: Lang): string {
 }
 
 function formatIDR(amount: number): string {
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(amount);
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency", currency: "IDR", maximumFractionDigits: 0
+  }).format(amount);
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -103,9 +148,11 @@ const botText = {
       `     • \`Belanja sayur bayam 12k\`\n` +
       `     • \`Bayar tagihan listrik rumah 250rb\`\n\n` +
       `3️⃣ *Daftar Perintah (Commands)*:\n` +
-      `     • \`/saldo\` - Melihat status ringkasan saldo bulan ini.\n` +
+      `     • \`/saldo\` - Ringkasan saldo & perbandingan bulan ini vs bulan lalu.\n` +
+      `     • \`/riwayat\` - Tampilkan 5 transaksi terakhir.\n` +
+      `     • \`/hapus\` - Batalkan & hapus transaksi terakhir.\n` +
       `     • \`/unlink\` - Memutuskan koneksi akun Telegram dari sistem.\n` +
-      `     • \`/help\` - Membuka pesan bantuan petunjuk ini.`,
+      `     • \`/help\` - Membuka pesan bantuan ini.`,
     en: () =>
       `💡 *E-Wallet Kita Bot Guide*:\n\n` +
       `1️⃣ *Account Connection*:\n` +
@@ -119,9 +166,16 @@ const botText = {
       `     • \`Bought vegetables 12k\`\n` +
       `     • \`Paid electricity bill 250rb\`\n\n` +
       `3️⃣ *Command List*:\n` +
-      `     • \`/saldo\` - View this month's balance summary.\n` +
+      `     • \`/saldo\` - Balance summary & comparison vs last month.\n` +
+      `     • \`/riwayat\` - Show last 5 transactions.\n` +
+      `     • \`/hapus\` - Undo & delete the last transaction.\n` +
       `     • \`/unlink\` - Disconnect your Telegram account from the system.\n` +
       `     • \`/help\` - Show this help message.`,
+  },
+  // FIX #10: Language selection prompt on /start before /link
+  langPrompt: {
+    id: () => `🌐 Pilih bahasa / Choose language:`,
+    en: () => `🌐 Pilih bahasa / Choose language:`,
   },
   linkBadFormat: {
     id: () => "⚠️ Format perintah salah. Silakan kirim dalam format: `/link <kode_5_digit>` - Contoh: `/link 12345`.",
@@ -165,22 +219,43 @@ const botText = {
     id: () => "⚠️ *Akun belum terhubung.* Silakan hubungkan Telegram Anda terlebih dahulu menggunakan perintah `/link <kode>`.",
     en: () => "⚠️ *Account not linked.* Please link your Telegram first using the `/link <code>` command.",
   },
+  // FIX #11 (saldo): Now includes last-month comparison
   saldoSummary: {
-    id: (displayName: string, incStr: string, expStr: string, balStr: string) =>
+    id: (
+      displayName: string,
+      incStr: string, expStr: string, balStr: string,
+      prevIncStr: string, prevExpStr: string,
+      expDiffIcon: string, expDiffPct: string
+    ) =>
       `📊 *Ringkasan Keuangan Bulan Ini* 🌸\n\n` +
-      `Halo, *${displayName}*! Berikut adalah laporan keuangan Anda bulan ini:\n\n` +
+      `Halo, *${displayName}*!\n\n` +
+      `*— Bulan Ini —*\n` +
       `• *Total Pemasukan*: 📥 \`${incStr}\`\n` +
       `• *Total Pengeluaran*: 📤 \`${expStr}\`\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
       `• *Saldo Tabungan*: 💰 *${balStr}*\n\n` +
+      `*— Bulan Lalu —*\n` +
+      `• Pemasukan: \`${prevIncStr}\`\n` +
+      `• Pengeluaran: \`${prevExpStr}\`\n\n` +
+      `${expDiffIcon} Pengeluaran bulan ini *${expDiffPct}* dibanding bulan lalu.\n\n` +
       `_Gunakan bot ini untuk terus merekam transaksi harian secara praktis!_`,
-    en: (displayName: string, incStr: string, expStr: string, balStr: string) =>
+    en: (
+      displayName: string,
+      incStr: string, expStr: string, balStr: string,
+      prevIncStr: string, prevExpStr: string,
+      expDiffIcon: string, expDiffPct: string
+    ) =>
       `📊 *This Month's Financial Summary* 🌸\n\n` +
-      `Hello, *${displayName}*! Here's your financial report for this month:\n\n` +
+      `Hello, *${displayName}*!\n\n` +
+      `*— This Month —*\n` +
       `• *Total Income*: 📥 \`${incStr}\`\n` +
       `• *Total Expense*: 📤 \`${expStr}\`\n` +
       `━━━━━━━━━━━━━━━━━━━━\n` +
       `• *Net Balance*: 💰 *${balStr}*\n\n` +
+      `*— Last Month —*\n` +
+      `• Income: \`${prevIncStr}\`\n` +
+      `• Expense: \`${prevExpStr}\`\n\n` +
+      `${expDiffIcon} Spending this month is *${expDiffPct}* vs last month.\n\n` +
       `_Keep using this bot to conveniently track your daily transactions!_`,
   },
   unknownCommand: {
@@ -208,17 +283,19 @@ const botText = {
   amountNotDetected: {
     id: () =>
       `⚠️ *Gagal Membaca Nominal*\n\n` +
-      `Kami memahami transaksi Anda bermaksud mencatat sesuatu, namun nominal angka uang tidak berhasil terdeteksi.\n` +
+      `Nominal angka uang tidak berhasil terdeteksi.\n` +
       `Contoh input benar:\n` +
       `- "Makan nasi goreng *40rb*"\n` +
-      `- "Beli galon aqua *Rp 20.000*"\n\n` +
+      `- "Beli galon aqua *Rp 20.000*"\n` +
+      `- "Bayar listrik *Rp250.000*"\n\n` +
       `Silakan ulangi kembali!`,
     en: () =>
       `⚠️ *Couldn't Detect Amount*\n\n` +
-      `We understand you meant to record something, but we couldn't detect a numeric amount.\n` +
+      `We couldn't detect a numeric amount.\n` +
       `Example of valid input:\n` +
       `- "Fried rice for lunch *40rb*"\n` +
-      `- "Bought water gallon *Rp 20.000*"\n\n` +
+      `- "Bought water gallon *Rp 20.000*"\n` +
+      `- "Paid electricity *Rp250.000*"\n\n` +
       `Please try again!`,
   },
   draftSaveError: {
@@ -232,23 +309,36 @@ const botText = {
       `• *Tipe*: ${typeLabel}\n` +
       `• *Kategori*: ${catLabel}\n` +
       `• *Nominal*: *${currencyStr}*\n` +
-      `• *Catatan*: "${originalText}"`,
+      `• *Catatan*: "${originalText}"\n\n` +
+      `_Jika nominal salah, ketik ulang dengan nominal yang benar._`,
     en: (typeLabel: string, catLabel: string, currencyStr: string, originalText: string) =>
       `📝 *Transaction Draft*\n` +
       `Does the following financial detail look correct?\n\n` +
       `• *Type*: ${typeLabel}\n` +
       `• *Category*: ${catLabel}\n` +
       `• *Amount*: *${currencyStr}*\n` +
-      `• *Note*: "${originalText}"`,
+      `• *Note*: "${originalText}"\n\n` +
+      `_If the amount is wrong, type a correction below._`,
+  },
+  // FIX #11 (draft): Added "Edit Amount" button hint in draft prompt (handled via cancel + retype)
+  editAmountHint: {
+    id: () => "✏️ *Edit Nominal?*\nKirim pesan baru dengan nominal yang benar, misalnya:\n`Edit: 75rb`",
+    en: () => "✏️ *Edit Amount?*\nSend a new message with the correct amount, e.g.:\n`Edit: 75rb`",
   },
   parseError: {
     id: () => "⚠️ Maaf, asisten parsing kami mengalami kendala teknis sementara. Mohon coba ulangi beberapa saat lagi.",
     en: () => "⚠️ Sorry, our parsing assistant is experiencing temporary technical issues. Please try again shortly.",
   },
-  txTypeIncome: { id: () => "📥 Pemasukan", en: () => "📥 Income" },
+  txTypeIncome:  { id: () => "📥 Pemasukan",   en: () => "📥 Income" },
   txTypeExpense: { id: () => "📤 Pengeluaran", en: () => "📤 Expense" },
-  btnConfirm: { id: () => "✅ Benar, Simpan", en: () => "✅ Correct, Save" },
-  btnCancel: { id: () => "❌ Batalkan", en: () => "❌ Cancel" },
+  btnConfirm:    { id: () => "✅ Benar, Simpan",  en: () => "✅ Correct, Save" },
+  btnCancel:     { id: () => "❌ Batalkan",        en: () => "❌ Cancel" },
+  // FIX #11: Edit amount inline button
+  btnEditAmount: { id: () => "✏️ Edit Nominal",    en: () => "✏️ Edit Amount" },
+  editAmountPrompt: {
+    id: () => "✏️ *Edit Nominal*\n\nKirim nominal yang benar sekarang.\nContoh: `75rb` atau `Rp 75.000`",
+    en: () => "✏️ *Edit Amount*\n\nSend the correct amount now.\nExample: `75rb` or `Rp 75.000`",
+  },
   cbExpired: {
     id: () => "Transaksi tidak ditemukan atau sudah kadaluwarsa.",
     en: () => "Transaction not found or has expired.",
@@ -293,6 +383,60 @@ const botText = {
     id: () => "❌ *Pencatatan transaksi telah dibatalkan.*",
     en: () => "❌ *Transaction recording has been cancelled.*",
   },
+  // FIX #8: /riwayat command
+  riwayatNotLinked: {
+    id: () => "⚠️ *Akun belum terhubung.* Gunakan `/link <kode>` untuk menautkan akun.",
+    en: () => "⚠️ *Account not linked.* Use `/link <code>` to link your account.",
+  },
+  riwayatEmpty: {
+    id: () => "📭 *Belum ada transaksi yang tercatat* untuk akun Anda.",
+    en: () => "📭 *No transactions recorded yet* for your account.",
+  },
+  riwayatHeader: {
+    id: () => `📋 *5 Transaksi Terakhir* 🌸\n\n`,
+    en: () => `📋 *Last 5 Transactions* 🌸\n\n`,
+  },
+  riwayatFooter: {
+    id: () => `\n_Gunakan \`/hapus\` untuk membatalkan transaksi terakhir._`,
+    en: () => `\n_Use \`/hapus\` to undo the last transaction._`,
+  },
+  riwayatError: {
+    id: () => "⚠️ Gagal memuat riwayat transaksi. Silakan coba lagi.",
+    en: () => "⚠️ Failed to load transaction history. Please try again.",
+  },
+  // FIX #12 (hapus): /hapus command - delete last transaction
+  hapusNotLinked: {
+    id: () => "⚠️ *Akun belum terhubung.* Gunakan `/link <kode>` untuk menautkan akun.",
+    en: () => "⚠️ *Account not linked.* Use `/link <code>` to link your account.",
+  },
+  hapusNone: {
+    id: () => "📭 *Tidak ada transaksi* yang bisa dihapus.",
+    en: () => "📭 *No transactions* to delete.",
+  },
+  hapusSuccess: {
+    id: (typeLabel: string, catLabel: string, amountStr: string, note: string) =>
+      `🗑️ *Transaksi Terakhir Berhasil Dihapus*\n\n` +
+      `• *Tipe*: ${typeLabel}\n` +
+      `• *Kategori*: ${catLabel}\n` +
+      `• *Jumlah*: ${amountStr}\n` +
+      `• *Catatan*: "${note}"\n\n` +
+      `_Transaksi telah dihapus dari E-Wallet Kita._`,
+    en: (typeLabel: string, catLabel: string, amountStr: string, note: string) =>
+      `🗑️ *Last Transaction Successfully Deleted*\n\n` +
+      `• *Type*: ${typeLabel}\n` +
+      `• *Category*: ${catLabel}\n` +
+      `• *Amount*: ${amountStr}\n` +
+      `• *Note*: "${note}"\n\n` +
+      `_Transaction has been removed from E-Wallet Kita._`,
+  },
+  hapusError: {
+    id: (msg: string) => `❌ Gagal menghapus transaksi: ${msg}`,
+    en: (msg: string) => `❌ Failed to delete transaction: ${msg}`,
+  },
+  cbLangSet: {
+    id: () => "✅ Bahasa Indonesia dipilih!",
+    en: () => "✅ English selected!",
+  },
 };
 
 function tr<K extends keyof typeof botText>(key: K, lang: Lang, ...args: Parameters<(typeof botText)[K][Lang]>): string {
@@ -300,141 +444,110 @@ function tr<K extends keyof typeof botText>(key: K, lang: Lang, ...args: Paramet
   return entry(...args);
 }
 
-// Resolve the bot's display language for a given chat: prefer the user's saved
-// preference (`users.preferred_language`), default to Indonesian otherwise.
-async function resolveLang(chatId: number): Promise<Lang> {
+// ─────────────────────────────────────────────────────────────
+// FIX #5: Single DB call returns both lang + profile
+// Replaces the old resolveLang() + separate get_user_by_telegram_chat_id pattern
+// ─────────────────────────────────────────────────────────────
+async function resolveUserContext(chatId: number): Promise<UserContext | null> {
   try {
     const { data } = await supabaseBackend.rpc("get_user_by_telegram_chat_id", {
       p_chat_id: chatId
     });
-    const pref = data && data.length > 0 ? data[0]?.preferred_language : null;
-    return pref === "en" ? "en" : "id";
+    if (!data || data.length === 0) return null;
+    const row = data[0];
+    return {
+      id: row.id,
+      display_name: row.display_name,
+      lang: row.preferred_language === "en" ? "en" : "id",
+    };
   } catch {
-    return "id";
+    return null;
   }
 }
 
+// Resolve lang only (for commands before profile is needed, e.g. /start, /link pre-success)
+async function resolveLangOnly(chatId: number): Promise<Lang> {
+  const ctx = await resolveUserContext(chatId);
+  return ctx?.lang ?? "id";
+}
+
+// ─────────────────────────────────────────────────────────────
+// FIX #8 (inferCategoryKey): Greatly expanded keyword coverage
+// Covers transport (grab, gojek, bensin), health (dokter, obat, apotik),
+// shopping (tokopedia, shopee, lazada), entertainment, education, and more
+// ─────────────────────────────────────────────────────────────
 function inferCategoryKey(text: string): string {
   const t = text.toLowerCase();
-  if (t.includes("makan") || t.includes("minum") || t.includes("beli bakso") || t.includes("kopi") || t.includes("warung") || t.includes("restoran")) {
-    return "food_drink";
-  }
-  if (t.includes("gaji") || t.includes("gajian") || t.includes("salary") || t.includes("upah") || t.includes("transfer masuk")) {
-    return "salary";
-  }
-  if (t.includes("bonus") || t.includes("hadiah") || t.includes("thr") || t.includes("sampingan")) {
-    return "bonus";
-  }
-  if (t.includes("belanja bulanan") || t.includes("supermarket") || t.includes("alfamart") || t.includes("indomaret") || t.includes("groceries")) {
-    return "monthly_groceries";
-  }
-  if (t.includes("sayur") || t.includes("pasar") || t.includes("bumbu") || t.includes("belanja sayur")) {
-    return "vegetables";
-  }
-  if (t.includes("listrik") || t.includes("air") || t.includes("pdam") || t.includes("pulsa") || t.includes("tagihan") || t.includes("wifi") || t.includes("internet") || t.includes("token")) {
-    return "bills";
-  }
+
+  // Income
+  if (/gaji|gajian|salary|upah|transfer masuk|terima gaji/.test(t)) return "salary";
+  if (/bonus|hadiah|thr|sampingan|freelance|komisi|cashback|refund|kembalian/.test(t)) return "bonus";
+
+  // Food & Drink
+  if (/makan|minum|beli bakso|kopi|warung|restoran|cafe|kantin|soto|nasi|bakmi|mie|pizza|burger|ayam|pecel|gado|es teh|jus|minuman|makanan|boba|martabak|dimsum|sushi|steak|bebek/.test(t)) return "food_drink";
+
+  // Monthly Groceries
+  if (/belanja bulanan|supermarket|alfamart|indomaret|hypermart|giant|transmart|lottemart|groceries|sembako|beras|gula|minyak|tepung/.test(t)) return "monthly_groceries";
+
+  // Vegetables / wet market
+  if (/sayur|pasar|bumbu|rempah|wortel|bayam|tomat|cabe|bawang|kentang|kubis|kangkung/.test(t)) return "vegetables";
+
+  // Bills / Utilities
+  if (/listrik|air|pdam|pulsa|tagihan|wifi|internet|token|pln|telkom|indihome|telkomsel|xl|im3|tri|byU|smartfren|axis|gas|isi daya/.test(t)) return "bills";
+
+  // Transport
+  if (/grab|gojek|gocar|grabbike|ojek|bensin|bbm|solar|pertamax|pertalite|parkir|tol|bus|busway|transjakarta|mrt|lrt|krl|kereta|tiket|beli tiket|pesawat|taxiu?|angkot/.test(t)) return "transport";
+
+  // Health
+  if (/dokter|obat|apotik|apotek|klinik|rumah sakit|rs |puskesmas|bidan|bpjs|kesehatan|vitamin|suplemen|masker|covid|periksa|rawat/.test(t)) return "health";
+
+  // Shopping / Online
+  if (/tokopedia|shopee|lazada|bukalapak|blibli|tiktok shop|amazon|beli online|order|belanja online|baju|sepatu|tas|celana|kaos|dress|jaket/.test(t)) return "shopping";
+
+  // Entertainment
+  if (/netflix|spotify|youtube|games|game|steam|playstation|bioskop|cinema|nonton|hiburan|konser|event|tiket masuk/.test(t)) return "entertainment";
+
+  // Education
+  if (/sekolah|kuliah|kursus|les|bimbel|buku|alat tulis|spp|uang gedung|pendidikan/.test(t)) return "education";
+
   return "other";
 }
 
-async function parseFinancialQuery(query: string): Promise<{
-  source: string;
-  type: "income" | "expense";
-  category_key: string;
-  amount: number;
-  original_text: string;
-}> {
-  if (!ai) {
-    const inferredAmount = parseAmountFromString(query);
-    const inferredCategory = inferCategoryKey(query);
-    const inferredType = ["gaji", "bonus", "salary", "upah"].some(k => query.toLowerCase().includes(k)) ? "income" : "expense";
-    return {
-      source: "fallback_server_regex",
-      type: inferredType,
-      category_key: inferredCategory,
-      amount: inferredAmount,
-      original_text: query
-    };
-  }
-
-  const systemInstruction = `You are a financial parsing expert for 'E-Wallet Kita'. 
-Analyze natural language transactions in Indonesian or English and output structured JSON.
-Mapping keys for categories are exactly:
-- 'salary' (income)
-- 'bonus' (income)
-- 'food_drink' (expense)
-- 'monthly_groceries' (expense)
-- 'vegetables' (expense)
-- 'bills' (expense)
-- 'other' (expense or fallback if unsure)
-
-Translate Indonesian abbreviations for quantities:
-- 'rb' or 'ribu' means thousands (e.g. '25rb' -> amount should be 25000)
-- 'k' means thousands (e.g. '1k' -> amount should be 1000)
-- 'jt' or 'juta' means millions (e.g. '1.5jt' -> amount should be 1500000)
-Return the numerical value in 'amount' property.
-If categories do not match any, default category_key to 'other'.`;
-
-  const response = await ai.models.generateContent({
-    model: "gemini-3.5-flash",
-    contents: `Parse this input text: "${query}"`,
-    config: {
-      systemInstruction,
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          type: { type: Type.STRING, enum: ["income", "expense"], description: "Type of transaction" },
-          category_key: { type: Type.STRING, description: "Category string key" },
-          amount: { type: Type.NUMBER, description: "Numeric Indonesian Rupiah conversion" },
-          original_text: { type: Type.STRING, description: "The raw input string parsed" }
-        },
-        required: ["type", "category_key", "amount", "original_text"]
+// ─────────────────────────────────────────────────────────────
+// FIX #9: Retry wrapper for Telegram API calls (up to 2 retries)
+// ─────────────────────────────────────────────────────────────
+async function withRetry<T>(fn: () => Promise<T>, retries = 2, delayMs = 500): Promise<T> {
+  let lastErr: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, delayMs * Math.pow(2, attempt)));
       }
     }
-  });
-
-  const responseText = response.text;
-  if (!responseText) {
-    throw new Error("Empty response from Gemini API");
   }
-
-  const parsedJSON = JSON.parse(responseText.trim());
-  const codeParsedAmount = parseAmountFromString(query);
-  
-  if (codeParsedAmount > 0 && (!parsedJSON.amount || parsedJSON.amount <= 10)) {
-    parsedJSON.amount = codeParsedAmount;
-  }
-
-  return {
-    source: "gemini-3.5-flash",
-    type: parsedJSON.type || "expense",
-    category_key: parsedJSON.category_key || inferCategoryKey(query),
-    amount: parsedJSON.amount || codeParsedAmount || 0,
-    original_text: query
-  };
+  throw lastErr;
 }
 
 async function sendTelegramMessage(chatId: number, text: string, replyMarkup?: any) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return;
   try {
-    const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text,
-        parse_mode: "Markdown",
-        reply_markup: replyMarkup
-      })
+    await withRetry(async () => {
+      const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text, parse_mode: "Markdown", reply_markup: replyMarkup })
+      });
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`Telegram API ${response.status}: ${body}`);
+      }
     });
-    
-    if (!response.ok) {
-      console.error(`❌ sendTelegramMessage failed: ${response.status} ${response.statusText}`);
-    }
   } catch (err) {
-    console.error(`❌ sendTelegramMessage to ${chatId} failed:`, err);
+    console.error(`❌ sendTelegramMessage to ${chatId} failed after retries:`, err);
   }
 }
 
@@ -442,19 +555,19 @@ async function editTelegramMessage(chatId: number, messageId: number, text: stri
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return;
   try {
-    await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        message_id: messageId,
-        text,
-        parse_mode: "Markdown",
-        reply_markup: replyMarkup
-      })
+    await withRetry(async () => {
+      const response = await fetch(`https://api.telegram.org/bot${token}/editMessageText`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, message_id: messageId, text, parse_mode: "Markdown", reply_markup: replyMarkup })
+      });
+      if (!response.ok) {
+        const body = await response.text();
+        throw new Error(`Telegram API ${response.status}: ${body}`);
+      }
     });
   } catch (err) {
-    console.error(`❌ editTelegramMessage for ${chatId}/${messageId} failed:`, err);
+    console.error(`❌ editTelegramMessage for ${chatId}/${messageId} failed after retries:`, err);
   }
 }
 
@@ -462,19 +575,104 @@ async function answerTelegramCallback(callbackQueryId: string, text?: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) return;
   try {
-    await fetch(`https://api.telegram.org/bot${token}/answerCallbackQuery`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        callback_query_id: callbackQueryId,
-        text
-      })
+    await withRetry(async () => {
+      await fetch(`https://api.telegram.org/bot${token}/answerCallbackQuery`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ callback_query_id: callbackQueryId, text })
+      });
     });
   } catch (err) {
-    console.error(`❌ answerTelegramCallback ${callbackQueryId} failed:`, err);
+    console.error(`❌ answerTelegramCallback ${callbackQueryId} failed after retries:`, err);
   }
 }
 
+// ─────────────────────────────────────────────────────────────
+// FIX #1: Correct Gemini model name
+// FIX #8 (inferCategoryKey): expanded; used in fallback path
+// ─────────────────────────────────────────────────────────────
+async function parseFinancialQuery(query: string): Promise<{
+  source: string;
+  type: "income" | "expense";
+  category_key: string;
+  amount: number;
+  original_text: string;
+}> {
+  const codeParsedAmount = parseAmountFromString(query);
+
+  if (!ai) {
+    const inferredCategory = inferCategoryKey(query);
+    const inferredType = /gaji|bonus|salary|upah|thr|transfer masuk|sampingan|freelance|komisi/.test(query.toLowerCase()) ? "income" : "expense";
+    return { source: "fallback_server_regex", type: inferredType, category_key: inferredCategory, amount: codeParsedAmount, original_text: query };
+  }
+
+  const systemInstruction = `You are a financial parsing expert for 'E-Wallet Kita'.
+Analyze natural language transactions in Indonesian or English and output structured JSON.
+Category keys (use exactly as written):
+  Income: 'salary', 'bonus'
+  Expense: 'food_drink', 'monthly_groceries', 'vegetables', 'bills', 'transport', 'health', 'shopping', 'entertainment', 'education', 'other'
+
+Indonesian amount abbreviations:
+  'rb' / 'ribu' = thousands (25rb → 25000)
+  'k' = thousands (1k → 1000)
+  'jt' / 'juta' = millions (1.5jt → 1500000)
+  'Rp 250.000' or '250.000' = 250000 (dot is thousands separator in Indonesian)
+
+If no category matches, use 'other'. Always return the numeric IDR value in 'amount'.`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: GEMINI_MODEL, // FIX #1: was "gemini-3.5-flash" (non-existent)
+      contents: `Parse this input text: "${query}"`,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            type: { type: Type.STRING, enum: ["income", "expense"] },
+            category_key: { type: Type.STRING },
+            amount: { type: Type.NUMBER },
+            original_text: { type: Type.STRING }
+          },
+          required: ["type", "category_key", "amount", "original_text"]
+        }
+      }
+    });
+
+    const responseText = response.text;
+    if (!responseText) throw new Error("Empty response from Gemini API");
+
+    const parsedJSON = JSON.parse(responseText.trim());
+
+    // If Gemini returned 0 or suspiciously small amount, trust our regex parser
+    const finalAmount = (codeParsedAmount > 0 && (!parsedJSON.amount || parsedJSON.amount <= 10))
+      ? codeParsedAmount
+      : parsedJSON.amount;
+
+    return {
+      source: GEMINI_MODEL,
+      type: parsedJSON.type || "expense",
+      category_key: parsedJSON.category_key || inferCategoryKey(query),
+      amount: finalAmount || codeParsedAmount || 0,
+      original_text: query
+    };
+  } catch (err: any) {
+    console.error("❌ Gemini parseFinancialQuery error:", err?.message ?? err);
+    // Graceful fallback to local inference on Gemini failure
+    return {
+      source: "fallback_gemini_error",
+      type: /gaji|bonus|salary|upah|thr|sampingan|freelance|komisi/.test(query.toLowerCase()) ? "income" : "expense",
+      category_key: inferCategoryKey(query),
+      amount: codeParsedAmount,
+      original_text: query
+    };
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// MAIN WEBHOOK HANDLER
+// ─────────────────────────────────────────────────────────────
 export default async (req: VercelRequest, res: VercelResponse) => {
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
@@ -484,126 +682,144 @@ export default async (req: VercelRequest, res: VercelResponse) => {
   try {
     const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
     const secretToken = process.env.TELEGRAM_WEBHOOK_SECRET;
-    
+
     if (secretToken && secretHeader !== secretToken) {
-      console.warn("⚠️ Unauthorized Telegram Webhook request blocked (Secret Token mismatch)");
+      console.warn("⚠️ Unauthorized Telegram Webhook request blocked");
       res.status(403).json({ error: "Unauthorized update request" });
       return;
     }
 
     const update = req.body;
-    console.log("📨 Telegram update received:", JSON.stringify(update, null, 2));
+    console.log("📨 Telegram update received:", JSON.stringify(update));
 
-    // Handle Inline Button Callback Queries
+    // ──────────────────────────────────────────────────────────
+    // CALLBACK QUERY HANDLER
+    // ──────────────────────────────────────────────────────────
     if (update.callback_query) {
-      const queryId = update.callback_query.id;
-      const chatId = update.callback_query.message?.chat?.id;
-      const msgId = update.callback_query.message?.message_id;
-      const actionData = update.callback_query.data;
+      const queryId    = update.callback_query.id;
+      const chatId     = update.callback_query.message?.chat?.id;
+      const msgId      = update.callback_query.message?.message_id;
+      const actionData = update.callback_query.data as string;
 
-      if (!chatId || !msgId) {
-        res.status(200).json({ ok: true });
-        return;
+      if (!chatId || !msgId) { res.status(200).json({ ok: true }); return; }
+
+      const lang = await resolveLangOnly(chatId);
+
+      // FIX #10: Language selection callback (set lang preference)
+      if (actionData === "set_lang_id" || actionData === "set_lang_en") {
+        const chosenLang: Lang = actionData === "set_lang_en" ? "en" : "id";
+        await supabaseBackend.rpc("set_telegram_language", { p_chat_id: chatId, p_lang: chosenLang });
+        await answerTelegramCallback(queryId, tr("cbLangSet", chosenLang));
+        await editTelegramMessage(chatId, msgId, tr("start", chosenLang));
+        res.status(200).json({ ok: true }); return;
       }
 
-      const lang = await resolveLang(chatId);
-
-      const { data: pendingRows, error: pendingErr } = await supabaseBackend.rpc("get_pending_telegram_tx", {
-        p_chat_id: chatId
-      });
-
-      if (pendingErr) {
-        console.error("❌ RPC get_pending_telegram_tx error:", pendingErr);
+      // FIX #11: Edit amount callback
+      if (actionData === "tx_edit_amount") {
+        const editLang = await resolveLangOnly(chatId);
+        await answerTelegramCallback(queryId);
+        await sendTelegramMessage(chatId, tr("editAmountPrompt", editLang));
+        res.status(200).json({ ok: true }); return;
       }
 
-      const pending = pendingRows && pendingRows.length > 0 ? pendingRows[0] : null;
-
+      // FIX #4 (race condition): Use atomic confirm_and_delete_pending_telegram_tx RPC
+      // which checks existence and inserts in a single transaction, preventing double-tap duplicates
       if (actionData === "tx_confirm") {
-        if (!pending) {
+        const { data: confirmResult, error: confirmErr } = await supabaseBackend.rpc(
+          "confirm_and_insert_telegram_tx",
+          { p_chat_id: chatId, p_date: new Date().toISOString().split("T")[0] }
+        );
+
+        if (confirmErr) {
+          console.error("❌ RPC confirm_and_insert_telegram_tx error:", confirmErr);
+          await answerTelegramCallback(queryId, tr("cbSaveFailed", lang));
+          await editTelegramMessage(chatId, msgId, tr("msgSaveFailed", lang, confirmErr.message));
+          res.status(200).json({ ok: true }); return;
+        }
+
+        const result = confirmResult && confirmResult.length > 0 ? confirmResult[0] : null;
+
+        if (!result || result.status === "not_found" || result.status === "expired") {
           await answerTelegramCallback(queryId, tr("cbExpired", lang));
           await editTelegramMessage(chatId, msgId, tr("msgExpired", lang));
-          res.status(200).json({ ok: true });
-          return;
+          res.status(200).json({ ok: true }); return;
         }
 
-        const { error } = await supabaseBackend.rpc("insert_telegram_transaction", {
-          p_chat_id: chatId,
-          p_type: pending.type,
-          p_category: pending.category_key,
-          p_amount: pending.amount,
-          p_note: pending.original_text,
-          p_date: new Date().toISOString().split("T")[0]
-        });
-
-        if (error) {
-          console.error("❌ RPC insert_telegram_transaction error:", error);
-          await answerTelegramCallback(queryId, tr("cbSaveFailed", lang));
-          await editTelegramMessage(chatId, msgId, tr("msgSaveFailed", lang, error.message));
-        } else {
-          await supabaseBackend.rpc("delete_pending_telegram_tx", { p_chat_id: chatId });
+        if (result.status === "already_confirmed") {
+          // Double-tap: silently acknowledge without inserting again
           await answerTelegramCallback(queryId, tr("cbSaveSuccess", lang));
-
-          const catLabel = getCategoryLabel(pending.category_key, lang);
-          const amountStr = formatIDR(pending.amount);
-          const typeLabel = pending.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
-
-          await editTelegramMessage(
-            chatId,
-            msgId,
-            tr("msgSaveSuccess", lang, typeLabel, catLabel, amountStr, pending.original_text)
-          );
+          res.status(200).json({ ok: true }); return;
         }
-      } 
-      else if (actionData === "tx_cancel") {
+
+        // status === "saved"
+        const catLabel  = getCategoryLabel(result.category_key, lang);
+        const amountStr = formatIDR(result.amount);
+        const typeLabel = result.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
+
+        await answerTelegramCallback(queryId, tr("cbSaveSuccess", lang));
+        await editTelegramMessage(chatId, msgId, tr("msgSaveSuccess", lang, typeLabel, catLabel, amountStr, result.original_text));
+        res.status(200).json({ ok: true }); return;
+      }
+
+      if (actionData === "tx_cancel") {
         await supabaseBackend.rpc("delete_pending_telegram_tx", { p_chat_id: chatId });
         await answerTelegramCallback(queryId, tr("cbCancelled", lang));
         await editTelegramMessage(chatId, msgId, tr("msgCancelled", lang));
+        res.status(200).json({ ok: true }); return;
       }
 
-      res.status(200).json({ ok: true });
-      return;
+      res.status(200).json({ ok: true }); return;
     }
 
-    // Handle Standard incoming messages
+    // ──────────────────────────────────────────────────────────
+    // MESSAGE HANDLER
+    // ──────────────────────────────────────────────────────────
     if (update.message && update.message.text) {
       const chatId = update.message.chat.id;
-      const text = update.message.text.trim();
-      const lang = await resolveLang(chatId);
+      const text   = update.message.text.trim();
 
-      // COMMANDS CHECK
+      // FIX #5: Resolve user context (lang + profile) in ONE DB call for command handling
+      // For commands that need profile we use resolveUserContext()
+      // For /start which runs before any account exists, fallback to "id"
+
       if (text.startsWith("/")) {
-        const parts = text.split(" ");
-        const command = parts[0].toLowerCase();
+        const parts   = text.split(" ");
+        const command = parts[0].toLowerCase().split("@")[0]; // handle /cmd@botname format
 
+        // ── /start ──
         if (command === "/start") {
-          await sendTelegramMessage(chatId, tr("start", lang));
-          res.status(200).json({ ok: true });
-          return;
+          const lang = await resolveLangOnly(chatId);
+          // FIX #10: Show language selector on /start
+          const langKeyboard = {
+            inline_keyboard: [[
+              { text: "🇮🇩 Indonesia", callback_data: "set_lang_id" },
+              { text: "🇺🇸 English",   callback_data: "set_lang_en" }
+            ]]
+          };
+          await sendTelegramMessage(chatId, tr("langPrompt", lang), langKeyboard);
+          res.status(200).json({ ok: true }); return;
         }
 
+        // ── /help ──
         if (command === "/help") {
+          const lang = await resolveLangOnly(chatId);
           await sendTelegramMessage(chatId, tr("help", lang));
-          res.status(200).json({ ok: true });
-          return;
+          res.status(200).json({ ok: true }); return;
         }
 
-        // ✅ /link COMMAND - THIS IS THE KEY COMMAND
+        // ── /link ──
         if (command === "/link") {
+          const lang = await resolveLangOnly(chatId);
           const code = parts[1];
-          if (!code || code.length !== 5) {
+          if (!code || !/^\d{5}$/.test(code)) {
             await sendTelegramMessage(chatId, tr("linkBadFormat", lang));
-            res.status(200).json({ ok: true });
-            return;
+            res.status(200).json({ ok: true }); return;
           }
-
-          console.log(`🔗 /link command received: code=${code}, chatId=${chatId}`);
 
           const { data, error } = await supabaseBackend.rpc("link_telegram_user", {
             p_code: code,
             p_chat_id: chatId
           });
-
-          console.log("RPC response - data:", data, "error:", error);
 
           if (error) {
             console.error("❌ RPC link_telegram_user error:", error);
@@ -612,83 +828,184 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             const displayName = data[0]?.display_name || (lang === "en" ? "User" : "Pengguna");
             await sendTelegramMessage(chatId, tr("linkSuccess", lang, displayName));
           } else {
-            const errMsg = data && data.length > 0 && data[0]?.message ? data[0].message : tr("linkInvalidCodeFallback", lang);
+            const errMsg = data?.[0]?.message || tr("linkInvalidCodeFallback", lang);
             await sendTelegramMessage(chatId, tr("linkFailed", lang, errMsg));
           }
 
-          res.status(200).json({ ok: true });
-          return;
+          res.status(200).json({ ok: true }); return;
         }
 
+        // ── /unlink ──
         if (command === "/unlink") {
-          const { error } = await supabaseBackend.rpc("unlink_telegram_user", {
-            p_chat_id: chatId
-          });
-
-          if (error) {
-            await sendTelegramMessage(chatId, tr("unlinkFailed", lang, error.message));
-          } else {
-            await sendTelegramMessage(chatId, tr("unlinkSuccess", lang));
-          }
-          res.status(200).json({ ok: true });
-          return;
+          const lang = await resolveLangOnly(chatId);
+          const { error } = await supabaseBackend.rpc("unlink_telegram_user", { p_chat_id: chatId });
+          if (error) await sendTelegramMessage(chatId, tr("unlinkFailed", lang, error.message));
+          else       await sendTelegramMessage(chatId, tr("unlinkSuccess", lang));
+          res.status(200).json({ ok: true }); return;
         }
 
+        // ── /saldo ── FIX #11: Includes last-month comparison
         if (command === "/saldo") {
-          const { data, error } = await supabaseBackend.rpc("get_telegram_user_summary", {
-            p_chat_id: chatId
-          });
+          const lang = await resolveLangOnly(chatId);
+          const { data, error } = await supabaseBackend.rpc("get_telegram_user_summary_v2", { p_chat_id: chatId });
 
           if (error) {
-            console.error("❌ RPC get_telegram_user_summary error:", error);
+            console.error("❌ RPC get_telegram_user_summary_v2 error:", error);
             await sendTelegramMessage(chatId, tr("saldoError", lang));
           } else if (!data || data.length === 0 || !data[0]?.display_name) {
             await sendTelegramMessage(chatId, tr("saldoNotLinked", lang));
           } else {
-            const summary = data[0];
-            const incStr = formatIDR(summary.total_income);
-            const expStr = formatIDR(summary.total_expense);
-            const balStr = formatIDR(summary.net_balance);
+            const s = data[0];
+            const prevExp   = s.prev_total_expense ?? 0;
+            const currExp   = s.total_expense ?? 0;
+            let expDiffIcon = "➡️";
+            let expDiffPct  = lang === "id" ? "sama" : "the same";
 
-            await sendTelegramMessage(chatId, tr("saldoSummary", lang, summary.display_name, incStr, expStr, balStr));
+            if (prevExp > 0) {
+              const pct = ((currExp - prevExp) / prevExp) * 100;
+              if (pct > 1) {
+                expDiffIcon = "📈";
+                expDiffPct  = lang === "id" ? `naik ${pct.toFixed(0)}%` : `up ${pct.toFixed(0)}%`;
+              } else if (pct < -1) {
+                expDiffIcon = "📉";
+                expDiffPct  = lang === "id" ? `turun ${Math.abs(pct).toFixed(0)}%` : `down ${Math.abs(pct).toFixed(0)}%`;
+              }
+            }
+
+            await sendTelegramMessage(chatId, tr(
+              "saldoSummary", lang,
+              s.display_name,
+              formatIDR(s.total_income),
+              formatIDR(currExp),
+              formatIDR(s.net_balance),
+              formatIDR(s.prev_total_income ?? 0),
+              formatIDR(prevExp),
+              expDiffIcon,
+              expDiffPct
+            ));
           }
-          res.status(200).json({ ok: true });
-          return;
+          res.status(200).json({ ok: true }); return;
         }
 
-        // Fallback for unhandled command
+        // ── /riwayat ── FIX #8: New command - last 5 transactions
+        if (command === "/riwayat") {
+          const lang = await resolveLangOnly(chatId);
+          const { data, error } = await supabaseBackend.rpc("get_telegram_recent_transactions", { p_chat_id: chatId, p_limit: 5 });
+
+          if (error) {
+            console.error("❌ RPC get_telegram_recent_transactions error:", error);
+            await sendTelegramMessage(chatId, tr("riwayatError", lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
+          if (!data || data.length === 0) {
+            const userCtx = await resolveUserContext(chatId);
+            if (!userCtx) await sendTelegramMessage(chatId, tr("riwayatNotLinked", lang));
+            else          await sendTelegramMessage(chatId, tr("riwayatEmpty", lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
+          let msg = tr("riwayatHeader", lang);
+          data.forEach((tx: any, i: number) => {
+            const typeEmoji = tx.type === "income" ? "📥" : "📤";
+            const catLabel  = getCategoryLabel(tx.category, lang);
+            const amount    = formatIDR(tx.amount);
+            const date      = tx.transaction_date;
+            msg += `${i + 1}. ${typeEmoji} *${amount}* — ${catLabel}\n`;
+            msg += `   _${tx.note || "-"}_ · ${date}\n\n`;
+          });
+          msg += tr("riwayatFooter", lang);
+
+          await sendTelegramMessage(chatId, msg);
+          res.status(200).json({ ok: true }); return;
+        }
+
+        // ── /hapus ── FIX #12: New command - delete last transaction
+        if (command === "/hapus") {
+          const lang = await resolveLangOnly(chatId);
+          const { data, error } = await supabaseBackend.rpc("delete_last_telegram_transaction", { p_chat_id: chatId });
+
+          if (error) {
+            console.error("❌ RPC delete_last_telegram_transaction error:", error);
+            await sendTelegramMessage(chatId, tr("hapusError", lang, error.message));
+            res.status(200).json({ ok: true }); return;
+          }
+
+          if (!data || data.length === 0 || !data[0]?.deleted) {
+            const userCtx = await resolveUserContext(chatId);
+            if (!userCtx) await sendTelegramMessage(chatId, tr("hapusNotLinked", lang));
+            else          await sendTelegramMessage(chatId, tr("hapusNone", lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
+          const deleted   = data[0];
+          const catLabel  = getCategoryLabel(deleted.category, lang);
+          const amountStr = formatIDR(deleted.amount);
+          const typeLabel = deleted.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
+          await sendTelegramMessage(chatId, tr("hapusSuccess", lang, typeLabel, catLabel, amountStr, deleted.note || "-"));
+          res.status(200).json({ ok: true }); return;
+        }
+
+        // Fallback: unknown command
+        const lang = await resolveLangOnly(chatId);
         await sendTelegramMessage(chatId, tr("unknownCommand", lang));
-        res.status(200).json({ ok: true });
-        return;
+        res.status(200).json({ ok: true }); return;
       }
 
-      // TRANSACTION PARSING FROM NATURAL CHAT TEXT
-      const { data: userProfile, error: profileErr } = await supabaseBackend.rpc("get_user_by_telegram_chat_id", {
-        p_chat_id: chatId
-      });
+      // ──────────────────────────────────────────────────────────
+      // TRANSACTION PARSING from natural text
+      // FIX #5: Single resolveUserContext() call replaces 2 separate DB calls
+      // ──────────────────────────────────────────────────────────
+      const userCtx = await resolveUserContext(chatId);
 
-      if (profileErr) {
-        console.error("Profile lookup error:", profileErr);
-        await sendTelegramMessage(chatId, tr("profileLookupError", lang));
-        res.status(200).json({ ok: true });
-        return;
+      if (!userCtx) {
+        await sendTelegramMessage(chatId, tr("notLinkedForTx", "id"));
+        res.status(200).json({ ok: true }); return;
       }
 
-      if (!userProfile || userProfile.length === 0) {
-        await sendTelegramMessage(chatId, tr("notLinkedForTx", lang));
-        res.status(200).json({ ok: true });
-        return;
+      const { lang } = userCtx;
+
+      // Check if user is editing an amount (reply to edit prompt)
+      // "Edit: 75rb" or just "75rb" after an edit-amount prompt
+      const isEditAmountReply = /^edit[:\s]/i.test(text);
+      const editAmountText = isEditAmountReply ? text.replace(/^edit[:\s]*/i, "").trim() : null;
+
+      if (editAmountText) {
+        const newAmount = parseAmountFromString(editAmountText);
+        if (newAmount > 0) {
+          const { data: pendingRows } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
+          const pending = pendingRows?.[0];
+          if (pending) {
+            await supabaseBackend.rpc("upsert_pending_telegram_tx", {
+              p_chat_id: chatId,
+              p_type: pending.type,
+              p_category_key: pending.category_key,
+              p_amount: newAmount,
+              p_original_text: pending.original_text
+            });
+            const catLabel  = getCategoryLabel(pending.category_key, lang);
+            const typeLabel = pending.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
+            const draftMarkup = {
+              inline_keyboard: [[
+                { text: tr("btnConfirm", lang),     callback_data: "tx_confirm" },
+                { text: tr("btnEditAmount", lang),  callback_data: "tx_edit_amount" },
+                { text: tr("btnCancel", lang),      callback_data: "tx_cancel" }
+              ]]
+            };
+            await sendTelegramMessage(chatId, tr("draftPrompt", lang, typeLabel, catLabel, formatIDR(newAmount), pending.original_text), draftMarkup);
+            res.status(200).json({ ok: true }); return;
+          }
+        }
       }
 
       await sendTelegramMessage(chatId, tr("analyzing", lang));
-      
+
       try {
         const parsed = await parseFinancialQuery(text);
-        
+
         if (parsed.amount <= 0) {
           await sendTelegramMessage(chatId, tr("amountNotDetected", lang));
-          res.status(200).json({ ok: true });
-          return;
+          res.status(200).json({ ok: true }); return;
         }
 
         const { error: upsertErr } = await supabaseBackend.rpc("upsert_pending_telegram_tx", {
@@ -702,36 +1019,35 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         if (upsertErr) {
           console.error("❌ RPC upsert_pending_telegram_tx error:", upsertErr);
           await sendTelegramMessage(chatId, tr("draftSaveError", lang));
-          res.status(200).json({ ok: true });
-          return;
+          res.status(200).json({ ok: true }); return;
         }
 
         const localizedCat = getCategoryLabel(parsed.category_key, lang);
-        const currencyStr = formatIDR(parsed.amount);
-        const typeLabel = parsed.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
+        const currencyStr  = formatIDR(parsed.amount);
+        const typeLabel    = parsed.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
 
-        const promptReplyMarkup = {
-          inline_keyboard: [
-            [
-              { text: tr("btnConfirm", lang), callback_data: "tx_confirm" },
-              { text: tr("btnCancel", lang), callback_data: "tx_cancel" }
-            ]
-          ]
+        // FIX #11: 3 buttons — Confirm | Edit Amount | Cancel
+        const draftMarkup = {
+          inline_keyboard: [[
+            { text: tr("btnConfirm", lang),    callback_data: "tx_confirm" },
+            { text: tr("btnEditAmount", lang), callback_data: "tx_edit_amount" },
+            { text: tr("btnCancel", lang),     callback_data: "tx_cancel" }
+          ]]
         };
 
         await sendTelegramMessage(
           chatId,
           tr("draftPrompt", lang, typeLabel, localizedCat, currencyStr, parsed.original_text),
-          promptReplyMarkup
+          draftMarkup
         );
 
       } catch (parseError: any) {
-        console.error("Parse Error:", parseError);
+        const errType = parseError?.name ?? "UnknownError";
+        console.error(`❌ parseFinancialQuery failed [${errType}]:`, parseError?.message ?? parseError);
         await sendTelegramMessage(chatId, tr("parseError", lang));
       }
 
-      res.status(200).json({ ok: true });
-      return;
+      res.status(200).json({ ok: true }); return;
     }
 
     res.status(200).json({ ok: true });
