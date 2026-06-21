@@ -6,6 +6,7 @@ import { ToastProvider, useToast } from "./contexts/ToastContext";
 import { useAuth } from "./contexts/AuthContext";
 import { Sidebar } from "./components/Sidebar";
 import { Login } from "./views/Login";
+import { AuthCallback } from "./components/AuthCallback";
 import { Dashboard } from "./views/Dashboard";
 import { NewTransaction } from "./views/NewTransaction";
 import { History } from "./views/History";
@@ -124,6 +125,7 @@ export default function App() {
         <ToastProvider>
           <Routes>
              <Route path="/login" element={<Login />} />
+             <Route path="/auth/callback" element={<AuthCallback />} />
              <Route path="/*" element={<MainLayout />} />
           </Routes>
         </ToastProvider>

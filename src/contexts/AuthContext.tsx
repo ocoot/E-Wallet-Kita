@@ -19,6 +19,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("AuthContext: Current hash:", window.location.hash);
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log("AuthContext: getSession", session);
       setSession(session);
@@ -40,7 +41,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     await supabase.auth.signInWithOAuth({ 
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: `${window.location.origin}/auth/callback`,
+        skipBrowserRedirect: false,
+        flowType: 'pkce',
       }
     });
   };
