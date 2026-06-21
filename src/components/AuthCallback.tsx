@@ -25,19 +25,28 @@ export const AuthCallback: React.FC = () => {
           const refreshToken = params.get('refresh_token');
           
           if (accessToken) {
-            addLog('Found access_token. Forcing session...');
+            addLog(`Found access_token. Refresh token: ${!!refreshToken}`);
+            addLog('Forcing setSession...');
+            
             const { data: setData, error: setError } = await supabase.auth.setSession({
               access_token: accessToken,
               refresh_token: refreshToken || '',
             });
             
             if (setError) {
-              addLog(`setSession Error: ${setError.message}`);
+              addLog(`CRITICAL setSession Error: ${setError.message}`);
+              console.error('[AuthCallback] setSession failed:', setError);
             } else if (setData.session) {
-              addLog('Session FORCED successfully. Redirecting...');
-              setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
+              addLog(`Session FORCED! User: ${setData.session.user?.email}`);
+              addLog(`New Storage Keys: ${Object.keys(localStorage).filter(k => k.includes('auth')).join(', ')}`);
+              addLog('Redirecting to dashboard...');
+              setTimeout(() => navigate('/dashboard', { replace: true }), 1500);
               return;
+            } else {
+              addLog('setSession returned NO session and NO error. Very strange.');
             }
+          } else {
+            addLog('No access_token found in hash parameters.');
           }
         } catch (e: any) {
           addLog(`Manual parse error: ${e.message}`);
