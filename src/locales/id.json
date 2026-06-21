@@ -25,7 +25,13 @@
     "to_signup": "Belum punya akun? Daftar Sekarang",
     "to_signin": "Sudah punya akun? Masuk Sekarang",
     "validation_email": "Format email tidak valid!",
-    "validation_pass": "Kata sandi minimal 6 karakter!"
+    "validation_pass": "Kata sandi minimal 6 karakter!",
+    "forgot_password": "Lupa Kata Sandi?",
+    "forgot_password_title": "Atur Ulang Kata Sandi",
+    "forgot_password_desc": "Masukkan alamat email Anda untuk menerima tautan pengaturan ulang kata sandi.",
+    "forgot_password_btn": "Kirim Link Atur Ulang",
+    "forgot_password_success": "Tautan pengaturan ulang kata sandi telah dikirim ke email Anda!",
+    "forgot_password_back": "Kembali ke Masuk Sesi"
   },
   "dashboard": {
     "welcome": "Halo, {name} 👋",

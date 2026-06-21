@@ -25,7 +25,13 @@
     "to_signup": "Don't have an account? Sign Up Now",
     "to_signin": "Already have an account? Sign In",
     "validation_email": "Invalid email address format!",
-    "validation_pass": "Password must be at least 6 characters!"
+    "validation_pass": "Password must be at least 6 characters!",
+    "forgot_password": "Forgot Password?",
+    "forgot_password_title": "Reset Password",
+    "forgot_password_desc": "Enter your email address to receive password reset instructions.",
+    "forgot_password_btn": "Send Reset Link",
+    "forgot_password_success": "Password reset instructions have been sent to your email!",
+    "forgot_password_back": "Back to Sign In"
   },
   "dashboard": {
     "welcome": "Welcome back, {name} 👋",
