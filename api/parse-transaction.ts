@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI, Type } from "@google/genai";
-import { parseAmountFromString } from '../src/lib/parserUtils';
-import { inferCategoryKey } from './utils';
+import { parseAmountFromString } from '../src/lib/parserUtils.js';
+import { inferCategoryKey } from './utils.js';
 
 const apiKey = process.env.GEMINI_API_KEY;
 let ai: GoogleGenAI | null = null;

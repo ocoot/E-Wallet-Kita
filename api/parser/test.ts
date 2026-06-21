@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { parseAmountFromString } from '../../src/lib/parserUtils';
+import { parseAmountFromString } from '../../src/lib/parserUtils.js';
 
 export default function handler(req: VercelRequest, res: VercelResponse) {
   const scenarios = [
