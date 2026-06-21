@@ -589,8 +589,6 @@ async function startServer() {
     }
   };
 
-  app.post("/api/telegram-webhook", handleTelegramWebhook);
-  app.post("/api/telegram/webhook", handleTelegramWebhook);
 
   // Vite development vs production static handler integration
   if (process.env.NODE_ENV !== "production") {
@@ -609,44 +607,8 @@ async function startServer() {
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`E-Wallet Kita backend server running on http://0.0.0.0:${PORT}`);
-    
-    // Automatically register webhook to Telegram on server boot
-    setupTelegramWebhook();
   });
 }
 
-/**
- * Automatically registers the webhook to Telegram Bot API on server boot
- */
-async function setupTelegramWebhook() {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  const appUrl = process.env.APP_URL;
-  const secretToken = process.env.TELEGRAM_WEBHOOK_SECRET;
-
-  if (!token || !appUrl) {
-    console.warn("⚠️ Setup Telegram Webhook skipped: TELEGRAM_BOT_TOKEN or APP_URL is not configured.");
-    return;
-  }
-
-  // Ensure trailing slash is normalized
-  const webhookUrl = `${appUrl.replace(/\/$/, "")}/api/telegram/webhook`;
-  console.log(`⏳ Registering webhook with url: ${webhookUrl}`);
-
-  try {
-    const res = await fetch(`https://api.telegram.org/bot${token}/setWebhook`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        url: webhookUrl,
-        secret_token: secretToken || undefined,
-        allowed_updates: ["message", "callback_query"]
-      })
-    });
-    const result = await res.json();
-    console.log("🌸 Telegram Bot setWebhook response:", result);
-  } catch (err) {
-    console.error("🔴 Setup Telegram Webhook failure:", err);
-  }
-}
 
 startServer();
