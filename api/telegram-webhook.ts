@@ -42,14 +42,6 @@ if (apiKey) {
   });
 }
 
-// In-Memory map untuk pending transactions
-const pendingTelegramTransactions = new Map<number, {
-  type: "income" | "expense";
-  category_key: string;
-  amount: number;
-  original_text: string;
-}>();
-
 // Category labels
 const botCategoryLabels: Record<string, { id: string; en: string }> = {
   salary: { id: "Gaji", en: "Salary" },
@@ -253,7 +245,15 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         return;
       }
 
-      const pending = pendingTelegramTransactions.get(chatId);
+      const { data: pendingRows, error: pendingErr } = await supabaseBackend.rpc("get_pending_telegram_tx", {
+        p_chat_id: chatId
+      });
+
+      if (pendingErr) {
+        console.error("❌ RPC get_pending_telegram_tx error:", pendingErr);
+      }
+
+      const pending = pendingRows && pendingRows.length > 0 ? pendingRows[0] : null;
 
       if (actionData === "tx_confirm") {
         if (!pending) {
@@ -277,7 +277,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           await answerTelegramCallback(queryId, "Gagal menyimpan transaksi.");
           await editTelegramMessage(chatId, msgId, `❌ *Gagal Menyimpan Transaksi*\n_Koneksi database bermasalah: ${error.message}_`);
         } else {
-          pendingTelegramTransactions.delete(chatId);
+          await supabaseBackend.rpc("delete_pending_telegram_tx", { p_chat_id: chatId });
           await answerTelegramCallback(queryId, "Transaksi berhasil dicatat!");
           
           const catLabel = botCategoryLabels[pending.category_key]?.id || pending.category_key;
@@ -296,7 +296,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         }
       } 
       else if (actionData === "tx_cancel") {
-        pendingTelegramTransactions.delete(chatId);
+        await supabaseBackend.rpc("delete_pending_telegram_tx", { p_chat_id: chatId });
         await answerTelegramCallback(queryId, "Pencatatan dibatalkan.");
         await editTelegramMessage(chatId, msgId, "❌ *Pencatatan transaksi telah dibatalkan.*");
       }
@@ -486,12 +486,20 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           return;
         }
 
-        pendingTelegramTransactions.set(chatId, {
-          type: parsed.type,
-          category_key: parsed.category_key,
-          amount: parsed.amount,
-          original_text: parsed.original_text
+        const { error: upsertErr } = await supabaseBackend.rpc("upsert_pending_telegram_tx", {
+          p_chat_id: chatId,
+          p_type: parsed.type,
+          p_category_key: parsed.category_key,
+          p_amount: parsed.amount,
+          p_original_text: parsed.original_text
         });
+
+        if (upsertErr) {
+          console.error("❌ RPC upsert_pending_telegram_tx error:", upsertErr);
+          await sendTelegramMessage(chatId, "⚠️ Terjadi kesalahan internal saat menyimpan draf transaksi. Silakan coba lagi.");
+          res.status(200).json({ ok: true });
+          return;
+        }
 
         const localizedCat = botCategoryLabels[parsed.category_key]?.id || parsed.category_key;
         const currencyStr = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(parsed.amount);
