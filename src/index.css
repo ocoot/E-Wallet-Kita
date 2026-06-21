@@ -6,6 +6,8 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
+@variant light_sakura (.light_sakura &);
+
 /* Base custom resets */
 html, body {
   font-family: var(--font-sans);
