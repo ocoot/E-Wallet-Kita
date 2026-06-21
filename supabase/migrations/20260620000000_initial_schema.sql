@@ -3,6 +3,7 @@
 CREATE TABLE public.users (
   id uuid REFERENCES auth.users NOT NULL PRIMARY KEY,
   display_name text,
+  email text,
   is_guest boolean DEFAULT false,
   telegram_chat_id bigint UNIQUE,
   preferred_language text DEFAULT 'id',
@@ -14,8 +15,8 @@ CREATE TABLE public.users (
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO public.users (id, display_name)
-  VALUES (new.id, new.raw_user_meta_data->>'full_name');
+  INSERT INTO public.users (id, display_name, email)
+  VALUES (new.id, new.raw_user_meta_data->>'full_name', new.email);
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

@@ -6,6 +6,7 @@
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY, -- Matches auth.users structure
     display_name TEXT NOT NULL,
+    email TEXT,
     is_guest BOOLEAN DEFAULT FALSE,
     telegram_chat_id BIGINT UNIQUE,
     preferred_language TEXT DEFAULT 'id' CHECK (preferred_language IN ('id', 'en')),
