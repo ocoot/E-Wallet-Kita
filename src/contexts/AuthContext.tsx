@@ -25,10 +25,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
-      // If we are on the auth callback page, don't finish loading yet.
-      // Let the AuthCallback component handle the redirection.
+      // Always allow the app to render on the callback route so AuthCallback can do its job
       if (window.location.pathname === '/auth/callback') {
-        console.log("AuthContext: On callback route, holding loading state...");
+        console.log("AuthContext: On callback route, releasing loading state for AuthCallback...");
+        setLoading(false);
         return;
       }
       

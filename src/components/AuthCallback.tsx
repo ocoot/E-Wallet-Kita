@@ -15,7 +15,11 @@ export const AuthCallback: React.FC = () => {
     const check = async () => {
       addLog('Running check...');
       const hash = window.location.hash;
+      const searchParams = new URLSearchParams(window.location.search);
+      const code = searchParams.get('code');
+      
       addLog(`Hash present: ${!!hash}`);
+      addLog(`Code present: ${!!code}`);
       
       if (hash && hash.includes('access_token=')) {
         addLog('OAuth token detected in hash. Attempting manual forced parse...');
@@ -51,6 +55,20 @@ export const AuthCallback: React.FC = () => {
         } catch (e: any) {
           addLog(`Manual parse error: ${e.message}`);
         }
+      } else if (code) {
+        addLog('Found "code" param. Manually exchanging...');
+        try {
+          const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
+          if (exchangeError) {
+             addLog(`Exchange Error: ${exchangeError.message}`);
+          } else if (exchangeData.session) {
+             addLog('Exchange Success! Redirecting...');
+             setTimeout(() => navigate('/dashboard', { replace: true }), 1500);
+             return;
+          }
+        } catch (e: any) {
+          addLog(`Exchange exception: ${e.message}`);
+        }
       }
 
       addLog(`LocalStorage Auth Keys: ${Object.keys(localStorage).filter(k => k.includes('auth')).join(', ')}`);
@@ -82,21 +100,6 @@ export const AuthCallback: React.FC = () => {
           subscription.unsubscribe();
           setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
         } else {
-          addLog('STILL NO SESSION. Checking for "code" in URL...');
-          const code = new URLSearchParams(window.location.search).get('code');
-          if (code) {
-             addLog('Found "code" param. Manually exchanging...');
-             const { data: exchangeData, error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
-             if (exchangeError) {
-                addLog(`Exchange Error: ${exchangeError.message}`);
-             } else if (exchangeData.session) {
-                addLog('Exchange Success! Redirecting...');
-                subscription.unsubscribe();
-                setTimeout(() => navigate('/dashboard', { replace: true }), 1000);
-                return;
-             }
-          }
-          
           addLog('FATAL: Authentication failed. Returning to login in 5s...');
           subscription.unsubscribe();
           setTimeout(() => navigate('/login', { replace: true }), 5000);
