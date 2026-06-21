@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { LogOut } from "lucide-react";
 
 const MainLayout: React.FC = () => {
-  const { user, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
   
@@ -49,6 +49,14 @@ const MainLayout: React.FC = () => {
       setIsLoggingOut(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
+        Loading...
+      </div>
+    );
+  }
 
   if (!user) {
     return <Navigate to="/login" replace />;
