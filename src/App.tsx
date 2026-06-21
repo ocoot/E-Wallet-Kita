@@ -20,7 +20,6 @@ const MainLayout: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   
-  const [activeTab, setActiveTab] = useState<string>("dashboard");
   const [transactionsUpdatedTrigger, setTransactionsUpdatedTrigger] = useState(0);
 
   const handleTransactionChange = () => {
@@ -68,8 +67,6 @@ const MainLayout: React.FC = () => {
       
       {/*Collapsible responsive Navigation Menu */}
       <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
         onLogoutClick={handleLogoutClick}
       />
 
@@ -78,7 +75,7 @@ const MainLayout: React.FC = () => {
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} />} />
-            <Route path="/transactions/new" element={<NewTransaction onTransactionAdded={handleTransactionChange} setActiveTab={setActiveTab} />} />
+            <Route path="/transactions/new" element={<NewTransaction onTransactionAdded={handleTransactionChange} />} />
             <Route path="/transactions" element={<History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} />} />
             <Route path="/settings" element={<Settings onUserPrefUpdated={(user) => {}} />} />
             <Route path="*" element={<Navigate to="/dashboard" replace />} />

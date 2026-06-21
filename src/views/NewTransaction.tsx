@@ -9,15 +9,16 @@ import { Plus, ArrowLeftRight, Calendar, DollarSign, FileText, CheckCircle } fro
 import { motion, useAnimation } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
+import { useNavigate } from "react-router-dom";
+
 interface NewTransactionProps {
   onTransactionAdded: () => void;
-  setActiveTab: (tab: string) => void;
 }
 
 export const NewTransaction: React.FC<NewTransactionProps> = ({
-  onTransactionAdded,
-  setActiveTab
+  onTransactionAdded
 }) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const currentUser: UserSession = {
     id: user?.id || "",
@@ -111,7 +112,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         setDate(new Date().toISOString().split("T")[0]);
         
         onTransactionAdded(); // Trigger global cache updates
-        setActiveTab("dashboard"); // Go back to dashboard!
+        navigate("/dashboard"); // Go back to dashboard!
       } catch (err) {
         console.error(err);
         showToast(t("toast.error_general"), "error");

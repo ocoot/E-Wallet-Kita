@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
+import { Link, useLocation } from "react-router-dom";
 import { 
   Wallet, 
   LayoutDashboard, 
   PlusCircle, 
-  History, 
-  Settings, 
+  History as HistoryIcon, 
+  Settings as SettingsIcon, 
   LogOut, 
   ChevronLeft, 
   ChevronRight, 
@@ -23,19 +24,16 @@ import {
 import { audioFeedback } from "../lib/audio";
 
 interface SidebarProps {
-  activeTab: string;
-  setActiveTab: (tab: string) => void;
   onLogoutClick: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  activeTab,
-  setActiveTab,
   onLogoutClick
 }) => {
   const { user } = useAuth();
   const { locale, setLocale, t } = useLanguage();
   const { theme, setTheme } = useTheme();
+  const location = useLocation();
 
   // Desktop sidebar expand / collapse state
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -48,11 +46,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const displayName = user?.user_metadata?.full_name || user?.email || "User";
 
   const menuItems = [
-    { id: "dashboard", label: t("nav.dashboard"), icon: LayoutDashboard },
-    { id: "new_transaction", label: t("nav.new_transaction"), icon: PlusCircle },
-    { id: "history", label: t("nav.history"), icon: History },
-    { id: "settings", label: t("nav.settings"), icon: Settings },
+    { id: "dashboard", label: t("nav.dashboard"), icon: LayoutDashboard, path: "/dashboard" },
+    { id: "new_transaction", label: t("nav.new_transaction"), icon: PlusCircle, path: "/transactions/new" },
+    { id: "history", label: t("nav.history"), icon: HistoryIcon, path: "/transactions" },
+    { id: "settings", label: t("nav.settings"), icon: SettingsIcon, path: "/settings" },
   ];
+
+  const activeTab = menuItems.find(item => location.pathname === item.path)?.id || "dashboard";
 
   const [isMuted, setIsMuted] = useState(audioFeedback.getIsMuted());
 
@@ -74,12 +74,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const toggleTheme = () => {
     audioFeedback.playClick();
     setTheme(theme === "dark_obsidian" ? "light_sakura" : "dark_obsidian");
-  };
-
-  const handleNavClick = (tabId: string) => {
-    audioFeedback.playClick();
-    setActiveTab(tabId);
-    setIsMobileOpen(false); // Close mobile panel
   };
 
   return (
@@ -150,9 +144,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 const IconComp = item.icon;
                 const isActive = activeTab === item.id;
                 return (
-                  <button
+                  <Link
                     key={item.id}
-                    onClick={() => handleNavClick(item.id)}
+                    to={item.path}
+                    onClick={() => setIsMobileOpen(false)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-sans text-sm font-medium transition-all duration-150 cursor-pointer
                       ${isActive 
                         ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 light_sakura:bg-rose-500 light_sakura:text-white" 
@@ -161,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   >
                     <IconComp size={18} />
                     <span>{item.label}</span>
-                  </button>
+                  </Link>
                 );
               })}
             </nav>
@@ -286,9 +281,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             const IconComp = item.icon;
             const isActive = activeTab === item.id;
             return (
-              <button
+              <Link
                 key={item.id}
-                onClick={() => setActiveTab(item.id)}
+                to={item.path}
                 title={isCollapsed ? item.label : undefined}
                 className={`w-full flex items-center px-4 py-3 rounded-xl font-sans text-sm font-medium transition-all duration-150 cursor-pointer
                   ${isCollapsed ? "justify-center" : "gap-3"}
@@ -299,7 +294,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <IconComp size={18} className="shrink-0" />
                 {!isCollapsed && <span>{item.label}</span>}
-              </button>
+              </Link>
             );
           })}
         </nav>
