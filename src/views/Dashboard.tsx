@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { dbService } from "../lib/db";
+import { supabase } from "../lib/supabase";
 import { UserSession, Transaction } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
@@ -16,7 +17,8 @@ import {
   X, 
   Plus, 
   ArrowRight,
-  Info
+  Info,
+  RefreshCw
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
@@ -44,6 +46,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [summary, setSummary] = useState({ income: 0, expense: 0, balance: 0 });
   const [sparkPoints, setSparkPoints] = useState<number[]>([]);
+  const [telegramStatus, setTelegramStatus] = useState<{ linked: boolean, lastSync: string | null }>({ linked: false, lastSync: null });
 
   // AI Box state
   const [aiText, setAiText] = useState("");
@@ -71,8 +74,23 @@ export const Dashboard: React.FC<DashboardProps> = ({
       const currentMonthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`; // e.g., "2026-06"
       
       try {
-        const data = await dbService.getTransactions(currentUser.id, currentMonthPrefix);
+        const [data, userRes] = await Promise.all([
+          dbService.getTransactions(currentUser.id, currentMonthPrefix),
+          supabase.from("users").select("telegram_chat_id").eq("id", currentUser.id).single()
+        ]);
+        
         setTransactions(data);
+        
+        if (userRes.data?.telegram_chat_id) {
+          const latestTelegramTx = data
+            .filter(t => t.source === 'telegram')
+            .sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
+          
+          setTelegramStatus({
+            linked: true,
+            lastSync: latestTelegramTx ? new Date(latestTelegramTx.created_at).toLocaleTimeString() : null
+          });
+        }
 
         // Compute sums
         let inc = 0;
@@ -213,6 +231,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
             {t("app.tagline_sub")}
           </p>
+          {telegramStatus.linked && (
+            <div className="flex items-center gap-1.5 mt-2 text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md w-fit">
+              <Send size={10} />
+              <span>
+                {t("settings.telegram_sync_status")}
+                {telegramStatus.lastSync ? ` (${t("settings.telegram_last_sync", { time: telegramStatus.lastSync })})` : ""}
+              </span>
+            </div>
+          )}
         </div>
         {currentUser.is_guest && (
           <div className="self-start md:self-center bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-2 font-sans text-xs font-semibold text-amber-500 flex items-center gap-2">

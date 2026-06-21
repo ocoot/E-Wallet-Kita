@@ -674,6 +674,9 @@ If no category matches, use 'other'. Always return the numeric IDR value in 'amo
 // MAIN WEBHOOK HANDLER
 // ─────────────────────────────────────────────────────────────
 export default async (req: VercelRequest, res: VercelResponse) => {
+  // Auto-cleanup expired pending transactions
+  await supabaseBackend.rpc("cleanup_expired_pending_transactions");
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;

@@ -18,7 +18,8 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   XCircle,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Send
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
@@ -383,8 +384,12 @@ export const History: React.FC<HistoryProps> = ({
 
                         {/* Source indicator */}
                         <td className="p-4 text-xs font-medium text-slate-500 hidden md:table-cell">
-                          <span className="flex items-center gap-1">
-                            {tx.source === "telegram" && <Sparkles size={12} className="text-teal-400" />}
+                          <span className="flex items-center gap-1.5">
+                            {tx.source === "telegram" && (
+                              <div className="bg-[#0088cc]/20 p-1 rounded-md text-[#0088cc]">
+                                <Send size={10} className="-translate-x-0.5 translate-y-0.5 rotate-45" />
+                              </div>
+                            )}
                             <span>{getSourceIconLabel(tx.source)}</span>
                           </span>
                         </td>

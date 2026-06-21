@@ -45,7 +45,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               id: session.user.id,
               display_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
               is_guest: session.user.is_anonymous || false,
-              email: session.user.email || null
+              email: session.user.email || null,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
             }, {
               onConflict: 'id',
               ignoreDuplicates: false

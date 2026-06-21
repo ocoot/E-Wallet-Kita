@@ -20,7 +20,8 @@ import {
   AlertCircle,
   HelpCircle,
   CheckCircle,
-  Info
+  Info,
+  Copy
 } from "lucide-react";
 import { motion } from "motion/react";
 import { UserSession } from "../types";
@@ -43,6 +44,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
   // Telegram Connection States
   const [linkingCode, setLinkingCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(600); // 10 minutes
   const [isTelegramLinked, setIsTelegramLinked] = useState(false);
   const [telegramChatId, setTelegramChatId] = useState("");
@@ -87,6 +89,30 @@ export const Settings: React.FC<SettingsProps> = ({
 
     return () => clearInterval(interval);
   }, [linkingCode]);
+
+  // Real-time polling for Telegram activation status
+  useEffect(() => {
+    if (!user || isTelegramLinked) return;
+
+    const interval = setInterval(async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('telegram_chat_id')
+        .eq('id', user.id)
+        .single();
+        
+      if (!error && data && data.telegram_chat_id) {
+        setTelegramChatId(data.telegram_chat_id);
+        setIsTelegramLinked(true);
+        setLinkingCode(null); // Clear linking code on success
+        audioFeedback.playChime();
+        showToast(t("toast.success_link"), "success");
+        clearInterval(interval);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [user, isTelegramLinked]);
 
   const handleUpdateProfileName = () => {
     audioFeedback.playClick();
@@ -176,6 +202,20 @@ export const Settings: React.FC<SettingsProps> = ({
     } catch (err: any) {
       showToast(t("settings.toast_generate_code_error", { message: err.message }), "error");
     }
+  };
+
+  const handleCopyLinkCommand = () => {
+    audioFeedback.playClick();
+    if (!linkingCode) return;
+    const commandText = `/link ${linkingCode}`;
+    navigator.clipboard.writeText(commandText).then(() => {
+      setCopied(true);
+      showToast(t("settings.toast_copied_link", { code: linkingCode }), "success");
+      setTimeout(() => setCopied(false), 2000);
+    }).catch(err => {
+      console.error("Failed to copy link command:", err);
+      showToast(t("toast.error_general"), "error");
+    });
   };
 
   // Simulated Telegram bot action trigger
@@ -440,23 +480,50 @@ export const Settings: React.FC<SettingsProps> = ({
             </p>
 
             {/* Connection Status indicator info */}
-            <div className="flex items-center gap-2.5 p-3.5 rounded-xl border border-slate-800 bg-slate-950/40 light_sakura:border-rose-100 light_sakura:bg-rose-50/30">
-              {isTelegramLinked ? (
-                <>
-                  <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse" />
-                  <span className="font-sans text-xs font-semibold text-emerald-400 light_sakura:text-emerald-600">
-                    {t("settings.telegram_linked", { id: telegramChatId })}
+            {isTelegramLinked ? (
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-500/5 light_sakura:border-emerald-250 light_sakura:bg-emerald-50/20 shadow-xs">
+                <div className="flex items-center gap-3.5">
+                  {/* Stylized Telegram Blue Icon */}
+                  <div className="w-10 h-10 rounded-full bg-[#0088cc] text-white flex items-center justify-center shadow-md relative shrink-0">
+                    <Send size={18} className="-translate-x-0.5 translate-y-0.5 rotate-45" /> {/* Telegram plane logo simulation */}
+                    <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 light_sakura:border-white rounded-full flex items-center justify-center">
+                      <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                    </span>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-sans font-bold text-xs text-white light_sakura:text-slate-800 flex items-center gap-1.5">
+                      <span>Telegram Bot</span>
+                      <span className="px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 rounded-md">ACTIVE</span>
+                    </h4>
+                    <div className="font-sans text-[11px] text-gray-400 mt-0.5 light_sakura:text-slate-500">
+                      {t("settings.telegram_linked", { id: telegramChatId })}
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Mono ID pill badge */}
+                <div className="self-stretch sm:self-auto flex items-center justify-center sm:justify-start">
+                  <span className="px-3 py-1 bg-slate-950 light_sakura:bg-rose-50/50 rounded-xl font-mono text-xs font-semibold text-teal-400 light_sakura:text-rose-500 border border-slate-800 light_sakura:border-rose-100">
+                    ID: {telegramChatId}
                   </span>
-                </>
-              ) : (
-                <>
-                  <span className="w-2.5 h-2.5 bg-gray-500 rounded-full" />
-                  <span className="font-sans text-xs font-semibold text-gray-400 light_sakura:text-slate-500">
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3.5 p-4 rounded-xl border border-slate-800 bg-slate-950/40 light_sakura:border-rose-100 light_sakura:bg-rose-50/30">
+                <div className="w-10 h-10 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center shrink-0 light_sakura:bg-rose-100 light_sakura:text-rose-400">
+                  <Send size={16} className="-translate-x-0.5 translate-y-0.5 rotate-45 opacity-60" />
+                </div>
+                <div>
+                  <h4 className="font-sans font-bold text-xs text-gray-400 light_sakura:text-slate-700">
                     {t("settings.telegram_unlinked")}
-                  </span>
-                </>
-              )}
-            </div>
+                  </h4>
+                  <p className="font-sans text-[10px] text-gray-500 mt-0.5 leading-tight">
+                    {locale === "id" ? "Hubungkan akun untuk memulai pencatatan instan via chat Telegram." : "Link your account to start instant tracking via Telegram messages."}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Active flow triggers */}
             {!isTelegramLinked ? (
@@ -472,7 +539,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     {t("settings.btn_generate_code")}
                   </motion.button>
                 ) : (
-                  <div className="p-4 rounded-xl border border-dashed border-indigo-500/20 bg-indigo-500/5 light_sakura:border-rose-200 light_sakura:bg-rose-50/40 space-y-4 flex flex-col items-center">
+                  <div className="p-4 rounded-xl border border-dashed border-indigo-500/20 bg-indigo-500/5 light_sakura:border-rose-200 light_sakura:bg-rose-50/40 space-y-4 flex flex-col items-center w-full">
                     <p className="font-sans text-xs text-center text-gray-400 light_sakura:text-slate-600">
                       {t("settings.telegram_instructions")}
                     </p>
@@ -481,6 +548,18 @@ export const Settings: React.FC<SettingsProps> = ({
                     <div className="px-6 py-3.5 rounded-2xl bg-slate-950 shadow-inner font-mono font-bold text-2xl tracking-widest text-teal-400 light_sakura:bg-white light_sakura:text-rose-500 border light_sakura:border-rose-150 relative">
                       <span>{linkingCode}</span>
                     </div>
+
+                    {/* Visual clipboard copy button helper */}
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      type="button"
+                      onClick={handleCopyLinkCommand}
+                      className="w-full cursor-pointer py-2.5 px-4 bg-indigo-600/10 border border-indigo-500/30 text-indigo-400 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 hover:bg-indigo-600/20 transition-all light_sakura:bg-rose-500/10 light_sakura:text-rose-600"
+                    >
+                      {copied ? <CheckCircle size={15} className="text-emerald-500" /> : <Copy size={15} />}
+                      <span>{copied ? t("settings.btn_copy_link_copied") : t("settings.btn_copy_link")}</span>
+                    </motion.button>
 
                     <div className="flex items-center gap-2 font-sans text-[11px] text-gray-400 light_sakura:text-slate-500 font-semibold uppercase tracking-wider">
                       <RefreshCw size={13} className="animate-spin" />
