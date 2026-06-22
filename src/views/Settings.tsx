@@ -470,10 +470,18 @@ export const Settings: React.FC<SettingsProps> = ({
         <div className="space-y-6">
           
           {/* Section 3: Telegram Bot Integration block */}
-          <div className="p-6 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-xs space-y-4">
-            <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100">
-              {t("settings.telegram_sec")}
-            </h3>
+          <div className="p-6 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-xs space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-800/10 pb-2.5 light_sakura:border-rose-100">
+              <h3 className="font-sans font-bold text-sm text-slate-200 light_sakura:text-slate-800 flex items-center gap-2">
+                <Send size={14} className="text-sky-400" />
+                <span>{t("settings.telegram_sec")}</span>
+              </h3>
+              {isTelegramLinked && (
+                <span className="px-2 py-0.5 text-[9px] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/30">
+                  {t("common.active", "ACTIVE")}
+                </span>
+              )}
+            </div>
 
             <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
               {t("settings.telegram_desc")}
@@ -481,117 +489,138 @@ export const Settings: React.FC<SettingsProps> = ({
 
             {/* Connection Status indicator info */}
             {isTelegramLinked ? (
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-500/5 light_sakura:border-emerald-250 light_sakura:bg-emerald-50/20 shadow-xs">
-                <div className="flex items-center gap-3.5">
-                  {/* Stylized Telegram Blue Icon */}
-                  <div className="w-10 h-10 rounded-full bg-[#0088cc] text-white flex items-center justify-center shadow-md relative shrink-0">
-                    <Send size={18} className="-translate-x-0.5 translate-y-0.5 rotate-45" /> {/* Telegram plane logo simulation */}
-                    <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 light_sakura:border-white rounded-full flex items-center justify-center">
-                      <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                    </span>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-sans font-bold text-xs text-white light_sakura:text-slate-800 flex items-center gap-1.5">
-                      <span>Telegram Bot</span>
-                      <span className="px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 rounded-md">ACTIVE</span>
-                    </h4>
-                    <div className="font-sans text-[11px] text-gray-400 mt-0.5 light_sakura:text-slate-500">
-                      {t("settings.telegram_linked", { id: telegramChatId })}
+              <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-500/5 light_sakura:border-emerald-250 light_sakura:bg-emerald-50/20 shadow-xs">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-10 h-10 rounded-full bg-[#0088cc] text-white flex items-center justify-center shadow-md relative shrink-0">
+                      <Send size={18} className="-translate-x-0.5 translate-y-0.5 rotate-45" />
+                      <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 light_sakura:border-white rounded-full flex items-center justify-center">
+                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
+                      </span>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-sans font-bold text-xs text-white light_sakura:text-slate-800">
+                        {t("settings.telegram_sync_status")}
+                      </h4>
+                      <div className="font-sans text-[11px] text-gray-400 mt-0.5 light_sakura:text-slate-500">
+                        {t("settings.telegram_linked", { id: telegramChatId })}
+                      </div>
                     </div>
                   </div>
+                  
+                  <div className="self-stretch sm:self-auto flex items-center justify-center sm:justify-start">
+                    <span className="px-3 py-1 bg-slate-950 light_sakura:bg-rose-50/50 rounded-xl font-mono text-xs font-semibold text-teal-400 light_sakura:text-rose-500 border border-slate-800 light_sakura:border-rose-100">
+                      ID: {telegramChatId}
+                    </span>
+                  </div>
                 </div>
-                
-                {/* Mono ID pill badge */}
-                <div className="self-stretch sm:self-auto flex items-center justify-center sm:justify-start">
-                  <span className="px-3 py-1 bg-slate-950 light_sakura:bg-rose-50/50 rounded-xl font-mono text-xs font-semibold text-teal-400 light_sakura:text-rose-500 border border-slate-800 light_sakura:border-rose-100">
-                    ID: {telegramChatId}
-                  </span>
+
+                {/* Features Highlight */}
+                <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 space-y-3">
+                  <h4 className="font-sans font-bold text-[10px] text-gray-400 light_sakura:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                    <Sparkles size={12} className="text-amber-400" />
+                    <span>{t("settings.telegram_features_title")}</span>
+                  </h4>
+                  <ul className="space-y-2">
+                    {[1, 2, 3].map(i => (
+                      <li key={i} className="flex items-start gap-2 text-[11px] text-gray-400 light_sakura:text-slate-600">
+                        <CheckCircle size={12} className="text-emerald-500 shrink-0 mt-0.5" />
+                        <span>{t(`settings.telegram_feature_${i}`)}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
+
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  type="button"
+                  onClick={handleUnlinkTelegramClick}
+                  className="w-full cursor-pointer py-3 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl font-sans text-xs font-semibold transition-colors"
+                >
+                  {t("settings.btn_unlink")}
+                </motion.button>
               </div>
             ) : (
-              <div className="flex items-center gap-3.5 p-4 rounded-xl border border-slate-800 bg-slate-950/40 light_sakura:border-rose-100 light_sakura:bg-rose-50/30">
-                <div className="w-10 h-10 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center shrink-0 light_sakura:bg-rose-100 light_sakura:text-rose-400">
-                  <Send size={16} className="-translate-x-0.5 translate-y-0.5 rotate-45 opacity-60" />
+              <div className="space-y-5">
+                {/* Step-by-Step Connection Guide */}
+                <div className="relative space-y-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Info size={14} className="text-indigo-400" />
+                    <h4 className="font-sans font-bold text-xs text-slate-200 light_sakura:text-slate-700">
+                      {t("settings.telegram_steps_title")}
+                    </h4>
+                  </div>
+                  
+                  <div className="space-y-3.5">
+                    {[1, 2, 3].map((step) => (
+                      <div key={step} className="flex gap-3 items-start group">
+                        <div className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-indigo-400 shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
+                          {step}
+                        </div>
+                        <p className="font-sans text-[11px] text-gray-400 light_sakura:text-slate-600 leading-normal pt-0.5">
+                          {t(`settings.telegram_step_${step}`)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-sans font-bold text-xs text-gray-400 light_sakura:text-slate-700">
-                    {t("settings.telegram_unlinked")}
-                  </h4>
-                  <p className="font-sans text-[10px] text-gray-500 mt-0.5 leading-tight">
-                    {locale === "id" ? "Hubungkan akun untuk memulai pencatatan instan via chat Telegram." : "Link your account to start instant tracking via Telegram messages."}
-                  </p>
-                </div>
-              </div>
-            )}
 
-            {/* Active flow triggers */}
-            {!isTelegramLinked ? (
-              <div className="space-y-4">
                 {!linkingCode ? (
                   <motion.button
                     whileHover={{ scale: 1.02, y: -1 }}
                     whileTap={{ scale: 0.98 }}
                     type="button"
                     onClick={handleGenerateLinkingCode}
-                    className="w-full cursor-pointer py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold shadow-md transition-all light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                    className="w-full cursor-pointer py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
                   >
                     {t("settings.btn_generate_code")}
                   </motion.button>
                 ) : (
-                  <div className="p-4 rounded-xl border border-dashed border-indigo-500/20 bg-indigo-500/5 light_sakura:border-rose-200 light_sakura:bg-rose-50/40 space-y-4 flex flex-col items-center w-full">
-                    <p className="font-sans text-xs text-center text-gray-400 light_sakura:text-slate-600">
-                      {t("settings.telegram_instructions")}
-                    </p>
-
+                  <div className="p-5 rounded-2xl border-2 border-dashed border-indigo-500/30 bg-indigo-500/5 light_sakura:border-rose-200 light_sakura:bg-rose-50/40 space-y-4 flex flex-col items-center w-full">
                     {/* Highly visible 5-digit sequence code display */}
-                    <div className="px-6 py-3.5 rounded-2xl bg-slate-950 shadow-inner font-mono font-bold text-2xl tracking-widest text-teal-400 light_sakura:bg-white light_sakura:text-rose-500 border light_sakura:border-rose-150 relative">
-                      <span>{linkingCode}</span>
+                    <div className="text-center space-y-1">
+                      <span className="font-sans text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                        {t("settings.btn_copy_link")}
+                      </span>
+                      <div className="px-8 py-4 rounded-2xl bg-slate-950 shadow-xl font-mono font-bold text-3xl tracking-[0.2em] text-teal-400 light_sakura:bg-white light_sakura:text-rose-500 border border-slate-800 light_sakura:border-rose-150 flex items-center justify-center gap-4">
+                        <span>{linkingCode}</span>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={handleCopyLinkCommand}
+                          className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+                        >
+                          {copied ? <CheckCircle size={18} className="text-emerald-500" /> : <Copy size={18} />}
+                        </motion.button>
+                      </div>
                     </div>
 
-                    {/* Visual clipboard copy button helper */}
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      type="button"
-                      onClick={handleCopyLinkCommand}
-                      className="w-full cursor-pointer py-2.5 px-4 bg-indigo-600/10 border border-indigo-500/30 text-indigo-400 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 hover:bg-indigo-600/20 transition-all light_sakura:bg-rose-500/10 light_sakura:text-rose-600"
-                    >
-                      {copied ? <CheckCircle size={15} className="text-emerald-500" /> : <Copy size={15} />}
-                      <span>{copied ? t("settings.btn_copy_link_copied") : t("settings.btn_copy_link")}</span>
-                    </motion.button>
+                    <div className="w-full h-px bg-slate-800/50 light_sakura:bg-rose-100" />
 
-                    <div className="flex items-center gap-2 font-sans text-[11px] text-gray-400 light_sakura:text-slate-500 font-semibold uppercase tracking-wider">
-                      <RefreshCw size={13} className="animate-spin" />
-                      <span>{t("settings.code_expires")}: {formatTimerStr(timerSeconds)}</span>
+                    <div className="flex flex-col items-center gap-2">
+                       <div className="flex items-center gap-2 font-sans text-[11px] text-gray-400 light_sakura:text-slate-500 font-semibold uppercase tracking-wider">
+                        <RefreshCw size={13} className="animate-spin text-indigo-400" />
+                        <span>{t("settings.code_expires")}: {formatTimerStr(timerSeconds)}</span>
+                      </div>
+                      <p className="font-sans text-[10px] text-gray-500 text-center italic">
+                        {t("settings.waiting_for_connection", "Menunggu koneksi dari bot...")}
+                      </p>
                     </div>
 
-                    {/* Interactive Mock simulation webhook trigger */}
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
+                    {/* Interactive Mock simulation webhook trigger - kept smaller and more subtle */}
+                    <button
                       type="button"
                       onClick={handleSimulateTelegramWebhookLink}
-                      className="w-full cursor-pointer py-2.5 bg-teal-500/10 border border-teal-500/25 text-teal-400 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-1.5 hover:bg-teal-500/20 transition-all light_sakura:bg-rose-100 light_sakura:border-rose-300 light_sakura:text-rose-600"
+                      className="cursor-pointer text-[10px] text-gray-500 hover:text-gray-300 underline underline-offset-4 transition-colors"
                     >
-                      <Sparkles size={14} />
-                      <span>{t("settings.btn_simulate_bot")}</span>
-                    </motion.button>
+                      {t("settings.btn_simulate_bot")}
+                    </button>
                   </div>
                 )}
               </div>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="button"
-                onClick={handleUnlinkTelegramClick}
-                className="w-full cursor-pointer py-3 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl font-sans text-xs font-semibold transition-colors"
-              >
-                {t("settings.btn_unlink")}
-              </motion.button>
             )}
-
           </div>
         </div>
       </div>
