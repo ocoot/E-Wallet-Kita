@@ -18,10 +18,24 @@ import {
   Plus, 
   ArrowRight,
   Info,
-  RefreshCw
+  RefreshCw,
+  TrendingUp as TrendUpIcon,
+  Activity
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  LineChart,
+  Line
+} from "recharts";
 
 interface DashboardProps {
   transactionsUpdatedTrigger: number;
@@ -47,6 +61,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [summary, setSummary] = useState({ income: 0, expense: 0, balance: 0 });
   const [sparkPoints, setSparkPoints] = useState<number[]>([]);
   const [telegramStatus, setTelegramStatus] = useState<{ linked: boolean, lastSync: string | null }>({ linked: false, lastSync: null });
+
+  // Interactive Recharts configuration states
+  const [chartMode, setChartMode] = useState<"area" | "line">("area");
+  const [chartType, setChartType] = useState<"daily" | "cumulative">("cumulative");
+
+  // Locale labels for chart representation
+  const labelIncome = t("dashboard.income");
+  const labelExpense = t("dashboard.expense");
+  const labelBalance = t("dashboard.balance");
 
   // Categories lookup helpers
   const categoryKeys = ["salary", "bonus", "food_drink", "monthly_groceries", "vegetables", "bills", "other"];
@@ -116,15 +139,88 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return "Rp" + Math.round(num).toLocaleString("id-ID");
   };
 
-  // Chart data calculations by Categories
-  const categoryChartData = categoryKeys.map(key => {
-    const total = transactions
-      .filter(t => t.category === key)
-      .reduce((acc, curr) => acc + curr.amount, 0);
-    return { key, total };
-  }).filter(c => c.total > 0);
+  // Build trend chart data sequentially over days of the month
+  const getChartData = () => {
+    const today = new Date();
+    // Gather all days of the current month up to either today or the max transaction day
+    const maxDay = transactions.length > 0
+      ? Math.max(...transactions.map(t => new Date(t.transaction_date).getDate()), today.getDate())
+      : today.getDate();
 
-  const maxTotal = categoryChartData.length > 0 ? Math.max(...categoryChartData.map(c => c.total)) : 100000;
+    // Map by day
+    const dailyMap: { [key: number]: { income: number; expense: number } } = {};
+    for (let d = 1; d <= maxDay; d++) {
+      dailyMap[d] = { income: 0, expense: 0 };
+    }
+
+    transactions.forEach(t => {
+      const dt = new Date(t.transaction_date);
+      const day = dt.getDate();
+      if (dailyMap[day]) {
+        if (t.type === "income") {
+          dailyMap[day].income += t.amount;
+        } else {
+          dailyMap[day].expense += t.amount;
+        }
+      }
+    });
+
+    const data = [];
+    let cumIncome = 0;
+    let cumExpense = 0;
+
+    const currentMonthNum = today.getMonth() + 1;
+    const monthLabel = t(`months.m${currentMonthNum}`);
+
+    for (let d = 1; d <= maxDay; d++) {
+      const { income, expense } = dailyMap[d];
+      cumIncome += income;
+      cumExpense += expense;
+
+      const incVal = chartType === "cumulative" ? cumIncome : income;
+      const expVal = chartType === "cumulative" ? cumExpense : expense;
+      const balVal = incVal - expVal;
+
+      data.push({
+        day: `${d} ${monthLabel.substring(0, 3)}`,
+        rawDay: d,
+        [labelIncome]: incVal,
+        [labelExpense]: expVal,
+        [labelBalance]: balVal,
+      });
+    }
+    return data;
+  };
+
+  const chartData = getChartData();
+
+  // Custom tooltips renderer to perfectly match Obsidian and Sakura modes
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="p-4 bg-slate-950/95 border border-slate-800 text-slate-100 rounded-2xl shadow-xl backdrop-blur-md light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-800">
+          <p className="font-sans font-bold text-xs mb-2 text-slate-400 light_sakura:text-slate-500">{label}</p>
+          <div className="space-y-1.5 font-mono text-xs">
+            {payload.map((p: any) => {
+              const isInc = p.name === labelIncome;
+              const isExp = p.name === labelExpense;
+              let colorCls = "text-indigo-400 light_sakura:text-indigo-600";
+              if (isInc) colorCls = "text-emerald-400 light_sakura:text-emerald-600";
+              if (isExp) colorCls = "text-red-400 light_sakura:text-rose-600";
+
+              return (
+                <div key={p.name} className="flex items-center justify-between gap-6">
+                  <span className="text-gray-400 light_sakura:text-slate-500">{p.name}:</span>
+                  <span className={`font-bold ${colorCls}`}>{formatIDR(p.value)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="space-y-6">
@@ -279,52 +375,257 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </motion.div>
       </div>
 
-      {/* 3. Graphic Chart Trends (Custom high contrast visual SVG bar columns) */}
-      <div className="p-6 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-xs">
-        <h3 className="font-sans font-semibold text-sm text-white mb-6 uppercase tracking-wider text-gray-400 light_sakura:text-slate-800">
-          {t("dashboard.chart_title")}
-        </h3>
+      {/* 3. Graphic Chart Trends & Multi-view Panels */}
+      <div className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6">
+        
+        {/* Chart Header & Tab Options */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800/50 pb-5 light_sakura:border-rose-100/30">
+          <div>
+            <h3 className="font-sans font-bold text-base text-white tracking-tight light_sakura:text-slate-800">
+              {t("dashboard.chart_title")}
+            </h3>
+            <p className="font-sans text-xs text-gray-400 mt-1 light_sakura:text-slate-500">
+              {chartType === "cumulative" 
+                ? t("dashboard.chart_desc_cumulative")
+                : t("dashboard.chart_desc_daily")}
+            </p>
+          </div>
 
-        {categoryChartData.length === 0 ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Chart Type Selector: Cumulative vs Daily */}
+            <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 light_sakura:bg-rose-50/50 light_sakura:border-rose-100">
+              <button
+                onClick={() => {
+                  audioFeedback.playClick();
+                  setChartType("cumulative");
+                }}
+                className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
+                  chartType === "cumulative"
+                    ? "bg-slate-900 text-indigo-400 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
+                    : "text-gray-400 hover:text-slate-200 light_sakura:text-slate-500"
+                }`}
+              >
+                {t("dashboard.chart_cumulative")}
+              </button>
+              <button
+                onClick={() => {
+                  audioFeedback.playClick();
+                  setChartType("daily");
+                }}
+                className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
+                  chartType === "daily"
+                    ? "bg-slate-900 text-indigo-400 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
+                    : "text-gray-400 hover:text-slate-200 light_sakura:text-slate-500"
+                }`}
+              >
+                {t("dashboard.chart_daily")}
+              </button>
+            </div>
+
+            {/* Chart Mode Selector: Area vs Line */}
+            <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 light_sakura:bg-rose-50/50 light_sakura:border-rose-100">
+              <button
+                onClick={() => {
+                  audioFeedback.playClick();
+                  setChartMode("area");
+                }}
+                className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
+                  chartMode === "area"
+                    ? "bg-slate-900 text-indigo-300 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
+                    : "text-gray-400 hover:text-slate-200 light_sakura:text-slate-500"
+                }`}
+              >
+                {t("dashboard.chart_area")}
+              </button>
+              <button
+                onClick={() => {
+                  audioFeedback.playClick();
+                  setChartMode("line");
+                }}
+                className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
+                  chartMode === "line"
+                    ? "bg-slate-900 text-indigo-300 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
+                    : "text-gray-400 hover:text-slate-200 light_sakura:text-slate-500"
+                }`}
+              >
+                {t("dashboard.chart_line")}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Dynamic Rendering of Recharts */}
+        {transactions.length === 0 ? (
           <EmptyState message={t("dashboard.chart_no_data")} />
         ) : (
-          <div className="space-y-4">
-            {categoryChartData.map(c => {
-              const textLabel = t(`categories.${c.key}`);
-              const percentage = Math.max(8, (c.total / maxTotal) * 100);
-              const isIncomeCategory = ["salary", "bonus"].includes(c.key);
-              
-              return (
-                <div key={c.key} className="space-y-1">
-                  <div className="flex items-center justify-between font-sans text-xs">
-                    <span className="font-semibold text-slate-300 light_sakura:text-slate-700">
-                      {textLabel}
-                    </span>
-                    <span className="font-mono text-gray-400 font-semibold light_sakura:text-slate-500">
-                      {formatIDR(c.total)}
-                    </span>
-                  </div>
-
-                  {/* Horizontal bar element */}
-                  <div className="w-full h-3 bg-slate-950 rounded-full overflow-hidden light_sakura:bg-rose-50">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${percentage}%` }}
-                      transition={{ duration: 0.6 }}
-                      className={`h-full rounded-full 
-                        ${isIncomeCategory 
-                          ? "bg-gradient-to-r from-emerald-500 to-teal-400" 
-                          : "bg-gradient-to-r from-indigo-500 to-purple-500 light_sakura:from-rose-400 light_sakura:to-rose-300"
-                        }`}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+          <div className="w-full overflow-hidden">
+            <ResponsiveContainer width="100%" height={320}>
+              {chartMode === "area" ? (
+                <AreaChart
+                  data={chartData}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.01} />
+                    </linearGradient>
+                    <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.22} />
+                      <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.01} />
+                    </linearGradient>
+                    <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#6366f1" stopOpacity={0.22} />
+                      <stop offset="95%" stopColor="#6366f1" stopOpacity={0.01} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" opacity={0.25} />
+                  <XAxis 
+                    dataKey="day" 
+                    stroke="#71717a" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false} 
+                    className="font-mono text-[9px]"
+                  />
+                  <YAxis 
+                    stroke="#71717a" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false} 
+                    tickFormatter={(val) => 
+                      val >= 1000000 
+                        ? `${(val / 1000000).toFixed(1)}jt` 
+                        : val >= 1000 
+                        ? `${(val / 1000).toFixed(0)}rb` 
+                        : val
+                    }
+                    className="font-mono"
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend 
+                    verticalAlign="top" 
+                    height={36} 
+                    iconType="circle"
+                    iconSize={8}
+                    wrapperStyle={{ fontSize: '11px', fontFamily: 'Inter, sans-serif', paddingBottom: '10px' }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey={labelIncome}
+                    stroke="#10b981"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorIncome)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey={labelExpense}
+                    stroke="#f43f5e"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorExpense)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey={labelBalance}
+                    stroke="#6366f1"
+                    strokeWidth={2.5}
+                    fillOpacity={1}
+                    fill="url(#colorBalance)"
+                  />
+                </AreaChart>
+              ) : (
+                <LineChart
+                  data={chartData}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" opacity={0.25} />
+                  <XAxis 
+                    dataKey="day" 
+                    stroke="#71717a" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false}
+                    className="font-mono text-[9px]"
+                  />
+                  <YAxis 
+                    stroke="#71717a" 
+                    fontSize={10} 
+                    tickLine={false} 
+                    axisLine={false} 
+                    tickFormatter={(val) => 
+                      val >= 1000000 
+                        ? `${(val / 1000000).toFixed(1)}jt` 
+                        : val >= 1000 
+                        ? `${(val / 1000).toFixed(0)}rb` 
+                        : val
+                    }
+                    className="font-mono"
+                  />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Legend 
+                    verticalAlign="top" 
+                    height={36} 
+                    iconType="circle"
+                    iconSize={8}
+                    wrapperStyle={{ fontSize: '11px', fontFamily: 'Inter, sans-serif', paddingBottom: '10px' }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey={labelIncome}
+                    stroke="#10b981"
+                    strokeWidth={2.5}
+                    dot={{ r: 2 }}
+                    activeDot={{ r: 4 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey={labelExpense}
+                    stroke="#f43f5e"
+                    strokeWidth={2.5}
+                    dot={{ r: 2 }}
+                    activeDot={{ r: 4 }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey={labelBalance}
+                    stroke="#6366f1"
+                    strokeWidth={3}
+                    dot={{ r: 3 }}
+                    activeDot={{ r: 5 }}
+                  />
+                </LineChart>
+              )}
+            </ResponsiveContainer>
           </div>
         )}
-      </div>
 
+        {/* Small Elegant Secondary Panel explaining Category analysis context */}
+        {transactions.length > 0 && (
+          <div className="flex flex-wrap gap-4 items-center justify-between text-[11px] text-gray-500 border-t border-slate-800/40 pt-4 progress-legend light_sakura:border-rose-100/30 light_sakura:text-slate-400">
+            <span className="flex items-center gap-1.5 font-sans font-medium">
+              <Activity size={12} className="text-zinc-400" />
+              {t("dashboard.chart_instruction")}
+            </span>
+            <div className="flex items-center gap-3">
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                {labelIncome}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-rose-500" />
+                {labelExpense}
+              </span>
+              <span className="flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-indigo-500" />
+                {labelBalance}
+              </span>
+            </div>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 };
