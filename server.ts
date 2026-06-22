@@ -117,7 +117,7 @@ If categories do not match any, default category_key to 'other'.`;
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          type: { type: Type.STRING, enum: ["income", "expense"], description: "Type of transaction" },
+          type: { type: Type.STRING, description: "Type of transaction (income or expense)" },
           category_key: { type: Type.STRING, description: "Category string key" },
           amount: { type: Type.NUMBER, description: "Numeric Indonesian Rupiah conversion" },
           original_text: { type: Type.STRING, description: "The raw input string parsed" }

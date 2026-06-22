@@ -14,14 +14,12 @@ import {
   Send, 
   Key, 
   Trash2, 
-  Play, 
-  Sparkles, 
-  RefreshCw, 
-  AlertCircle,
   HelpCircle,
   CheckCircle,
   Info,
-  Copy
+  Copy,
+  RefreshCw,
+  Sparkles
 } from "lucide-react";
 import { motion } from "motion/react";
 import { UserSession } from "../types";
@@ -49,28 +47,6 @@ export const Settings: React.FC<SettingsProps> = ({
   const [isTelegramLinked, setIsTelegramLinked] = useState(false);
   const [telegramChatId, setTelegramChatId] = useState("");
   const [isUnlinkModalOpen, setIsUnlinkModalOpen] = useState(false);
-
-  // Diagnostic states
-  const [testResults, setTestResults] = useState<{ input: string; output: number }[]>([]);
-
-  // Load user profile from Supabase
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
-      const { data, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-      
-      if (!error && data) {
-        setDisplayName(data.display_name || displayName);
-        setIsTelegramLinked(!!data.telegram_chat_id);
-        setTelegramChatId(data.telegram_chat_id || "");
-      }
-    };
-    fetchProfile();
-  }, [user]);
 
   // 10-minutes active timer tracking for linking codes
   useEffect(() => {
@@ -140,41 +116,6 @@ export const Settings: React.FC<SettingsProps> = ({
     } catch (err: any) {
       showToast(err.message, "error");
     }
-  };
-
-  // Run Unit Test diagnostics locally (the mandated scenarios!)
-  const [isDiagnosing, setIsDiagnosing] = useState(false);
-  const [diagnosticsProgress, setDiagnosticsProgress] = useState("0%");
-
-  const runParserDiagnostics = () => {
-    audioFeedback.playClick();
-    setIsDiagnosing(true);
-    setDiagnosticsProgress("0%");
-    
-    setTimeout(() => setDiagnosticsProgress("50%"), 100);
-    
-    setTimeout(() => {
-        const scenarios = [
-          "Makan siang 25000",
-          "Gaji 1.5jt",
-          "Belanja sayur 25rb",
-          "Bonus 1k",
-          "Tagihan listrik 350rb"
-        ];
-        const results = scenarios.map(txt => ({
-          input: txt,
-          output: parseAmountFromString(txt)
-        }));
-        setTestResults(results);
-        setDiagnosticsProgress("100%");
-        
-        setTimeout(() => {
-            setIsDiagnosing(false);
-            setDiagnosticsProgress("0%");
-            audioFeedback.playChime();
-            showToast(t("settings.toast_test_success"), "success");
-        }, 300);
-    }, 300);
   };
 
   // Telegram Generator code
@@ -426,42 +367,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
           </div>
 
-          {/* Section 5: Unit Test scenarios validator diagnostics */}
-          <div className="p-6 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-xs space-y-4">
-            <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center justify-between">
-              <span>{t("settings.diagnostics_sec")}</span>
-              <motion.button
-                whileHover={{ scale: 1.15, rotate: 15 }}
-                whileTap={{ scale: 0.90 }}
-                type="button"
-                onClick={runParserDiagnostics}
-                className="cursor-pointer p-1 rounded-lg text-indigo-400"
-              >
-                <Play size={16} />
-              </motion.button>
-            </h3>
-            
-            <p className="font-sans text-xs text-gray-400 light_sakura:text-slate-500">
-              {t("settings.diagnostics_desc")}
-            </p>
-            
-            {/* Progres Bar Diagnostik */}
-            {isDiagnosing && (
-                <div className="h-1 bg-slate-800 rounded-full mt-2 overflow-hidden">
-                    <motion.div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: diagnosticsProgress }} />
-                </div>
-            )}
-
-            {testResults.length > 0 && (
-              <div className="space-y-2.5 max-h-48 overflow-y-auto">
-                {testResults.map((res, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 rounded-xl bg-slate-950/40 border border-slate-800/45 light_sakura:bg-rose-50/50 light_sakura:border-rose-100 font-mono text-[11px]">
-                    <span className="text-gray-400 light_sakura:text-slate-600">"{res.input}"</span>
-                    <span className="text-emerald-400 font-bold light_sakura:text-emerald-600">{formatIDR(res.output)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* Section 5: Unit Test scenarios validator diagnostics - REMOVED */}
           </div>
 
         </div>
@@ -622,8 +528,6 @@ export const Settings: React.FC<SettingsProps> = ({
               </div>
             )}
           </div>
-        </div>
-      </div>
 
       {/* Confirmation - Modify Profiles Name */}
       <Modal
@@ -654,7 +558,7 @@ export const Settings: React.FC<SettingsProps> = ({
           setIsUnlinkModalOpen(false);
         }}
       />
-
     </div>
+  </div>
   );
 };
