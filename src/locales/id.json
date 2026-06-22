@@ -235,7 +235,9 @@
     "logout_done": "Sesi Anda telah diakhiri.",
     "toast_blank_profile_name": "Nama profil tidak boleh kosong",
     "toast_test_success": "Tes unit diagnostik parser berjalan dengan sukses!",
-    "toast_generate_code_error": "Gagal membuat kode penghubung: {message}"
+    "toast_generate_code_error": "Gagal membuat kode penghubung: {message}",
+    "realtime_success_telegram": "📲 Transaksi baru diterima dari Telegram",
+    "realtime_success_general": "✅ Transaksi baru berhasil ditambahkan"
   },
   "months": {
     "m1": "Januari",

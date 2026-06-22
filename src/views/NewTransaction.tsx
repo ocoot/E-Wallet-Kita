@@ -93,7 +93,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     setIsLoading(true);
 
     try {
-      await dbService.saveTransaction(
+      const savedTx = await dbService.saveTransaction(
         currentUser.id,
         type,
         category,
@@ -102,6 +102,9 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         "manual",
         date
       );
+      if (savedTx && savedTx.id) {
+        (window as any).lastSavedTransactionId = savedTx.id;
+      }
 
       showToast(t("toast.success_save"), "success");
       

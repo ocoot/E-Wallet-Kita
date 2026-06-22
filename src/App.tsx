@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -25,6 +25,7 @@ const MainLayout: React.FC = () => {
   
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [transactionsUpdatedTrigger, setTransactionsUpdatedTrigger] = useState(0);
+  const lastRealtimeId = useRef<string | null>(null);
 
   const handleTransactionChange = () => {
     setTransactionsUpdatedTrigger(prev => prev + 1);
@@ -44,8 +45,26 @@ const MainLayout: React.FC = () => {
           table: "transactions",
           filter: `user_id=eq.${user.id}`
         },
-        () => {
+        (payload: any) => {
           setTransactionsUpdatedTrigger(prev => prev + 1);
+
+          if (payload.eventType === "INSERT") {
+            const tx = payload.new;
+            if (tx && tx.id) {
+              const isLocalOrigin = (window as any).lastSavedTransactionId === tx.id;
+              const isDuplicate = lastRealtimeId.current === tx.id;
+
+              if (!isLocalOrigin && !isDuplicate) {
+                lastRealtimeId.current = tx.id;
+                
+                if (tx.source === "telegram") {
+                  showToast(t("toast.realtime_success_telegram"), "success");
+                } else {
+                  showToast(t("toast.realtime_success_general"), "success");
+                }
+              }
+            }
+          }
         }
       )
       .subscribe();
@@ -53,7 +72,7 @@ const MainLayout: React.FC = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, t, showToast]);
   
   // Signout prompt control triggers
   const [isSignoutModalOpen, setIsSignoutModalOpen] = useState(false);
