@@ -3,6 +3,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { FileDown, ChevronDown, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
+import { usePremium } from "../hooks/usePremium";
 
 interface HistoryExportProps {
   isExportMenuOpen: boolean;
@@ -11,6 +12,7 @@ interface HistoryExportProps {
   setIsFullExportOpen: (val: boolean) => void;
   setIsDeleteAllOpen: (val: boolean) => void;
   hasTransactions: boolean;
+  onRequirePremium: () => void;
 }
 
 export const HistoryExport: React.FC<HistoryExportProps> = ({
@@ -20,8 +22,10 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
   setIsFullExportOpen,
   setIsDeleteAllOpen,
   hasTransactions,
+  onRequirePremium,
 }) => {
   const { t } = useLanguage();
+  const { isPremium } = usePremium();
 
   return (
     <div id="history-export-header-row" className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
@@ -67,21 +71,39 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
                     onClick={() => {
                       setIsExportMenuOpen(false);
                       audioFeedback.playClick();
+                      if (!isPremium) {
+                        onRequirePremium();
+                        return;
+                      }
                       setIsSummaryConfirmOpen(true);
                     }}
-                    className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:text-slate-700 light_sakura:hover:bg-rose-50"
+                    className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:text-slate-700 light_sakura:hover:bg-rose-50 flex items-center justify-between"
                   >
-                    {t("history.export_summary_pdf")}
+                    <span>{t("history.export_summary_pdf")}</span>
+                    {!isPremium && (
+                      <span className="text-[10px] text-amber-400 font-bold bg-amber-400/10 px-1.5 py-0.5 rounded">
+                        PRO
+                      </span>
+                    )}
                   </button>
                   <button
                     onClick={() => {
                       setIsExportMenuOpen(false);
                       audioFeedback.playClick();
+                      if (!isPremium) {
+                        onRequirePremium();
+                        return;
+                      }
                       setIsFullExportOpen(true);
                     }}
-                    className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer border-t border-slate-800/60 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50 light_sakura:border-rose-100/60"
+                    className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer border-t border-slate-800/60 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50 light_sakura:border-rose-100/60 flex items-center justify-between"
                   >
-                    {t("history.export_full_pdf")}
+                    <span>{t("history.export_full_pdf")}</span>
+                    {!isPremium && (
+                      <span className="text-[10px] text-amber-400 font-bold bg-amber-400/10 px-1.5 py-0.5 rounded">
+                        PRO
+                      </span>
+                    )}
                   </button>
                 </motion.div>
               </>

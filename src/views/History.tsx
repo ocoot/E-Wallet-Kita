@@ -17,6 +17,8 @@ import { HistoryTable } from "../components/HistoryTable";
 import { HistoryPagination } from "../components/HistoryPagination";
 import { HistoryExport } from "../components/HistoryExport";
 import { HistoryDeleteModal } from "../components/HistoryDeleteModal";
+import { usePremium } from "../hooks/usePremium";
+import { PremiumModal } from "../components/PremiumModal";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -59,6 +61,10 @@ export const History: React.FC<HistoryProps> = ({
   
   // Loading indicators
   const [isLoading, setIsLoading] = useState(false);
+
+  // Premium status & modal state
+  const { isPremium, refresh: refreshPremium } = usePremium();
+  const [isPremiumOpen, setIsPremiumOpen] = useState(false);
 
   // Export PDF states
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
@@ -277,6 +283,7 @@ export const History: React.FC<HistoryProps> = ({
           setIsFullExportOpen={setIsFullExportOpen}
           setIsDeleteAllOpen={setIsDeleteAllOpen}
           hasTransactions={transactions.length > 0}
+          onRequirePremium={() => setIsPremiumOpen(true)}
         />
 
         {/* 2. Month selector search & filters controls */}
@@ -394,6 +401,14 @@ export const History: React.FC<HistoryProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <PremiumModal 
+        isOpen={isPremiumOpen}
+        onClose={() => setIsPremiumOpen(false)}
+        onPremiumActivated={() => {
+          refreshPremium();
+        }}
+      />
 
     </div>
   );

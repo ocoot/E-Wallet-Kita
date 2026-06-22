@@ -19,10 +19,13 @@ import {
   Info,
   Copy,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  ShieldCheck
 } from "lucide-react";
 import { motion } from "motion/react";
 import { UserSession } from "../types";
+import { usePremium } from "../hooks/usePremium";
+import { PremiumModal } from "../components/PremiumModal";
 
 interface SettingsProps {
   onUserPrefUpdated: (user: UserSession) => void;
@@ -35,6 +38,9 @@ export const Settings: React.FC<SettingsProps> = ({
   const { locale, setLocale, t } = useLanguage();
   const { theme, setTheme } = useTheme();
   const { showToast } = useToast();
+
+  const { isPremium, refresh: refreshPremium } = usePremium();
+  const [isPremiumOpen, setIsPremiumOpen] = useState(false);
 
   // Profile Edit States
   const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.email?.split('@')[0] || "");
@@ -122,6 +128,12 @@ export const Settings: React.FC<SettingsProps> = ({
   const handleGenerateLinkingCode = async () => {
     audioFeedback.playClick();
     if (!user) return;
+
+    if (!isPremium) {
+      showToast(t("premium.locked_telegram"), "error");
+      setIsPremiumOpen(true);
+      return;
+    }
 
     // Math random 5 digit sequence
     const code = Math.floor(10000 + Math.random() * 90000).toString();
@@ -346,6 +358,26 @@ export const Settings: React.FC<SettingsProps> = ({
         {/* Panel Right: Telegram linking & Account promotion */}
         <div className="space-y-6">
           
+          {/* Premium Gating Card */}
+          <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-5 font-sans light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className={isPremium ? "text-emerald-400" : "text-gray-500"} size={20} />
+                <span className="font-bold text-white text-sm light_sakura:text-slate-800">
+                  {isPremium ? t("premium.badge_active") : t("premium.menu_label")}
+                </span>
+              </div>
+              {!isPremium && (
+                <button
+                  onClick={() => setIsPremiumOpen(true)}
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold cursor-pointer transition-colors shadow-md shadow-indigo-600/10"
+                >
+                  {t("premium.unlock_now")}
+                </button>
+              )}
+            </div>
+          </div>
+          
           {/* Section 3: Telegram Bot Integration block */}
           <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-850/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
             <div className="flex items-center justify-between border-b border-slate-800/10 pb-2.5 light_sakura:border-rose-100">
@@ -518,6 +550,14 @@ export const Settings: React.FC<SettingsProps> = ({
         onCancel={() => {
           audioFeedback.playClick();
           setIsUnlinkModalOpen(false);
+        }}
+      />
+
+      <PremiumModal 
+        isOpen={isPremiumOpen}
+        onClose={() => setIsPremiumOpen(false)}
+        onPremiumActivated={() => {
+          refreshPremium();
         }}
       />
       </div>

@@ -197,7 +197,8 @@
     "copied": "Tersalin!",
     "delete": "Hapus",
     "previous": "Sebelumnya",
-    "next": "Selanjutnya"
+    "next": "Selanjutnya",
+    "close": "Tutup"
   },
   "confirm": {
     "logout_title": "Keluar Sesi",
@@ -288,5 +289,37 @@
     "confirm_export": "Ekspor Sekarang",
     "success_export": "PDF berhasil dibuat: {filename}",
     "error_export": "Gagal membuat PDF. Silakan coba lagi."
+  },
+  "premium": {
+    "menu_label": "Aktifkan Premium",
+    "badge_active": "Premium Aktif",
+    "terms_title": "Aktifkan Premium Lifetime",
+    "terms_desc": "Bayar sekali Rp {amount} via QRIS, nikmati akses premium selamanya.",
+    "terms_point_1": "Ekspor PDF (Ringkasan & Lengkap) tanpa batas",
+    "terms_point_2": "Sinkronisasi otomatis dengan Bot Telegram",
+    "terms_point_3": "Pembayaran sekali, berlaku seumur hidup (tidak ada perpanjangan)",
+    "terms_point_4": "QRIS dinamis berlaku 01:30 menit, mohon bayar tepat waktu",
+    "terms_agree": "Saya Setuju, Lanjutkan",
+    "creating_transaction": "Menyiapkan kode pembayaran...",
+    "qris_title": "Scan QRIS untuk Bayar",
+    "unique_code_note": "Wajib transfer sesuai nominal di atas (termasuk kode unik)",
+    "expires_in": "Berlaku selama {time}",
+    "waiting_payment": "Menunggu pembayaran...",
+    "sandbox_notice": "Mode sandbox (preview AI Studio): pembayaran disimulasikan otomatis.",
+    "success_title": "Pembayaran Berhasil!",
+    "success_desc": "Premium Lifetime kamu sudah aktif. Terima kasih!",
+    "success_toast": "🎉 Premium berhasil diaktifkan!",
+    "download_receipt": "Unduh Struk",
+    "skip_receipt": "Tidak, Terima Kasih",
+    "receipt_downloaded": "Struk pembelian berhasil diunduh",
+    "expired_title": "Waktu Pembayaran Habis",
+    "expired_desc": "Kode QRIS sudah kedaluwarsa. Silakan coba lagi.",
+    "failed_title": "Pembayaran Gagal",
+    "failed_desc": "Terjadi kesalahan saat memproses pembayaran.",
+    "retry": "Coba Lagi",
+    "error_create": "Gagal membuat transaksi pembayaran. Coba lagi.",
+    "locked_export": "Fitur ekspor PDF khusus untuk pengguna Premium.",
+    "locked_telegram": "Sinkronisasi Bot Telegram khusus untuk pengguna Premium.",
+    "unlock_now": "Aktifkan Premium Sekarang"
   }
 }

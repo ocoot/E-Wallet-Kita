@@ -197,7 +197,8 @@
     "copied": "Copied!",
     "delete": "Delete",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "close": "Close"
   },
   "confirm": {
     "logout_title": "Log Out",
@@ -288,5 +289,37 @@
     "confirm_export": "Export Now",
     "success_export": "PDF generated successfully: {filename}",
     "error_export": "Failed to generate PDF. Please try again."
+  },
+  "premium": {
+    "menu_label": "Activate Premium",
+    "badge_active": "Premium Active",
+    "terms_title": "Activate Lifetime Premium",
+    "terms_desc": "Pay once Rp {amount} via QRIS, enjoy premium access forever.",
+    "terms_point_1": "Unlimited PDF export (Summary & Full)",
+    "terms_point_2": "Automatic sync with Telegram Bot",
+    "terms_point_3": "One-time payment, valid for life (no renewal)",
+    "terms_point_4": "Dynamic QRIS valid for 01:30 minutes, please pay on time",
+    "terms_agree": "I Agree, Continue",
+    "creating_transaction": "Preparing payment code...",
+    "qris_title": "Scan QRIS to Pay",
+    "unique_code_note": "You must transfer the exact amount above (including unique code)",
+    "expires_in": "Valid for {time}",
+    "waiting_payment": "Waiting for payment...",
+    "sandbox_notice": "Sandbox mode (AI Studio preview): payment is auto-simulated.",
+    "success_title": "Payment Successful!",
+    "success_desc": "Your Lifetime Premium is now active. Thank you!",
+    "success_toast": "🎉 Premium activated successfully!",
+    "download_receipt": "Download Receipt",
+    "skip_receipt": "No, Thanks",
+    "receipt_downloaded": "Receipt downloaded successfully",
+    "expired_title": "Payment Time Expired",
+    "expired_desc": "The QRIS code has expired. Please try again.",
+    "failed_title": "Payment Failed",
+    "failed_desc": "An error occurred while processing your payment.",
+    "retry": "Try Again",
+    "error_create": "Failed to create payment transaction. Try again.",
+    "locked_export": "PDF export is a Premium-only feature.",
+    "locked_telegram": "Telegram Bot sync is a Premium-only feature.",
+    "unlock_now": "Activate Premium Now"
   }
 }
