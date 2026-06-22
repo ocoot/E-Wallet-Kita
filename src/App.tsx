@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
@@ -15,6 +15,7 @@ import { Modal } from "./components/Modal";
 import { ResetPasswordModal } from "./components/ResetPasswordModal";
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut } from "lucide-react";
+import { supabase } from "./lib/supabase";
 
 const MainLayout: React.FC = () => {
   const { user, loading, signOut } = useAuth();
@@ -28,6 +29,31 @@ const MainLayout: React.FC = () => {
   const handleTransactionChange = () => {
     setTransactionsUpdatedTrigger(prev => prev + 1);
   };
+
+  // Real-time listen to user's database change events on the transactions table
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel(`realtime-transactions-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "transactions",
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          setTransactionsUpdatedTrigger(prev => prev + 1);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
   
   // Signout prompt control triggers
   const [isSignoutModalOpen, setIsSignoutModalOpen] = useState(false);
