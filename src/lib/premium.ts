@@ -109,8 +109,11 @@ export async function checkPremiumStatus(orderId: string): Promise<"PENDING" | "
   }
 
   const token = await getAuthToken();
-  const res = await fetch(`/api/premium/status?order_id=${encodeURIComponent(orderId)}`, {
-    headers: { Authorization: `Bearer ${token}` },
+  const res = await fetch(`/api/premium/status?order_id=${encodeURIComponent(orderId)}&_t=${Date.now()}`, {
+    headers: { 
+      Authorization: `Bearer ${token}`,
+      "Cache-Control": "no-cache"
+    },
   });
   const json = await res.json();
   if (!res.ok) throw new Error(json?.error || "STATUS_CHECK_FAILED");
