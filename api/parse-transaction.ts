@@ -1,18 +1,30 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Type } from "@google/genai";
-import { parseAmountFromString } from '../src/lib/parserUtils.js';
+import { getCategoryLabel, getAllCategoryKeys } from '../src/lib/categoryDefinitions';
 import { inferCategoryKey } from './utils.js';
+import { parseAmountFromString } from '../src/lib/parserUtils';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// Basic in-memory rate limiter
-const rateLimiter = new Map<string, { count: number; lastReset: number }>();
-const RATE_LIMIT = 10; // 10 requests per minute
-const RATE_LIMIT_WINDOW = 60000; // 1 minute
+// ─────────────────────────────────────────────────────────────
+// FIX #9: Separate rate limiting for regular vs AI parsing
+// ─────────────────────────────────────────────────────────────
+interface RateLimitEntry {
+  count: number;
+  aiCount: number;
+  lastReset: number;
+  lastAiReset: number;
+}
+
+const rateLimiter = new Map<string, RateLimitEntry>();
+const RATE_LIMIT = 10;              // Regular requests per minute
+const RATE_LIMIT_WINDOW = 60000;    // 1 minute
+const AI_RATE_LIMIT = 5;            // AI requests per minute (stricter)
+const AI_RATE_LIMIT_WINDOW = 60000; // 1 minute
 
 const apiKey = process.env.GEMINI_API_KEY;
 let ai: GoogleGenAI | null = null;
@@ -44,9 +56,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  // 2. Rate limiting (per user)
+  // 2. Rate limiting (per user) - FIX #9: Separate AI rate limit
   const now = Date.now();
-  const userRateLimit = rateLimiter.get(user.id) || { count: 0, lastReset: now };
+  const userRateLimit = rateLimiter.get(user.id) || { 
+    count: 0, 
+    aiCount: 0, 
+    lastReset: now,
+    lastAiReset: now
+  };
+
+  // Check regular rate limit
   if (now - userRateLimit.lastReset > RATE_LIMIT_WINDOW) {
     userRateLimit.count = 0;
     userRateLimit.lastReset = now;
@@ -55,7 +74,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(429).json({ error: 'Too many requests' });
     return;
   }
+
+  // Check if will use AI (fallback check)
+  const willUseAI = !!ai; // AI will be used if apiKey is set
+  if (willUseAI) {
+    if (now - userRateLimit.lastAiReset > AI_RATE_LIMIT_WINDOW) {
+      userRateLimit.aiCount = 0;
+      userRateLimit.lastAiReset = now;
+    }
+    if (userRateLimit.aiCount >= AI_RATE_LIMIT) {
+      res.status(429).json({ 
+        error: 'Too many AI requests. Please try again in a moment.',
+        retryAfter: Math.ceil((userRateLimit.lastAiReset + AI_RATE_LIMIT_WINDOW - now) / 1000)
+      });
+      return;
+    }
+  }
+
   userRateLimit.count++;
+  if (willUseAI) {
+    userRateLimit.aiCount++;
+  }
   rateLimiter.set(user.id, userRateLimit);
 
   try {
@@ -87,22 +126,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
+    const allKeys = getAllCategoryKeys();
+    const categoryMapping = allKeys
+      .map(key => `- '${key}' (${getCategoryLabel(key, 'en')})`)
+      .join('\n');
+
     const systemInstruction = `You are a financial parsing expert for 'E-Wallet Kita'. 
 Analyze natural language transactions in Indonesian or English and output structured JSON.
-Mapping keys for categories are exactly:
-- 'salary' (income)
-- 'bonus' (income)
-- 'food_drink' (expense)
-- 'monthly_groceries' (expense)
-- 'vegetables' (expense)
-- 'bills' (expense)
-- 'other' (expense or fallback if unsure)
+Valid category keys are:
+${categoryMapping}
 
-Translate Indonesian abbreviations for quantities:
-- 'rb' or 'ribu' means thousands (e.g. '25rb' -> amount should be 25000)
-- 'k' means thousands (e.g. '1k' -> amount should be 1000)
-- 'jt' or 'juta' means millions (e.g. '1.5jt' -> amount should be 1500000)
-Return the numerical value in 'amount' property.
 If categories do not match any, default category_key to 'other'.`;
 
     const response = await ai.models.generateContent({

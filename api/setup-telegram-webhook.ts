@@ -75,7 +75,6 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     }
 
     console.log("✅ Telegram webhook registered successfully!");
-    console.log("🌸 Response:", result);
 
     if (result.ok && result.result === true) {
       res.status(200).json({ 

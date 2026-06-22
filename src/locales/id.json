@@ -127,6 +127,11 @@
     "monthly_groceries": "Belanja Bulanan",
     "vegetables": "Belanja Sayur",
     "bills": "Tagihan & Pulsa",
+    "transport": "Transportasi",
+    "health": "Kesehatan",
+    "shopping": "Belanja Online",
+    "entertainment": "Hiburan",
+    "education": "Pendidikan",
     "other": "Lain-lain"
   },
   "settings": {
@@ -179,7 +184,12 @@
     "search": "Cari",
     "all": "Semua",
     "yes": "Ya",
-    "no": "Tidak"
+    "no": "Tidak",
+    "copy": "Salin",
+    "copied": "Tersalin!",
+    "delete": "Hapus",
+    "previous": "Sebelumnya",
+    "next": "Selanjutnya"
   },
   "confirm": {
     "logout_title": "Keluar Sesi",

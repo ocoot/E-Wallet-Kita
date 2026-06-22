@@ -128,22 +128,22 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       
-      {/* Header Info */}
-      <div className="flex flex-col">
-        <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
-          {t("transaction.add_title")}
-        </h2>
-        <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
-          {t("transaction.add_desc")}
-        </p>
-      </div>
-
-      {/* Main card box form */}
+      {/* Main card box containing Header and Form */}
       <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
-        className="p-6 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-xs"
+        className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6"
       >
+        {/* Header Info */}
+        <div className="flex flex-col border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
+          <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+            {t("transaction.add_title")}
+          </h2>
+          <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
+            {t("transaction.add_desc")}
+          </p>
+        </div>
+
         <motion.div animate={shakeControls}>
           <form onSubmit={handleSubmit} className="space-y-6">
           
@@ -265,14 +265,16 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
           </div>
 
           {/* Submit action button */}
-          <button
-            type="submit"
-            disabled={isLoading || amount === "" || amount === 0}
-            className="w-full cursor-pointer py-4 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
-          >
-            <Plus size={16} />
-            <span>{t("transaction.btn_submit")}</span>
-          </button>
+          <div className="flex justify-start pt-2">
+            <button
+              type="submit"
+              disabled={isLoading || amount === "" || amount === 0}
+              className="cursor-pointer py-3.5 px-6 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+            >
+              <Plus size={16} />
+              <span>{t("transaction.btn_submit")}</span>
+            </button>
+          </div>
 
         </form>
         </motion.div>

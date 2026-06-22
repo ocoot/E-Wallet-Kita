@@ -198,26 +198,29 @@ export const Settings: React.FC<SettingsProps> = ({
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8">
+    <div className="max-w-3xl mx-auto space-y-6">
       
-      {/* View Header */}
-      <div>
-        <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
-          {t("settings.title")}
-        </h2>
-        <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500 font-medium">
-          {t("settings.desc")}
-        </p>
-      </div>
-
-      {/* Grid panels */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      {/* Massive Cohesive Card Container */}
+      <div className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6">
         
-        {/* Panel Left: Preferences & Profiles */}
-        <div className="space-y-6">
+        {/* View Header inside massive card */}
+        <div className="flex flex-col border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
+          <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+            {t("settings.title")}
+          </h2>
+          <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500 font-medium">
+            {t("settings.desc")}
+          </p>
+        </div>
+
+        {/* Grid panels */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
-          {/* Section 1: Profiles Name edit */}
-          <div className="p-6 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-xs space-y-4">
+          {/* Panel Left: Preferences & Profiles */}
+          <div className="space-y-6">
+            
+            {/* Section 1: Profiles Name edit */}
+            <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-850/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
             <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100">
               {t("settings.profile_section")}
             </h3>
@@ -248,7 +251,7 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
 
           {/* Section 2: Quick instant Switcher controls */}
-          <div className="p-6 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-xs space-y-5">
+          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-850/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
             <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100">
               {t("settings.preferences")}
             </h3>
@@ -340,13 +343,11 @@ export const Settings: React.FC<SettingsProps> = ({
             {/* Section 5: Unit Test scenarios validator diagnostics - REMOVED */}
           </div>
 
-        </div>
-
         {/* Panel Right: Telegram linking & Account promotion */}
         <div className="space-y-6">
           
           {/* Section 3: Telegram Bot Integration block */}
-          <div className="p-6 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-xs space-y-5">
+          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-850/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
             <div className="flex items-center justify-between border-b border-slate-800/10 pb-2.5 light_sakura:border-rose-100">
               <h3 className="font-sans font-bold text-sm text-slate-200 light_sakura:text-slate-800 flex items-center gap-2">
                 <Send size={14} className="text-sky-400" />
@@ -465,6 +466,7 @@ export const Settings: React.FC<SettingsProps> = ({
                           whileHover={{ scale: 1.1 }}
                           whileTap={{ scale: 0.9 }}
                           onClick={handleCopyLinkCommand}
+                          aria-label={copied ? t("common.copied") : t("common.copy")}
                           className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
                         >
                           {copied ? <CheckCircle size={18} className="text-emerald-500" /> : <Copy size={18} />}
@@ -518,7 +520,9 @@ export const Settings: React.FC<SettingsProps> = ({
           setIsUnlinkModalOpen(false);
         }}
       />
+      </div>
+      </div>
+      </div>
     </div>
-  </div>
   );
 };

@@ -25,18 +25,19 @@ import { audioFeedback } from "../lib/audio";
 
 interface SidebarProps {
   onLogoutClick: () => void;
+  isCollapsed: boolean;
+  onToggle: (collapsed: boolean) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  onLogoutClick
+  onLogoutClick,
+  isCollapsed,
+  onToggle
 }) => {
   const { user } = useAuth();
   const { locale, setLocale, t } = useLanguage();
   const { theme, setTheme } = useTheme();
   const location = useLocation();
-
-  // Desktop sidebar expand / collapse state
-  const [isCollapsed, setIsCollapsed] = useState(false);
   
   // Mobile drawer overlay state
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -232,7 +233,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Collapse/Expand action trigger button */}
           {!isCollapsed && (
             <button
-              onClick={() => setIsCollapsed(true)}
+              onClick={() => onToggle(true)}
               className="p-1 rounded-lg hover:bg-white/5 light_sakura:hover:bg-slate-200 cursor-pointer hidden md:block text-slate-400 hover:text-white light_sakura:text-slate-600 light_sakura:hover:text-slate-800"
             >
               <ChevronLeft size={16} />
@@ -240,7 +241,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
           {isCollapsed && (
             <button
-              onClick={() => setIsCollapsed(false)}
+              onClick={() => onToggle(false)}
               className="absolute -right-3 top-8 p-1.5 rounded-full border bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:scale-105 active:scale-95 transition-transform cursor-pointer light_sakura:bg-slate-100 light_sakura:border-slate-200 light_sakura:text-slate-800"
             >
               <ChevronRight size={14} />

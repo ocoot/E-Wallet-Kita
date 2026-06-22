@@ -17,16 +17,16 @@ interface UserContext {
 // ─────────────────────────────────────────────────────────────
 // FIX #1: Corrected Gemini model name (was "gemini-3.5-flash" — does not exist)
 // ─────────────────────────────────────────────────────────────
-const GEMINI_MODEL = "gemini-2.0-flash";
+const GEMINI_MODEL = "gemini-3.5-flash";
 
 // Initialize Supabase — use service role key for server-side webhook
 // (Anon key is for client-side use only; service role bypasses RLS safely)
 // ─────────────────────────────────────────────────────────────
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
-const supabaseServiceKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.VITE_SUPABASE_ANON_KEY ||
-  process.env.SUPABASE_ANON_KEY || '';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+if (!supabaseServiceKey) {
+  throw new Error('SUPABASE_SERVICE_ROLE_KEY is required');
+}
 const supabaseBackend = createClient(supabaseUrl, supabaseServiceKey);
 
 // Initialize Gemini
@@ -39,24 +39,26 @@ if (apiKey) {
   });
 }
 
-// Category labels (bilingual)
-const botCategoryLabels: Record<string, { id: string; en: string }> = {
-  salary:             { id: "Gaji",               en: "Salary" },
-  bonus:              { id: "Bonus",               en: "Bonus" },
-  food_drink:         { id: "Makanan & Minuman",   en: "Food & Drink" },
-  monthly_groceries:  { id: "Belanja Bulanan",     en: "Monthly Groceries" },
-  vegetables:         { id: "Belanja Sayur",       en: "Vegetables" },
-  bills:              { id: "Tagihan",             en: "Bills" },
-  transport:          { id: "Transportasi",        en: "Transportation" },
-  health:             { id: "Kesehatan",           en: "Health" },
-  shopping:           { id: "Belanja Online",      en: "Online Shopping" },
-  entertainment:      { id: "Hiburan",             en: "Entertainment" },
-  education:          { id: "Pendidikan",          en: "Education" },
-  other:              { id: "Lain-lain",           en: "Other" },
-};
+// ─────────────────────────────────────────────────────────────
+// FIX #8: Rate limiting & lockout for /link command (brute force protection)
+// ─────────────────────────────────────────────────────────────
+interface LinkAttempt {
+  attempts: number;
+  lastAttempt: number;
+  lockedUntil: number | null;
+}
 
+const linkRateLimiter = new Map<number, LinkAttempt>();
+const LINK_MAX_ATTEMPTS = 5;        // 5 attempts
+const LINK_WINDOW = 60 * 1000;      // per 60 seconds
+const LINK_LOCKOUT = 15 * 60 * 1000; // 15-minute lockout after 5 failed attempts
+
+// FIX #10: Import categories from centralized definition
+import { CATEGORIES, getCategoryLabel as getCategoryLabelFromDef } from '../src/lib/categoryDefinitions';
+
+// Use centralized definition
 function getCategoryLabel(categoryKey: string, lang: Lang): string {
-  return botCategoryLabels[categoryKey]?.[lang] || categoryKey;
+  return getCategoryLabelFromDef(categoryKey, lang);
 }
 
 function formatIDR(amount: number): string {
@@ -159,6 +161,10 @@ const botText = {
   linkInvalidCodeFallback: {
     id: () => "Kode tautan tidak valid atau telah kedaluwarsa.",
     en: () => "The link code is invalid or has expired.",
+  },
+  linkLockedOut: {
+    id: (minutes: number) => `🔐 *Brute Force Terdeteksi*\n\nAnda telah melebihi batas percobaan penautan akun. Silakan coba lagi setelah ${minutes} menit.`,
+    en: (minutes: number) => `🔐 *Brute Force Detected*\n\nYou have exceeded the maximum account linking attempts. Please try again in ${minutes} minutes.`,
   },
   unlinkFailed: {
     id: (msg: string) => `❌ Gagal memutuskan tautan: ${msg}`,
@@ -658,7 +664,13 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     await supabaseBackend.rpc("cleanup_expired_pending_transactions");
 
     const update = req.body;
-    // console.log("📨 Telegram update received:", JSON.stringify(update));
+    // Safe logging (only log update type, not full payload)
+    if (update.message?.text) {
+      const textPreview = update.message.text.substring(0, 20);
+      console.log(`📨 Telegram message: "${textPreview}..."`);
+    } else if (update.callback_query) {
+      console.log(`📨 Telegram callback: ${update.callback_query.data}`);
+    }
 
     // ──────────────────────────────────────────────────────────
     // CALLBACK QUERY HANDLER
@@ -778,9 +790,49 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         // ── /link ──
         if (command === "/link") {
           const lang = await resolveLangOnly(chatId);
+          
+          // FIX #8: Rate limit & lockout check
+          const now = Date.now();
+          let linkAttempt = linkRateLimiter.get(chatId) || { attempts: 0, lastAttempt: now, lockedUntil: null };
+          
+          // Check if currently locked out
+          if (linkAttempt.lockedUntil && now < linkAttempt.lockedUntil) {
+            const remainingMin = Math.ceil((linkAttempt.lockedUntil - now) / 1000 / 60);
+            await sendTelegramMessage(chatId, 
+              lang === "id" 
+                ? `🔒 Terlalu banyak percobaan yang gagal. Silakan coba lagi dalam ${remainingMin} menit.`
+                : `🔒 Too many failed attempts. Please try again in ${remainingMin} minutes.`
+            );
+            res.status(200).json({ ok: true }); return;
+          }
+          
+          // Reset attempts if window expired
+          if (now - linkAttempt.lastAttempt > LINK_WINDOW) {
+            linkAttempt = { attempts: 0, lastAttempt: now, lockedUntil: null };
+          }
+          
           const code = parts[1];
           if (!code || !/^\d{5}$/.test(code)) {
-            await sendTelegramMessage(chatId, tr("linkBadFormat", lang));
+            linkAttempt.attempts++;
+            linkAttempt.lastAttempt = now;
+            
+            // Lock out after max attempts
+            if (linkAttempt.attempts >= LINK_MAX_ATTEMPTS) {
+              linkAttempt.lockedUntil = now + LINK_LOCKOUT;
+              await sendTelegramMessage(chatId,
+                lang === "id"
+                  ? `🔒 Terlalu banyak kode yang tidak valid. Akun ini terkunci selama 15 menit.`
+                  : `🔒 Too many invalid codes. Your account is locked for 15 minutes.`
+              );
+            } else {
+              const remaining = LINK_MAX_ATTEMPTS - linkAttempt.attempts;
+              await sendTelegramMessage(chatId, 
+                lang === "id"
+                  ? `⚠️ Format kode tidak valid. Coba lagi. (Kesempatan tersisa: ${remaining}/${LINK_MAX_ATTEMPTS})`
+                  : `⚠️ Invalid code format. Try again. (Attempts left: ${remaining}/${LINK_MAX_ATTEMPTS})`
+              );
+            }
+            linkRateLimiter.set(chatId, linkAttempt);
             res.status(200).json({ ok: true }); return;
           }
 
@@ -791,13 +843,37 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
           if (error) {
             console.error("❌ RPC link_telegram_user error:", error);
-            await sendTelegramMessage(chatId, tr("linkInternalError", lang, error.message));
+            linkAttempt.attempts++;
+            linkAttempt.lastAttempt = now;
+            if (linkAttempt.attempts >= LINK_MAX_ATTEMPTS) {
+              linkAttempt.lockedUntil = now + LINK_LOCKOUT;
+              await sendTelegramMessage(chatId, tr("linkLockedOut", lang, 15));
+            } else {
+              await sendTelegramMessage(chatId, tr("linkInternalError", lang, error.message));
+            }
+            linkRateLimiter.set(chatId, linkAttempt);
           } else if (data && data.length > 0 && data[0]?.success) {
+            // Success: reset attempts
+            linkRateLimiter.delete(chatId);
             const displayName = data[0]?.display_name || (lang === "en" ? "User" : "Pengguna");
             await sendTelegramMessage(chatId, tr("linkSuccess", lang, displayName));
           } else {
-            const errMsg = data?.[0]?.message || tr("linkInvalidCodeFallback", lang);
-            await sendTelegramMessage(chatId, tr("linkFailed", lang, errMsg));
+            // Failed attempt
+            linkAttempt.attempts++;
+            linkAttempt.lastAttempt = now;
+            if (linkAttempt.attempts >= LINK_MAX_ATTEMPTS) {
+              linkAttempt.lockedUntil = now + LINK_LOCKOUT;
+              await sendTelegramMessage(chatId, tr("linkLockedOut", lang, 15));
+            } else {
+              const remaining = LINK_MAX_ATTEMPTS - linkAttempt.attempts;
+              const errMsg = data?.[0]?.message || tr("linkInvalidCodeFallback", lang);
+              await sendTelegramMessage(chatId, 
+                lang === "id"
+                  ? `❌ ${errMsg}\n\n⚠️ Kesempatan tersisa: ${remaining}/${LINK_MAX_ATTEMPTS}`
+                  : `❌ ${errMsg}\n\n⚠️ Attempts left: ${remaining}/${LINK_MAX_ATTEMPTS}`
+              );
+            }
+            linkRateLimiter.set(chatId, linkAttempt);
           }
 
           res.status(200).json({ ok: true }); return;

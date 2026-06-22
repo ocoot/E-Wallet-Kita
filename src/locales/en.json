@@ -127,6 +127,11 @@
     "monthly_groceries": "Monthly Groceries",
     "vegetables": "Fresh Vegetables",
     "bills": "Utilities & Bills",
+    "transport": "Transportation",
+    "health": "Health",
+    "shopping": "Online Shopping",
+    "entertainment": "Entertainment",
+    "education": "Education",
     "other": "Other Expenses"
   },
   "settings": {
@@ -179,7 +184,12 @@
     "search": "Search",
     "all": "All",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "delete": "Delete",
+    "previous": "Previous",
+    "next": "Next"
   },
   "confirm": {
     "logout_title": "Log Out",

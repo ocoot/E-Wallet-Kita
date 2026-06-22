@@ -22,6 +22,7 @@ const MainLayout: React.FC = () => {
   const { showToast } = useToast();
   const { t } = useLanguage();
   
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [transactionsUpdatedTrigger, setTransactionsUpdatedTrigger] = useState(0);
 
   const handleTransactionChange = () => {
@@ -70,19 +71,23 @@ const MainLayout: React.FC = () => {
       {/*Collapsible responsive Navigation Menu */}
       <Sidebar
         onLogoutClick={handleLogoutClick}
+        isCollapsed={isSidebarCollapsed}
+        onToggle={setIsSidebarCollapsed}
       />
 
       {/* Main active subview frame */}
-      <main className="flex-1 min-h-screen p-4 sm:p-6 lg:p-8 overflow-y-auto lg:pl-72 max-w-7xl mx-auto w-full">
-        <AnimatePresence mode="wait">
-          <Routes>
-            <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} />} />
-            <Route path="/transactions/new" element={<NewTransaction onTransactionAdded={handleTransactionChange} />} />
-            <Route path="/transactions" element={<History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} />} />
-            <Route path="/settings" element={<Settings onUserPrefUpdated={(user) => {}} />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </AnimatePresence>
+      <main className={`flex-1 min-h-screen p-4 sm:p-6 lg:p-8 overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
+        <div className="max-w-7xl mx-auto w-full">
+          <AnimatePresence mode="wait">
+            <Routes>
+              <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} />} />
+              <Route path="/transactions/new" element={<NewTransaction onTransactionAdded={handleTransactionChange} />} />
+              <Route path="/transactions" element={<History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} />} />
+              <Route path="/settings" element={<Settings onUserPrefUpdated={(user) => {}} />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </AnimatePresence>
+        </div>
       </main>
 
       {/* Safety Sign-out Modal dialog prompt */}

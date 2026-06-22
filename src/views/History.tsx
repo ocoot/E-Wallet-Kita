@@ -276,166 +276,169 @@ export const History: React.FC<HistoryProps> = ({
   return (
     <div className="space-y-6">
       
-      {/* 1. Header Banner & purge entire log option */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
-            {t("history.title")}
-          </h2>
-          <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
-            {t("history.desc")}
-          </p>
-        </div>
+      {/* Massive Cohesive Card Container */}
+      <div className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6">
         
-        <div className="flex items-center gap-3 self-start md:self-center relative">
-          {/* Export PDF dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => {
-                audioFeedback.playClick();
-                setIsExportMenuOpen((prev) => !prev);
-              }}
-              className="cursor-pointer px-4.5 py-3 border border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors light_sakura:text-indigo-600"
-            >
-              <FileDown size={15} />
-              <span>{t("history.export_menu_label")}</span>
-              <ChevronDown size={13} className={`transition-transform ${isExportMenuOpen ? "rotate-180" : ""}`} />
-            </button>
+        {/* 1. Header Banner & purge entire log option inside Card */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
+          <div>
+            <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+              {t("history.title")}
+            </h2>
+            <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
+              {t("history.desc")}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-3 self-start md:self-center relative">
+            {/* Export PDF dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => {
+                  audioFeedback.playClick();
+                  setIsExportMenuOpen((prev) => !prev);
+                }}
+                className="cursor-pointer px-4.5 py-3 border border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors light_sakura:text-indigo-600"
+              >
+                <FileDown size={15} />
+                <span>{t("history.export_menu_label")}</span>
+                <ChevronDown size={13} className={`transition-transform ${isExportMenuOpen ? "rotate-180" : ""}`} />
+              </button>
 
-            <AnimatePresence>
-              {isExportMenuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-30"
-                    onClick={() => setIsExportMenuOpen(false)}
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                    transition={{ type: "spring", duration: 0.2 }}
-                    className="absolute left-0 md:left-auto md:right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] z-40 rounded-xl border bg-slate-900 border-slate-800 shadow-2xl overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
-                  >
-                    <button
-                      onClick={() => {
-                        setIsExportMenuOpen(false);
-                        audioFeedback.playClick();
-                        setIsSummaryConfirmOpen(true);
-                      }}
-                      className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:text-slate-700 light_sakura:hover:bg-rose-50"
+              <AnimatePresence>
+                {isExportMenuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-30"
+                      onClick={() => setIsExportMenuOpen(false)}
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                      transition={{ type: "spring", duration: 0.2 }}
+                      className="absolute left-0 md:left-auto md:right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] z-40 rounded-xl border bg-slate-900 border-slate-800 shadow-2xl overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
                     >
-                      {t("history.export_summary_pdf")}
-                    </button>
-                    <button
-                      onClick={() => {
-                        setIsExportMenuOpen(false);
-                        audioFeedback.playClick();
-                        setIsFullExportOpen(true);
-                      }}
-                      className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer border-t border-slate-800/60 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50 light_sakura:border-rose-100/60"
-                    >
-                      {t("history.export_full_pdf")}
-                    </button>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
+                      <button
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          audioFeedback.playClick();
+                          setIsSummaryConfirmOpen(true);
+                        }}
+                        className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:text-slate-700 light_sakura:hover:bg-rose-50"
+                      >
+                        {t("history.export_summary_pdf")}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setIsExportMenuOpen(false);
+                          audioFeedback.playClick();
+                          setIsFullExportOpen(true);
+                        }}
+                        className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer border-t border-slate-800/60 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50 light_sakura:border-rose-100/60"
+                      >
+                        {t("history.export_full_pdf")}
+                      </button>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {transactions.length > 0 && (
+              <button
+                onClick={() => setIsDeleteAllOpen(true)}
+                className="cursor-pointer px-4.5 py-3 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              >
+                <Trash2 size={15} />
+                <span>{t("history.btn_delete_all")}</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 2. Controls Row: Month filters & Page Sizes */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-2">
+          
+          {/* Month Selector dropdown */}
+          <div className="space-y-1.5">
+            <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
+              {t("history.filter_month")}
+            </label>
+            <div className="relative">
+              <select
+                value={filterMonth}
+                onChange={(e) => {
+                  audioFeedback.playClick();
+                  setFilterMonth(e.target.value);
+                }}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
+              >
+                {monthOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          {transactions.length > 0 && (
-            <button
-              onClick={() => setIsDeleteAllOpen(true)}
-              className="cursor-pointer px-4.5 py-3 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors"
-            >
-              <Trash2 size={15} />
-              <span>{t("history.btn_delete_all")}</span>
-            </button>
-          )}
-        </div>
-      </div>
+          {/* Text Filter search bar */}
+          <div className="space-y-1.5">
+            <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
+              {t("history.search_label")}
+            </label>
+            <div className="relative">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                <Search size={14} />
+              </span>
+              <input
+                type="text"
+                placeholder={t("history.search_placeholder")}
+                value={search}
+                onChange={(e) => {
+                  // Play tiny tick only when starting or clearing filter for lightweight sound feel
+                  if (!search || !e.target.value) {
+                    audioFeedback.playClick();
+                  }
+                  setSearch(e.target.value);
+                }}
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+              />
+            </div>
+          </div>
 
-      {/* 2. Controls Row: Month filters & Page Sizes */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-5 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-xs">
-        
-        {/* Month Selector dropdown */}
-        <div className="space-y-1.5">
-          <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
-            {t("history.filter_month")}
-          </label>
-          <div className="relative">
+          {/* Dynamic page sizing selector key */}
+          <div className="space-y-1.5">
+            <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
+              {t("history.page_size")}
+            </label>
             <select
-              value={filterMonth}
+              value={pageSize}
               onChange={(e) => {
                 audioFeedback.playClick();
-                setFilterMonth(e.target.value);
+                const val = e.target.value;
+                setPageSize(val === "all" ? "all" : parseInt(val));
+                setCurrentPage(1); // Reset
               }}
               className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
             >
-              {monthOptions.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={15}>15</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+              <option value="all">{t("history.show_all")}</option>
             </select>
           </div>
+
         </div>
 
-        {/* Text Filter search bar */}
-        <div className="space-y-1.5">
-          <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
-            {t("history.search_label")}
-          </label>
-          <div className="relative">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-              <Search size={14} />
-            </span>
-            <input
-              type="text"
-              placeholder={t("history.search_placeholder")}
-              value={search}
-              onChange={(e) => {
-                // Play tiny tick only when starting or clearing filter for lightweight sound feel
-                if (!search || !e.target.value) {
-                  audioFeedback.playClick();
-                }
-                setSearch(e.target.value);
-              }}
-              className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-            />
-          </div>
-        </div>
-
-        {/* Dynamic page sizing selector key */}
-        <div className="space-y-1.5">
-          <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
-            {t("history.page_size")}
-          </label>
-          <select
-            value={pageSize}
-            onChange={(e) => {
-              audioFeedback.playClick();
-              const val = e.target.value;
-              setPageSize(val === "all" ? "all" : parseInt(val));
-              setCurrentPage(1); // Reset
-            }}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
-          >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={15}>15</option>
-            <option value={20}>20</option>
-            <option value={50}>50</option>
-            <option value="all">{t("history.show_all")}</option>
-          </select>
-        </div>
-
-      </div>
-
-      {/* 3. Transaction Data Table/Cards */}
-      <div className="bg-slate-900 border border-slate-900 rounded-3xl transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-sm overflow-hidden">
-        
-        {paginatedTransactions.length === 0 ? (
-          <EmptyState message={t("history.no_transactions")} />
+        {/* 3. Transaction Data Table/Cards */}
+        <div className="border border-slate-800/80 rounded-2xl bg-slate-950/40 relative overflow-hidden light_sakura:border-rose-100/50 light_sakura:bg-rose-50/10">
+          
+          {paginatedTransactions.length === 0 ? (
+            <EmptyState message={t("history.no_transactions")} />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full border-collapse font-sans text-left text-xs">
@@ -523,7 +526,7 @@ export const History: React.FC<HistoryProps> = ({
                         <td className="p-4 pr-6 text-right">
                           <button
                             onClick={() => handleDeleteItem(tx.id)}
-                            title="Hapus row log ini"
+                            aria-label={t("common.delete")}
                             className="p-1.5 rounded-lg border border-transparent hover:border-red-500/20 text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
                           >
                             <Trash2 size={13} />
@@ -550,6 +553,7 @@ export const History: React.FC<HistoryProps> = ({
             <div className="flex items-center gap-2">
               <button
                 disabled={currentPage === 1}
+                aria-label={t("common.previous")}
                 onClick={() => {
                   audioFeedback.playClick();
                   setCurrentPage(curr => Math.max(1, curr - 1));
@@ -565,6 +569,7 @@ export const History: React.FC<HistoryProps> = ({
 
               <button
                 disabled={currentPage === totalPages}
+                aria-label={t("common.next")}
                 onClick={() => {
                   audioFeedback.playClick();
                   setCurrentPage(curr => Math.min(totalPages, curr + 1));
@@ -577,7 +582,8 @@ export const History: React.FC<HistoryProps> = ({
           </div>
         )}
 
-      </div>
+      </div> {/* table/cards container */}
+      </div> {/* massive cohesive card container */}
 
       {/* Confirmation Modal - Export Summary PDF */}
       <Modal
