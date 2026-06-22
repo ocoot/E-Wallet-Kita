@@ -314,7 +314,7 @@ export const History: React.FC<HistoryProps> = ({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.97 }}
                     transition={{ type: "spring", duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-56 z-40 rounded-xl border bg-slate-900 border-slate-800 shadow-2xl overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
+                    className="absolute left-0 md:left-auto md:right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] z-40 rounded-xl border bg-slate-900 border-slate-800 shadow-2xl overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
                   >
                     <button
                       onClick={() => {
