@@ -1,0 +1,149 @@
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { FileText, X } from "lucide-react";
+import { useLanguage } from "../contexts/LanguageContext";
+import { isRangeValid, diffMonthsInclusive, MAX_RANGE_MONTHS } from "../lib/pdf/dateRange";
+
+interface ExportFullModalProps {
+  isOpen: boolean;
+  monthOptions: { value: string; label: string }[];
+  onCancel: () => void;
+  onGenerate: (fromMonth: string, toMonth: string) => void;
+  isGenerating?: boolean;
+}
+
+export const ExportFullModal: React.FC<ExportFullModalProps> = ({
+  isOpen,
+  monthOptions,
+  onCancel,
+  onGenerate,
+  isGenerating = false,
+}) => {
+  const { t } = useLanguage();
+
+  const defaultMonth = monthOptions[0]?.value || "";
+  const [fromMonth, setFromMonth] = useState(defaultMonth);
+  const [toMonth, setToMonth] = useState(defaultMonth);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setFromMonth(defaultMonth);
+      setToMonth(defaultMonth);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  const valid = isRangeValid(fromMonth, toMonth);
+  const monthsSelected = fromMonth && toMonth ? diffMonthsInclusive(fromMonth, toMonth) : 0;
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onCancel}
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+          />
+
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 15 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 15 }}
+            transition={{ type: "spring", duration: 0.3 }}
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border p-6 shadow-2xl bg-slate-900 border-indigo-500/20 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-rose-100"
+          >
+            <button
+              onClick={onCancel}
+              className="absolute top-4 right-4 text-gray-400 hover:text-white light_sakura:hover:text-slate-900 cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="mb-4 flex items-center gap-3">
+              <div className="rounded-full p-2.5 bg-indigo-500/15 text-indigo-400 light_sakura:bg-indigo-50 light_sakura:text-indigo-600">
+                <FileText size={20} />
+              </div>
+              <h3 className="font-sans text-lg font-semibold tracking-tight">
+                {t("export.modal_full_title")}
+              </h3>
+            </div>
+
+            <p className="mb-5 font-sans text-sm opacity-80 leading-relaxed">
+              {t("export.modal_full_desc")}
+            </p>
+
+            <div className="grid grid-cols-2 gap-3 mb-2">
+              <div className="space-y-1.5">
+                <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
+                  {t("export.from_month")}
+                </label>
+                <select
+                  value={fromMonth}
+                  onChange={(e) => setFromMonth(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
+                >
+                  {monthOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
+                  {t("export.to_month")}
+                </label>
+                <select
+                  value={toMonth}
+                  onChange={(e) => setToMonth(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
+                >
+                  {monthOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {!valid && monthsSelected !== 0 && (
+              <p className="text-xs text-red-400 font-medium mb-3">
+                {t("export.range_invalid")}
+              </p>
+            )}
+            {valid && (
+              <p className="text-xs text-gray-400 light_sakura:text-slate-500 mb-3">
+                {monthsSelected} / {MAX_RANGE_MONTHS} {t("export.from_month").toLowerCase()}
+              </p>
+            )}
+
+            <div className="flex items-center justify-end gap-3 mt-2">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="cursor-pointer rounded-xl px-4 py-2 font-sans text-sm font-medium hover:bg-slate-800 hover:text-white light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+              >
+                {t("common.cancel")}
+              </button>
+              <button
+                type="button"
+                disabled={!valid || isGenerating}
+                onClick={() => onGenerate(fromMonth, toMonth)}
+                className={`cursor-pointer rounded-xl px-4.5 py-2 font-sans text-sm font-semibold tracking-tight text-white shadow-lg transition-all duration-200
+                  bg-indigo-600 hover:bg-indigo-500 hover:shadow-indigo-500/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400
+                  ${!valid || isGenerating ? "opacity-40 cursor-not-allowed" : ""}`}
+              >
+                {t("export.generate_pdf")}
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};

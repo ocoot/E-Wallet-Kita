@@ -35,6 +35,34 @@ export const dbService = {
     return data as Transaction[];
   },
 
+  /**
+   * Fetch all transactions between two ISO dates (inclusive), ignoring the
+   * monthly filter used by the History page. Used by PDF export so that
+   * "PDF Penuh" (multi-month range) is not limited to a single month.
+   * startDate/endDate must be in "YYYY-MM-DD" format.
+   */
+  async getTransactionsBetween(
+    userId: string,
+    startDate: string,
+    endDate: string
+  ): Promise<Transaction[]> {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .gte('transaction_date', startDate)
+      .lte('transaction_date', endDate)
+      .order('transaction_date', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching transactions between dates:', error);
+      throw error;
+    }
+
+    return data as Transaction[];
+  },
+
   async saveTransaction(
     userId: string,
     type: "income" | "expense",

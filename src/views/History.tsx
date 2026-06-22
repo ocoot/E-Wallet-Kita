@@ -6,6 +6,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
+import { ExportFullModal } from "../components/ExportFullModal";
 import { 
   Calendar, 
   Trash2, 
@@ -19,10 +20,13 @@ import {
   ArrowDownLeft,
   XCircle,
   FileSpreadsheet,
+  FileDown,
   Send
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
+import { exportSummaryPdf, exportFullPdf } from "../lib/pdf/exportPdf";
+import { getCurrentMonthToDateRange, toISODate } from "../lib/pdf/dateRange";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -65,6 +69,12 @@ export const History: React.FC<HistoryProps> = ({
   
   // Loading indicators
   const [isLoading, setIsLoading] = useState(false);
+
+  // Export PDF states
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [isSummaryConfirmOpen, setIsSummaryConfirmOpen] = useState(false);
+  const [isFullExportOpen, setIsFullExportOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Available Month-Year options (generate for current year & previous year for dynamic dropdown)
   const monthOptions = (() => {
@@ -204,6 +214,65 @@ export const History: React.FC<HistoryProps> = ({
     return t("transaction.source_telegram");
   };
 
+  // ---- PDF Export handlers ----
+
+  const handleExportSummary = async () => {
+    setIsSummaryConfirmOpen(false);
+    setIsExporting(true);
+    audioFeedback.playClick();
+    try {
+      const { start, end } = getCurrentMonthToDateRange();
+      const data = await dbService.getTransactionsBetween(
+        currentUser.id,
+        toISODate(start),
+        toISODate(end)
+      );
+      const filename = exportSummaryPdf({ t, userName: currentUser.display_name, transactions: data });
+      audioFeedback.playChime();
+      showToast(t("export.success_export", { filename }), "success");
+    } catch (err) {
+      console.error("Export summary PDF error:", err);
+      audioFeedback.playDullPluck();
+      showToast(t("export.error_export"), "error");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportFull = async (fromMonth: string, toMonth: string) => {
+    setIsExporting(true);
+    audioFeedback.playClick();
+    try {
+      const [ty, tm] = toMonth.split("-").map(Number);
+      const lastDay = new Date(ty, tm, 0).getDate();
+      const startDate = `${fromMonth}-01`;
+      const endDate = `${toMonth}-${String(lastDay).padStart(2, "0")}`;
+
+      const data = await dbService.getTransactionsBetween(currentUser.id, startDate, endDate);
+      const filename = exportFullPdf({
+        t,
+        userName: currentUser.display_name,
+        transactions: data,
+        fromMonth,
+        toMonth,
+      });
+      audioFeedback.playChime();
+      showToast(t("export.success_export", { filename }), "success");
+      setIsFullExportOpen(false);
+    } catch (err) {
+      console.error("Export full PDF error:", err);
+      audioFeedback.playDullPluck();
+      showToast(t("export.error_export"), "error");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const currentMonthRangeLabel = (() => {
+    const { start, end } = getCurrentMonthToDateRange();
+    return { start: toISODate(start), end: toISODate(end) };
+  })();
+
   return (
     <div className="space-y-6">
       
@@ -218,15 +287,71 @@ export const History: React.FC<HistoryProps> = ({
           </p>
         </div>
         
-        {transactions.length > 0 && (
-          <button
-            onClick={() => setIsDeleteAllOpen(true)}
-            className="cursor-pointer px-4.5 py-3 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors self-start md:self-center"
-          >
-            <Trash2 size={15} />
-            <span>{t("history.btn_delete_all")}</span>
-          </button>
-        )}
+        <div className="flex items-center gap-3 self-start md:self-center relative">
+          {/* Export PDF dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => {
+                audioFeedback.playClick();
+                setIsExportMenuOpen((prev) => !prev);
+              }}
+              className="cursor-pointer px-4.5 py-3 border border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors light_sakura:text-indigo-600"
+            >
+              <FileDown size={15} />
+              <span>{t("history.export_menu_label")}</span>
+              <ChevronDown size={13} className={`transition-transform ${isExportMenuOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            <AnimatePresence>
+              {isExportMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setIsExportMenuOpen(false)}
+                  />
+                  <motion.div
+                    initial={{ opacity: 0, y: -8, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.97 }}
+                    transition={{ type: "spring", duration: 0.2 }}
+                    className="absolute right-0 mt-2 w-56 z-40 rounded-xl border bg-slate-900 border-slate-800 shadow-2xl overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
+                  >
+                    <button
+                      onClick={() => {
+                        setIsExportMenuOpen(false);
+                        audioFeedback.playClick();
+                        setIsSummaryConfirmOpen(true);
+                      }}
+                      className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:text-slate-700 light_sakura:hover:bg-rose-50"
+                    >
+                      {t("history.export_summary_pdf")}
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsExportMenuOpen(false);
+                        audioFeedback.playClick();
+                        setIsFullExportOpen(true);
+                      }}
+                      className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer border-t border-slate-800/60 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50 light_sakura:border-rose-100/60"
+                    >
+                      {t("history.export_full_pdf")}
+                    </button>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {transactions.length > 0 && (
+            <button
+              onClick={() => setIsDeleteAllOpen(true)}
+              className="cursor-pointer px-4.5 py-3 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <Trash2 size={15} />
+              <span>{t("history.btn_delete_all")}</span>
+            </button>
+          )}
+        </div>
       </div>
 
       {/* 2. Controls Row: Month filters & Page Sizes */}
@@ -453,6 +578,34 @@ export const History: React.FC<HistoryProps> = ({
         )}
 
       </div>
+
+      {/* Confirmation Modal - Export Summary PDF */}
+      <Modal
+        isOpen={isSummaryConfirmOpen}
+        title={t("export.summary_confirm_title")}
+        description={t("export.summary_confirm_desc", {
+          start: currentMonthRangeLabel.start,
+          end: currentMonthRangeLabel.end,
+        })}
+        type="info"
+        confirmLabel={t("export.confirm_export")}
+        cancelLabel={t("common.cancel")}
+        onConfirm={handleExportSummary}
+        onCancel={() => {
+          audioFeedback.playClick();
+          setIsSummaryConfirmOpen(false);
+        }}
+        confirmDisabled={isExporting}
+      />
+
+      {/* Export Full PDF range-picker modal */}
+      <ExportFullModal
+        isOpen={isFullExportOpen}
+        monthOptions={monthOptions}
+        onCancel={() => setIsFullExportOpen(false)}
+        onGenerate={handleExportFull}
+        isGenerating={isExporting}
+      />
 
       {/* Confirmation Modal - Single Item */}
       <Modal
