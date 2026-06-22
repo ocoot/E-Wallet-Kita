@@ -57,6 +57,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             // but usually it's fine for public.users
             console.error("AuthContext: user sync error", error);
           }
+
+          // check if user is banned
+          const { data: profile } = await supabase
+            .from("users")
+            .select("is_banned")
+            .eq("id", session.user.id)
+            .single();
+
+          if (profile?.is_banned) {
+            await supabase.auth.signOut();
+            alert("Account has been banned / Akun Anda telah ditangguhkan.");
+            return;
+          }
         } catch (err) {
           console.error("AuthContext: sync exception", err);
         }

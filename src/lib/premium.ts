@@ -13,17 +13,7 @@ const PREMIUM_AMOUNT = 501;
 const QRIS_EXPIRY_SECONDS = 90; // 01:30
 
 export function isSandboxMode(): boolean {
-  try {
-    const host = window.location.hostname;
-    return (
-      host.includes("aistudio") ||
-      host.includes("usercontent.goog") ||
-      host === "localhost" ||
-      host === "127.0.0.1"
-    );
-  } catch {
-    return true;
-  }
+  return true;
 }
 
 function randomUniqueCode(): number {
@@ -51,7 +41,7 @@ export async function createPremiumTransaction(userId: string): Promise<PremiumT
       `SANDBOX-QRIS|${orderId}|${totalAmount}`
     )}`;
 
-    await supabase.from("premium_transactions").insert({
+    const { data, error } = await supabase.from("premium_transactions").insert({
       user_id: userId,
       order_id: orderId,
       amount: PREMIUM_AMOUNT,
@@ -61,6 +51,9 @@ export async function createPremiumTransaction(userId: string): Promise<PremiumT
       is_sandbox: true,
       expired_at: expiredAt,
     });
+
+    console.log("INSERT DATA:", data);
+    console.log("INSERT ERROR:", error);
 
     return { order_id: orderId, amount: PREMIUM_AMOUNT, total_amount: totalAmount, qris_url: qrisUrl, expired_at: expiredAt, status: "PENDING" };
   }

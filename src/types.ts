@@ -8,6 +8,15 @@ export interface UserSession {
   email?: string | null;
 }
 
+export interface UserProfile {
+  id: string;
+  email?: string;
+  display_name: string;
+  is_premium: boolean;
+  is_banned: boolean;
+  role: "owner" | "admin" | "user";
+}
+
 export interface Transaction {
   id: string;
   user_id: string;

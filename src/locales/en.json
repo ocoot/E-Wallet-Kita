@@ -9,7 +9,8 @@
     "new_transaction": "Manual Entry",
     "history": "Transaction History",
     "settings": "Settings",
-    "logout": "Log Out"
+    "logout": "Log Out",
+    "admin_panel": "Admin Panel"
   },
   "auth": {
     "login_title": "Account Sign In",

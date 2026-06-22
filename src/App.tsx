@@ -11,6 +11,8 @@ import { Dashboard } from "./views/Dashboard";
 import { NewTransaction } from "./views/NewTransaction";
 import { History } from "./views/History";
 import { Settings } from "./views/Settings";
+import { AdminPanel } from "./views/AdminPanel";
+import { useAdmin } from "./hooks/useAdmin";
 import { Modal } from "./components/Modal";
 import { ResetPasswordModal } from "./components/ResetPasswordModal";
 import { motion, AnimatePresence } from "motion/react";
@@ -19,6 +21,7 @@ import { supabase } from "./lib/supabase";
 
 const MainLayout: React.FC = () => {
   const { user, loading, signOut } = useAuth();
+  const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { t } = useLanguage();
@@ -129,6 +132,7 @@ const MainLayout: React.FC = () => {
               <Route path="/transactions/new" element={<NewTransaction onTransactionAdded={handleTransactionChange} />} />
               <Route path="/transactions" element={<History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} />} />
               <Route path="/settings" element={<Settings onUserPrefUpdated={(user) => {}} />} />
+              <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/dashboard" replace />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </AnimatePresence>

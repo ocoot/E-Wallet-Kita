@@ -9,7 +9,8 @@
     "new_transaction": "Catat Mandiri",
     "history": "Riwayat Transaksi",
     "settings": "Pengaturan",
-    "logout": "Keluar Sesi"
+    "logout": "Keluar Sesi",
+    "admin_panel": "Panel Admin"
   },
   "auth": {
     "login_title": "Masuk Akun",

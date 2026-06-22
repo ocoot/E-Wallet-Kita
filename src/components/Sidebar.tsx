@@ -19,9 +19,11 @@ import {
   ShieldCheck,
   ShieldAlert,
   Volume2,
-  VolumeX
+  VolumeX,
+  Shield
 } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
+import { useAdmin } from "../hooks/useAdmin";
 
 interface SidebarProps {
   onLogoutClick: () => void;
@@ -37,6 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { user } = useAuth();
   const { locale, setLocale, t } = useLanguage();
   const { theme, setTheme } = useTheme();
+  const { isAdmin } = useAdmin();
   const location = useLocation();
   
   // Mobile drawer overlay state
@@ -52,6 +55,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: "history", label: t("nav.history"), icon: HistoryIcon, path: "/transactions" },
     { id: "settings", label: t("nav.settings"), icon: SettingsIcon, path: "/settings" },
   ];
+
+  if (isAdmin) {
+    menuItems.push({ id: "admin", label: t("nav.admin_panel"), icon: Shield, path: "/admin" });
+  }
 
   const activeTab = menuItems.find(item => location.pathname === item.path)?.id || "dashboard";
 
