@@ -1,7 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Type } from '@google/genai';
-import { parseAmountFromString } from '../src/lib/parserUtils';
+import { parseAmountFromString } from '../src/lib/parserUtils.js';
 
 type Lang = "id" | "en";
 
@@ -54,7 +54,7 @@ const LINK_WINDOW = 60 * 1000;      // per 60 seconds
 const LINK_LOCKOUT = 15 * 60 * 1000; // 15-minute lockout after 5 failed attempts
 
 // FIX #10: Import categories from centralized definition
-import { CATEGORIES, getCategoryLabel as getCategoryLabelFromDef } from '../src/lib/categoryDefinitions';
+import { CATEGORIES, getCategoryLabel as getCategoryLabelFromDef } from '../src/lib/categoryDefinitions.js';
 
 // Use centralized definition
 function getCategoryLabel(categoryKey: string, lang: Lang): string {
