@@ -82,7 +82,8 @@
     "ai_box_desc": "Metode utama untuk pencatatan cepat. Cukup ketik teks transaksi bebas Anda apa adanya di bawah ini:",
     "ai_box_placeholder": "Contoh: \"Makan siang 25rb\" atau \"Gaji 1.5jt\" atau \"Tagihan listrik 350ribu\"",
     "ai_box_btn": "Proses dengan AI",
-    "quick_input_sec": "Pencatatan AI"
+    "quick_input_sec": "Pencatatan AI",
+    "quick_add_fab": "Tambah Transaksi"
   },
   "transaction": {
     "add_title": "Catat Transaksi Manual",

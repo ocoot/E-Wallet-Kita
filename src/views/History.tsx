@@ -5,28 +5,18 @@ import { UserSession, Transaction } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
-import { EmptyState } from "../components/EmptyState";
 import { ExportFullModal } from "../components/ExportFullModal";
-import { 
-  Calendar, 
-  Trash2, 
-  AlertTriangle, 
-  Search, 
-  ChevronLeft, 
-  ChevronRight, 
-  ChevronDown,
-  Sparkles,
-  ArrowUpRight,
-  ArrowDownLeft,
-  XCircle,
-  FileSpreadsheet,
-  FileDown,
-  Send
-} from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { exportSummaryPdf, exportFullPdf } from "../lib/pdf/exportPdf";
 import { getCurrentMonthToDateRange, toISODate } from "../lib/pdf/dateRange";
+
+import { HistoryFilter } from "../components/HistoryFilter";
+import { HistoryTable } from "../components/HistoryTable";
+import { HistoryPagination } from "../components/HistoryPagination";
+import { HistoryExport } from "../components/HistoryExport";
+import { HistoryDeleteModal } from "../components/HistoryDeleteModal";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -82,7 +72,7 @@ export const History: React.FC<HistoryProps> = ({
     const d = new Date();
     const currentYear = d.getFullYear(); // 2026 as per local time
     
-    // Generate previous 12 months select options
+    // Generate previous 18 months select options
     for (let i = 0; i < 18; i++) {
       const monthDate = new Date(currentYear, d.getMonth() - i, 1);
       const valStr = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, "0")}`;
@@ -279,311 +269,60 @@ export const History: React.FC<HistoryProps> = ({
       {/* Massive Cohesive Card Container */}
       <div className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6">
         
-        {/* 1. Header Banner & purge entire log option inside Card */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
-          <div>
-            <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
-              {t("history.title")}
-            </h2>
-            <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
-              {t("history.desc")}
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3 self-start md:self-center relative">
-            {/* Export PDF dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => {
-                  audioFeedback.playClick();
-                  setIsExportMenuOpen((prev) => !prev);
-                }}
-                className="cursor-pointer px-4.5 py-3 border border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors light_sakura:text-indigo-600"
-              >
-                <FileDown size={15} />
-                <span>{t("history.export_menu_label")}</span>
-                <ChevronDown size={13} className={`transition-transform ${isExportMenuOpen ? "rotate-180" : ""}`} />
-              </button>
+        {/* 1. Header Banner & reports menu exports */}
+        <HistoryExport 
+          isExportMenuOpen={isExportMenuOpen}
+          setIsExportMenuOpen={setIsExportMenuOpen}
+          setIsSummaryConfirmOpen={setIsSummaryConfirmOpen}
+          setIsFullExportOpen={setIsFullExportOpen}
+          setIsDeleteAllOpen={setIsDeleteAllOpen}
+          hasTransactions={transactions.length > 0}
+        />
 
-              <AnimatePresence>
-                {isExportMenuOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-30"
-                      onClick={() => setIsExportMenuOpen(false)}
-                    />
-                    <motion.div
-                      initial={{ opacity: 0, y: -8, scale: 0.97 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, y: -8, scale: 0.97 }}
-                      transition={{ type: "spring", duration: 0.2 }}
-                      className="absolute left-0 md:left-auto md:right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] z-40 rounded-xl border bg-slate-900 border-slate-800 shadow-2xl overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
-                    >
-                      <button
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          audioFeedback.playClick();
-                          setIsSummaryConfirmOpen(true);
-                        }}
-                        className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:text-slate-700 light_sakura:hover:bg-rose-50"
-                      >
-                        {t("history.export_summary_pdf")}
-                      </button>
-                      <button
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          audioFeedback.playClick();
-                          setIsFullExportOpen(true);
-                        }}
-                        className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer border-t border-slate-800/60 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50 light_sakura:border-rose-100/60"
-                      >
-                        {t("history.export_full_pdf")}
-                      </button>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {transactions.length > 0 && (
-              <button
-                onClick={() => setIsDeleteAllOpen(true)}
-                className="cursor-pointer px-4.5 py-3 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-              >
-                <Trash2 size={15} />
-                <span>{t("history.btn_delete_all")}</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* 2. Controls Row: Month filters & Page Sizes */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-2">
-          
-          {/* Month Selector dropdown */}
-          <div className="space-y-1.5">
-            <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
-              {t("history.filter_month")}
-            </label>
-            <div className="relative">
-              <select
-                value={filterMonth}
-                onChange={(e) => {
-                  audioFeedback.playClick();
-                  setFilterMonth(e.target.value);
-                }}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
-              >
-                {monthOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Text Filter search bar */}
-          <div className="space-y-1.5">
-            <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
-              {t("history.search_label")}
-            </label>
-            <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
-                <Search size={14} />
-              </span>
-              <input
-                type="text"
-                placeholder={t("history.search_placeholder")}
-                value={search}
-                onChange={(e) => {
-                  // Play tiny tick only when starting or clearing filter for lightweight sound feel
-                  if (!search || !e.target.value) {
-                    audioFeedback.playClick();
-                  }
-                  setSearch(e.target.value);
-                }}
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-              />
-            </div>
-          </div>
-
-          {/* Dynamic page sizing selector key */}
-          <div className="space-y-1.5">
-            <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
-              {t("history.page_size")}
-            </label>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                audioFeedback.playClick();
-                const val = e.target.value;
-                setPageSize(val === "all" ? "all" : parseInt(val));
-                setCurrentPage(1); // Reset
-              }}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={15}>15</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-              <option value="all">{t("history.show_all")}</option>
-            </select>
-          </div>
-
-        </div>
+        {/* 2. Month selector search & filters controls */}
+        <HistoryFilter 
+          filterMonth={filterMonth}
+          setFilterMonth={setFilterMonth}
+          monthOptions={monthOptions}
+          search={search}
+          setSearch={setSearch}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+        />
 
         {/* 3. Transaction Data Table/Cards */}
-        <div className="border border-slate-800/80 rounded-2xl bg-slate-950/40 relative overflow-hidden light_sakura:border-rose-100/50 light_sakura:bg-rose-50/10">
-          
-          {paginatedTransactions.length === 0 ? (
-            <EmptyState message={t("history.no_transactions")} />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse font-sans text-left text-xs">
-              
-              {/* Header row desktop labels */}
-              <thead>
-                <tr className="border-b border-slate-800/60 bg-slate-950/20 text-gray-400 uppercase tracking-wider select-none font-bold light_sakura:border-rose-100/60 light_sakura:bg-rose-50/20 light_sakura:text-slate-600">
-                  <th className="p-4 pl-6 w-36">{t("history.col_date")}</th>
-                  <th className="p-4 w-24">{t("history.col_type")}</th>
-                  <th className="p-4 w-36">{t("history.col_category")}</th>
-                  <th className="p-4">{t("transaction.label_note")}</th>
-                  <th className="p-4 w-32">{t("history.col_amount")}</th>
-                  <th className="p-4 w-28 hidden md:table-cell">{t("history.col_source")}</th>
-                  <th className="p-4 pr-6 w-20 text-right">{t("history.col_actions")}</th>
-                </tr>
-              </thead>
-
-              {/* Data Rows */}
-              <tbody className="divide-y divide-slate-800/40 light_sakura:divide-rose-100/30">
-                <AnimatePresence mode="popLayout">
-                  {paginatedTransactions.map((tx, index) => {
-                    const isExpense = tx.type === "expense";
-                    return (
-                      <motion.tr 
-                        key={tx.id} 
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ 
-                          type: "spring",
-                          stiffness: 400,
-                          damping: 25,
-                          delay: Math.min(index * 0.025, 0.2) 
-                        }}
-                        className="hover:bg-slate-950/15 text-slate-300 transition-all duration-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50/20"
-                      >
-                        {/* Date */}
-                        <td className="p-4 pl-6 font-mono font-medium text-slate-400 light_sakura:text-slate-500 shrink-0">
-                          {formatDateLabel(tx.transaction_date)}
-                        </td>
-
-                        {/* Cashflow Type badge */}
-                        <td className="p-4">
-                          <span className={`inline-flex px-2 py-1 rounded-md font-bold text-[9px] uppercase tracking-wider
-                            ${isExpense 
-                              ? "bg-red-500/10 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500" 
-                              : "bg-emerald-500/10 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-500"
-                            }`}
-                          >
-                            {isExpense ? t("transaction.expense") : t("transaction.income")}
-                          </span>
-                        </td>
-
-                        {/* Category lookup key */}
-                        <td className="p-4 font-semibold text-slate-200 light_sakura:text-slate-900">
-                          {t(`categories.${tx.category}`)}
-                        </td>
-
-                        {/* Description / source details */}
-                        <td className="p-4 max-w-sm truncate text-gray-400 light_sakura:text-slate-600 font-medium">
-                          {tx.note || <span className="opacity-40 italic">-</span>}
-                        </td>
-
-                        {/* Rupiah amounts */}
-                        <td className={`p-4 font-mono font-semibold text-sm
-                          ${isExpense ? "text-red-400 light_sakura:text-red-600" : "text-emerald-400 light_sakura:text-emerald-600"}`}
-                        >
-                          {isExpense ? "-" : "+"}
-                          {formatIDR(tx.amount)}
-                        </td>
-
-                        {/* Source indicator */}
-                        <td className="p-4 text-xs font-medium text-slate-500 hidden md:table-cell">
-                          <span className="flex items-center gap-1.5">
-                            {tx.source === "telegram" && (
-                              <div className="bg-[#0088cc]/20 p-1 rounded-md text-[#0088cc]">
-                                <Send size={10} className="-translate-x-0.5 translate-y-0.5 rotate-45" />
-                              </div>
-                            )}
-                            <span>{getSourceIconLabel(tx.source)}</span>
-                          </span>
-                        </td>
-
-                        {/* Row Delete option */}
-                        <td className="p-4 pr-6 text-right">
-                          <button
-                            onClick={() => handleDeleteItem(tx.id)}
-                            aria-label={t("common.delete")}
-                            className="p-1.5 rounded-lg border border-transparent hover:border-red-500/20 text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </td>
-                      </motion.tr>
-                    );
-                  })}
-                </AnimatePresence>
-              </tbody>
-
-            </table>
-          </div>
-        )}
+        <HistoryTable 
+          paginatedTransactions={paginatedTransactions}
+          formatDateLabel={formatDateLabel}
+          formatIDR={formatIDR}
+          getSourceIconLabel={getSourceIconLabel}
+          onDeleteItem={handleDeleteItem}
+        />
 
         {/* 4. Footer Pagination bars */}
-        {totalPages > 1 && (
-          <div className="p-4 bg-slate-950/20 border-t border-slate-800/50 flex items-center justify-between font-sans text-xs text-gray-400 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
-            <span>
-              {t("history.pagination_info", { current: paginatedTransactions.length, total: totalItems })}
-            </span>
+        <HistoryPagination 
+          totalPages={totalPages}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          paginatedCount={paginatedTransactions.length}
+          totalItems={totalItems}
+        />
 
-            {/* Pagination Controls */}
-            <div className="flex items-center gap-2">
-              <button
-                disabled={currentPage === 1}
-                aria-label={t("common.previous")}
-                onClick={() => {
-                  audioFeedback.playClick();
-                  setCurrentPage(curr => Math.max(1, curr - 1));
-                }}
-                className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-800"
-              >
-                <ChevronLeft size={14} />
-              </button>
-              
-              <span className="font-mono font-semibold text-slate-300 light_sakura:text-slate-800">
-                {currentPage} / {totalPages}
-              </span>
-
-              <button
-                disabled={currentPage === totalPages}
-                aria-label={t("common.next")}
-                onClick={() => {
-                  audioFeedback.playClick();
-                  setCurrentPage(curr => Math.min(totalPages, curr + 1));
-                }}
-                className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-800"
-              >
-                <ChevronRight size={14} />
-              </button>
-            </div>
-          </div>
-        )}
-
-      </div> {/* table/cards container */}
       </div> {/* massive cohesive card container */}
+
+      {/* 5. Modals and prompt verifications */}
+      <HistoryDeleteModal 
+        deleteTargetId={deleteTargetId}
+        setDeleteTargetId={setDeleteTargetId}
+        transactions={transactions}
+        formatIDR={formatIDR}
+        onConfirmSingleDelete={executeDeleteItem}
+        isDeleteAllOpen={isDeleteAllOpen}
+        setIsDeleteAllOpen={setIsDeleteAllOpen}
+        deleteAllConfirmText={deleteAllConfirmText}
+        setDeleteAllConfirmText={setDeleteAllConfirmText}
+        onConfirmDeleteAll={executeDeleteAll}
+      />
 
       {/* Confirmation Modal - Export Summary PDF */}
       <Modal
@@ -613,88 +352,7 @@ export const History: React.FC<HistoryProps> = ({
         isGenerating={isExporting}
       />
 
-      {/* Confirmation Modal - Single Item */}
-      <Modal
-        isOpen={deleteTargetId !== null}
-        title={t("confirm.delete_item_title")}
-        description={t("confirm.delete_item_desc", {
-          amount: deleteTargetId ? formatIDR(transactions.find(t => t.id === deleteTargetId)?.amount || 0) : "",
-          note: deleteTargetId ? (transactions.find(t => t.id === deleteTargetId)?.note || t(`categories.${transactions.find(t => t.id === deleteTargetId)?.category}`)) : ""
-        })}
-        type="danger"
-        confirmLabel={t("confirm.delete_item_confirm")}
-        cancelLabel={t("common.cancel")}
-        onConfirm={executeDeleteItem}
-        onCancel={() => {
-          audioFeedback.playClick();
-          setDeleteTargetId(null);
-        }}
-      />
-
-      {/* Confirmation Modal - Destruction Safety "HAPUS" verification */}
-      <AnimatePresence>
-        {isDeleteAllOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => {
-                audioFeedback.playClick();
-                setIsDeleteAllOpen(false);
-              }}
-              className="fixed inset-0 bg-black/70 backdrop-blur-xs"
-            />
-            
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-10 w-full max-w-md p-6 rounded-2xl bg-slate-900 text-white border border-red-500/30 overflow-hidden light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-red-200"
-            >
-              <div className="flex items-center gap-2.5 text-red-100 mb-3 light_sakura:text-red-600">
-                <AlertTriangle size={24} />
-                <h3 className="font-sans font-bold text-lg">{t("confirm.delete_all_title")}</h3>
-              </div>
-              
-              <p className="font-sans text-xs text-gray-300 leading-relaxed mb-4 block light_sakura:text-slate-600">
-                {t("confirm.delete_all_desc")}
-              </p>
-
-              {/* Strict Keyword input verify */}
-              <input
-                type="text"
-                placeholder={t("confirm.delete_all_placeholder")}
-                value={deleteAllConfirmText}
-                onChange={(e) => setDeleteAllConfirmText(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-red-500 uppercase font-mono tracking-wider mb-6 light_sakura:bg-slate-100 light_sakura:border-rose-100 light_sakura:text-slate-800"
-              />
-
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={() => {
-                    audioFeedback.playClick();
-                    setIsDeleteAllOpen(false);
-                  }}
-                  className="cursor-pointer text-xs font-semibold hover:bg-slate-850 px-4 py-2 rounded-xl text-gray-400 light_sakura:hover:bg-slate-100"
-                >
-                  {t("common.cancel")}
-                </button>
-                <button
-                  onClick={executeDeleteAll}
-                  disabled={deleteAllConfirmText.toUpperCase() !== "HAPUS"}
-                  className="cursor-pointer bg-red-600 hover:bg-red-500 disabled:opacity-30 disabled:pointer-events-none px-4.5 py-2.5 text-xs font-bold text-white shadow-lg shadow-red-600/10 rounded-xl"
-                >
-                  {t("history.btn_delete_all")}
-                </button>
-              </div>
-
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* Premium Full-Screen Loading Screen with multi-layered rotating custom spiral */}
+      {/* Premium Full-Screen Loading Screen */}
       <AnimatePresence>
         {isLoading && (
           <motion.div
@@ -709,23 +367,18 @@ export const History: React.FC<HistoryProps> = ({
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col items-center max-w-xs w-full text-center shadow-2xl relative overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
             >
-              {/* Double nested spiral spirals rotating in opposite directions */}
+              {/* Double nested spiral spirals */}
               <div className="relative w-20 h-20 mb-6 flex items-center justify-center">
-                {/* Outermost cyan/indigo spiral */}
                 <motion.div
                   animate={{ rotate: 360 }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
                   className="absolute inset-0 border-4 border-t-indigo-500 border-r-teal-400 border-b-transparent border-l-transparent rounded-full"
                 />
-                
-                {/* Innermost warm magenta/rose spiral rotating backwards */}
                 <motion.div
                   animate={{ rotate: -360 }}
                   transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
                   className="absolute w-12 h-12 border-4 border-t-rose-500 border-r-transparent border-b-amber-400 border-l-transparent rounded-full"
                 />
-
-                {/* Sparkling center target */}
                 <div className="flex items-center justify-center">
                   <Trash2 className="text-red-400 light_sakura:text-rose-500" size={20} />
                 </div>

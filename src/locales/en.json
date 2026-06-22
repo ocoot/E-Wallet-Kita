@@ -82,7 +82,8 @@
     "ai_box_desc": "The primary method for quick input. Just type your freeform transaction text as-is below:",
     "ai_box_placeholder": "Example: \"Lunch 25k\" or \"Salary 1.5jt\" or \"Electricity bill 350rb\"",
     "ai_box_btn": "Process with AI",
-    "quick_input_sec": "AI Processing Box"
+    "quick_input_sec": "AI Processing Box",
+    "quick_add_fab": "Add Transaction"
   },
   "transaction": {
     "add_title": "Log Manual Transaction",
