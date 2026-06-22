@@ -87,9 +87,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
 
     let parsedString = value;
-    if (replacements) {
+    if (replacements && typeof replacements === "object" && !Array.isArray(replacements)) {
       Object.entries(replacements).forEach(([k, v]) => {
-        parsedString = parsedString.replace(new RegExp(`{${k}}`, "g"), String(v));
+        // Escape the key to prevent it from being interpreted as a regex quantifier
+        // and also escape the curly braces themselves.
+        const escapedKey = k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        parsedString = parsedString.replace(new RegExp(`\\{${escapedKey}\\}`, "g"), String(v));
       });
     }
 

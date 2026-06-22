@@ -478,7 +478,7 @@ export const Settings: React.FC<SettingsProps> = ({
               </h3>
               {isTelegramLinked && (
                 <span className="px-2 py-0.5 text-[9px] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/30">
-                  {t("common.active", "ACTIVE")}
+                  {t("common.active")}
                 </span>
               )}
             </div>

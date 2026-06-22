@@ -173,6 +173,7 @@
     "btn_simulate_bot": "Simulate Bot /link Command"
   },
   "common": {
+    "active": "Active",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "loading": "Processing...",

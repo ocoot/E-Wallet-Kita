@@ -173,6 +173,7 @@
     "btn_simulate_bot": "Simulasikan Kirim /link di Bot"
   },
   "common": {
+    "active": "Aktif",
     "cancel": "Batal",
     "confirm": "Setuju",
     "loading": "Sedang diproses...",
