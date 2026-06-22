@@ -37,6 +37,48 @@ export const AdminPanel: React.FC = () => {
   const [premiumFilter, setPremiumFilter] = useState<string>("all");
   const [banFilter, setBanFilter] = useState<string>("all");
 
+  // Metrics state
+  const [metrics, setMetrics] = useState({
+    totalUsers: 0,
+    premiumUsers: 0,
+    adminUsers: 0,
+    bannedUsers: 0,
+  });
+
+  // Pagination state
+  const PAGE_SIZE = 20;
+  const [page, setPage] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
+
+  // Reset page to 0 when filters change to avoid empty-result confusion
+  useEffect(() => {
+    setPage(0);
+  }, [searchQuery, roleFilter, premiumFilter, banFilter]);
+
+  // Load metrics
+  const loadMetrics = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("role, is_premium, is_banned");
+
+      if (error) {
+        console.error("Gagal memuat metrik:", error);
+        return;
+      }
+
+      const list = data || [];
+      setMetrics({
+        totalUsers: list.length,
+        premiumUsers: list.filter((u: any) => !!u.is_premium).length,
+        adminUsers: list.filter((u: any) => u.role === "admin" || u.role === "owner").length,
+        bannedUsers: list.filter((u: any) => !!u.is_banned).length,
+      });
+    } catch (err) {
+      console.error("Metrik exception:", err);
+    }
+  }, []);
+
   // Confirmation Modal state
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -52,14 +94,38 @@ export const AdminPanel: React.FC = () => {
     action: async () => {}
   });
 
-  // Fetch users from database
+  // Fetch users with search, filters, and pagination purely built into Supabase
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from("users")
-        .select("id, email, display_name, is_premium, is_banned, role")
-        .order("created_at", { ascending: false });
+        .select("id, email, display_name, is_premium, is_banned, role", {
+          count: "exact",
+        });
+
+      if (searchQuery.trim()) {
+        const cleanSearch = searchQuery.trim();
+        query = query.or(`display_name.ilike.%${cleanSearch}%,email.ilike.%${cleanSearch}%`);
+      }
+
+      if (roleFilter !== "all") {
+        query = query.eq("role", roleFilter);
+      }
+
+      if (premiumFilter !== "all") {
+        query = query.eq("is_premium", premiumFilter === "premium");
+      }
+
+      if (banFilter !== "all") {
+        query = query.eq("is_banned", banFilter === "banned");
+      }
+
+      query = query
+        .order("created_at", { ascending: false })
+        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+
+      const { data, count, error } = await query;
 
       if (error) {
         throw error;
@@ -76,19 +142,21 @@ export const AdminPanel: React.FC = () => {
       }));
 
       setUsers(typedUsers);
+      setTotalUsers(count || 0);
     } catch (err: any) {
       console.error("Gagal mendapatkan daftar pengguna:", err);
       showToast(locale === "id" ? "Gagal memuat daftar pengguna dari server." : "Failed to load user list from server.", "error");
     } finally {
       setLoading(false);
     }
-  }, [locale, showToast]);
+  }, [locale, showToast, page, searchQuery, roleFilter, premiumFilter, banFilter]);
 
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
+      loadMetrics();
     }
-  }, [isAdmin, fetchUsers]);
+  }, [isAdmin, fetchUsers, loadMetrics, page, searchQuery, roleFilter, premiumFilter, banFilter]);
 
   // Handle premium changes
   const handleTogglePremium = async (targetUser: UserProfile) => {
@@ -132,6 +200,7 @@ export const AdminPanel: React.FC = () => {
             "success"
           );
           fetchUsers();
+          loadMetrics();
         } catch (err: any) {
           console.error(err);
           showToast(err.message || "Failed to update", "error");
@@ -190,6 +259,7 @@ export const AdminPanel: React.FC = () => {
             "success"
           );
           fetchUsers();
+          loadMetrics();
         } catch (err: any) {
           console.error(err);
           showToast(err.message || "Failed", "error");
@@ -246,6 +316,7 @@ export const AdminPanel: React.FC = () => {
             "success"
           );
           fetchUsers();
+          loadMetrics();
         } catch (err: any) {
           console.error(err);
           showToast(err.message || "Failed", "error");
@@ -253,25 +324,6 @@ export const AdminPanel: React.FC = () => {
       }
     });
   };
-
-  // Search and filter list
-  const filteredUsers = users.filter((u) => {
-    const query = searchQuery.toLowerCase();
-    const matchesSearch = 
-      u.display_name.toLowerCase().includes(query) || 
-      (u.email || "").toLowerCase().includes(query);
-
-    const matchesRole = roleFilter === "all" ? true : u.role === roleFilter;
-    const matchesPremium = 
-      premiumFilter === "all" ? true : 
-      premiumFilter === "premium" ? u.is_premium : !u.is_premium;
-
-    const matchesBan = 
-      banFilter === "all" ? true : 
-      banFilter === "banned" ? u.is_banned : !u.is_banned;
-
-    return matchesSearch && matchesRole && matchesPremium && matchesBan;
-  });
 
   if (!isAdmin) {
     return (
@@ -307,11 +359,53 @@ export const AdminPanel: React.FC = () => {
           </p>
         </div>
         <button 
-          onClick={fetchUsers}
+          onClick={() => {
+            fetchUsers();
+            loadMetrics();
+          }}
           className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-900 transition-colors cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
         >
           {locale === "id" ? "Segarkan Data" : "Refresh Data"}
         </button>
+      </div>
+
+      {/* Metrics Cards Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 shadow-sm light_sakura:bg-rose-100/10 light_sakura:border-rose-200">
+          <p className="font-sans text-[10px] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600">
+            Total Users
+          </p>
+          <h2 className="font-sans font-black text-2xl text-slate-100 light_sakura:text-slate-900 mt-1">
+            {metrics.totalUsers}
+          </h2>
+        </div>
+
+        <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm">
+          <p className="font-sans text-[10px] uppercase font-black tracking-wider text-amber-400/80">
+            👑 Premium Users
+          </p>
+          <h2 className="font-sans font-black text-2xl text-amber-400 mt-1">
+            {metrics.premiumUsers}
+          </h2>
+        </div>
+
+        <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-4 shadow-sm">
+          <p className="font-sans text-[10px] uppercase font-black tracking-wider text-teal-400/80">
+            🛡️ Admins & Owners
+          </p>
+          <h2 className="font-sans font-black text-2xl text-teal-400 mt-1">
+            {metrics.adminUsers}
+          </h2>
+        </div>
+
+        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 shadow-sm">
+          <p className="font-sans text-[10px] uppercase font-black tracking-wider text-red-400/80">
+            🚨 Suspended
+          </p>
+          <h2 className="font-sans font-black text-2xl text-red-450 mt-1">
+            {metrics.bannedUsers}
+          </h2>
+        </div>
       </div>
 
       {/* Control panel (Search & filters) */}
@@ -374,7 +468,7 @@ export const AdminPanel: React.FC = () => {
               {locale === "id" ? "Memuat data pengguna..." : "Loading user details..."}
             </p>
           </div>
-        ) : filteredUsers.length === 0 ? (
+        ) : users.length === 0 ? (
           <div className="py-20 flex flex-col items-center justify-center text-center p-6">
             <User className="text-slate-600 mb-3" size={36} />
             <p className="font-sans text-sm font-bold text-slate-300">
@@ -398,7 +492,7 @@ export const AdminPanel: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-850/50 light_sakura:divide-rose-100/20">
-                {filteredUsers.map((user) => {
+                {users.map((user) => {
                   const isSelf = user.id === currentUser?.id;
                   return (
                     <tr 
@@ -514,6 +608,43 @@ export const AdminPanel: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Pagination controls */}
+      {totalUsers > PAGE_SIZE && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">
+          <div>
+            {locale === "id" 
+              ? `Menampilkan ${page * PAGE_SIZE + 1} - ${Math.min((page + 1) * PAGE_SIZE, totalUsers)} dari ${totalUsers} pengguna`
+              : `Showing ${page * PAGE_SIZE + 1} - ${Math.min((page + 1) * PAGE_SIZE, totalUsers)} of ${totalUsers} users`
+            }
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              disabled={page === 0}
+              onClick={() => {
+                audioFeedback.playClick();
+                setPage(p => Math.max(0, p - 1));
+              }}
+              className="px-3 py-1.5 rounded-lg border border-slate-850 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
+            >
+              {locale === "id" ? "Sebelumnya" : "Previous"}
+            </button>
+            <span className="px-3 py-1 bg-slate-950/40 rounded-md border border-slate-900 light_sakura:bg-rose-50/10">
+              {page + 1} / {Math.ceil(totalUsers / PAGE_SIZE)}
+            </span>
+            <button
+              disabled={(page + 1) * PAGE_SIZE >= totalUsers}
+              onClick={() => {
+                audioFeedback.playClick();
+                setPage(p => p + 1);
+              }}
+              className="px-3 py-1.5 rounded-lg border border-slate-850 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
+            >
+              {locale === "id" ? "Selanjutnya" : "Next"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation helper Modal */}
       <Modal
