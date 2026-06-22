@@ -159,36 +159,6 @@ export const Settings: React.FC<SettingsProps> = ({
     });
   };
 
-  // Simulated Telegram bot action trigger
-  const handleSimulateTelegramWebhookLink = async () => {
-    if (!linkingCode || !user) return;
-    audioFeedback.playClick();
-    
-    showToast(t("settings.toast_simulating_webhook"), "info");
-    
-    setTimeout(async () => {
-      try {
-        const generatedChatId = Math.floor(10000000 + Math.random() * 90000000).toString();
-        
-        // Simulating WHAT THE BOT BACKEND WOULD DO:
-        const { error } = await supabase
-          .from('users')
-          .update({ telegram_chat_id: generatedChatId })
-          .eq('id', user.id);
-        
-        if (error) throw error;
-
-        setTelegramChatId(generatedChatId);
-        setIsTelegramLinked(true);
-        setLinkingCode(null); 
-        audioFeedback.playChime();
-        showToast(t("toast.success_link"), "success");
-      } catch (err: any) {
-        showToast(err.message, "error");
-      }
-    }, 1200);
-  };
-
   const handleUnlinkTelegramClick = () => {
     audioFeedback.playClick();
     setIsUnlinkModalOpen(true);
@@ -485,7 +455,6 @@ export const Settings: React.FC<SettingsProps> = ({
                   </motion.button>
                 ) : (
                   <div className="p-5 rounded-2xl border-2 border-dashed border-indigo-500/30 bg-indigo-500/5 light_sakura:border-rose-200 light_sakura:bg-rose-50/40 space-y-4 flex flex-col items-center w-full">
-                    {/* Highly visible 5-digit sequence code display */}
                     <div className="text-center space-y-1">
                       <span className="font-sans text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                         {t("settings.btn_copy_link")}
@@ -514,15 +483,6 @@ export const Settings: React.FC<SettingsProps> = ({
                         {t("settings.waiting_for_connection", "Menunggu koneksi dari bot...")}
                       </p>
                     </div>
-
-                    {/* Interactive Mock simulation webhook trigger - kept smaller and more subtle */}
-                    <button
-                      type="button"
-                      onClick={handleSimulateTelegramWebhookLink}
-                      className="cursor-pointer text-[10px] text-gray-500 hover:text-gray-300 underline underline-offset-4 transition-colors"
-                    >
-                      {t("settings.btn_simulate_bot")}
-                    </button>
                   </div>
                 )}
               </div>

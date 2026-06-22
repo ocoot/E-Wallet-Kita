@@ -169,8 +169,7 @@
     "diagnostics_desc": "Verifikasi akurasi regulasi parser singkatan nominal secara lokal.",
     "btn_run_tests": "Jalankan Tes Parser",
     "test_input": "Input Teks",
-    "test_output": "Jumlah Dolar/Rupiah Terdeteksi",
-    "btn_simulate_bot": "Simulasikan Kirim /link di Bot"
+    "test_output": "Jumlah Dolar/Rupiah Terdeteksi"
   },
   "common": {
     "active": "Aktif",
@@ -218,9 +217,7 @@
     "logout_done": "Sesi Anda telah diakhiri.",
     "toast_blank_profile_name": "Nama profil tidak boleh kosong",
     "toast_test_success": "Tes unit diagnostik parser berjalan dengan sukses!",
-    "toast_generate_code_error": "Gagal membuat kode penghubung: {message}",
-    "toast_simulating_webhook": "Memproses simulasi pengiriman webhook dari bot...",
-    "toast_unlinking_telegram": "Memutuskan koneksi bot Telegram..."
+    "toast_generate_code_error": "Gagal membuat kode penghubung: {message}"
   },
   "months": {
     "m1": "Januari",

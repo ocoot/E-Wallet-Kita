@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Type } from '@google/genai';
+import { parseAmountFromString } from '../src/lib/parserUtils';
 
 type Lang = "id" | "en";
 
@@ -18,50 +19,6 @@ interface UserContext {
 // ─────────────────────────────────────────────────────────────
 const GEMINI_MODEL = "gemini-2.0-flash";
 
-// ─────────────────────────────────────────────────────────────
-// FIX #13 (amount parser): Handle Rp prefix, dot-as-thousands (Indonesian format),
-//   and all suffix variants: rb, ribu, k, jt, juta, m (million shorthand)
-// ─────────────────────────────────────────────────────────────
-function parseAmountFromString(text: string): number {
-  // Strip currency prefix and whitespace
-  let cleaned = text.toLowerCase()
-    .replace(/rp\.?\s*/g, '')  // remove "rp" or "rp."
-    .replace(/\s+/g, '');
-
-  // Indonesian dot-as-thousands: "250.000" → 250000 (only when no suffix follows the dot pattern)
-  // Detect pattern: digits.3digits (thousands separator) vs digits.digits (decimal)
-  // If there's a suffix (jt/rb/k) — parse as decimal with suffix
-  // If no suffix and pattern matches NNN.NNN — treat dots as thousand separators
-  const hasSuffix = /[a-z]/.test(cleaned.replace(/[0-9.,]/g, ''));
-
-  if (!hasSuffix) {
-    // Check if it's Indonesian thousands format: e.g. 250.000 or 1.250.000
-    const dotThousands = cleaned.replace(/\./g, '');
-    if (/^\d+$/.test(dotThousands) && cleaned.includes('.')) {
-      const num = parseInt(dotThousands, 10);
-      return isNaN(num) ? 0 : num;
-    }
-  }
-
-  // Parse with suffix
-  const regex = /([\d.,]+)\s*(jt|juta|rb|ribu|k|m)?$/i;
-  const match = cleaned.match(regex);
-  if (!match) return 0;
-
-  // Normalize: treat comma as decimal separator in suffix context
-  const numStr = match[1].replace(/\./g, '').replace(/,/g, '.');
-  const numValue = parseFloat(numStr);
-  const suffix = match[2];
-
-  if (isNaN(numValue)) return 0;
-  if (!suffix) return Math.round(numValue);
-
-  if (suffix === 'jt' || suffix === 'juta' || suffix === 'm') return Math.round(numValue * 1_000_000);
-  if (suffix === 'rb' || suffix === 'ribu' || suffix === 'k') return Math.round(numValue * 1_000);
-  return Math.round(numValue);
-}
-
-// ─────────────────────────────────────────────────────────────
 // Initialize Supabase — use service role key for server-side webhook
 // (Anon key is for client-side use only; service role bypasses RLS safely)
 // ─────────────────────────────────────────────────────────────
@@ -686,14 +643,22 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     const secretHeader = req.headers['x-telegram-bot-api-secret-token'];
     const secretToken = process.env.TELEGRAM_WEBHOOK_SECRET;
 
-    if (secretToken && secretHeader !== secretToken) {
+    if (!secretToken) {
+      console.error("🔴 TELEGRAM_WEBHOOK_SECRET is not configured — rejecting all webhook requests.");
+      res.status(500).json({ error: "Webhook is not configured correctly" });
+      return;
+    }
+
+    if (secretHeader !== secretToken) {
       console.warn("⚠️ Unauthorized Telegram Webhook request blocked");
       res.status(403).json({ error: "Unauthorized update request" });
       return;
     }
 
+    await supabaseBackend.rpc("cleanup_expired_pending_transactions");
+
     const update = req.body;
-    console.log("📨 Telegram update received:", JSON.stringify(update));
+    // console.log("📨 Telegram update received:", JSON.stringify(update));
 
     // ──────────────────────────────────────────────────────────
     // CALLBACK QUERY HANDLER

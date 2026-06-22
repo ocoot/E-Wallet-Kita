@@ -1,7 +1,18 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Type } from "@google/genai";
 import { parseAmountFromString } from '../src/lib/parserUtils.js';
 import { inferCategoryKey } from './utils.js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
+
+// Basic in-memory rate limiter
+const rateLimiter = new Map<string, { count: number; lastReset: number }>();
+const RATE_LIMIT = 10; // 10 requests per minute
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
 
 const apiKey = process.env.GEMINI_API_KEY;
 let ai: GoogleGenAI | null = null;
@@ -20,10 +31,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
+  // 1. Auth check
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+  const token = authHeader.split(' ')[1];
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+  if (authError || !user) {
+    res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  // 2. Rate limiting (per user)
+  const now = Date.now();
+  const userRateLimit = rateLimiter.get(user.id) || { count: 0, lastReset: now };
+  if (now - userRateLimit.lastReset > RATE_LIMIT_WINDOW) {
+    userRateLimit.count = 0;
+    userRateLimit.lastReset = now;
+  }
+  if (userRateLimit.count >= RATE_LIMIT) {
+    res.status(429).json({ error: 'Too many requests' });
+    return;
+  }
+  userRateLimit.count++;
+  rateLimiter.set(user.id, userRateLimit);
+
   try {
     const { query } = req.body;
     if (!query || typeof query !== "string" || query.trim() === "") {
       res.status(400).json({ error: "Missing string query to parse" });
+      return;
+    }
+    
+    // 3. Size limit (500 chars)
+    if (query.length > 500) {
+      res.status(400).json({ error: "Query too long" });
       return;
     }
 
@@ -110,3 +154,4 @@ If categories do not match any, default category_key to 'other'.`;
     });
   }
 }
+

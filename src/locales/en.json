@@ -169,8 +169,7 @@
     "diagnostics_desc": "Locally verify the multiplier abbreviation parser engine on sample inputs.",
     "btn_run_tests": "Run String Tests",
     "test_input": "Input String",
-    "test_output": "Parsed Numeric Amount",
-    "btn_simulate_bot": "Simulate Bot /link Command"
+    "test_output": "Parsed Numeric Amount"
   },
   "common": {
     "active": "Active",
@@ -218,9 +217,7 @@
     "logout_done": "Session has been terminated.",
     "toast_blank_profile_name": "Profile display name cannot be blank",
     "toast_test_success": "Diagnostic parser unit tests executed successfully!",
-    "toast_generate_code_error": "Failed to generate linking code: {message}",
-    "toast_simulating_webhook": "Processing simulated webhook event from Telegram bot...",
-    "toast_unlinking_telegram": "Disconnecting Telegram bot linkage..."
+    "toast_generate_code_error": "Failed to generate linking code: {message}"
   },
   "months": {
     "m1": "January",
