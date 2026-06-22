@@ -16,11 +16,14 @@ export function useAdmin() {
       return;
     }
     try {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("users")
         .select("role")
         .eq("id", user.id)
         .single();
+
+      console.log("ADMIN ROLE DATA:", data);
+      console.log("ADMIN ROLE ERROR:", error);
 
       setIsAdmin(data?.role === "admin" || data?.role === "owner");
       setIsOwner(data?.role === "owner");
