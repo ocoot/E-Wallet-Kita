@@ -516,5 +516,33 @@
     "revenue_live": "Live",
     "revenue_paid_at": "Waktu Bayar",
     "revenue_created_at": "Dibuat"
+  },
+  "ai_monitor": {
+    "title": "Monitor Penggunaan AI",
+    "desc": "Pantau konsumsi kuota dan tingkat keberhasilan per API key AI secara real time.",
+    "refresh": "Segarkan",
+    "loading": "Memuat data penggunaan AI...",
+    "no_data": "Tidak ada data penggunaan AI untuk periode ini.",
+    "days_suffix": "h",
+    "total_calls": "total panggilan",
+    "share_of_total": "dari panggilan",
+    "success_rate": "Tingkat Sukses",
+    "quota_exceeded": "kuota habis",
+    "success": "Sukses",
+    "failed": "Gagal",
+    "per_key_title": "Rincian Per API Key",
+    "per_key_desc": "Statistik detail pemakaian per key dan model AI.",
+    "col_key": "Provider / Key",
+    "col_model": "Model",
+    "col_total": "Panggilan",
+    "col_success_rate": "Tingkat Sukses",
+    "col_quota": "Kuota 429",
+    "col_last_used": "Terakhir Digunakan",
+    "never": "Belum pernah",
+    "just_now": "Baru saja",
+    "high_quota_warning_title": "Kuota Tinggi Terdeteksi",
+    "high_quota_warning_desc": "Satu atau lebih API key memiliki tingkat penolakan kuota di atas 20%. Pertimbangkan untuk merotasi atau menambah key baru.",
+    "footer_since": "Data sejak",
+    "footer_days": "hari"
   }
 }

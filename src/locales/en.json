@@ -516,5 +516,33 @@
     "revenue_live": "Live",
     "revenue_paid_at": "Paid At",
     "revenue_created_at": "Created"
+  },
+  "ai_monitor": {
+    "title": "AI Usage Monitor",
+    "desc": "Track quota consumption and success rate per AI provider key in real time.",
+    "refresh": "Refresh",
+    "loading": "Loading AI usage data...",
+    "no_data": "No AI usage recorded for this period.",
+    "days_suffix": "d",
+    "total_calls": "total calls",
+    "share_of_total": "of calls",
+    "success_rate": "Success Rate",
+    "quota_exceeded": "quota exceeded",
+    "success": "Success",
+    "failed": "Failed",
+    "per_key_title": "Per-Key Breakdown",
+    "per_key_desc": "Detailed usage stats per API key and model.",
+    "col_key": "Provider / Key",
+    "col_model": "Model",
+    "col_total": "Calls",
+    "col_success_rate": "Success Rate",
+    "col_quota": "Quota 429",
+    "col_last_used": "Last Used",
+    "never": "Never",
+    "just_now": "Just now",
+    "high_quota_warning_title": "High Quota Usage Detected",
+    "high_quota_warning_desc": "One or more API keys have exceeded 20% quota rejection rate. Consider rotating or adding new keys.",
+    "footer_since": "Data since",
+    "footer_days": "days"
   }
 }

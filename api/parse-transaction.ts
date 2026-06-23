@@ -10,6 +10,35 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+const supabaseLogger = createClient(
+  process.env.SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+);
+
+async function logAiUsage(
+  model: string,
+  success: boolean,
+  errorCode?: string
+): Promise<void> {
+  const url = process.env.SUPABASE_URL || '';
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+  if (!url || !key) return;
+
+  try {
+    const { error } = await supabaseLogger.rpc('log_ai_usage', {
+      p_provider:   'gemini',
+      p_key_alias:  'gemini_main_key',
+      p_model:      model,
+      p_source:     'parse_transaction',
+      p_success:    success,
+      p_error_code: errorCode ?? null,
+    });
+    if (error) console.error('[ai-usage-log] parse-transaction RPC error:', JSON.stringify(error));
+  } catch (err) {
+    console.error('[ai-usage-log] parse-transaction Exception:', err);
+  }
+}
+
 // ─────────────────────────────────────────────────────────────
 // FIX #9: Separate rate limiting for regular vs AI parsing
 // ─────────────────────────────────────────────────────────────
@@ -203,10 +232,17 @@ If categories do not match any, default category_key to 'other'.`;
 
         parsedJSON = JSON.parse(responseText.trim());
         usedModel = model;
+        
+        logAiUsage(model, true); // fire-and-forget
         break;
       } catch (err: any) {
         lastError = err;
         console.error(`❌ parse-transaction Gemini failed on model "${model}":`, err?.message ?? err);
+        
+        const errCode = JSON.stringify(err).includes('429') || JSON.stringify(err).includes('RESOURCE_EXHAUSTED') ? '429'
+          : JSON.stringify(err).includes('503') ? '503' : undefined;
+        logAiUsage(model, false, errCode); // fire-and-forget
+        
         continue;
       }
     }
