@@ -39,11 +39,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (session?.user) {
         // Sync user record to 'users' table
         try {
+          const fallbackName =
+            session.user.user_metadata?.full_name ||
+            session.user.email?.split('@')[0] ||
+            (session.user.is_anonymous ? 'Guest' : 'User');
+
           const { error } = await supabase
             .from('users')
             .upsert({
               id: session.user.id,
-              display_name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0],
+              display_name: fallbackName,
               is_guest: session.user.is_anonymous || false,
               email: session.user.email || null,
               timezone: Intl.DateTimeFormat().resolvedOptions().timeZone

@@ -2,17 +2,20 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
+import { useAdmin } from "../hooks/useAdmin";
 import { Send, Users, MessageSquare, AlertTriangle } from "lucide-react";
 
 export const AdminBroadcast: React.FC = () => {
   const { showToast } = useToast();
   const { t } = useLanguage();
+  const { isAdmin } = useAdmin();
   const [message, setMessage] = useState("");
   const [linkedCount, setLinkedCount] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
   const [lastResult, setLastResult] = useState<{ successCount: number; failCount: number } | null>(null);
 
   useEffect(() => {
+    if (!isAdmin) return;
     // Count active bot-linked users via the rpc query
     const load = async () => {
       try {
@@ -23,7 +26,7 @@ export const AdminBroadcast: React.FC = () => {
       }
     };
     load();
-  }, []);
+  }, [isAdmin]);
 
   const handleSend = async () => {
     if (message.trim().length < 5) {

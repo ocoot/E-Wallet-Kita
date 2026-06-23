@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
+import { useAdmin } from "../hooks/useAdmin";
 import {
   CreditCard, CheckCircle, Clock, XCircle, AlertCircle,
   TrendingUp, RefreshCw, ChevronLeft, ChevronRight
@@ -36,6 +37,7 @@ const PAGE_SIZE = 15;
 export const AdminPremiumMonitor: React.FC = () => {
   const { showToast } = useToast();
   const { t, locale } = useLanguage();
+  const { isAdmin } = useAdmin();
 
   const [metrics, setMetrics] = useState<RevenueMetrics | null>(null);
   const [transactions, setTransactions] = useState<PremiumTransaction[]>([]);
@@ -82,8 +84,18 @@ export const AdminPremiumMonitor: React.FC = () => {
   }, [page, statusFilter, showToast, t]);
 
   useEffect(() => { setPage(0); }, [statusFilter]);
-  useEffect(() => { loadMetrics(); }, [loadMetrics]);
-  useEffect(() => { loadTransactions(); }, [loadTransactions]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadMetrics();
+    }
+  }, [loadMetrics, isAdmin]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadTransactions();
+    }
+  }, [loadTransactions, isAdmin]);
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 

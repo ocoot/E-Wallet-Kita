@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
+import { useAdmin } from "../hooks/useAdmin";
 import { Tag, Plus, Pencil, Check, X, ToggleLeft, ToggleRight, RefreshCw } from "lucide-react";
 
 interface Category {
@@ -16,6 +17,7 @@ interface Category {
 export const AdminCategoryManager: React.FC = () => {
   const { showToast } = useToast();
   const { t } = useLanguage();
+  const { isAdmin } = useAdmin();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingKey, setEditingKey] = useState<string | null>(null);
@@ -44,7 +46,11 @@ export const AdminCategoryManager: React.FC = () => {
     setLoading(false);
   }, [showToast, t]);
 
-  useEffect(() => { loadCategories(); }, [loadCategories]);
+  useEffect(() => {
+    if (isAdmin) {
+      loadCategories();
+    }
+  }, [loadCategories, isAdmin]);
 
   const startEdit = (cat: Category) => {
     setEditingKey(cat.key);
