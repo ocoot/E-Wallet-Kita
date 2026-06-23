@@ -15,12 +15,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // 1. Auth check
   const authHeader = req.headers.authorization;
+  
+  console.log("=== OCR AUTH DEBUG ===");
+  console.log("Authorization exists:", !!authHeader);
+
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log("Authorization header invalid or missing");
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
   const token = authHeader.split(' ')[1];
+  console.log("Token exists:", !!token);
+  console.log("Token preview:", token?.substring(0, 40));
+
   const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+  
+  console.log("AUTH ERROR:", authError);
+  console.log("AUTH USER:", user?.id);
+
   if (authError || !user) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
