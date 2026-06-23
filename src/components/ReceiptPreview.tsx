@@ -132,10 +132,10 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
           </div>
           <div>
             <h3 className="font-sans font-bold text-lg text-white light_sakura:text-slate-800">
-              {"id" === "id" ? "Review Struk Digital" : "Review Digital Receipt"}
+              {t("transaction.review_title")}
             </h3>
             <p className="font-sans text-xs text-gray-400 light_sakura:text-slate-500">
-              {"id" === "id" ? "Verifikasi draf belanja hasil baca AI" : "Verify transaction specs mapped by Gemini AI"}
+              {t("transaction.review_subtitle")}
             </p>
           </div>
         </div>
@@ -159,7 +159,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
             <div className="space-y-1">
               <label className="text-[10px] text-gray-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
                 <Store size={10} />
-                <span>{"id" === "id" ? "Toko / Merchant" : "Merchant / Store"}</span>
+                <span>{t("transaction.merchant_label")}</span>
               </label>
               <input
                 type="text"
@@ -173,7 +173,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
             <div className="space-y-1">
               <label className="text-[10px] text-gray-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
                 <Calendar size={10} />
-                <span>{"id" === "id" ? "Tanggal" : "Date"}</span>
+                <span>{t("transaction.date_label")}</span>
               </label>
               <input
                 type="date"
@@ -189,7 +189,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
             <div className="space-y-1">
               <label className="text-[10px] text-gray-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
                 <Tag size={10} />
-                <span>{"id" === "id" ? "Kategori Pengeluaran" : "Expense Category"}</span>
+                <span>{t("transaction.category_label")}</span>
               </label>
               <select
                 value={category}
@@ -208,7 +208,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
             <div className="space-y-1">
               <label className="text-[10px] text-gray-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
                 <CreditCard size={10} />
-                <span>{"id" === "id" ? "Total Belanja" : "Total Amount"}</span>
+                <span>{t("transaction.amount_label")}</span>
               </label>
               <input
                 type="number"
@@ -222,7 +222,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
           {/* Custom Note description */}
           <div className="space-y-1">
             <label className="text-[10px] text-gray-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
-              <span>{"id" === "id" ? "Catatan Tambahan" : "Note description"}</span>
+              <span>{t("transaction.note_label")}</span>
             </label>
             <input
               type="text"
@@ -239,7 +239,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
 
         {/* Item Roster heading */}
         <div className="flex items-center justify-between text-gray-400 light_sakura:text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-2">
-          <span>{"id" === "id" ? "Rincian Barang" : "Itemized Roster"}</span>
+          <span>{t("transaction.items_heading")}</span>
           <button
             onClick={() => {
               audioFeedback.playClick();
@@ -248,7 +248,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
             className="text-indigo-400 hover:text-indigo-300 light_sakura:text-rose-500 cursor-pointer flex items-center gap-1"
           >
             <Edit3 size={11} />
-            <span>{isEditingItems ? ("id" === "id" ? "Selesai" : "Done") : ("id" === "id" ? "Edit Daftar" : "Edit List")}</span>
+            <span>{isEditingItems ? t("transaction.done_list") : t("transaction.edit_list")}</span>
           </button>
         </div>
 
@@ -256,7 +256,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
         <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
           {items.length === 0 ? (
             <p className="text-gray-500 italic text-[11px] text-center py-2">
-              {"id" === "id" ? "(Tidak ada item data terdeteksi)" : "(No item data extracted)"}
+              {t("transaction.no_items")}
             </p>
           ) : (
             items.map((item, idx) => (
@@ -321,7 +321,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
 
         {/* Paper tearing bottom effect deco */}
         <div className="pt-2 border-t border-dashed border-slate-800 flex justify-between font-bold text-white light_sakura:border-rose-200 light_sakura:text-slate-800">
-          <span>SUM:</span>
+          <span>{t("transaction.sum_label")}</span>
           <span className="text-emerald-400">{formatIDR(amount)}</span>
         </div>
       </div>
@@ -336,7 +336,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
           className="flex-1 cursor-pointer py-3.5 px-4 bg-slate-800 hover:bg-slate-700/80 text-gray-300 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border border-slate-800 light_sakura:bg-slate-100 light_sakura:text-slate-700 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent"
         >
           <X size={14} />
-          <span>{"id" === "id" ? "Batalkan" : "Discard"}</span>
+          <span>{t("transaction.discard")}</span>
         </button>
 
         <button
@@ -345,7 +345,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
           className="flex-2 cursor-pointer py-3.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/15 flex items-center justify-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
         >
           <Check size={14} />
-          <span>{"id" === "id" ? "Simpan Transaksi" : "Save Transaction"}</span>
+          <span>{t("transaction.save")}</span>
         </button>
       </div>
     </motion.div>
