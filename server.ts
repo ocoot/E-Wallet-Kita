@@ -233,28 +233,10 @@ async function startServer() {
 
   // API Health Indicator
   app.get("/api/health", (req, res) => {
-    const keys = Object.keys(process.env).filter(k => k.includes("SUPABASE") || k.includes("TELEGRAM") || k.includes("PORT") || k.includes("APP") || k.includes("API"));
     res.json({ 
       status: "ok", 
-      mode: process.env.NODE_ENV || "development",
-      envKeys: keys
+      mode: process.env.NODE_ENV || "development"
     });
-  });
-
-  // Action: Diagnostic / Unit-Test Endpoint to verify parser logic directly in backend
-  app.get("/api/parser/test", (req, res) => {
-    const scenarios = [
-      "Makan siang 25000",
-      "Gaji 1.5jt",
-      "Belanja sayur 25rb",
-      "Bonus 1k",
-      "Tagihan listrik 350rb"
-    ];
-    const results = scenarios.map(txt => ({
-      input: txt,
-      parsedAmount: parseAmountFromString(txt)
-    }));
-    res.json({ info: "Unit test for Indonesian suffixes", results });
   });
 
   // API Safe AI transaction parser
