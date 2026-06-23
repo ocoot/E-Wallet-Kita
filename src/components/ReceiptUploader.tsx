@@ -112,6 +112,10 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
     };
 
     try {
+      if (!session?.access_token) {
+        throw new Error("Sesi login berakhir. Silakan login kembali.");
+      }
+
       const base64String = await compressImage(file);
       
       const payload = JSON.stringify({
@@ -132,7 +136,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${session?.access_token || ""}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: payload,
       });
