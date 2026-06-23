@@ -10,6 +10,8 @@ import { motion, useAnimation } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
 import { useNavigate } from "react-router-dom";
+import { ReceiptUploader } from "../components/ReceiptUploader";
+import { ReceiptPreview } from "../components/ReceiptPreview";
 
 interface NewTransactionProps {
   onTransactionAdded: () => void;
@@ -47,9 +49,51 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   });
   const [note, setNote] = useState("");
 
+  const [receiptDraft, setReceiptDraft] = useState<any>(null);
+
   // Confirmation Modals State
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const handleReceiptApprove = async (finalData: {
+    amount: number;
+    merchant_name: string;
+    category: string;
+    date: string;
+    note: string;
+  }) => {
+    setIsLoading(true);
+    try {
+      const savedTx = await dbService.saveTransaction(
+        currentUser.id,
+        "expense",
+        finalData.category,
+        finalData.amount,
+        finalData.note,
+        "ai_web",
+        finalData.date
+      );
+
+      if (savedTx && savedTx.id) {
+        (window as any).lastSavedTransactionId = savedTx.id;
+      }
+
+      // Mark the draft receipt as approved in DB
+      if (receiptDraft && receiptDraft.id) {
+        await dbService.approveReceiptDraft(receiptDraft.id);
+      }
+
+      showToast(t("toast.success_save"), "success");
+      setReceiptDraft(null);
+      onTransactionAdded(); // Trigger global cache updates
+      navigate("/dashboard"); // Go back to dashboard!
+    } catch (err) {
+      console.error("Error saving approved receipt transaction:", err);
+      showToast(t("toast.error_general"), "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Re-adjust categories on type switch
   useEffect(() => {
@@ -131,24 +175,46 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       
-      {/* Main card box containing Header and Form */}
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6"
-      >
-        {/* Header Info */}
-        <div className="flex flex-col border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
-          <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
-            {t("transaction.add_title")}
-          </h2>
-          <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
-            {t("transaction.add_desc")}
-          </p>
-        </div>
+      {receiptDraft ? (
+        <ReceiptPreview
+          draft={receiptDraft}
+          onApprove={handleReceiptApprove}
+          onCancel={() => {
+            audioFeedback.playDullPluck();
+            setReceiptDraft(null);
+          }}
+        />
+      ) : (
+        /* Main card box containing Header and Form */
+        <motion.div
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6"
+        >
+          {/* Header Info */}
+          <div className="flex flex-col border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
+            <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+              {t("transaction.add_title")}
+            </h2>
+            <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
+              {t("transaction.add_desc")}
+            </p>
+          </div>
 
-        <motion.div animate={shakeControls}>
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Receipt Uploader */}
+          <ReceiptUploader onParsed={(draft) => setReceiptDraft(draft)} />
+
+          {/* Divider */}
+          <div className="relative flex py-2 items-center">
+            <div className="flex-grow border-t border-slate-800/70 light_sakura:border-rose-100/50"></div>
+            <span className="flex-shrink mx-4 text-gray-500 font-mono text-[9px] tracking-widest uppercase">
+              {t("id" === "id" ? "Atau Catat Manual" : "Or Log Manually")}
+            </span>
+            <div className="flex-grow border-t border-slate-800/70 light_sakura:border-rose-100/50"></div>
+          </div>
+
+          <motion.div animate={shakeControls}>
+            <form onSubmit={handleSubmit} className="space-y-6">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             
@@ -282,6 +348,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         </form>
         </motion.div>
       </motion.div>
+      )}
 
       {/* Confirmation Modal */}
       <Modal

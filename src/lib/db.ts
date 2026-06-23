@@ -143,6 +143,19 @@ export const dbService = {
       console.error('Error purging transactions:', error);
       throw error;
     }
+  },
+
+  async approveReceiptDraft(draftId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('receipt_drafts')
+      .update({ approved: true })
+      .eq('id', draftId);
+
+    if (error) {
+      console.error('Error approving receipt draft:', error);
+      return false;
+    }
+    return true;
   }
 };
 

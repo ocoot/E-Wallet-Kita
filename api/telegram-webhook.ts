@@ -2,6 +2,8 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Type } from '@google/genai';
 import { parseAmountFromString } from '../src/lib/parserUtils.js';
+import { parseReceipt } from './lib/receipt-parser';
+import { createReceiptDraft, approveReceiptDraft, cancelReceiptDraft } from './lib/receipt-service';
 
 type Lang = "id" | "en";
 
@@ -757,6 +759,112 @@ If no category matches, use 'other'. Always return the numeric IDR value in 'amo
   };
 }
 
+async function handleReceiptPhoto(message: any) {
+  const chatId = message.chat.id;
+  
+  // Resolve user first
+  const userCtx = await resolveUserContext(chatId);
+  if (!userCtx) {
+    await sendTelegramMessage(chatId, tr("notLinkedForTx", "id"));
+    return;
+  }
+
+  const lang = userCtx.lang;
+  
+  // Send initial informational status message
+  const statusMsg = lang === "id" 
+    ? "🔄 _Sedang mengunduh foto struk belanja Anda..._" 
+    : "🔄 _Downloading receipt photo..._";
+  await sendTelegramMessage(chatId, statusMsg);
+
+  try {
+    const photo = message.photo[message.photo.length - 1];
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    
+    // Step 1: getFile
+    const getFileResp = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${photo.file_id}`);
+    if (!getFileResp.ok) {
+      throw new Error(`getFile API failed: ${getFileResp.statusText}`);
+    }
+    const getFileData = await getFileResp.json();
+    const filePath = getFileData.result?.file_path;
+    if (!filePath) {
+      throw new Error("Could not retrieve file path from Telegram.");
+    }
+
+    // Step 2: Download image
+    const imageUrl = `https://api.telegram.org/file/bot${token}/${filePath}`;
+    
+    // Step 3: Convert to base64
+    const imageResp = await fetch(imageUrl);
+    if (!imageResp.ok) {
+      throw new Error(`Failed to download image from Telegram: ${imageResp.statusText}`);
+    }
+    const arrayBuffer = await imageResp.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString("base64");
+
+    // Send updated processing text
+    await sendTelegramMessage(chatId, lang === "id" 
+      ? "🤖 _Gemini sedang mengekstrak detail struk Anda..._" 
+      : "🤖 _Gemini is extracting receipt details..._");
+
+    // Step 4: Parse with receipt parser
+    const receipt = await parseReceipt(base64);
+
+    // Step 5: Save draft
+    const draft = await createReceiptDraft(userCtx.id, receipt, "telegram", String(chatId));
+
+    // Step 6: Render and send preview
+    let itemLines = "";
+    if (receipt.items && receipt.items.length > 0) {
+      receipt.items.forEach((it: any) => {
+        itemLines += `• *${it.name}*\n  Qty ${it.qty} · ${formatIDR(it.unit_price)} (${formatIDR(it.subtotal)})\n`;
+      });
+    } else {
+      itemLines += lang === "id" ? "_(Tidak ada rincian item)_\n" : "_(No itemized detail)_\n";
+    }
+
+    const receiptDateFormatted = receipt.receipt_date ? new Date(receipt.receipt_date).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", {
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    }) : "-";
+
+    const textPreview = lang === "id" 
+      ? `🧾 *Hasil Pembacaan Struk (OCR-Gemini)* 🌸\n\n` +
+        `*Toko*: ${receipt.merchant_name}\n` +
+        `*Tanggal*: ${receiptDateFormatted}\n\n` +
+        `*Rincian Barang*:\n${itemLines}\n` +
+        `━━━━━━━━━━━━━━━━━━━━\n\n` +
+        `*Total Belanja*: *${formatIDR(receipt.total_amount)}*\n\n` +
+        `_Konfirmasi pencatatan pengeluaran di bawah ini:_`
+      : `🧾 *Receipt Reading Result (OCR-Gemini)* 🌸\n\n` +
+        `*Store*: ${receipt.merchant_name}\n` +
+        `*Date*: ${receiptDateFormatted}\n\n` +
+        `*Itemized Detail*:\n${itemLines}\n` +
+        `━━━━━━━━━━━━━━━━━━━━\n\n` +
+        `*Total Cost*: *${formatIDR(receipt.total_amount)}*\n\n` +
+        `_Confirm saving this expense below:_`;
+
+    const inlineKeyboard = {
+      inline_keyboard: [
+        [
+          { text: lang === "id" ? "✅ Simpan Transaksi" : "✅ Save Transaction", callback_data: `rcpt_approve:${draft.id}` },
+          { text: lang === "id" ? "❌ Batal" : "❌ Cancel", callback_data: `rcpt_cancel:${draft.id}` }
+        ]
+      ]
+    };
+
+    await sendTelegramMessage(chatId, textPreview, inlineKeyboard);
+
+  } catch (err: any) {
+    console.error("❌ handleReceiptPhoto error:", err);
+    await sendTelegramMessage(chatId, lang === "id" 
+      ? `❌ *Gagal Membaca Foto Struk*\n_Penyebab: ${err.message || 'Error internal parser struk'}_`
+      : `❌ *Failed to Process Receipt Photo*\n_Reason: ${err.message || 'Internal parser error'}_`);
+  }
+}
+
 // ─────────────────────────────────────────────────────────────
 // MAIN WEBHOOK HANDLER
 // ─────────────────────────────────────────────────────────────
@@ -946,15 +1054,87 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         res.status(200).json({ ok: true }); return;
       }
 
+      // Receipt Approve Callback Action
+      if (actionData.startsWith("rcpt_approve:")) {
+        const draftId = actionData.split(":")[1];
+        try {
+          const { draft, transaction } = await approveReceiptDraft(draftId);
+          await answerTelegramCallback(queryId, lang === "id" ? "Transaksi struk berhasil dicatat!" : "Receipt transaction successfully recorded!");
+          
+          if (!transaction) {
+            await editTelegramMessage(chatId, msgId, lang === "id" 
+              ? "✅ *Transaksi struk ini sudah pernah disimpan.*"
+              : "✅ *This receipt transaction has already been saved.*");
+            res.status(200).json({ ok: true }); 
+            return;
+          }
+
+          const msgSuccess = lang === "id"
+            ? `✅ *Transaksi Berhasil Dicatat dari Struk!*\n\n` +
+              `• *Tipe*: 📤 Pengeluaran\n` +
+              `• *Toko*: *${draft.merchant_name}*\n` +
+              `• *Jumlah*: *${formatIDR(draft.total_amount)}*\n` +
+              `• *Kategori*: Belanja Bulanan\n` +
+              `• *Catatan*: "${draft.total_items} item barang (${draft.merchant_name})"\n\n` +
+              `_Catatan struk Anda telah aman disimpan ke E-Wallet Kita._ 🌸`
+            : `✅ *Transaction Successfully Recorded from Receipt!*\n\n` +
+              `• *Type*: 📤 Expense\n` +
+              `• *Store*: *${draft.merchant_name}*\n` +
+              `• *Amount*: *${formatIDR(draft.total_amount)}*\n` +
+              `• *Category*: Monthly Groceries\n` +
+              `• *Note*: "${draft.total_items} item goods (${draft.merchant_name})"\n\n` +
+              `_Your receipt record has been safely saved to E-Wallet Kita._ 🌸`;
+
+          await editTelegramMessage(chatId, msgId, msgSuccess);
+        } catch (err: any) {
+          console.error("❌ rcpt_approve error:", err);
+          await answerTelegramCallback(queryId, lang === "id" ? "Gagal menyimpan draf struk." : "Failed to approve receipt draft.");
+          await editTelegramMessage(chatId, msgId, lang === "id"
+             ? `❌ *Gagal Menyimpan Transaksi Struk*\n_Error: ${err.message || 'Koneksi database bermasalah'}_`
+             : `❌ *Failed to Save Receipt Transaction*\n_Error: ${err.message || 'Database connection issue'}_`);
+        }
+        res.status(200).json({ ok: true }); 
+        return;
+      }
+
+      // Receipt Cancel Callback Action
+      if (actionData.startsWith("rcpt_cancel:")) {
+        const draftId = actionData.split(":")[1];
+        try {
+          await cancelReceiptDraft(draftId);
+          await answerTelegramCallback(queryId, lang === "id" ? "Pencatatan struk dibatalkan." : "Receipt cancelled.");
+          await editTelegramMessage(chatId, msgId, lang === "id"
+            ? "❌ *Pencatatan transaksi struk telah dibatalkan.*"
+            : "❌ *Receipt transaction recording has been cancelled.*");
+        } catch (err: any) {
+          console.error("❌ rcpt_cancel error:", err);
+          await answerTelegramCallback(queryId);
+          await editTelegramMessage(chatId, msgId, lang === "id"
+            ? "❌ *Daftar draf struk dibatalkan.*"
+            : "❌ *Receipt draft cancelled with error.*");
+        }
+        res.status(200).json({ ok: true }); 
+        return;
+      }
+
       res.status(200).json({ ok: true }); return;
     }
 
     // ──────────────────────────────────────────────────────────
     // MESSAGE HANDLER
     // ──────────────────────────────────────────────────────────
-    if (update.message && update.message.text) {
+    if (update.message) {
       const chatId = update.message.chat.id;
-      const text   = update.message.text.trim();
+
+      // Handle photo uploads (Receipt OCR scanning)
+      if (update.message.photo) {
+        await handleReceiptPhoto(update.message);
+        res.status(200).json({ ok: true });
+        return;
+      }
+
+      if (update.message.text) {
+        const text = update.message.text.trim();
 
       // FIX #5: Resolve user context (lang + profile) in ONE DB call for command handling
       // For commands that need profile we use resolveUserContext()
@@ -1277,6 +1457,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       }
 
       res.status(200).json({ ok: true }); return;
+      }
     }
 
     res.status(200).json({ ok: true });
