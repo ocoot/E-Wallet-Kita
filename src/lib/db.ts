@@ -108,6 +108,31 @@ export const dbService = {
     return true;
   },
 
+  async updateTransaction(
+    userId: string,
+    transactionId: string,
+    updates: { category?: string; amount?: number }
+  ): Promise<Transaction> {
+    const payload: Record<string, any> = {};
+    if (updates.category !== undefined) payload.category = updates.category;
+    if (updates.amount !== undefined) payload.amount = Math.max(0, updates.amount);
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .update(payload)
+      .eq('id', transactionId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating transaction:', error);
+      throw error;
+    }
+
+    return data as Transaction;
+  },
+
   async purgeAllTransactions(userId: string): Promise<void> {
     const { error } = await supabase
       .from('transactions')

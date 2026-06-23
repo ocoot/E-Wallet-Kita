@@ -206,7 +206,9 @@
     "muted": "HENING",
     "sound": "SUARA",
     "dark": "GELAP",
-    "light": "TERANG"
+    "light": "TERANG",
+    "save": "Simpan",
+    "edit": "Edit"
   },
   "confirm": {
     "logout_title": "Keluar Sesi",
@@ -228,6 +230,7 @@
   "toast": {
     "error_general": "Terjadi kesalahan internal. Silakan coba kembali.",
     "success_save": "Transaksi kas berhasil disimpan! 🎉",
+    "success_update": "Transaksi berhasil diperbarui!",
     "success_delete": "Transaksi berhasil dihapus.",
     "success_delete_all": "Seluruh riwayat keuangan telah dikosongkan secara permanen.",
     "success_profile": "Nama profil berhasil diperbarui!",

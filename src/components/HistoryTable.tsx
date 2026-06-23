@@ -1,7 +1,7 @@
 import React from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Transaction } from "../types";
-import { Trash2, Send } from "lucide-react";
+import { Trash2, Send, Pencil } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { EmptyState } from "./EmptyState";
 
@@ -11,6 +11,7 @@ interface HistoryTableProps {
   formatIDR: (num: number) => string;
   getSourceIconLabel: (source: "manual" | "ai_web" | "telegram") => string;
   onDeleteItem: (id: string) => void;
+  onEditItem: (tx: Transaction) => void;
 }
 
 export const HistoryTable: React.FC<HistoryTableProps> = ({
@@ -19,6 +20,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
   formatIDR,
   getSourceIconLabel,
   onDeleteItem,
+  onEditItem,
 }) => {
   const { t } = useLanguage();
 
@@ -108,15 +110,24 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                         </span>
                       </td>
 
-                      {/* Row Delete option */}
+                      {/* Row Actions: Edit & Delete */}
                       <td className="p-4 pr-6 text-right">
-                        <button
-                          onClick={() => onDeleteItem(tx.id)}
-                          aria-label={t("common.delete")}
-                          className="p-1.5 rounded-lg border border-transparent hover:border-red-500/20 text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            onClick={() => onEditItem(tx)}
+                            aria-label={t("common.edit")}
+                            className="p-1.5 rounded-lg border border-transparent hover:border-indigo-500/20 text-gray-500 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
+                          >
+                            <Pencil size={13} />
+                          </button>
+                          <button
+                            onClick={() => onDeleteItem(tx.id)}
+                            aria-label={t("common.delete")}
+                            className="p-1.5 rounded-lg border border-transparent hover:border-red-500/20 text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </td>
                     </motion.tr>
                   );

@@ -302,6 +302,16 @@ const botText = {
     id: () => "✏️ *Edit Nominal*\n\nKirim nominal yang benar sekarang.\nContoh: `75rb` atau `Rp 75.000`",
     en: () => "✏️ *Edit Amount*\n\nSend the correct amount now.\nExample: `75rb` or `Rp 75.000`",
   },
+  btnEditCategory: { id: () => "🏷️ Edit Kategori", en: () => "🏷️ Edit Category" },
+  editCategoryPrompt: {
+    id: () => "🏷️ *Edit Kategori*\n\nPilih kategori yang sesuai di bawah ini:",
+    en: () => "🏷️ *Edit Category*\n\nPlease choose the correct category below:",
+  },
+  btnBackToDraft: { id: () => "↩️ Kembali", en: () => "↩️ Back" },
+  cbCategoryUpdated: {
+    id: () => "Kategori berhasil diperbarui.",
+    en: () => "Category updated successfully.",
+  },
   cbExpired: {
     id: () => "Transaksi tidak ditemukan atau sudah kadaluwarsa.",
     en: () => "Transaction not found or has expired.",
@@ -405,6 +415,36 @@ const botText = {
 function tr<K extends keyof typeof botText>(key: K, lang: Lang, ...args: Parameters<(typeof botText)[K][Lang]>): string {
   const entry = botText[key][lang] as (...a: any[]) => string;
   return entry(...args);
+}
+
+function buildDraftKeyboard(lang: Lang) {
+  return {
+    inline_keyboard: [
+      [
+        { text: tr("btnConfirm", lang), callback_data: "tx_confirm" },
+        { text: tr("btnCancel", lang), callback_data: "tx_cancel" }
+      ],
+      [
+        { text: tr("btnEditAmount", lang), callback_data: "tx_edit_amount" },
+        { text: tr("btnEditCategory", lang), callback_data: "tx_edit_category" }
+      ]
+    ]
+  };
+}
+
+function buildCategoryKeyboard(type: "income" | "expense", lang: Lang) {
+  const matching = CATEGORIES.filter(c => c.type === type);
+  const rows = [];
+  for (let i = 0; i < matching.length; i += 2) {
+    const pair = matching.slice(i, i + 2);
+    const row = pair.map(c => ({
+      text: lang === "id" ? c.id : c.en,
+      callback_data: `tx_set_cat:${c.key}`
+    }));
+    rows.push(row);
+  }
+  rows.push([{ text: tr("btnBackToDraft", lang), callback_data: "tx_edit_category_cancel" }]);
+  return { inline_keyboard: rows };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -699,6 +739,70 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         const editLang = await resolveLangOnly(chatId);
         await answerTelegramCallback(queryId);
         await sendTelegramMessage(chatId, tr("editAmountPrompt", editLang));
+        res.status(200).json({ ok: true }); return;
+      }
+
+      // Edit category callback
+      if (actionData === "tx_edit_category") {
+        const editLang = await resolveLangOnly(chatId);
+        await answerTelegramCallback(queryId);
+        
+        const { data: pendingRows } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
+        const pending = pendingRows?.[0];
+        if (!pending) {
+          await editTelegramMessage(chatId, msgId, tr("msgExpired", editLang));
+          res.status(200).json({ ok: true }); return;
+        }
+        
+        const catMarkup = buildCategoryKeyboard(pending.type, editLang);
+        await editTelegramMessage(chatId, msgId, tr("editCategoryPrompt", editLang), catMarkup);
+        res.status(200).json({ ok: true }); return;
+      }
+
+      if (actionData === "tx_edit_category_cancel") {
+        const editLang = await resolveLangOnly(chatId);
+        await answerTelegramCallback(queryId);
+        
+        const { data: pendingRows } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
+        const pending = pendingRows?.[0];
+        if (!pending) {
+          await editTelegramMessage(chatId, msgId, tr("msgExpired", editLang));
+          res.status(200).json({ ok: true }); return;
+        }
+        
+        const catLabel  = getCategoryLabel(pending.category_key, editLang);
+        const typeLabel = pending.type === "income" ? tr("txTypeIncome", editLang) : tr("txTypeExpense", editLang);
+        const draftMarkup = buildDraftKeyboard(editLang);
+        await editTelegramMessage(chatId, msgId, tr("draftPrompt", editLang, typeLabel, catLabel, formatIDR(pending.amount), pending.original_text), draftMarkup);
+        res.status(200).json({ ok: true }); return;
+      }
+
+      if (actionData.startsWith("tx_set_cat:")) {
+        const newCat = actionData.split(":")[1];
+        const editLang = await resolveLangOnly(chatId);
+        
+        const { data: pendingRows } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
+        const pending = pendingRows?.[0];
+        if (!pending) {
+          await answerTelegramCallback(queryId, tr("cbExpired", editLang));
+          await editTelegramMessage(chatId, msgId, tr("msgExpired", editLang));
+          res.status(200).json({ ok: true }); return;
+        }
+
+        await supabaseBackend.rpc("upsert_pending_telegram_tx", {
+          p_chat_id: chatId,
+          p_type: pending.type,
+          p_category_key: newCat,
+          p_amount: pending.amount,
+          p_original_text: pending.original_text
+        });
+
+        await answerTelegramCallback(queryId, tr("cbCategoryUpdated", editLang));
+
+        const catLabel  = getCategoryLabel(newCat, editLang);
+        const typeLabel = pending.type === "income" ? tr("txTypeIncome", editLang) : tr("txTypeExpense", editLang);
+        const draftMarkup = buildDraftKeyboard(editLang);
+        await editTelegramMessage(chatId, msgId, tr("draftPrompt", editLang, typeLabel, catLabel, formatIDR(pending.amount), pending.original_text), draftMarkup);
         res.status(200).json({ ok: true }); return;
       }
 
@@ -1029,13 +1133,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             });
             const catLabel  = getCategoryLabel(pending.category_key, lang);
             const typeLabel = pending.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
-            const draftMarkup = {
-              inline_keyboard: [[
-                { text: tr("btnConfirm", lang),     callback_data: "tx_confirm" },
-                { text: tr("btnEditAmount", lang),  callback_data: "tx_edit_amount" },
-                { text: tr("btnCancel", lang),      callback_data: "tx_cancel" }
-              ]]
-            };
+            const draftMarkup = buildDraftKeyboard(lang);
             await sendTelegramMessage(chatId, tr("draftPrompt", lang, typeLabel, catLabel, formatIDR(newAmount), pending.original_text), draftMarkup);
             res.status(200).json({ ok: true }); return;
           }
@@ -1070,14 +1168,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         const currencyStr  = formatIDR(parsed.amount);
         const typeLabel    = parsed.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
 
-        // FIX #11: 3 buttons — Confirm | Edit Amount | Cancel
-        const draftMarkup = {
-          inline_keyboard: [[
-            { text: tr("btnConfirm", lang),    callback_data: "tx_confirm" },
-            { text: tr("btnEditAmount", lang), callback_data: "tx_edit_amount" },
-            { text: tr("btnCancel", lang),     callback_data: "tx_cancel" }
-          ]]
-        };
+        const draftMarkup = buildDraftKeyboard(lang);
 
         await sendTelegramMessage(
           chatId,

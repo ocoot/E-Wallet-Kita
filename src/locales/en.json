@@ -206,7 +206,9 @@
     "muted": "MUTED",
     "sound": "SOUND",
     "dark": "DARK",
-    "light": "LIGHT"
+    "light": "LIGHT",
+    "save": "Save",
+    "edit": "Edit"
   },
   "confirm": {
     "logout_title": "Log Out",
@@ -228,6 +230,7 @@
   "toast": {
     "error_general": "A technical error occurred. Please try again.",
     "success_save": "Transaction cash entry saved successfully! 🎉",
+    "success_update": "Transaction updated successfully!",
     "success_delete": "Transaction record deleted.",
     "success_delete_all": "All cash-book ledger history cleared permanently.",
     "success_profile": "Profile display name updated!",

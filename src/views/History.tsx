@@ -17,6 +17,7 @@ import { HistoryTable } from "../components/HistoryTable";
 import { HistoryPagination } from "../components/HistoryPagination";
 import { HistoryExport } from "../components/HistoryExport";
 import { HistoryDeleteModal } from "../components/HistoryDeleteModal";
+import { HistoryEditModal } from "../components/HistoryEditModal";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "../components/PremiumModal";
 
@@ -58,6 +59,10 @@ export const History: React.FC<HistoryProps> = ({
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);
   const [deleteAllConfirmText, setDeleteAllConfirmText] = useState("");
+  
+  // Edit states
+  const [editTarget, setEditTarget] = useState<Transaction | null>(null);
+  const [isEditSaving, setIsEditSaving] = useState(false);
   
   // Loading indicators
   const [isLoading, setIsLoading] = useState(false);
@@ -137,6 +142,28 @@ export const History: React.FC<HistoryProps> = ({
   const handleDeleteItem = (id: string) => {
     audioFeedback.playDullPluck();
     setDeleteTargetId(id);
+  };
+
+  const handleEditItem = (tx: Transaction) => {
+    audioFeedback.playClick();
+    setEditTarget(tx);
+  };
+
+  const executeEditSave = async (id: string, category: string, amount: number) => {
+    setIsEditSaving(true);
+    try {
+      await dbService.updateTransaction(currentUser.id, id, { category, amount });
+      audioFeedback.playChime();
+      showToast(t("toast.success_update"), "success");
+      setEditTarget(null);
+      onTransactionUpdated();
+    } catch (err) {
+      console.error(err);
+      audioFeedback.playDullPluck();
+      showToast(t("toast.error_general"), "error");
+    } finally {
+      setIsEditSaving(false);
+    }
   };
 
   const executeDeleteItem = async () => {
@@ -304,6 +331,7 @@ export const History: React.FC<HistoryProps> = ({
           formatIDR={formatIDR}
           getSourceIconLabel={getSourceIconLabel}
           onDeleteItem={handleDeleteItem}
+          onEditItem={handleEditItem}
         />
 
         {/* 4. Footer Pagination bars */}
@@ -329,6 +357,13 @@ export const History: React.FC<HistoryProps> = ({
         deleteAllConfirmText={deleteAllConfirmText}
         setDeleteAllConfirmText={setDeleteAllConfirmText}
         onConfirmDeleteAll={executeDeleteAll}
+      />
+
+      <HistoryEditModal
+        transaction={editTarget}
+        onClose={() => setEditTarget(null)}
+        onSave={executeEditSave}
+        isSaving={isEditSaving}
       />
 
       {/* Confirmation Modal - Export Summary PDF */}
