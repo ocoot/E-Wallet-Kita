@@ -22,7 +22,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   const { user } = useAuth();
   const currentUser: UserSession = {
     id: user?.id || "",
-    display_name: user?.user_metadata?.full_name || "User",
+    display_name: user?.user_metadata?.full_name || t("admin.guest_user"),
     is_guest: user?.is_anonymous || false,
     preferred_language: "id",
     preferred_theme: "dark_obsidian"

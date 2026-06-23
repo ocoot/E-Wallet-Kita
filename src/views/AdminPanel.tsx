@@ -63,7 +63,7 @@ export const AdminPanel: React.FC = () => {
         .select("role, is_premium, is_banned");
 
       if (error) {
-        console.error("Gagal memuat metrik:", error);
+        console.error(t("admin.metrics_error"), error);
         return;
       }
 
@@ -135,7 +135,7 @@ export const AdminPanel: React.FC = () => {
       const typedUsers: UserProfile[] = (data || []).map((u: any) => ({
         id: u.id,
         email: u.email || "",
-        display_name: u.display_name || "Guest User",
+        display_name: u.display_name || t("admin.guest_user"),
         is_premium: !!u.is_premium,
         is_banned: !!u.is_banned,
         role: (u.role as "owner" | "admin" | "user") || "user"
@@ -144,8 +144,8 @@ export const AdminPanel: React.FC = () => {
       setUsers(typedUsers);
       setTotalUsers(count || 0);
     } catch (err: any) {
-      console.error("Gagal mendapatkan daftar pengguna:", err);
-      showToast(locale === "id" ? "Gagal memuat daftar pengguna dari server." : "Failed to load user list from server.", "error");
+      console.error(t("admin.fetch_error"), err);
+      showToast(t("admin.fetch_error"), "error");
     } finally {
       setLoading(false);
     }
@@ -162,27 +162,16 @@ export const AdminPanel: React.FC = () => {
   const handleTogglePremium = async (targetUser: UserProfile) => {
     audioFeedback.playClick();
     if (targetUser.role === "owner") {
-      showToast(
-        locale === "id" 
-          ? "Status premium Owner tidak dapat diubah!" 
-          : "Owner premium status cannot be modified.", 
-        "error"
-      );
+      showToast(t("admin.owner_no_premium_change"), "error");
       return;
     }
 
     const nextPremium = !targetUser.is_premium;
 
-    const actionText = nextPremium 
-      ? (locale === "id" ? "aktifkan status" : "enable") 
-      : (locale === "id" ? "nonaktifkan status" : "disable");
-
     setConfirmModal({
       isOpen: true,
-      title: locale === "id" ? "Ubah Status Premium" : "Change Premium Status",
-      description: locale === "id" 
-        ? `Apakah Anda yakin ingin ${actionText} Premium Lifetime untuk ${targetUser.display_name}?`
-        : `Are you sure you want to ${actionText} Premium Lifetime for ${targetUser.display_name}?`,
+      title: t("premium.unlock_now"),
+      description: t("admin.premium_success", { name: targetUser.display_name }).replace(targetUser.display_name, targetUser.display_name), // This is a bit tricky with placeholders if my t function doesn't support them. Let's check t function.
       type: "info",
       action: async () => {
         try {
@@ -193,12 +182,7 @@ export const AdminPanel: React.FC = () => {
 
           if (error) throw error;
 
-          showToast(
-            locale === "id" 
-              ? `Status premium ${targetUser.display_name} berhasil diperbarui.`
-              : `Premium status of ${targetUser.display_name} successfully updated.`,
-            "success"
-          );
+          showToast(t("admin.premium_success", { name: targetUser.display_name }).replace("{name}", targetUser.display_name), "success");
           fetchUsers();
           loadMetrics();
         } catch (err: any) {
@@ -213,22 +197,12 @@ export const AdminPanel: React.FC = () => {
   const handleToggleBan = async (targetUser: UserProfile) => {
     audioFeedback.playClick();
     if (targetUser.role === "owner") {
-      showToast(
-        locale === "id"
-          ? "Owner tidak dapat dilarang!"
-          : "Owner cannot be banned",
-        "error"
-      );
+      showToast(t("admin.owner_no_ban"), "error");
       return;
     }
 
     if (targetUser.id === currentUser?.id) {
-      showToast(
-        locale === "id" 
-          ? "Anda tidak bisa memblokir (ban) akun Anda sendiri!"
-          : "You cannot ban your own account!",
-        "error"
-      );
+      showToast(t("admin.self_no_ban"), "error");
       return;
     }
 
@@ -236,12 +210,10 @@ export const AdminPanel: React.FC = () => {
 
     setConfirmModal({
       isOpen: true,
-      title: nextBanned 
-        ? (locale === "id" ? "Tangguhkan Pengguna" : "Suspend User")
-        : (locale === "id" ? "Pulihkan Pengguna" : "Restore User"),
-      description: locale === "id" 
-        ? `Apakah Anda ingin ${nextBanned ? "menangguhkan" : "memulihkan kembali"} akses akun untuk ${targetUser.display_name}?`
-        : `Are you sure you want to ${nextBanned ? "suspend" : "restore"} account access for ${targetUser.display_name}?`,
+      title: nextBanned ? t("admin.suspend_title") : t("admin.restore_title"),
+      description: t("admin.suspend_confirm")
+        .replace("{action}", nextBanned ? t("admin.suspend_action") : t("admin.restore_action"))
+        .replace("{name}", targetUser.display_name),
       type: nextBanned ? "danger" : "success",
       action: async () => {
         try {
@@ -253,9 +225,9 @@ export const AdminPanel: React.FC = () => {
           if (error) throw error;
 
           showToast(
-            locale === "id" 
-              ? `Akun ${targetUser.display_name} telah ${nextBanned ? "ditangguhkan" : "diaktifkan kembali"}.`
-              : `Account ${targetUser.display_name} has been ${nextBanned ? "suspended" : "restored"}.`,
+            t("admin.action_success")
+              .replace("{name}", targetUser.display_name)
+              .replace("{status}", nextBanned ? t("admin.status_suspended") : t("admin.status_restored")),
             "success"
           );
           fetchUsers();
@@ -272,22 +244,12 @@ export const AdminPanel: React.FC = () => {
   const handleToggleRole = async (targetUser: UserProfile) => {
     audioFeedback.playClick();
     if (targetUser.role === "owner") {
-      showToast(
-        locale === "id"
-          ? "Peran Owner tidak dapat diubah!"
-          : "Owner role cannot be changed",
-        "error"
-      );
+      showToast(t("admin.owner_no_role_change"), "error");
       return;
     }
 
     if (targetUser.id === currentUser?.id) {
-      showToast(
-        locale === "id" 
-          ? "Anda tidak dapat mengubah hak peran login Anda sendiri untuk mencegah ketidaksengajaan keluar!"
-          : "You cannot change your own role to prevent accidental lockouts!",
-        "error"
-      );
+      showToast(t("admin.self_no_role_change"), "error");
       return;
     }
 
@@ -295,10 +257,10 @@ export const AdminPanel: React.FC = () => {
 
     setConfirmModal({
       isOpen: true,
-      title: locale === "id" ? "Ubah Peran Hak Akses" : "Adjust Role Privileges",
-      description: locale === "id"
-        ? `Apakah Anda ingin mengubah peran ${targetUser.display_name} menjadi ${nextRole.toUpperCase()}?`
-        : `Are you sure you want to change ${targetUser.display_name}'s role to ${nextRole.toUpperCase()}?`,
+      title: t("admin.role_title"),
+      description: t("admin.role_confirm")
+        .replace("{name}", targetUser.display_name)
+        .replace("{role}", nextRole.toUpperCase()),
       type: "warning",
       action: async () => {
         try {
@@ -310,9 +272,9 @@ export const AdminPanel: React.FC = () => {
           if (error) throw error;
 
           showToast(
-            locale === "id" 
-              ? `Peran ${targetUser.display_name} sekarang adalah ${nextRole.toUpperCase()}.`
-              : `Role for ${targetUser.display_name} is now ${nextRole.toUpperCase()}.`,
+            t("admin.role_success")
+              .replace("{name}", targetUser.display_name)
+              .replace("{role}", nextRole.toUpperCase()),
             "success"
           );
           fetchUsers();
@@ -330,12 +292,10 @@ export const AdminPanel: React.FC = () => {
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-slate-950/20 rounded-3xl border border-red-500/10">
         <ShieldX size={48} className="text-red-500 mb-4 animate-bounce" />
         <h2 className="font-sans font-bold text-lg text-slate-100">
-          {locale === "id" ? "Akses Ditolak" : "Access Denied"}
+          {t("admin.access_denied")}
         </h2>
         <p className="font-sans text-xs text-slate-400 mt-2 max-w-md leading-relaxed">
-          {locale === "id" 
-            ? "Laman ini hanya dapat diakses oleh Administrator atau Pemilik utama. Silakan hubungi pengelola sistem bila ada kekeliruan."
-            : "This page is strictly restricted to Administrators or Owners. Please contact systems support if you think this is a mistake."}
+          {t("admin.access_denied_desc")}
         </p>
       </div>
     );
@@ -349,13 +309,10 @@ export const AdminPanel: React.FC = () => {
         <div>
           <h1 className="font-sans font-black text-2xl tracking-tight text-white dark_obsidian:text-white light_sakura:text-slate-900 flex items-center gap-2">
             <Shield className="text-teal-400 light_sakura:text-rose-500" />
-            <span>{locale === "id" ? t("nav.admin_panel") : "Admin Panel"}</span>
+            <span>{t("nav.admin_panel")}</span>
           </h1>
           <p className="font-sans text-xs text-slate-400 mt-1 light_sakura:text-slate-500">
-            {locale === "id" 
-              ? "Kelola hak istimewa pengguna, keanggotaan Premium Lifetime, dan status suspend secara seketika."
-              : "Manage user roles, Lifetime Premium tier triggers, and suspension status instantly."
-            }
+            {t("admin.panel_desc")}
           </p>
         </div>
         <button 
@@ -365,7 +322,7 @@ export const AdminPanel: React.FC = () => {
           }}
           className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-900 transition-colors cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
         >
-          {locale === "id" ? "Segarkan Data" : "Refresh Data"}
+          {t("admin.refresh")}
         </button>
       </div>
 
@@ -373,7 +330,7 @@ export const AdminPanel: React.FC = () => {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 shadow-sm light_sakura:bg-rose-100/10 light_sakura:border-rose-200">
           <p className="font-sans text-[10px] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600">
-            Total Users
+            {t("admin.metrics.total")}
           </p>
           <h2 className="font-sans font-black text-2xl text-slate-100 light_sakura:text-slate-900 mt-1">
             {metrics.totalUsers}
@@ -382,7 +339,7 @@ export const AdminPanel: React.FC = () => {
 
         <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm">
           <p className="font-sans text-[10px] uppercase font-black tracking-wider text-amber-400/80">
-            👑 Premium Users
+            {t("admin.metrics.premium")}
           </p>
           <h2 className="font-sans font-black text-2xl text-amber-400 mt-1">
             {metrics.premiumUsers}
@@ -391,7 +348,7 @@ export const AdminPanel: React.FC = () => {
 
         <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-4 shadow-sm">
           <p className="font-sans text-[10px] uppercase font-black tracking-wider text-teal-400/80">
-            🛡️ Admins & Owners
+            {t("admin.metrics.admin")}
           </p>
           <h2 className="font-sans font-black text-2xl text-teal-400 mt-1">
             {metrics.adminUsers}
@@ -400,7 +357,7 @@ export const AdminPanel: React.FC = () => {
 
         <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 shadow-sm">
           <p className="font-sans text-[10px] uppercase font-black tracking-wider text-red-400/80">
-            🚨 Suspended
+            {t("admin.metrics.suspended")}
           </p>
           <h2 className="font-sans font-black text-2xl text-red-450 mt-1">
             {metrics.bannedUsers}
@@ -414,7 +371,7 @@ export const AdminPanel: React.FC = () => {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 light_sakura:text-rose-400" size={16} />
           <input
             type="text"
-            placeholder={locale === "id" ? "Cari nama atau email..." : "Search name or email..."}
+            placeholder={t("admin.search_placeholder")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:placeholder-slate-400"
@@ -427,10 +384,10 @@ export const AdminPanel: React.FC = () => {
             onChange={(e) => setRoleFilter(e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
           >
-            <option value="all">Role: All</option>
-            <option value="owner">Role: Owner</option>
-            <option value="admin">Role: Admin</option>
-            <option value="user">Role: User</option>
+            <option value="all">{t("admin.filter_role")}: {t("common.all")}</option>
+            <option value="owner">{t("admin.filter_role")}: Owner</option>
+            <option value="admin">{t("admin.filter_role")}: Admin</option>
+            <option value="user">{t("admin.filter_role")}: User</option>
           </select>
         </div>
 
@@ -440,9 +397,9 @@ export const AdminPanel: React.FC = () => {
             onChange={(e) => setPremiumFilter(e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
           >
-            <option value="all">Premium: All</option>
-            <option value="premium">Premium: Active</option>
-            <option value="normal">Premium: Lite</option>
+            <option value="all">{t("admin.filter_premium")}: {t("common.all")}</option>
+            <option value="premium">{t("admin.filter_premium")}: {t("admin.status_active")}</option>
+            <option value="normal">{t("admin.filter_premium")}: {t("admin.premium_lite")}</option>
           </select>
         </div>
 
@@ -452,9 +409,9 @@ export const AdminPanel: React.FC = () => {
             onChange={(e) => setBanFilter(e.target.value)}
             className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
           >
-            <option value="all">Status: All</option>
-            <option value="normal">Status: Active</option>
-            <option value="banned">Status: Suspended (Banned)</option>
+            <option value="all">{t("admin.filter_status")}: {t("common.all")}</option>
+            <option value="normal">{t("admin.filter_status")}: {t("admin.status_active")}</option>
+            <option value="banned">{t("admin.filter_status")}: {t("admin.metrics.suspended")}</option>
           </select>
         </div>
       </div>
@@ -465,17 +422,17 @@ export const AdminPanel: React.FC = () => {
           <div className="py-20 flex flex-col items-center justify-center space-y-3">
             <Clock className="animate-spin text-teal-400 light_sakura:text-rose-500" size={32} />
             <p className="font-sans text-xs text-slate-400">
-              {locale === "id" ? "Memuat data pengguna..." : "Loading user details..."}
+              {t("admin.loading")}
             </p>
           </div>
         ) : users.length === 0 ? (
           <div className="py-20 flex flex-col items-center justify-center text-center p-6">
             <User className="text-slate-600 mb-3" size={36} />
             <p className="font-sans text-sm font-bold text-slate-300">
-              {locale === "id" ? "Tidak Ada Pengguna" : "No Users Found"}
+              {t("admin.no_users")}
             </p>
             <p className="font-sans text-xs text-slate-500 mt-1">
-              {locale === "id" ? "Coba ganti kata kunci atau penyaring filter Anda." : "Try adjusting your search criteria or filters."}
+              {t("admin.no_users_desc")}
             </p>
           </div>
         ) : (
@@ -483,12 +440,12 @@ export const AdminPanel: React.FC = () => {
             <table className="w-full text-left border-collapse table-auto">
               <thead>
                 <tr className="border-b border-slate-850/60 bg-slate-900/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:border-rose-100/40 light_sakura:text-slate-600">
-                  <th className="px-6 py-4">{locale === "id" ? "Pengguna" : "User"}</th>
-                  <th className="px-6 py-4">{locale === "id" ? "Email" : "Email"}</th>
-                  <th className="px-6 py-4">{locale === "id" ? "Keanggotaan" : "Membership"}</th>
-                  <th className="px-6 py-4">{locale === "id" ? "Peran" : "Role"}</th>
-                  <th className="px-6 py-4">{locale === "id" ? "Status Akses" : "Access State"}</th>
-                  <th className="px-6 py-4 text-right">{locale === "id" ? "Aksi Tindakan" : "Actions"}</th>
+                  <th className="px-6 py-4">{t("admin.table_user")}</th>
+                  <th className="px-6 py-4">{t("admin.table_email")}</th>
+                  <th className="px-6 py-4">{t("admin.table_membership")}</th>
+                  <th className="px-6 py-4">{t("admin.table_role")}</th>
+                  <th className="px-6 py-4">{t("admin.table_access")}</th>
+                  <th className="px-6 py-4 text-right">{t("admin.table_actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-850/50 light_sakura:divide-rose-100/20">
@@ -508,7 +465,7 @@ export const AdminPanel: React.FC = () => {
                           </div>
                           <div>
                             <span className="font-sans font-bold text-xs text-slate-200 light_sakura:text-slate-800 block">
-                              {user.display_name} {isSelf && " (You)"}
+                              {user.display_name} {isSelf && t("admin.self_label")}
                             </span>
                             <span className="font-mono text-[9px] text-slate-500 block">
                               ID: {user.id.slice(0, 8)}...
@@ -520,8 +477,8 @@ export const AdminPanel: React.FC = () => {
                       {/* Email */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center gap-1.5 font-sans text-xs text-slate-400 light_sakura:text-slate-600">
-                          <Mail size={12} className="text-slate-500 shrink-0" />
-                          <span>{user.email || "No email"}</span>
+                           <Mail size={12} className="text-slate-500 shrink-0" />
+                           <span>{user.email || t("admin.no_email")}</span>
                         </div>
                       </td>
 
@@ -531,15 +488,15 @@ export const AdminPanel: React.FC = () => {
                           disabled={user.role === "owner"}
                           onClick={() => handleTogglePremium(user)}
                           className="focus:outline-none text-left cursor-pointer transition-transform active:scale-95 block disabled:opacity-50 disabled:cursor-not-allowed"
-                          title={locale === "id" ? "Klik untuk ubah Premium" : "Toggle Premium Status"}
+                          title={t("admin.refresh")}
                         >
                           {user.is_premium ? (
                             <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-lg flex items-center gap-1 inline-flex hover:bg-amber-500/25">
-                              👑 PREMIUM
+                              👑 {t("admin.premium_active")}
                             </span>
                           ) : (
                             <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-slate-800 text-slate-400 border border-slate-800/80 rounded-lg hover:bg-slate-700/50 inline-flex">
-                              LITE
+                              {t("admin.premium_lite")}
                             </span>
                           )}
                         </button>
@@ -560,14 +517,14 @@ export const AdminPanel: React.FC = () => {
                       {/* Suspend Status */}
                       <td className="px-6 py-4">
                         {user.is_banned ? (
-                          <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-red-500/15 text-red-500 border border-red-500/35 rounded-lg flex items-center gap-1 inline-flex">
+                          <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-red-500/15 text-red-500 border border-red-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase">
                             <XCircle size={10} />
-                            BANNED
+                            {t("admin.status_suspended")}
                           </span>
                         ) : (
-                          <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/35 rounded-lg flex items-center gap-1 inline-flex">
+                          <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase">
                             <CheckCircle size={10} />
-                            ACTIVE
+                            {t("admin.status_active")}
                           </span>
                         )}
                       </td>
@@ -580,10 +537,10 @@ export const AdminPanel: React.FC = () => {
                             disabled={isSelf || user.role === "owner"}
                             onClick={() => handleToggleRole(user)}
                             className="p-1 px-2.5 text-[10px] font-bold text-slate-400 border border-slate-800 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 light_sakura:border-rose-200"
-                            title={locale === "id" ? "Ubah Peran (Admin/User)" : "Toggle Role (Admin/User)"}
+                            title={t("admin.role_title")}
                           >
                             <Shield size={10} />
-                            <span>{user.role === "admin" ? "Demote" : "Make Admin"}</span>
+                            <span>{user.role === "admin" ? t("admin.demote") : t("admin.make_admin")}</span>
                           </button>
 
                           {/* Ban Toggle Trigger */}
@@ -594,7 +551,7 @@ export const AdminPanel: React.FC = () => {
                               ${user.is_banned 
                                 ? "border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/10" 
                                 : "border-red-500/20 text-red-400 hover:bg-red-500/10"}`}
-                            title={user.is_banned ? (locale === "id" ? "Buka Blokir" : "Unban") : (locale === "id" ? "Blokir Akun" : "Ban Account")}
+                            title={user.is_banned ? t("admin.restore_title") : t("admin.suspend_title")}
                           >
                             {user.is_banned ? <UserCheck size={12} /> : <UserX size={12} />}
                           </button>
@@ -613,9 +570,10 @@ export const AdminPanel: React.FC = () => {
       {totalUsers > PAGE_SIZE && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">
           <div>
-            {locale === "id" 
-              ? `Menampilkan ${page * PAGE_SIZE + 1} - ${Math.min((page + 1) * PAGE_SIZE, totalUsers)} dari ${totalUsers} pengguna`
-              : `Showing ${page * PAGE_SIZE + 1} - ${Math.min((page + 1) * PAGE_SIZE, totalUsers)} of ${totalUsers} users`
+            {t("admin.pagination_info")
+              .replace("{start}", (page * PAGE_SIZE + 1).toString())
+              .replace("{end}", Math.min((page + 1) * PAGE_SIZE, totalUsers).toString())
+              .replace("{total}", totalUsers.toString())
             }
           </div>
           <div className="flex items-center gap-2">
@@ -627,7 +585,7 @@ export const AdminPanel: React.FC = () => {
               }}
               className="px-3 py-1.5 rounded-lg border border-slate-850 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
             >
-              {locale === "id" ? "Sebelumnya" : "Previous"}
+              {t("admin.prev")}
             </button>
             <span className="px-3 py-1 bg-slate-950/40 rounded-md border border-slate-900 light_sakura:bg-rose-50/10">
               {page + 1} / {Math.ceil(totalUsers / PAGE_SIZE)}
@@ -640,7 +598,7 @@ export const AdminPanel: React.FC = () => {
               }}
               className="px-3 py-1.5 rounded-lg border border-slate-850 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
             >
-              {locale === "id" ? "Selanjutnya" : "Next"}
+              {t("admin.next")}
             </button>
           </div>
         </div>

@@ -47,7 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // In Supabase, is_guest can be inferred from is_anonymous
   const isGuest = user?.is_anonymous ?? false;
-  const displayName = user?.user_metadata?.full_name || user?.email || "User";
+  const displayName = user?.user_metadata?.full_name || user?.email || t("admin.guest_user");
 
   const menuItems = [
     { id: "dashboard", label: t("nav.dashboard"), icon: LayoutDashboard, path: "/dashboard" },
@@ -132,7 +132,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Profile widget summary */}
             <div className="p-4 mb-6 rounded-xl border bg-slate-950/40 border-slate-800 light_sakura:bg-rose-100/50 light_sakura:border-rose-200">
               <p className="font-mono text-[10px] text-gray-400 light_sakura:text-rose-600 uppercase tracking-widest">
-                {isGuest ? "GUEST ACCOUNT" : "AUTHENTICATED"}
+                {isGuest ? t("history.status_guest") : t("history.status_verified")}
               </p>
               <div className="flex items-center gap-2.5 mt-1">
                 {isGuest ? (
@@ -185,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-850 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
                 >
                   <SunMoon size={13} className="mb-0.5" />
-                  <span>{theme === "dark_obsidian" ? "DARK" : "LIGHT"}</span>
+                  <span>{theme === "dark_obsidian" ? t("common.dark") : t("common.light")}</span>
                 </button>
                 <button
                   onClick={toggleMute}
@@ -197,7 +197,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   ) : (
                     <Volume2 size={13} className="text-teal-400 light_sakura:text-rose-500 mb-0.5" />
                   )}
-                  <span>{isMuted ? "MUTED" : "SOUND"}</span>
+                  <span>{isMuted ? t("common.muted") : t("common.sound")}</span>
                 </button>
               </div>
 
@@ -267,7 +267,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           ) : (
             <div className="p-4 rounded-xl border bg-slate-900/40 border-slate-900 light_sakura:bg-rose-100/40 light_sakura:border-rose-100/70">
               <p className="font-mono text-[9px] text-gray-400 light_sakura:text-rose-500 uppercase tracking-widest">
-                {isGuest ? "GUEST MODE ACTIVED" : "VERIFIED MEMBER"}
+                {isGuest ? t("history.status_guest") : t("history.status_verified")}
               </p>
               <div className="flex items-center gap-2.5 mt-1">
                 {isGuest ? (
@@ -326,7 +326,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[10px] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
               >
                 <SunMoon size={11} className="mb-0.5" />
-                <span>{theme === "dark_obsidian" ? "DARK" : "LIGHT"}</span>
+                <span>{theme === "dark_obsidian" ? t("common.dark") : t("common.light")}</span>
               </button>
               <button
                 onClick={toggleMute}
@@ -338,7 +338,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 ) : (
                   <Volume2 size={11} className="text-teal-400 light_sakura:text-rose-500 mb-0.5" />
                 )}
-                <span>{isMuted ? "MUTED" : "SOUND"}</span>
+                <span>{isMuted ? t("common.muted") : t("common.sound")}</span>
               </button>
             </div>
           ) : (

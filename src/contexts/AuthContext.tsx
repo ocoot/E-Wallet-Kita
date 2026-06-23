@@ -67,7 +67,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
           if (profile?.is_banned) {
             await supabase.auth.signOut();
-            alert("Account has been banned / Akun Anda telah ditangguhkan.");
+            const savedLocale = localStorage.getItem("ewallet_language") || "id";
+            const banMsg = savedLocale === "id" 
+              ? "Akun Anda telah ditangguhkan / dilarang. Silakan hubungi admin." 
+              : "Your account has been suspended / banned. Please contact admin.";
+            alert(banMsg);
             return;
           }
         } catch (err) {
