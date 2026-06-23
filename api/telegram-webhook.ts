@@ -2,8 +2,8 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Type } from '@google/genai';
 import { parseAmountFromString } from '../src/lib/parserUtils.js';
-import { parseReceipt } from './lib/receipt-parser';
-import { createReceiptDraft, approveReceiptDraft, cancelReceiptDraft } from './lib/receipt-service';
+import { parseReceipt } from './lib/receipt-parser.js';
+import { createReceiptDraft, approveReceiptDraft, cancelReceiptDraft } from './lib/receipt-service.js';
 
 type Lang = "id" | "en";
 
