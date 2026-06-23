@@ -15,9 +15,43 @@ interface UserContext {
 }
 
 // ─────────────────────────────────────────────────────────────
-// FIX #1: Corrected Gemini model name (was "gemini-3.5-flash" — does not exist)
+// FIX #1 (revised): Multi-model fallback chain.
+//
+// Root cause of "gagal membaca nominal": the old single hardcoded
+// timeout (6s) was too short for gemini-3.5-flash's default thinking
+// latency, so most calls timed out and fell through to a broken
+// regex parser. We now (a) try several models in order so a slow or
+// failing model doesn't kill the whole request, (b) disable/limit
+// thinking for speed since this is a simple extraction task, and
+// (c) give each attempt a more realistic per-model timeout budget.
+//
+// IMPORTANT: Gemini 3.x models use `thinkingLevel` (string enum) while
+// Gemini 2.5 models use `thinkingBudget` (token count) — sending
+// `thinkingLevel` to a 2.5-series model returns a 400 INVALID_ARGUMENT
+// error, not a graceful ignore. Each chain entry carries its own
+// thinkingConfig so we never send the wrong shape to the wrong model.
+//
+// Ordered from smartest/primary to fastest/cheapest fallback.
 // ─────────────────────────────────────────────────────────────
-const GEMINI_MODEL = "gemini-3.5-flash";
+interface GeminiModelConfig {
+  model: string;
+  timeoutMs: number;
+  thinkingConfig: Record<string, unknown>;
+}
+
+const GEMINI_MODEL_CHAIN: GeminiModelConfig[] = [
+  // Gemini 3.x series — use thinkingLevel
+  { model: "gemini-3.5-flash",        timeoutMs: 7000, thinkingConfig: { thinkingLevel: "low" } },  // primary — most capable
+  { model: "gemini-3.1-pro-preview",  timeoutMs: 7000, thinkingConfig: { thinkingLevel: "low" } },   // strong reasoning fallback
+  { model: "gemini-3-flash-preview",  timeoutMs: 5000, thinkingConfig: { thinkingLevel: "low" } },
+  { model: "gemini-3.1-flash-lite",   timeoutMs: 4000, thinkingConfig: { thinkingLevel: "minimal" } }, // stable, very fast
+  // Gemini 2.5 series — use thinkingBudget (token count), NOT thinkingLevel
+  { model: "gemini-2.5-pro",          timeoutMs: 6000, thinkingConfig: { thinkingBudget: 128 } },    // 2.5 Pro can't fully disable thinking
+  { model: "gemini-2.5-flash",        timeoutMs: 5000, thinkingConfig: { thinkingBudget: 0 } },      // stable, battle-tested
+  { model: "gemini-2.5-flash-lite",   timeoutMs: 4000, thinkingConfig: { thinkingBudget: 0 } },      // cheapest/fastest, last resort
+];
+// Worst case (every model times out): ~38s total — still well inside Vercel's
+// function limit and the regex fallback (now fixed) catches anything left over.
 
 // Initialize Supabase — use service role key for server-side webhook
 // (Anon key is for client-side use only; service role bypasses RLS safely)
@@ -38,6 +72,7 @@ if (apiKey) {
     httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
   });
 }
+
 
 // ─────────────────────────────────────────────────────────────
 // FIX #8: Rate limiting & lockout for /link command (brute force protection)
@@ -611,8 +646,15 @@ async function answerTelegramCallback(callbackQueryId: string, text?: string) {
 }
 
 // ─────────────────────────────────────────────────────────────
-// FIX #1: Correct Gemini model name
+// FIX #1 (revised): Try each model in GEMINI_MODEL_CHAIN in order.
 // FIX #8 (inferCategoryKey): expanded; used in fallback path
+//
+// Why this matters: a single model + a 6s timeout meant any slow
+// response (common with thinking-enabled models) fell straight
+// through to the regex fallback, which itself had a bug (fixed in
+// parserUtils.ts) that made it return 0 for natural-language text.
+// Now we race each model against its own timeout and only fall back
+// to local regex parsing if every model in the chain fails.
 // ─────────────────────────────────────────────────────────────
 async function parseFinancialQuery(query: string): Promise<{
   source: string;
@@ -643,62 +685,76 @@ Indonesian amount abbreviations:
 
 If no category matches, use 'other'. Always return the numeric IDR value in 'amount'.`;
 
-  try {
-    let timeoutId: NodeJS.Timeout | undefined;
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error("Gemini AI request timed out")), 6000);
-    });
+  let lastError: any = null;
 
-    const responsePromise = ai.models.generateContent({
-      model: GEMINI_MODEL, // FIX #1: was "gemini-3.5-flash" (non-existent)
-      contents: `Parse this input text: "${query}"`,
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            type: { type: Type.STRING, enum: ["income", "expense"] },
-            category_key: { type: Type.STRING },
-            amount: { type: Type.NUMBER },
-            original_text: { type: Type.STRING }
-          },
-          required: ["type", "category_key", "amount", "original_text"]
+  for (const { model, timeoutMs, thinkingConfig } of GEMINI_MODEL_CHAIN) {
+    try {
+      let timeoutId: NodeJS.Timeout | undefined;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error(`Gemini AI request timed out (${model}, ${timeoutMs}ms)`)), timeoutMs);
+      });
+
+      const responsePromise = ai.models.generateContent({
+        model,
+        contents: `Parse this input text: "${query}"`,
+        config: {
+          systemInstruction,
+          responseMimeType: "application/json",
+          // Low/no thinking: this is a simple extraction task, not something
+          // that benefits from deep reasoning, and keeping it low avoids the
+          // higher latency that pushed past our old timeout. Each model gets
+          // its own compatible shape (thinkingLevel for 3.x, thinkingBudget for 2.5).
+          thinkingConfig,
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              type: { type: Type.STRING, enum: ["income", "expense"] },
+              category_key: { type: Type.STRING },
+              amount: { type: Type.NUMBER },
+              original_text: { type: Type.STRING }
+            },
+            required: ["type", "category_key", "amount", "original_text"]
+          }
         }
-      }
-    });
+      });
 
-    const response = await Promise.race([responsePromise, timeoutPromise]);
-    if (timeoutId) clearTimeout(timeoutId);
+      const response = await Promise.race([responsePromise, timeoutPromise]);
+      if (timeoutId) clearTimeout(timeoutId);
 
-    const responseText = response.text;
-    if (!responseText) throw new Error("Empty response from Gemini API");
+      const responseText = response.text;
+      if (!responseText) throw new Error("Empty response from Gemini API");
 
-    const parsedJSON = JSON.parse(responseText.trim());
+      const parsedJSON = JSON.parse(responseText.trim());
 
-    // If Gemini returned 0 or suspiciously small amount, trust our regex parser
-    const finalAmount = (codeParsedAmount > 0 && (!parsedJSON.amount || parsedJSON.amount <= 10))
-      ? codeParsedAmount
-      : parsedJSON.amount;
+      // If Gemini returned 0 or suspiciously small amount, trust our regex parser
+      const finalAmount = (codeParsedAmount > 0 && (!parsedJSON.amount || parsedJSON.amount <= 10))
+        ? codeParsedAmount
+        : parsedJSON.amount;
 
-    return {
-      source: GEMINI_MODEL,
-      type: parsedJSON.type || "expense",
-      category_key: parsedJSON.category_key || inferCategoryKey(query),
-      amount: finalAmount || codeParsedAmount || 0,
-      original_text: query
-    };
-  } catch (err: any) {
-    console.error("❌ Gemini parseFinancialQuery error:", err?.message ?? err);
-    // Graceful fallback to local inference on Gemini failure
-    return {
-      source: "fallback_gemini_error",
-      type: /gaji|bonus|salary|upah|thr|sampingan|freelance|komisi/.test(query.toLowerCase()) ? "income" : "expense",
-      category_key: inferCategoryKey(query),
-      amount: codeParsedAmount,
-      original_text: query
-    };
+      return {
+        source: model,
+        type: parsedJSON.type || "expense",
+        category_key: parsedJSON.category_key || inferCategoryKey(query),
+        amount: finalAmount || codeParsedAmount || 0,
+        original_text: query
+      };
+    } catch (err: any) {
+      lastError = err;
+      console.error(`❌ Gemini parseFinancialQuery failed on model "${model}":`, err?.message ?? err);
+      // try the next model in the chain
+      continue;
+    }
   }
+
+  // Every model in the chain failed — graceful fallback to local inference
+  console.error("❌ All Gemini models in fallback chain failed. Last error:", lastError?.message ?? lastError);
+  return {
+    source: "fallback_gemini_error",
+    type: /gaji|bonus|salary|upah|thr|sampingan|freelance|komisi/.test(query.toLowerCase()) ? "income" : "expense",
+    category_key: inferCategoryKey(query),
+    amount: codeParsedAmount,
+    original_text: query
+  };
 }
 
 // ─────────────────────────────────────────────────────────────

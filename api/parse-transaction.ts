@@ -26,6 +26,31 @@ const RATE_LIMIT_WINDOW = 60000;    // 1 minute
 const AI_RATE_LIMIT = 5;            // AI requests per minute (stricter)
 const AI_RATE_LIMIT_WINDOW = 60000; // 1 minute
 
+// ─────────────────────────────────────────────────────────────
+// Multi-model fallback chain — same rationale as api/telegram-webhook.ts.
+// A single model with no timeout could hang the request indefinitely on
+// a slow Gemini response; this tries progressively faster/cheaper models
+// before giving up to the local regex parser.
+// ─────────────────────────────────────────────────────────────
+interface GeminiModelConfig {
+  model: string;
+  timeoutMs: number;
+  thinkingConfig: Record<string, unknown>;
+}
+
+// IMPORTANT: Gemini 3.x uses `thinkingLevel`; Gemini 2.5 uses `thinkingBudget`.
+// Sending thinkingLevel to a 2.5-series model causes a 400 error, not a
+// graceful ignore — each entry must carry the shape its own model accepts.
+const GEMINI_MODEL_CHAIN: GeminiModelConfig[] = [
+  { model: "gemini-3.5-flash",        timeoutMs: 7000, thinkingConfig: { thinkingLevel: "low" } },
+  { model: "gemini-3.1-pro-preview",  timeoutMs: 7000, thinkingConfig: { thinkingLevel: "low" } },
+  { model: "gemini-3-flash-preview",  timeoutMs: 5000, thinkingConfig: { thinkingLevel: "low" } },
+  { model: "gemini-3.1-flash-lite",   timeoutMs: 4000, thinkingConfig: { thinkingLevel: "minimal" } },
+  { model: "gemini-2.5-pro",          timeoutMs: 6000, thinkingConfig: { thinkingBudget: 128 } },
+  { model: "gemini-2.5-flash",        timeoutMs: 5000, thinkingConfig: { thinkingBudget: 0 } },
+  { model: "gemini-2.5-flash-lite",   timeoutMs: 4000, thinkingConfig: { thinkingBudget: 0 } },
+];
+
 const apiKey = process.env.GEMINI_API_KEY;
 let ai: GoogleGenAI | null = null;
 if (apiKey) {
@@ -138,33 +163,76 @@ ${categoryMapping}
 
 If categories do not match any, default category_key to 'other'.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: `Parse this input text: "${query}"`,
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            type: { type: Type.STRING, enum: ["income", "expense"], description: "Type of transaction" },
-            category_key: { type: Type.STRING },
-            amount: { type: Type.NUMBER },
-            original_text: { type: Type.STRING }
-          },
-          required: ["type", "category_key", "amount", "original_text"]
-        }
-      }
-    });
-
-    const parsedJSON = JSON.parse(response.text!.trim());
     const codeParsedAmount = parseAmountFromString(query);
+    let parsedJSON: any = null;
+    let usedModel: string | null = null;
+    let lastError: any = null;
+
+    for (const { model, timeoutMs, thinkingConfig } of GEMINI_MODEL_CHAIN) {
+      try {
+        let timeoutId: NodeJS.Timeout | undefined;
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error(`Gemini AI request timed out (${model}, ${timeoutMs}ms)`)), timeoutMs);
+        });
+
+        const responsePromise = ai.models.generateContent({
+          model,
+          contents: `Parse this input text: "${query}"`,
+          config: {
+            systemInstruction,
+            responseMimeType: "application/json",
+            thinkingConfig,
+            responseSchema: {
+              type: Type.OBJECT,
+              properties: {
+                type: { type: Type.STRING, enum: ["income", "expense"], description: "Type of transaction" },
+                category_key: { type: Type.STRING },
+                amount: { type: Type.NUMBER },
+                original_text: { type: Type.STRING }
+              },
+              required: ["type", "category_key", "amount", "original_text"]
+            }
+          }
+        });
+
+        const response = await Promise.race([responsePromise, timeoutPromise]);
+        if (timeoutId) clearTimeout(timeoutId);
+
+        const responseText = response.text;
+        if (!responseText) throw new Error("Empty response from Gemini API");
+
+        parsedJSON = JSON.parse(responseText.trim());
+        usedModel = model;
+        break;
+      } catch (err: any) {
+        lastError = err;
+        console.error(`❌ parse-transaction Gemini failed on model "${model}":`, err?.message ?? err);
+        continue;
+      }
+    }
+
+    if (!parsedJSON) {
+      // Every model in the chain failed — fall back to local regex inference
+      const inferredCategory = inferCategoryKey(query);
+      const inferredType = ["gaji", "bonus", "salary", "upah"].some(k => query.toLowerCase().includes(k)) ? "income" : "expense";
+
+      res.json({
+        source: "fallback_gemini_error",
+        type: inferredType,
+        category_key: inferredCategory,
+        amount: codeParsedAmount,
+        original_text: query,
+        error_context: lastError?.message ?? "All Gemini models in fallback chain failed"
+      });
+      return;
+    }
+
     if (codeParsedAmount > 0 && (!parsedJSON.amount || parsedJSON.amount <= 10)) {
       parsedJSON.amount = codeParsedAmount;
     }
 
     res.json({
-      source: "gemini-3.5-flash",
+      source: usedModel,
       type: parsedJSON.type || "expense",
       category_key: parsedJSON.category_key || inferCategoryKey(query),
       amount: parsedJSON.amount || codeParsedAmount || 0,
@@ -187,4 +255,3 @@ If categories do not match any, default category_key to 'other'.`;
     });
   }
 }
-
