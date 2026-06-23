@@ -117,3 +117,20 @@ export async function cancelReceiptDraft(id: string) {
   }
   return data;
 }
+
+export async function updateReceiptCategory(id: string, category: string) {
+  const { data, error } = await supabaseBackend
+    .from('receipt_drafts')
+    .update({ 
+      category: category,
+    })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("❌ Error in updateReceiptCategory:", error);
+    throw error;
+  }
+  return data;
+}

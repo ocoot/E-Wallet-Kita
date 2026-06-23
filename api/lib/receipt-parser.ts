@@ -28,6 +28,7 @@ export interface ParsedReceipt {
   receipt_date: string;
   total_amount: number;
   total_items: number;
+  category: string;
   items: Array<{
     name: string;
     qty: number;
@@ -50,13 +51,14 @@ function shouldFallback(err: any) {
 
 const systemInstruction = `Anda adalah OCR parser struk belanja Indonesia tepercaya.
 Analisis gambar struk belanja yang diberikan dan ekstrak detail berikut dalam bentuk JSON terstruktur:
-1. 'merchant_name': Nama toko/merchant (misal: Indomaret, Alfamart, Kopi Kenangan, dll.).
-2. 'receipt_date': Tanggal di struk belanja dalam format ISO (YYYY-MM-DD), default ke tanggal hari ini jika tidak terbaca.
-3. 'total_amount': Total nominal uang yang dibayarkan (angka desimal/integer).
-4. 'total_items': Jumlah total item barang atau kuantitas barang belanjaan.
-5. 'items': Daftar barang belanjaan, masing-masing berisi 'name' (nama barang), 'qty' (kuantitas), 'unit_price' (harga satuan), dan 'subtotal' (subtotal).
+1. 'merchant_name': Nama toko/merchant (misal: Indomaret, Alfamart, dll.).
+2. 'receipt_date': Tanggal di struk belanja dalam format ISO (YYYY-MM-DD).
+3. 'total_amount': Total nominal uang yang dibayarkan.
+4. 'total_items': Jumlah total item barang.
+5. 'category': Kategori transaksi yang paling relevan (pilih salah satu: 'monthly_groceries', 'food', 'transport', 'vehicle_maintenance', 'shopping', 'health', 'other').
+6. 'items': Daftar barang belanjaan, masing-masing berisi 'name', 'qty', 'unit_price', dan 'subtotal'.
 
-Kembalikan data kosong atau nilai default yang logis jika ada kolom informasi yang tidak terbaca sama sekali dari struk. JANGAN mengarang data fiktif di luar struk.`;
+Kembalikan data kosong atau nilai default yang logis jika ada kolom informasi yang tidak terbaca sama sekali dari struk. JANGAN mengarang data fiktif.`;
 
 async function parseWithGemini(imageBase64: string, mimeType: string, apiKey: string): Promise<ParsedReceipt> {
   const ai = new GoogleGenAI({
@@ -86,6 +88,7 @@ async function parseWithGemini(imageBase64: string, mimeType: string, apiKey: st
     receipt_date: parsedJSON.receipt_date || new Date().toISOString().split("T")[0],
     total_amount: parsedJSON.total_amount || 0,
     total_items: parsedJSON.total_items || (parsedJSON.items ? parsedJSON.items.length : 0),
+    category: parsedJSON.category || "other",
     items: parsedJSON.items || []
   };
 }
@@ -117,6 +120,7 @@ async function parseWithOpenAI(imageBase64: string, apiKey: string): Promise<Par
     receipt_date: parsedJSON.receipt_date || new Date().toISOString().split("T")[0],
     total_amount: parsedJSON.total_amount || 0,
     total_items: parsedJSON.total_items || (parsedJSON.items ? parsedJSON.items.length : 0),
+    category: parsedJSON.category || "other",
     items: parsedJSON.items || []
   };
 }
@@ -147,6 +151,7 @@ async function parseWithClaude(imageBase64: string, apiKey: string): Promise<Par
     receipt_date: parsedJSON.receipt_date || new Date().toISOString().split("T")[0],
     total_amount: parsedJSON.total_amount || 0,
     total_items: parsedJSON.total_items || (parsedJSON.items ? parsedJSON.items.length : 0),
+    category: parsedJSON.category || "other",
     items: parsedJSON.items || []
   };
 }

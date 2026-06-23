@@ -17,6 +17,7 @@ interface ReceiptDraft {
   receipt_date: string;
   total_amount: number;
   total_items: number;
+  category: string;
   items: ReceiptItem[];
 }
 
@@ -51,7 +52,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
     }
   });
 
-  const [category, setCategory] = useState("monthly_groceries");
+  const [category, setCategory] = useState(draft.category || "other");
   const [note, setNote] = useState(() => {
     // Elegant default note with total items
     return `${draft.total_items || draft.items?.length || 0} item barang (${draft.merchant_name || ""})`;

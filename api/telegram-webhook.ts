@@ -849,6 +849,9 @@ async function handleReceiptPhoto(message: any) {
     const inlineKeyboard = {
       inline_keyboard: [
         [
+          { text: lang === "id" ? "✏️ Edit Kategori" : "✏️ Edit Category", callback_data: `rcpt_editcat:${draft.id}` }
+        ],
+        [
           { text: lang === "id" ? "✅ Simpan Transaksi" : "✅ Save Transaction", callback_data: `rcpt_approve:${draft.id}` },
           { text: lang === "id" ? "❌ Batal" : "❌ Cancel", callback_data: `rcpt_cancel:${draft.id}` }
         ]
