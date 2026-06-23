@@ -60,10 +60,11 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
       return;
     }
 
-    // Limit to 5MB for base64 payload safety
-    if (file.size > 5 * 1024 * 1024) {
+    // Fix 1: Limit to 2MB for safer payload handling
+    const MAX_IMAGE_SIZE = 2 * 1024 * 1024;
+    if (file.size > MAX_IMAGE_SIZE) {
       audioFeedback.playDullPluck();
-      showToast(t("id" === "id" ? "Ukuran gambar maksimal 5MB!" : "Max image size is 5MB!"), "error");
+      showToast(t("id" === "id" ? "Ukuran gambar maksimal 2MB!" : "Max image size is 2MB!"), "error");
       return;
     }
 
@@ -71,54 +72,103 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
     setUploadError(null);
     audioFeedback.playClick();
 
-    const reader = new FileReader();
-    reader.onload = async () => {
-      try {
-        const base64String = reader.result as string;
-        
-        const response = await fetch("/api/parse-receipt", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session?.access_token || ""}`,
-          },
-          body: JSON.stringify({
-            imageBase64: base64String,
-          }),
-        });
+    // Fix 2: Compress image before upload using Canvas
+    const compressImage = (file: File): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target?.result as string;
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const MAX_WIDTH = 1200;
+            const MAX_HEIGHT = 1200;
+            let width = img.width;
+            let height = img.height;
 
-        if (!response.ok) {
-          const errData = await response.json();
-          throw new Error(errData.error || "Gagal memproses gambar struk.");
-        }
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+              }
+            }
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext("2d");
+            ctx?.drawImage(img, 0, 0, width, height);
+            // Compress as JPEG 50% quality
+            resolve(canvas.toDataURL("image/jpeg", 0.5));
+          };
+          img.onerror = reject;
+        };
+        reader.onerror = reject;
+      });
+    };
 
-        const draft = await response.json();
-        
-        audioFeedback.playChime();
-        showToast(
-          "id" === "id" 
-            ? "Struk berhasil diekstrak oleh Gemini!" 
-            : "Receipt successfully extracted by Gemini!", 
-          "success"
-        );
-        onParsed(draft);
-      } catch (err: any) {
-        console.error("OCR parse error:", err);
-        audioFeedback.playDullPluck();
-        setUploadError(err.message || "Gagal membaca struk belanja.");
-        showToast(err.message || "Gagal memproses struk belanja.", "error");
-      } finally {
-        setIsUploading(false);
+    try {
+      const base64String = await compressImage(file);
+      
+      const payload = JSON.stringify({
+        imageBase64: base64String,
+      });
+
+      const payloadSize = new Blob([payload]).size;
+      
+      console.log("Original file:", file.size, "bytes");
+      console.log("Base64 length:", base64String.length);
+      console.log("Payload size:", payloadSize, "bytes");
+
+      if (payloadSize > 1.5 * 1024 * 1024) { // 1.5MB limit to be safe for 413
+        throw new Error("Ukuran data gambar setelah diproses masih terlalu besar. Silakan coba gambar dengan resolusi lebih rendah atau crop gambar.");
       }
-    };
+        
+      const response = await fetch("/api/parse-receipt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session?.access_token || ""}`,
+        },
+        body: payload,
+      });
 
-    reader.onerror = () => {
+      // Fix 4: Improve error handling
+      if (!response.ok) {
+        const contentType = response.headers.get("content-type");
+        let errorMessage = "Gagal memproses gambar.";
+        
+        if (contentType && contentType.includes("application/json")) {
+          const errData = await response.json();
+          errorMessage = errData.error || errorMessage;
+        } else {
+          errorMessage = `Server Error (${response.status})`;
+        }
+        throw new Error(errorMessage);
+      }
+
+      const draft = await response.json();
+      
+      audioFeedback.playChime();
+      showToast(
+        "id" === "id" 
+          ? "Struk berhasil diekstrak oleh Gemini!" 
+          : "Receipt successfully extracted by Gemini!", 
+        "success"
+      );
+      onParsed(draft);
+    } catch (err: any) {
+      console.error("OCR parse error:", err);
       audioFeedback.playDullPluck();
-      setUploadError("Gagal membaca file gambar.");
+      setUploadError(err.message || "Gagal membaca struk belanja.");
+      showToast(err.message || "Gagal memproses struk belanja.", "error");
+    } finally {
       setIsUploading(false);
-    };
-
-    reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -191,7 +241,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
                     : "Drag & drop receipt here or Click to select"}
                 </p>
                 <p className="font-sans text-[11px] text-gray-500 light_sakura:text-slate-400">
-                  {"id" === "id" ? "Mendukung format PNG, JPG, JPEG (Maks. 5MB)" : "Supports PNG, JPG, JPEG (Max. 5MB)"}
+                  {"id" === "id" ? "Mendukung format PNG, JPG, JPEG (Maks. 2MB)" : "Supports PNG, JPG, JPEG (Max. 2MB)"}
                 </p>
               </div>
             </motion.div>

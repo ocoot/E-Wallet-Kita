@@ -24,7 +24,7 @@ export interface ParsedReceipt {
   }>;
 }
 
-const MODELS = ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-2.5-pro", "gemini-1.5-flash"];
+const MODELS = ["gemini-2.5-flash"];
 
 export async function parseReceipt(imageBase64: string): Promise<ParsedReceipt> {
   if (!ai) {
@@ -63,6 +63,12 @@ Kembalikan data kosong atau nilai default yang logis jika ada kolom informasi ya
   for (const model of MODELS) {
     try {
       console.log(`🤖 Parsing receipt using model: ${model}`);
+      console.log("========== RECEIPT OCR ==========");
+      console.log("Model:", model);
+      console.log("Mime:", mimeType);
+      console.log("Base64 Length:", cleanBase64 ? cleanBase64.length : "null");
+      console.log("=================================");
+      
       const response = await ai.models.generateContent({
         model: model,
         contents: {
@@ -114,7 +120,14 @@ Kembalikan data kosong atau nilai default yang logis jika ada kolom informasi ya
         items: parsedJSON.items || []
       };
     } catch (err: any) {
-      console.error(`❌ parseReceipt failed with model ${model}:`, err.message || err);
+      console.error(`❌ parseReceipt failed with model ${model}:`);
+      console.error(err);
+      if (err?.response) {
+        console.error("Response:", err.response);
+      }
+      if (err?.stack) {
+        console.error("Stack:", err.stack);
+      }
       lastError = err;
     }
   }
