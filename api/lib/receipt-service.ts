@@ -79,7 +79,7 @@ export async function approveReceiptDraft(id: string) {
       category: category,
       amount: draft.total_amount || 0,
       note: `${draft.total_items || 0} item barang (${draft.merchant_name || 'Toko Tidak Dikenal'})`,
-      source: 'telegram_receipt',
+      source: 'telegram',
       transaction_date: draft.receipt_date ? new Date(draft.receipt_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
     })
     .select()
