@@ -208,7 +208,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
           <div className="relative flex py-2 items-center">
             <div className="flex-grow border-t border-slate-800/70 light_sakura:border-rose-100/50"></div>
             <span className="flex-shrink mx-4 text-gray-500 font-mono text-[9px] tracking-widest uppercase">
-              {t("id" === "id" ? "Atau Catat Manual" : "Or Log Manually")}
+              {t("dashboard.or_manual")}
             </span>
             <div className="flex-grow border-t border-slate-800/70 light_sakura:border-rose-100/50"></div>
           </div>

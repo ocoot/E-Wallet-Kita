@@ -85,7 +85,13 @@
     "ai_box_placeholder": "Contoh: \"Makan siang 25rb\" atau \"Gaji 1.5jt\" atau \"Tagihan listrik 350ribu\"",
     "ai_box_btn": "Proses dengan AI",
     "quick_input_sec": "Pencatatan AI",
-    "quick_add_fab": "Tambah Transaksi"
+    "quick_add_fab": "Tambah Transaksi",
+    "ocr_title": "Catat Instan via Unggah Struk (OCR-AI)",
+    "ocr_drag_drop": "Seret & letakkan struk atau Klik untuk memilih",
+    "ocr_supported": "Mendukung format PNG, JPG, JPEG (Maks. 2MB)",
+    "or_manual": "Atau Catat Manual",
+    "ocr_loading": "Sedang Membaca Struk...",
+    "ocr_processing": "Kecerdasan Gemini AI sedang merinci nama toko, barang belanja, & total dana."
   },
   "transaction": {
     "add_title": "Catat Transaksi Manual",

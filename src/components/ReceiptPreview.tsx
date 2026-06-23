@@ -3,6 +3,7 @@ import { Receipt, Calendar, Store, CreditCard, Tag, Check, X, Edit3, Trash } fro
 import { motion } from "motion/react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { audioFeedback } from "../lib/audio";
+import { CATEGORIES } from "../lib/categoryDefinitions";
 
 interface ReceiptItem {
   name: string;

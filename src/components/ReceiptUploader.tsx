@@ -181,7 +181,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
   return (
     <div className="w-full space-y-3">
       <label className="font-sans text-xs font-bold text-gray-400 light_sakura:text-slate-600 uppercase tracking-wider block">
-        {"id" === "id" ? "Catat Instan via Unggah Struk (OCR-AI)" : "Instant Log via Receipt Upload (OCR-AI)"}
+        {t("dashboard.ocr_title")}
       </label>
 
       {/* Drag & Drop Area */}
@@ -222,12 +222,10 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
               </div>
               <div className="space-y-1">
                 <p className="font-sans text-xs font-bold text-white light_sakura:text-slate-800">
-                  {"id" === "id" ? "Sedang Membaca Struk..." : "Reading receipt details..."}
+                  {t("dashboard.ocr_loading")}
                 </p>
                 <p className="font-sans text-[11px] text-gray-400 max-w-sm px-4 leading-relaxed">
-                  {"id" === "id" 
-                    ? "Kecerdasan Gemini AI sedang merinci nama toko, barang belanja, & total dana." 
-                    : "Gemini AI is parsing merchant name, line items, and transaction grand total."}
+                  {t("dashboard.ocr_processing")}
                 </p>
               </div>
             </motion.div>
@@ -243,12 +241,10 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
               </div>
               <div className="space-y-1">
                 <p className="font-sans text-xs font-bold text-gray-200 light_sakura:text-slate-700">
-                  {"id" === "id" 
-                    ? "Seret & letakkan struk atau Klik untuk memilih" 
-                    : "Drag & drop receipt here or Click to select"}
+                  {t("dashboard.ocr_drag_drop")}
                 </p>
                 <p className="font-sans text-[11px] text-gray-500 light_sakura:text-slate-400">
-                  {"id" === "id" ? "Mendukung format PNG, JPG, JPEG (Maks. 2MB)" : "Supports PNG, JPG, JPEG (Max. 2MB)"}
+                  {t("dashboard.ocr_supported")}
                 </p>
               </div>
             </motion.div>

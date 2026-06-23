@@ -85,7 +85,13 @@
     "ai_box_placeholder": "Example: \"Lunch 25k\" or \"Salary 1.5jt\" or \"Electricity bill 350rb\"",
     "ai_box_btn": "Process with AI",
     "quick_input_sec": "AI Processing Box",
-    "quick_add_fab": "Add Transaction"
+    "quick_add_fab": "Add Transaction",
+    "ocr_title": "Instant Log via Receipt Upload (OCR-AI)",
+    "ocr_drag_drop": "Drag & drop receipt here or Click to select",
+    "ocr_supported": "Supports PNG, JPG, JPEG (Max. 2MB)",
+    "or_manual": "Or Log Manually",
+    "ocr_loading": "Reading receipt details...",
+    "ocr_processing": "Gemini AI is parsing merchant name, line items, and transaction grand total."
   },
   "transaction": {
     "add_title": "Log Manual Transaction",
