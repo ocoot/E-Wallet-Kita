@@ -109,45 +109,68 @@ Translate Indonesian abbreviations for quantities:
 Return the numerical value in 'amount' property.
 If categories do not match any, default category_key to 'other'.`;
 
-  const response = await ai.models.generateContent({
-    model: "gemini-3.5-flash",
-    contents: `Parse this input text: "${query}"`,
-    config: {
-      systemInstruction,
-      responseMimeType: "application/json",
-      responseSchema: {
-        type: Type.OBJECT,
-        properties: {
-          type: { type: Type.STRING, description: "Type of transaction (income or expense)" },
-          category_key: { type: Type.STRING, description: "Category string key" },
-          amount: { type: Type.NUMBER, description: "Numeric Indonesian Rupiah conversion" },
-          original_text: { type: Type.STRING, description: "The raw input string parsed" }
-        },
-        required: ["type", "category_key", "amount", "original_text"]
+  try {
+    let timeoutId: NodeJS.Timeout | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error("Gemini AI request timed out")), 6000);
+    });
+
+    const responsePromise = ai.models.generateContent({
+      model: "gemini-3.5-flash",
+      contents: `Parse this input text: "${query}"`,
+      config: {
+        systemInstruction,
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            type: { type: Type.STRING, description: "Type of transaction (income or expense)" },
+            category_key: { type: Type.STRING, description: "Category string key" },
+            amount: { type: Type.NUMBER, description: "Numeric Indonesian Rupiah conversion" },
+            original_text: { type: Type.STRING, description: "The raw input string parsed" }
+          },
+          required: ["type", "category_key", "amount", "original_text"]
+        }
       }
+    });
+
+    const response = await Promise.race([responsePromise, timeoutPromise]);
+    if (timeoutId) clearTimeout(timeoutId);
+
+    const responseText = response.text;
+    if (!responseText) {
+      throw new Error("Empty response from Gemini API");
     }
-  });
 
-  const responseText = response.text;
-  if (!responseText) {
-    throw new Error("Empty response from Gemini API");
+    const parsedJSON = JSON.parse(responseText.trim());
+    const codeParsedAmount = parseAmountFromString(query);
+    
+    // High fidelity override check
+    if (codeParsedAmount > 0 && (!parsedJSON.amount || parsedJSON.amount <= 10)) {
+      parsedJSON.amount = codeParsedAmount;
+    }
+
+    return {
+      source: "gemini-3.5-flash",
+      type: parsedJSON.type || "expense",
+      category_key: parsedJSON.category_key || inferCategoryKey(query),
+      amount: parsedJSON.amount || codeParsedAmount || 0,
+      original_text: query
+    };
+  } catch (err: any) {
+    console.error("❌ Gemini parseFinancialQuery error in server:", err?.message ?? err);
+    // Graceful fallback to local inference on Gemini failure
+    const codeParsedAmount = parseAmountFromString(query);
+    const inferredCategory = inferCategoryKey(query);
+    const inferredType = ["gaji", "bonus", "salary", "upah"].some(k => query.toLowerCase().includes(k)) ? "income" : "expense";
+    return {
+      source: "fallback_gemini_error",
+      type: inferredType,
+      category_key: inferredCategory,
+      amount: codeParsedAmount,
+      original_text: query
+    };
   }
-
-  const parsedJSON = JSON.parse(responseText.trim());
-  const codeParsedAmount = parseAmountFromString(query);
-  
-  // High fidelity override check
-  if (codeParsedAmount > 0 && (!parsedJSON.amount || parsedJSON.amount <= 10)) {
-    parsedJSON.amount = codeParsedAmount;
-  }
-
-  return {
-    source: "gemini-3.5-flash",
-    type: parsedJSON.type || "expense",
-    category_key: parsedJSON.category_key || inferCategoryKey(query),
-    amount: parsedJSON.amount || codeParsedAmount || 0,
-    original_text: query
-  };
 }
 
 // In-Memory map to cache pending Telegram transaction confirmations
@@ -157,6 +180,23 @@ const pendingTelegramTransactions = new Map<number, {
   amount: number;
   original_text: string;
 }>();
+
+const processedTelegramUpdates = new Map<number, number>(); // update_id -> timestamp
+
+function isDuplicateTelegramUpdate(updateId: number): boolean {
+  const now = Date.now();
+  // Clear old entries (> 20 minutes)
+  for (const [id, ts] of processedTelegramUpdates.entries()) {
+    if (now - ts > 20 * 60 * 1000) {
+      processedTelegramUpdates.delete(id);
+    }
+  }
+  if (processedTelegramUpdates.has(updateId)) {
+    return true;
+  }
+  processedTelegramUpdates.set(updateId, now);
+  return false;
+}
 
 // Map categories to localization labels for bot replies
 const botCategoryLabels: Record<string, { id: string; en: string }> = {
@@ -285,6 +325,15 @@ async function startServer() {
       }
 
       const update = req.body;
+
+      // Check for duplicate updates to prevent processing retries sent by Telegram in dev mode
+      if (update && update.update_id) {
+        if (isDuplicateTelegramUpdate(update.update_id)) {
+          console.warn(`⚠️ Ignored duplicate Telegram retry update_id: ${update.update_id}`);
+          res.sendStatus(200);
+          return;
+        }
+      }
 
       // 2. Handle Inline Button Callback Queries
       if (update.callback_query) {

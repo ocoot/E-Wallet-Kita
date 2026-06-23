@@ -53,6 +53,26 @@ const LINK_MAX_ATTEMPTS = 5;        // 5 attempts
 const LINK_WINDOW = 60 * 1000;      // per 60 seconds
 const LINK_LOCKOUT = 15 * 60 * 1000; // 15-minute lockout after 5 failed attempts
 
+// ─────────────────────────────────────────────────────────────
+// PROCESSED UPDATES DEDUPLICATION CACHE (Telegram retry mitigation)
+// ─────────────────────────────────────────────────────────────
+const processedTelegramUpdates = new Map<number, number>(); // update_id -> timestamp
+
+function isDuplicateTelegramUpdate(updateId: number): boolean {
+  const now = Date.now();
+  // Clear old entries (> 20 minutes)
+  for (const [id, ts] of processedTelegramUpdates.entries()) {
+    if (now - ts > 20 * 60 * 1000) {
+      processedTelegramUpdates.delete(id);
+    }
+  }
+  if (processedTelegramUpdates.has(updateId)) {
+    return true;
+  }
+  processedTelegramUpdates.set(updateId, now);
+  return false;
+}
+
 // FIX #10: Import categories from centralized definition
 import { CATEGORIES, getCategoryLabel as getCategoryLabelFromDef } from '../src/lib/categoryDefinitions.js';
 
@@ -624,7 +644,12 @@ Indonesian amount abbreviations:
 If no category matches, use 'other'. Always return the numeric IDR value in 'amount'.`;
 
   try {
-    const response = await ai.models.generateContent({
+    let timeoutId: NodeJS.Timeout | undefined;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timeoutId = setTimeout(() => reject(new Error("Gemini AI request timed out")), 6000);
+    });
+
+    const responsePromise = ai.models.generateContent({
       model: GEMINI_MODEL, // FIX #1: was "gemini-3.5-flash" (non-existent)
       contents: `Parse this input text: "${query}"`,
       config: {
@@ -642,6 +667,9 @@ If no category matches, use 'other'. Always return the numeric IDR value in 'amo
         }
       }
     });
+
+    const response = await Promise.race([responsePromise, timeoutPromise]);
+    if (timeoutId) clearTimeout(timeoutId);
 
     const responseText = response.text;
     if (!responseText) throw new Error("Empty response from Gemini API");
@@ -704,6 +732,16 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     await supabaseBackend.rpc("cleanup_expired_pending_transactions");
 
     const update = req.body;
+    
+    // Check for duplicate updates to prevent processing retries sent by Telegram
+    if (update && update.update_id) {
+      if (isDuplicateTelegramUpdate(update.update_id)) {
+        console.warn(`⚠️ Ignored duplicate Telegram retry update_id: ${update.update_id}`);
+        res.status(200).json({ ok: true });
+        return;
+      }
+    }
+
     // Safe logging (only log update type, not full payload)
     if (update.message?.text) {
       const textPreview = update.message.text.substring(0, 20);

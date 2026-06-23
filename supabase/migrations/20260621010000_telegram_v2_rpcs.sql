@@ -46,14 +46,14 @@ BEGIN
         RETURN;
     END IF;
 
-    -- Find pending transaction
-    SELECT t.chat_id, t.type, t.category_key, t.amount, t.original_text 
-    INTO v_pending 
-    FROM public.telegram_pending_transactions t 
-    WHERE t.chat_id = p_chat_id 
-    LIMIT 1;
+    -- Atomically claim (delete) the pending transaction
+    DELETE FROM public.telegram_pending_transactions 
+    WHERE chat_id = p_chat_id
+    RETURNING chat_id, type, category_key, amount, original_text 
+    INTO v_pending;
     
     IF v_pending IS NULL THEN
+        -- If no row was deleted, it means another request already claimed / deleted it (or it expired)
         RETURN QUERY SELECT 'expired'::TEXT, NULL::TEXT, NULL::TEXT, NULL::NUMERIC, NULL::TEXT;
         RETURN;
     END IF;
@@ -76,9 +76,6 @@ BEGIN
         'telegram',
         COALESCE(p_date, CURRENT_DATE)
     );
-
-    -- Delete pending record
-    DELETE FROM public.telegram_pending_transactions WHERE chat_id = p_chat_id;
 
     RETURN QUERY SELECT 
         'saved'::TEXT, 
