@@ -22,8 +22,9 @@ export function useAdmin() {
         .eq("id", user.id)
         .single();
 
-      console.log("ADMIN ROLE DATA:", data);
-      console.log("ADMIN ROLE ERROR:", error);
+      if (error) {
+        console.error("Gagal memuat role admin:", error.message);
+      }
 
       setIsAdmin(data?.role === "admin" || data?.role === "owner");
       setIsOwner(data?.role === "owner");

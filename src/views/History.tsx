@@ -29,6 +29,7 @@ export const History: React.FC<HistoryProps> = ({
   transactionsUpdatedTrigger,
   onTransactionUpdated
 }) => {
+  const { t } = useLanguage();
   const { user } = useAuth();
   const currentUser: UserSession = {
     id: user?.id || "",
@@ -37,7 +38,6 @@ export const History: React.FC<HistoryProps> = ({
     preferred_language: "id",
     preferred_theme: "dark_obsidian"
   };
-  const { t } = useLanguage();
   const { showToast } = useToast();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);

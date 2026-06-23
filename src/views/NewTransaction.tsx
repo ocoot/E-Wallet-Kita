@@ -19,6 +19,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   onTransactionAdded
 }) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const currentUser: UserSession = {
     id: user?.id || "",
@@ -27,7 +28,6 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     preferred_language: "id",
     preferred_theme: "dark_obsidian"
   };
-  const { t } = useLanguage();
   const { showToast } = useToast();
   const shakeControls = useAnimation();
 

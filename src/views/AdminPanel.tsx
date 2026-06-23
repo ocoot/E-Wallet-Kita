@@ -58,21 +58,18 @@ export const AdminPanel: React.FC = () => {
   // Load metrics
   const loadMetrics = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("role, is_premium, is_banned");
+      const { data, error } = await supabase.rpc("get_admin_metrics");
 
       if (error) {
         console.error(t("admin.metrics_error"), error);
         return;
       }
 
-      const list = data || [];
       setMetrics({
-        totalUsers: list.length,
-        premiumUsers: list.filter((u: any) => !!u.is_premium).length,
-        adminUsers: list.filter((u: any) => u.role === "admin" || u.role === "owner").length,
-        bannedUsers: list.filter((u: any) => !!u.is_banned).length,
+        totalUsers:   data?.totalUsers   ?? 0,
+        premiumUsers: data?.premiumUsers ?? 0,
+        adminUsers:   data?.adminUsers   ?? 0,
+        bannedUsers:  data?.bannedUsers  ?? 0,
       });
     } catch (err) {
       console.error("Metrik exception:", err);
@@ -171,18 +168,21 @@ export const AdminPanel: React.FC = () => {
     setConfirmModal({
       isOpen: true,
       title: t("premium.unlock_now"),
-      description: t("admin.premium_success", { name: targetUser.display_name }).replace(targetUser.display_name, targetUser.display_name), // This is a bit tricky with placeholders if my t function doesn't support them. Let's check t function.
+      description: t("admin.premium_success").replace("{name}", targetUser.display_name),
       type: "info",
       action: async () => {
         try {
-          const { error } = await supabase
-            .from("users")
-            .update({ is_premium: nextPremium })
-            .eq("id", targetUser.id);
+          const { error } = await supabase.rpc("admin_set_premium", {
+            p_target_user_id: targetUser.id,
+            p_is_premium: nextPremium,
+          });
 
           if (error) throw error;
 
-          showToast(t("admin.premium_success", { name: targetUser.display_name }).replace("{name}", targetUser.display_name), "success");
+          showToast(
+            t("admin.premium_success").replace("{name}", targetUser.display_name),
+            "success"
+          );
           fetchUsers();
           loadMetrics();
         } catch (err: any) {
@@ -217,10 +217,10 @@ export const AdminPanel: React.FC = () => {
       type: nextBanned ? "danger" : "success",
       action: async () => {
         try {
-          const { error } = await supabase
-            .from("users")
-            .update({ is_banned: nextBanned })
-            .eq("id", targetUser.id);
+          const { error } = await supabase.rpc("admin_set_ban", {
+            p_target_user_id: targetUser.id,
+            p_is_banned: nextBanned,
+          });
 
           if (error) throw error;
 
@@ -264,10 +264,10 @@ export const AdminPanel: React.FC = () => {
       type: "warning",
       action: async () => {
         try {
-          const { error } = await supabase
-            .from("users")
-            .update({ role: nextRole })
-            .eq("id", targetUser.id);
+          const { error } = await supabase.rpc("admin_set_role", {
+            p_target_user_id: targetUser.id,
+            p_new_role: nextRole,
+          });
 
           if (error) throw error;
 
@@ -534,7 +534,7 @@ export const AdminPanel: React.FC = () => {
                         <div className="flex items-center justify-end gap-1.5">
                           {/* Role Toggle Trigger */}
                           <button
-                            disabled={isSelf || user.role === "owner"}
+                            disabled={isSelf || user.role === "owner" || !isOwner}
                             onClick={() => handleToggleRole(user)}
                             className="p-1 px-2.5 text-[10px] font-bold text-slate-400 border border-slate-800 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 light_sakura:border-rose-200"
                             title={t("admin.role_title")}
