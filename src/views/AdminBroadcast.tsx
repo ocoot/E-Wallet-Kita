@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useAdmin } from "../hooks/useAdmin";
+import { LoadingOverlay } from "../components/LoadingOverlay";
 import { Send, Users, MessageSquare, AlertTriangle } from "lucide-react";
 
 export const AdminBroadcast: React.FC = () => {
@@ -160,6 +161,9 @@ export const AdminBroadcast: React.FC = () => {
           ❌ Gagal: {lastResult.failCount}
         </div>
       )}
+
+      {/* Loading overlay for mass notifications */}
+      <LoadingOverlay isOpen={sending} message="Mengirim broadcast ke pengguna..." />
     </div>
   );
 };

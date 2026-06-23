@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useAdmin } from "../hooks/useAdmin";
+import { LoadingOverlay } from "../components/LoadingOverlay";
 import { Tag, Plus, Pencil, Check, X, ToggleLeft, ToggleRight, RefreshCw } from "lucide-react";
 
 interface Category {
@@ -24,6 +25,10 @@ export const AdminCategoryManager: React.FC = () => {
   const [editForm, setEditForm] = useState({ label_id: "", label_en: "", type: "expense" as string, is_active: true });
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState({ key: "", label_id: "", label_en: "", type: "expense" });
+  const [savingAction, setSavingAction] = useState<{ isOpen: boolean; message: string }>({
+    isOpen: false,
+    message: ""
+  });
 
   const typeColors = {
     income:  "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
@@ -63,17 +68,22 @@ export const AdminCategoryManager: React.FC = () => {
   };
 
   const saveEdit = async (key: string) => {
-    const { error } = await supabase.rpc("admin_update_category", {
-      p_key: key,
-      p_label_id: editForm.label_id,
-      p_label_en: editForm.label_en,
-      p_type: editForm.type,
-      p_is_active: editForm.is_active,
-    });
-    if (error) { showToast(error.message, "error"); return; }
-    showToast("Kategori berhasil diperbarui", "success");
-    setEditingKey(null);
-    loadCategories();
+    setSavingAction({ isOpen: true, message: "Menyimpan kategori..." });
+    try {
+      const { error } = await supabase.rpc("admin_update_category", {
+        p_key: key,
+        p_label_id: editForm.label_id,
+        p_label_en: editForm.label_en,
+        p_type: editForm.type,
+        p_is_active: editForm.is_active,
+      });
+      if (error) { showToast(error.message, "error"); return; }
+      showToast("Kategori berhasil diperbarui", "success");
+      setEditingKey(null);
+      loadCategories();
+    } finally {
+      setSavingAction({ isOpen: false, message: "" });
+    }
   };
 
   const handleAdd = async () => {
@@ -81,17 +91,22 @@ export const AdminCategoryManager: React.FC = () => {
       showToast("Key & Label wajib diisi", "error");
       return;
     }
-    const { error } = await supabase.rpc("admin_add_category", {
-      p_key: addForm.key.toLowerCase().replace(/\s+/g, "_"),
-      p_label_id: addForm.label_id,
-      p_label_en: addForm.label_en,
-      p_type: addForm.type,
-    });
-    if (error) { showToast(error.message, "error"); return; }
-    showToast("Kategori baru berhasil ditambahkan", "success");
-    setShowAddForm(false);
-    setAddForm({ key: "", label_id: "", label_en: "", type: "expense" });
-    loadCategories();
+    setSavingAction({ isOpen: true, message: "Menambahkan kategori baru..." });
+    try {
+      const { error } = await supabase.rpc("admin_add_category", {
+        p_key: addForm.key.toLowerCase().replace(/\s+/g, "_"),
+        p_label_id: addForm.label_id,
+        p_label_en: addForm.label_en,
+        p_type: addForm.type,
+      });
+      if (error) { showToast(error.message, "error"); return; }
+      showToast("Kategori baru berhasil ditambahkan", "success");
+      setShowAddForm(false);
+      setAddForm({ key: "", label_id: "", label_en: "", type: "expense" });
+      loadCategories();
+    } finally {
+      setSavingAction({ isOpen: false, message: "" });
+    }
   };
 
   return (
@@ -250,6 +265,7 @@ export const AdminCategoryManager: React.FC = () => {
           </table>
         </div>
       )}
+      <LoadingOverlay isOpen={savingAction.isOpen} message={savingAction.message} />
     </div>
   );
 };

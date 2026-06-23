@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useAdmin } from "../hooks/useAdmin";
+import { LoadingOverlay } from "../components/LoadingOverlay";
 import {
   CreditCard, CheckCircle, Clock, XCircle, AlertCircle,
   TrendingUp, RefreshCw, ChevronLeft, ChevronRight
@@ -39,6 +40,7 @@ export const AdminPremiumMonitor: React.FC = () => {
   const { t, locale } = useLanguage();
   const { isAdmin } = useAdmin();
 
+  const [refreshing, setRefreshing] = useState(false);
   const [metrics, setMetrics] = useState<RevenueMetrics | null>(null);
   const [transactions, setTransactions] = useState<PremiumTransaction[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -128,7 +130,17 @@ export const AdminPremiumMonitor: React.FC = () => {
           </p>
         </div>
         <button
-          onClick={() => { loadMetrics(); loadTransactions(); }}
+          onClick={async () => {
+            setRefreshing(true);
+            try {
+              await Promise.all([loadMetrics(), loadTransactions()]);
+              showToast(t("admin.refresh_data") + " berhasil", "success");
+            } catch (err: any) {
+              showToast(err.message || "Failed to refresh", "error");
+            } finally {
+              setRefreshing(false);
+            }
+          }}
           className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-900 text-slate-300 cursor-pointer transition-colors"
         >
           <RefreshCw size={12} />
@@ -287,6 +299,8 @@ export const AdminPremiumMonitor: React.FC = () => {
           </div>
         </div>
       )}
+      {/* Loading overlay */}
+      <LoadingOverlay isOpen={refreshing} message="Memuat data monitor premium..." />
     </div>
   );
 };

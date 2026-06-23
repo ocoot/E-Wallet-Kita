@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Modal } from "../components/Modal";
+import { LoadingOverlay } from "../components/LoadingOverlay";
 
 // Import other panel views and components
 import { AdminPremiumMonitor } from "./AdminPremiumMonitor";
@@ -105,6 +106,11 @@ export const AdminPanel: React.FC = () => {
     action: async () => {}
   });
 
+  const [actionLoading, setActionLoading] = useState<{ isOpen: boolean; message: string }>({
+    isOpen: false,
+    message: ""
+  });
+
   // Fetch users with search, filters, and pagination purely built into Supabase
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -185,6 +191,7 @@ export const AdminPanel: React.FC = () => {
       description: t("admin.premium_success").replace("{name}", targetUser.display_name),
       type: "info",
       action: async () => {
+        setActionLoading({ isOpen: true, message: "Memperbarui status premium..." });
         try {
           const { error } = await supabase.rpc("admin_set_premium", {
             p_target_user_id: targetUser.id,
@@ -202,6 +209,8 @@ export const AdminPanel: React.FC = () => {
         } catch (err: any) {
           console.error(err);
           showToast(err.message || "Failed to update", "error");
+        } finally {
+          setActionLoading({ isOpen: false, message: "" });
         }
       }
     });
@@ -230,6 +239,7 @@ export const AdminPanel: React.FC = () => {
         .replace("{name}", targetUser.display_name),
       type: nextBanned ? "danger" : "success",
       action: async () => {
+        setActionLoading({ isOpen: true, message: nextBanned ? "Menangguhkan pengguna..." : "Mengaktifkan kembali pengguna..." });
         try {
           const { error } = await supabase.rpc("admin_set_ban", {
             p_target_user_id: targetUser.id,
@@ -249,6 +259,8 @@ export const AdminPanel: React.FC = () => {
         } catch (err: any) {
           console.error(err);
           showToast(err.message || "Failed", "error");
+        } finally {
+          setActionLoading({ isOpen: false, message: "" });
         }
       }
     });
@@ -277,6 +289,7 @@ export const AdminPanel: React.FC = () => {
         .replace("{role}", nextRole.toUpperCase()),
       type: "warning",
       action: async () => {
+        setActionLoading({ isOpen: true, message: "Mengubah role pengguna..." });
         try {
           const { error } = await supabase.rpc("admin_set_role", {
             p_target_user_id: targetUser.id,
@@ -296,6 +309,8 @@ export const AdminPanel: React.FC = () => {
         } catch (err: any) {
           console.error(err);
           showToast(err.message || "Failed", "error");
+        } finally {
+          setActionLoading({ isOpen: false, message: "" });
         }
       }
     });
@@ -327,6 +342,7 @@ export const AdminPanel: React.FC = () => {
   const handleBulkAction = async (action: "ban" | "unban" | "grant_premium" | "revoke_premium") => {
     if (selectedIds.size === 0) return;
     setBulkLoading(true);
+    setActionLoading({ isOpen: true, message: `Memproses ${selectedIds.size} pengguna...` });
     let successCount = 0;
     try {
       const rpcName = (action === "ban" || action === "unban")
@@ -352,6 +368,7 @@ export const AdminPanel: React.FC = () => {
       showToast(err.message || "Bulk action gagal", "error");
     } finally {
       setBulkLoading(false);
+      setActionLoading({ isOpen: false, message: "" });
     }
   };
 
@@ -842,6 +859,9 @@ export const AdminPanel: React.FC = () => {
         }}
         onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
       />
+
+      {/* Loading overlay for in-progress actions */}
+      <LoadingOverlay isOpen={actionLoading.isOpen} message={actionLoading.message} />
 
     </div>
   );
