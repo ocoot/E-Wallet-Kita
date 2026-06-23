@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Type } from '@google/genai';
 import { parseAmountFromString } from '../src/lib/parserUtils.js';
 import { parseReceipt } from './lib/receipt-parser.js';
-import { createReceiptDraft, approveReceiptDraft, cancelReceiptDraft } from './lib/receipt-service.js';
+import { createReceiptDraft, approveReceiptDraft, cancelReceiptDraft, getReceiptDraft, updateReceiptCategory } from './lib/receipt-service.js';
 
 type Lang = "id" | "en";
 
@@ -840,7 +840,8 @@ async function handleReceiptPhoto(message: any) {
         `_Konfirmasi pencatatan pengeluaran di bawah ini:_`
       : `🧾 *Receipt Reading Result (OCR-Gemini)* 🌸\n\n` +
         `*Store*: ${receipt.merchant_name}\n` +
-        `*Date*: ${receiptDateFormatted}\n\n` +
+        `*Date*: ${receiptDateFormatted}\n` +
+        `*Category*: ${getCategoryLabelFromDef(draft.category || 'other', lang)}\n\n` +
         `*Itemized Detail*:\n${itemLines}\n` +
         `━━━━━━━━━━━━━━━━━━━━\n\n` +
         `*Total Cost*: *${formatIDR(receipt.total_amount)}*\n\n` +
@@ -1077,14 +1078,14 @@ export default async (req: VercelRequest, res: VercelResponse) => {
               `• *Tipe*: 📤 Pengeluaran\n` +
               `• *Toko*: *${draft.merchant_name}*\n` +
               `• *Jumlah*: *${formatIDR(draft.total_amount)}*\n` +
-              `• *Kategori*: Belanja Bulanan\n` +
+              `• *Kategori*: ${getCategoryLabelFromDef(draft.category || 'other', lang)}\n` +
               `• *Catatan*: "${draft.total_items} item barang (${draft.merchant_name})"\n\n` +
               `_Catatan struk Anda telah aman disimpan ke E-Wallet Kita._ 🌸`
             : `✅ *Transaction Successfully Recorded from Receipt!*\n\n` +
               `• *Type*: 📤 Expense\n` +
               `• *Store*: *${draft.merchant_name}*\n` +
               `• *Amount*: *${formatIDR(draft.total_amount)}*\n` +
-              `• *Category*: Monthly Groceries\n` +
+              `• *Category*: ${getCategoryLabelFromDef(draft.category || 'other', lang)}\n` +
               `• *Note*: "${draft.total_items} item goods (${draft.merchant_name})"\n\n` +
               `_Your receipt record has been safely saved to E-Wallet Kita._ 🌸`;
 
@@ -1098,6 +1099,57 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         }
         res.status(200).json({ ok: true }); 
         return;
+      }
+      
+      // Receipt Edit Category Callback Action
+      if (actionData.startsWith("rcpt_editcat:")) {
+        const draftId = actionData.split(":")[1];
+        const draft = await getReceiptDraft(draftId);
+        if (!draft) {
+          await answerTelegramCallback(queryId, lang === "id" ? "Draf tidak ditemukan" : "Draft not found");
+          res.status(200).json({ ok: true }); return;
+        }
+
+        const keyboard = {
+          inline_keyboard: CATEGORIES.filter(c => c.type === 'expense').map(cat => ([
+            { text: cat.id, callback_data: `rcpt_cat:${cat.key}:${draftId}` }
+          ]))
+        };
+
+        await editTelegramMessage(chatId, msgId, lang === "id" ? "Pilih kategori transaksi:" : "Select transaction category:", keyboard);
+        await answerTelegramCallback(queryId, lang === "id" ? "Silakan pilih kategori" : "Please select a category");
+        res.status(200).json({ ok: true }); return;
+      }
+
+      if (actionData.startsWith("rcpt_cat:")) {
+        const parts = actionData.split(":");
+        const category = parts[1];
+        const draftId = parts[2];
+        const draft = await updateReceiptCategory(draftId, category);
+
+        // Re-render
+        const catLabel = getCategoryLabelFromDef(category, lang);
+        
+        const itemLines = (draft.items as any[]).map(i => `• ${i.name} x${i.qty}: ${formatIDR(i.subtotal)}`).join("\n");
+        const receiptDate = new Date(draft.receipt_date).toISOString().split('T')[0];
+        
+        const textPreview = lang === "id" 
+          ? `🧾 *Hasil Pembacaan Struk*\n\n*Toko*: ${draft.merchant_name}\n*Tanggal*: ${receiptDate}\n*Kategori*: ${catLabel}\n\n*Detail*:\n${itemLines}\n\n*Total*: *${formatIDR(draft.total_amount)}*`
+          : `🧾 *Receipt Reading Result*\n\n*Store*: ${draft.merchant_name}\n*Date*: ${receiptDate}\n*Category*: ${catLabel}\n\n*Detail*:\n${itemLines}\n\n*Total*: *${formatIDR(draft.total_amount)}*`;
+
+        const inlineKeyboard = {
+          inline_keyboard: [
+            [{ text: lang === "id" ? "✏️ Edit Kategori" : "✏️ Edit Category", callback_data: `rcpt_editcat:${draft.id}` }],
+            [
+              { text: lang === "id" ? "✅ Simpan Transaksi" : "✅ Save Transaction", callback_data: `rcpt_approve:${draft.id}` },
+              { text: lang === "id" ? "❌ Batal" : "❌ Cancel", callback_data: `rcpt_cancel:${draft.id}` }
+            ]
+          ]
+        };
+
+        await editTelegramMessage(chatId, msgId, textPreview, inlineKeyboard);
+        await answerTelegramCallback(queryId, lang === "id" ? "Kategori diperbarui" : "Category updated");
+        res.status(200).json({ ok: true }); return;
       }
 
       // Receipt Cancel Callback Action
