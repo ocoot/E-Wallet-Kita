@@ -23,6 +23,7 @@ export async function createReceiptDraft(
       total_items: parsed.total_items || (parsed.items ? parsed.items.length : 0),
       items: parsed.items || [],
       raw_ai_response: parsed,
+      category: parsed.category || 'other',
       approved: false,
       source,
       telegram_chat_id: telegramChatId ? String(telegramChatId) : null
@@ -65,11 +66,7 @@ export async function approveReceiptDraft(id: string) {
 
   // 2. Insert transaction
   // Find a suitable category for the transaction, defaulting to monthly_groceries
-  let category = 'monthly_groceries';
-  if (draft.items && draft.items.length > 0) {
-    // If we have items, we can optionally map them, but monthly_groceries is the safest default
-    category = 'monthly_groceries';
-  }
+  const category = draft.category || 'monthly_groceries';
 
   const { data: tx, error: txErr } = await supabaseBackend
     .from('transactions')

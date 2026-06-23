@@ -61,7 +61,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
   const [isEditingItems, setIsEditingItems] = useState(false);
   const [items, setItems] = useState<ReceiptItem[]>(draft.items || []);
 
-  const expenseCategories = ["food_drink", "monthly_groceries", "vegetables", "bills", "other"];
+  const expenseCategories = CATEGORIES.filter(c => c.type === 'expense').map(c => c.key);
 
   // Format IDR Helper
   const formatIDR = (num: number) => {
