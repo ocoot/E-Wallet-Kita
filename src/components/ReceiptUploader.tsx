@@ -116,6 +116,9 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
         throw new Error("Sesi login berakhir. Silakan login kembali.");
       }
 
+      console.log("Session debug:", session);
+      console.log("Access Token debug:", session?.access_token);
+
       const base64String = await compressImage(file);
       
       const payload = JSON.stringify({
