@@ -31,9 +31,10 @@ import { AdminCategoryManager } from "./AdminCategoryManager";
 import { AdminBroadcast } from "./AdminBroadcast";
 import { AdminAiMonitor } from "./AdminAiMonitor";
 import { AdminMaintenance } from "./AdminMaintenance";
+import { AdminVoucherManager } from "./AdminVoucherManager";
 import { AdminUserDetailModal } from "../components/AdminUserDetailModal";
 
-type AdminTab = "users" | "premium" | "categories" | "broadcast" | "ai_monitor" | "maintenance";
+type AdminTab = "users" | "premium" | "voucher" | "categories" | "broadcast" | "ai_monitor" | "maintenance";
 
 export const AdminPanel: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -467,6 +468,7 @@ export const AdminPanel: React.FC = () => {
           {([
             { key: "users",       label: locale === "id" ? "👥 Manajemen User" : "👥 Manage Users" },
             { key: "premium",     label: locale === "id" ? "💳 Monitor Premium" : "💳 Premium Monitor" },
+            { key: "voucher",     label: locale === "id" ? "🎟️ Voucher" : "🎟️ Vouchers" },
             { key: "categories",  label: locale === "id" ? "🏷️ Kategori" : "🏷️ Categories" },
             { key: "broadcast",   label: locale === "id" ? "📢 Broadcast" : "📢 Broadcast Notice" },
             { key: "ai_monitor",  label: locale === "id" ? "🤖 Monitor AI" : "🤖 AI Monitor" },
@@ -838,6 +840,8 @@ export const AdminPanel: React.FC = () => {
       )}
 
       {activeTab === "premium" && <AdminPremiumMonitor />}
+
+      {activeTab === "voucher" && <AdminVoucherManager />}
 
       {activeTab === "categories" && <AdminCategoryManager />}
 

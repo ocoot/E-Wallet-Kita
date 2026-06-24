@@ -5,7 +5,9 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { audioFeedback } from "../lib/audio";
-import { createPremiumTransaction, checkPremiumStatus, isSandboxMode, PREMIUM_AMOUNT, QRIS_EXPIRY_SECONDS, PremiumTransaction } from "../lib/premium";
+import { createPremiumTransaction, checkPremiumStatus, isSandboxMode, PREMIUM_AMOUNT, QRIS_EXPIRY_SECONDS, PremiumTransaction, getPremiumPricing } from "../lib/premium";
+import { useVoucher } from "../hooks/useVoucher";
+import { PremiumVoucher, PremiumPricing } from "../types";
 import { generatePremiumReceipt } from "../lib/receipt";
 
 type Step = "terms" | "qris" | "checking" | "success" | "expired" | "failed";
@@ -28,6 +30,11 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
   const [askDownload, setAskDownload] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  
+  const { getActiveVouchers, getClaimedVoucher } = useVoucher();
+  const [activeVouchers, setActiveVouchers] = useState<PremiumVoucher[]>([]);
+  const [selectedVoucher, setSelectedVoucher] = useState<PremiumVoucher | null>(null);
+  const [pricing, setPricing] = useState<PremiumPricing>(getPremiumPricing(PREMIUM_AMOUNT));
 
   const reset = () => {
     setStep("terms");
@@ -35,19 +42,28 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
     setSecondsLeft(QRIS_EXPIRY_SECONDS);
     setPaidAt(null);
     setAskDownload(false);
+    setSelectedVoucher(null);
     if (pollRef.current) clearInterval(pollRef.current);
     if (timerRef.current) clearInterval(timerRef.current);
   };
 
   useEffect(() => {
-    if (!isOpen) reset();
+    if (isOpen) {
+      getActiveVouchers().then(setActiveVouchers).catch(console.error);
+      reset();
+    }
   }, [isOpen]);
+
+  useEffect(() => {
+    const p = getPremiumPricing(PREMIUM_AMOUNT, selectedVoucher?.discount_percent || 0);
+    setPricing(p);
+  }, [selectedVoucher]);
 
   const startPayment = async () => {
     if (!user) return;
     setStep("checking");
     try {
-      const transaction = await createPremiumTransaction(user.id);
+      const transaction = await createPremiumTransaction(user.id, selectedVoucher?.id, selectedVoucher?.discount_percent);
       setTx(transaction);
       setSecondsLeft(QRIS_EXPIRY_SECONDS);
       setStep("qris");
@@ -137,7 +153,29 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
             <div className="text-center">
               <Sparkles className="mx-auto text-amber-400 mb-3" size={36} />
               <h3 className="text-lg font-bold text-white">{t("premium.terms_title")}</h3>
-              <p className="text-sm text-gray-400 mt-2">{t("premium.terms_desc", { amount: PREMIUM_AMOUNT.toLocaleString("id-ID") })}</p>
+              <p className="text-sm text-gray-400 mt-2">{t("premium.terms_desc", { amount: pricing.basePrice.toLocaleString("id-ID") })}</p>
+              
+              {activeVouchers.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-xs text-gray-400 mb-2">{t("voucher.title")}</p>
+                  <select 
+                    className="w-full bg-slate-800 text-white p-2 rounded"
+                    onChange={(e) => setSelectedVoucher(activeVouchers.find(v => v.id === e.target.value) || null)}
+                  >
+                    <option value="">No Voucher</option>
+                    {activeVouchers.map(v => <option key={v.id} value={v.id}>{v.code} - {v.discount_percent}% OFF</option>)}
+                  </select>
+                </div>
+              )}
+
+              <div className="mt-4 p-4 bg-slate-800/50 rounded-xl text-xs space-y-1">
+                <p className="flex justify-between"><span>{t("voucher.price_before")}</span> <span>Rp {pricing.basePrice.toLocaleString("id-ID")}</span></p>
+                {pricing.discountAmount > 0 && (
+                  <p className="flex justify-between text-emerald-400"><span>{t("voucher.discount")}</span> <span>-Rp {pricing.discountAmount.toLocaleString("id-ID")}</span></p>
+                )}
+                <p className="flex justify-between font-bold text-base mt-2"><span>Total</span> <span>Rp {pricing.finalPrice.toLocaleString("id-ID")}</span></p>
+              </div>
+
               <ul className="text-left text-xs text-gray-400 mt-4 space-y-1.5 bg-slate-800/50 rounded-xl p-4">
                 <li>• {t("premium.terms_point_1")}</li>
                 <li>• {t("premium.terms_point_2")}</li>

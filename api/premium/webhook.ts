@@ -35,7 +35,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (payload.status === 'PAID' || payload.status === 'SUCCESS') {
-      await supabase.from('premium_transactions').update({ status: 'SUCCESS', paid_at: new Date().toISOString() }).eq('order_id', payload.order_id);
+      await supabase.from('premium_transactions').update({ 
+        status: 'SUCCESS', 
+        paid_at: new Date().toISOString(),
+        paid_amount: localTx.final_amount,
+        discount_amount: localTx.discount_amount,
+        voucher_id: localTx.voucher_id
+      }).eq('order_id', payload.order_id);
       await supabase.from('users').update({ is_premium: true, premium_paid_at: new Date().toISOString() }).eq('id', localTx.user_id);
     } else if (payload.status === 'EXPIRED') {
       await supabase.from('premium_transactions').update({ status: 'EXPIRED' }).eq('order_id', payload.order_id);

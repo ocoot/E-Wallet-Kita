@@ -41,7 +41,7 @@ const MainLayout: React.FC = () => {
   useEffect(() => {
     if (!user) return;
 
-    const channel = supabase
+    const transactionChannel = supabase
       .channel(`realtime-transactions-${user.id}`)
       .on(
         "postgres_changes",
@@ -75,8 +75,22 @@ const MainLayout: React.FC = () => {
       )
       .subscribe();
 
+    const voucherChannel = supabase
+      .channel("premium-voucher")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "premium_vouchers" },
+        (payload: any) => {
+          if (payload.new && payload.new.is_active) {
+            showToast(t("voucher.new_available"), "info");
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(transactionChannel);
+      supabase.removeChannel(voucherChannel);
     };
   }, [user, t, showToast]);
   

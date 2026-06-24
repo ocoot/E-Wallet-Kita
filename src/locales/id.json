@@ -356,6 +356,16 @@
     "locked_telegram": "Sinkronisasi Bot Telegram khusus untuk pengguna Premium.",
     "unlock_now": "Aktifkan Premium Sekarang"
   },
+  "voucher": {
+    "new_available": "🎁 Voucher Premium Baru Tersedia!",
+    "claim": "Klaim Sekarang",
+    "discount": "Diskon {percent}%",
+    "title": "Voucher Premium",
+    "code": "Kode",
+    "active": "Aktif",
+    "revoke": "Cabut",
+    "claimed": "Diklaim"
+  },
   "admin": {
     "metrics_error": "Gagal memuat metrik pengguna.",
     "fetch_error": "Gagal memuat daftar pengguna dari server.",

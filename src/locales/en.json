@@ -356,6 +356,16 @@
     "locked_telegram": "Telegram Bot sync is a Premium-only feature.",
     "unlock_now": "Activate Premium Now"
   },
+  "voucher": {
+    "new_available": "🎁 New Premium Voucher Available!",
+    "claim": "Claim Now",
+    "discount": "{percent}% Discount",
+    "title": "Premium Voucher",
+    "code": "Code",
+    "active": "Active",
+    "revoke": "Revoke",
+    "claimed": "Claimed"
+  },
   "admin": {
     "metrics_error": "Failed to load user metrics.",
     "fetch_error": "Failed to load user list from server.",

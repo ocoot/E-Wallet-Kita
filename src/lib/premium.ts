@@ -7,10 +7,23 @@ export interface PremiumTransaction {
   qris_url: string;
   expired_at: string; // ISO
   status: "PENDING" | "SUCCESS" | "EXPIRED" | "FAILED";
+  voucher_id?: string;
+  final_amount?: number;
 }
 
-const PREMIUM_AMOUNT = 501;
+const PREMIUM_AMOUNT = 20000;
 const QRIS_EXPIRY_SECONDS = 90; // 01:30
+
+export function getPremiumPricing(basePrice: number, discountPercent: number = 0): PremiumPricing {
+  const discountAmount = Math.floor((basePrice * discountPercent) / 100);
+  const finalPrice = basePrice - discountAmount;
+  return {
+    basePrice,
+    discountPercent,
+    discountAmount,
+    finalPrice,
+  };
+}
 
 export function isSandboxMode(): boolean {
   return true;
@@ -32,10 +45,12 @@ async function getAuthToken(): Promise<string> {
  * QR yang ditampilkan adalah QR dummy (encode string acak), karena di lingkungan
  * preview AI Studio tidak ada cara scan/transfer uang sungguhan.
  */
-export async function createPremiumTransaction(userId: string): Promise<PremiumTransaction> {
+export async function createPremiumTransaction(userId: string, voucherId?: string, discountPercent: number = 0): Promise<PremiumTransaction> {
+  const pricing = getPremiumPricing(PREMIUM_AMOUNT, discountPercent);
+  
   if (isSandboxMode()) {
     const orderId = `SANDBOX-PREMIUM-${userId.slice(0, 8)}-${Date.now()}`;
-    const totalAmount = PREMIUM_AMOUNT + randomUniqueCode();
+    const totalAmount = pricing.finalPrice + randomUniqueCode();
     const expiredAt = new Date(Date.now() + QRIS_EXPIRY_SECONDS * 1000).toISOString();
     const qrisUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(
       `SANDBOX-QRIS|${orderId}|${totalAmount}`
@@ -50,18 +65,20 @@ export async function createPremiumTransaction(userId: string): Promise<PremiumT
       qris_url: qrisUrl,
       is_sandbox: true,
       expired_at: expiredAt,
+      voucher_id: voucherId,
+      discount_percent: discountPercent,
+      discount_amount: pricing.discountAmount,
+      final_amount: pricing.finalPrice,
     });
 
-    console.log("INSERT DATA:", data);
-    console.log("INSERT ERROR:", error);
-
-    return { order_id: orderId, amount: PREMIUM_AMOUNT, total_amount: totalAmount, qris_url: qrisUrl, expired_at: expiredAt, status: "PENDING" };
+    return { order_id: orderId, amount: PREMIUM_AMOUNT, total_amount: totalAmount, qris_url: qrisUrl, expired_at: expiredAt, status: "PENDING", voucher_id: voucherId, final_amount: pricing.finalPrice };
   }
 
   const token = await getAuthToken();
   const res = await fetch("/api/premium/create-transaction", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ voucherId }),
   });
   const json = await res.json();
   if (!res.ok || !json?.data) throw new Error(json?.error || "CREATE_TRANSACTION_FAILED");

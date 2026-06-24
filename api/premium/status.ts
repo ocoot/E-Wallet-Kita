@@ -18,16 +18,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const orderId = req.query.order_id as string;
   if (!orderId) return res.status(400).json({ error: 'order_id required' });
 
-  const { data: localTx } = await supabase.from('premium_transactions').select('*').eq('order_id', orderId).eq('user_id', user.id).single();
+  const { data: localTx } = await supabase.from('premium_transactions').select('*, premium_vouchers(*)').eq('order_id', orderId).eq('user_id', user.id).single();
   if (!localTx) return res.status(404).json({ error: 'NOT_FOUND' });
+
+  // Add voucher info to response
+  const response = {
+    status: localTx.status,
+    voucher_id: localTx.voucher_id,
+    discount_percent: localTx.discount_percent,
+    final_amount: localTx.final_amount,
+  };
 
   // local 90s expiry enforced regardless of provider state
   if (localTx.status === 'PENDING' && new Date(localTx.expired_at).getTime() < Date.now()) {
     await supabase.from('premium_transactions').update({ status: 'EXPIRED' }).eq('order_id', orderId);
-    return res.status(200).json({ status: 'EXPIRED' });
+    return res.status(200).json({ ...response, status: 'EXPIRED' });
   }
   if (localTx.status !== 'PENDING') {
-    return res.status(200).json({ status: localTx.status });
+    return res.status(200).json(response);
   }
 
   try {
