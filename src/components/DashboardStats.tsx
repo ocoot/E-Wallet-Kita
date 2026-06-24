@@ -1,4 +1,5 @@
 import React from "react";
+import logoUrl from "../assets/images/user_logo_transparent.png";
 import { useLanguage } from "../contexts/LanguageContext";
 import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import { motion } from "motion/react";
@@ -81,7 +82,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
           </span>
           <div className="shrink-0 transition-transform group-hover:scale-110 duration-300">
             <img 
-              src="/src/assets/images/user_logo_transparent.png" 
+              src={logoUrl} 
               alt="EWK Icon" 
               className="w-8 h-8 object-contain"
             />

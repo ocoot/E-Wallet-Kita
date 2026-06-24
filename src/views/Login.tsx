@@ -4,6 +4,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import { useToast } from "../contexts/ToastContext";
+import logoUrl from "../assets/images/user_logo_transparent.png";
 import { Mail, Lock, User, LogIn, Sparkles, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence, useAnimation } from "motion/react";
 import { Modal } from "../components/Modal";
@@ -59,7 +60,7 @@ const BrandLogoMark: React.FC<{ compact?: boolean }> = ({ compact }) => {
                       light_sakura:border-rose-200/15`} />
       {/* Logo image */}
       <motion.img
-        src="/src/assets/images/user_logo_transparent.png"
+        src={logoUrl}
         alt="E-Wallet Kita"
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -332,7 +333,7 @@ export const Login: React.FC = () => {
               className="flex items-center gap-3 mb-8"
             >
               <img
-                src="/src/assets/images/user_logo_transparent.png"
+                src={logoUrl}
                 alt="E-Wallet Kita"
                 className="w-9 h-9 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
               />
@@ -433,7 +434,7 @@ export const Login: React.FC = () => {
                 className="flex items-center gap-3 mb-8"
               >
                 <img
-                  src="/src/assets/images/user_logo_transparent.png"
+                  src={logoUrl}
                   alt="E-Wallet Kita"
                   className="w-9 h-9 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
                 />
@@ -509,7 +510,7 @@ export const Login: React.FC = () => {
           <div className="flex md:hidden items-center justify-between mb-7">
             <div className="flex items-center gap-2.5">
               <img
-                src="/src/assets/images/user_logo_transparent.png"
+                src={logoUrl}
                 alt="E-Wallet Kita"
                 className="w-8 h-8 object-contain"
               />
@@ -818,7 +819,7 @@ export const Login: React.FC = () => {
                 <div className="absolute inset-0 border-[3px] border-t-indigo-500 rounded-full
                                 animate-spin light_sakura:border-t-rose-500" />
                 <img
-                  src="/src/assets/images/user_logo_transparent.png"
+                  src={logoUrl}
                   alt=""
                   className="w-7 h-7 object-contain animate-pulse"
                 />

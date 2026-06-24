@@ -1,4 +1,5 @@
 import React from "react";
+import logoUrl from "../assets/images/user_logo_transparent.png";
 import { useLanguage } from "../contexts/LanguageContext";
 import { UserSession } from "../types";
 import { Send, Info } from "lucide-react";
@@ -21,7 +22,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         {/* Logo PNG transparan - tidak ada background kotak */}
         <div className="shrink-0">
           <img
-            src="/src/assets/images/user_logo_transparent.png"
+            src={logoUrl}
             alt="EWK Icon"
             className="w-16 h-16 sm:w-20 sm:h-20 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain transition-all duration-300"
           />

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import logoUrl from "../assets/images/user_logo_transparent.png";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -91,7 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex items-center gap-2">
           <div className="shrink-0">
             <img 
-              src="/src/assets/images/user_logo_transparent.png" 
+              src={logoUrl} 
               alt="EWK Icon" 
               className="w-8 h-8 object-contain"
             />
@@ -124,7 +125,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="flex items-center gap-2">
                 <div className="shrink-0">
                   <img 
-                    src="/src/assets/images/user_logo_transparent.png" 
+                    src={logoUrl} 
                     alt="EWK Icon" 
                     className="w-8 h-8 object-contain"
                   />
@@ -241,7 +242,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="shrink-0">
               <img 
-                src="/src/assets/images/user_logo_transparent.png" 
+                src={logoUrl} 
                 alt="EWK Icon" 
                 className="w-9 h-9 object-contain"
               />
