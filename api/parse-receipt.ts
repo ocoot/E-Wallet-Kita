@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { parseReceipt } from './_lib/receipt-parser.js';
+import { getMaintenanceStatus, isFeatureLocked } from './_lib/maintenance.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -35,6 +36,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   if (authError || !user) {
     res.status(401).json({ error: 'Unauthorized' });
+    return;
+  }
+
+  // Cek status maintenance & feature lock 'receipt_scan'. Ini wajib dicek
+  // di backend juga (bukan cuma di frontend), supaya endpoint ini tidak
+  // bisa dipanggil langsung untuk melewati kunci yang diset admin lewat
+  // tab Maintenance di Admin Panel.
+  const maintenanceStatus = await getMaintenanceStatus(supabase);
+  if (isFeatureLocked(maintenanceStatus, 'receipt_scan')) {
+    res.status(423).json({ error: 'Fitur Pindai Struk (AI) sedang dikunci oleh admin untuk maintenance.' });
     return;
   }
 

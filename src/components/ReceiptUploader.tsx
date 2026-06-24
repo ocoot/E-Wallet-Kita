@@ -1,9 +1,10 @@
 import React, { useState, useRef } from "react";
-import { UploadCloud, FileImage, ShieldAlert, CheckCircle } from "lucide-react";
+import { UploadCloud, FileImage, ShieldAlert, CheckCircle, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
+import { useMaintenance } from "../contexts/MaintenanceContext";
 import { audioFeedback } from "../lib/audio";
 
 interface ReceiptUploaderProps {
@@ -14,6 +15,8 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
   const { session } = useAuth();
   const { t } = useLanguage();
   const { showToast } = useToast();
+  const { isFeatureLocked } = useMaintenance();
+  const isLocked = isFeatureLocked("receipt_scan");
   const [isDragActive, setIsDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -53,6 +56,12 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
   };
 
   const processFile = async (file: File) => {
+    if (isLocked) {
+      audioFeedback.playDullPluck();
+      showToast(t("maintenance.feature_locked_title"), "error");
+      return;
+    }
+
     // Basic file validation
     if (!file.type.startsWith("image/")) {
       audioFeedback.playDullPluck();
@@ -184,6 +193,23 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
         {t("dashboard.ocr_title")}
       </label>
 
+      {isLocked ? (
+        // Fitur sedang dikunci admin lewat tab Maintenance — tampilkan
+        // status terkunci, jangan render zone upload sama sekali supaya
+        // tidak bisa diklik/drop file.
+        <div className="relative overflow-hidden p-6 rounded-2xl border-2 border-dashed border-amber-500/30 bg-amber-500/5 flex flex-col items-center justify-center min-h-[160px] text-center">
+          <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/30 text-amber-400 mb-2">
+            <Lock size={24} />
+          </div>
+          <p className="font-sans text-xs font-bold text-amber-300">
+            {t("maintenance.feature_locked_title")}
+          </p>
+          <p className="font-sans text-[11px] text-amber-300/70 max-w-sm px-4 leading-relaxed mt-1">
+            {t("maintenance.feature_locked_desc")}
+          </p>
+        </div>
+      ) : (
+      <>
       {/* Drag & Drop Area */}
       <div
         onClick={isUploading ? undefined : handleClickZone}
@@ -269,6 +295,8 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
             </p>
           </div>
         </motion.div>
+      )}
+      </>
       )}
     </div>
   );
