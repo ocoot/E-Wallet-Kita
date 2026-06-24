@@ -10,40 +10,53 @@ import { Modal } from "../components/Modal";
 import { audioFeedback } from "../lib/audio";
 
 /* ─────────────────────────────────────────────────────────
-   Brand panel decoration — logo + ambient arc rings
+   Brand panel decoration — faint background arc rings only.
+   Kept absolute + very low-opacity so it never visually competes
+   with foreground text/buttons.
 ───────────────────────────────────────────────────────── */
-const BrandPanelDecor: React.FC = () => (
-  <>
-    {/* Decorative arc rings (SVG layer, behind content) */}
-    <svg
-      className="absolute inset-0 w-full h-full pointer-events-none select-none"
-      viewBox="0 0 400 600"
-      preserveAspectRatio="xMidYMid slice"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <circle cx="380" cy="30"  r="180" fill="none" stroke="rgba(99,102,241,0.18)" strokeWidth="1" className="light_sakura:stroke-[rgba(251,113,133,0.18)]"/>
-      <circle cx="380" cy="30"  r="130" fill="none" stroke="rgba(99,102,241,0.12)" strokeWidth="1" className="light_sakura:stroke-[rgba(251,113,133,0.12)]"/>
-      <circle cx="20"  cy="570" r="200" fill="none" stroke="rgba(45,212,191,0.14)" strokeWidth="1" className="light_sakura:stroke-[rgba(244,63,94,0.10)]"/>
-      <circle cx="20"  cy="570" r="130" fill="none" stroke="rgba(45,212,191,0.10)" strokeWidth="1" className="light_sakura:stroke-[rgba(244,63,94,0.07)]"/>
-      <line x1="0" y1="300" x2="400" y2="300" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" className="light_sakura:stroke-[rgba(0,0,0,0.04)]"/>
-      <line x1="200" y1="0" x2="200" y2="600" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" className="light_sakura:stroke-[rgba(0,0,0,0.04)]"/>
-    </svg>
+const BrandPanelArcs: React.FC = () => (
+  <svg
+    className="absolute inset-0 w-full h-full pointer-events-none select-none"
+    viewBox="0 0 400 600"
+    preserveAspectRatio="xMidYMid slice"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <circle cx="380" cy="30"  r="180" fill="none" stroke="rgba(99,102,241,0.18)" strokeWidth="1" className="light_sakura:stroke-[rgba(251,113,133,0.18)]"/>
+    <circle cx="380" cy="30"  r="130" fill="none" stroke="rgba(99,102,241,0.12)" strokeWidth="1" className="light_sakura:stroke-[rgba(251,113,133,0.12)]"/>
+    <circle cx="20"  cy="570" r="200" fill="none" stroke="rgba(45,212,191,0.14)" strokeWidth="1" className="light_sakura:stroke-[rgba(244,63,94,0.10)]"/>
+    <circle cx="20"  cy="570" r="130" fill="none" stroke="rgba(45,212,191,0.10)" strokeWidth="1" className="light_sakura:stroke-[rgba(244,63,94,0.07)]"/>
+    <line x1="0" y1="300" x2="400" y2="300" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" className="light_sakura:stroke-[rgba(0,0,0,0.04)]"/>
+    <line x1="200" y1="0" x2="200" y2="600" stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" className="light_sakura:stroke-[rgba(0,0,0,0.04)]"/>
+  </svg>
+);
 
-    {/* Centred logo glow + image */}
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+/* ─────────────────────────────────────────────────────────
+   Brand logo mark — glow halo + concentric rings + logo image.
+   Renders as a normal in-flow block (NOT absolutely centered over
+   the whole panel), so it always sits in its own dedicated space
+   between the header and footer content and never overlaps them.
+   `compact` shrinks it for the mobile landing panel.
+───────────────────────────────────────────────────────── */
+const BrandLogoMark: React.FC<{ compact?: boolean }> = ({ compact }) => {
+  const haloSize = compact ? "w-40 h-40" : "w-52 h-52";
+  const ring1Size = compact ? "w-32 h-32" : "w-44 h-44";
+  const ring2Size = compact ? "w-26 h-26" : "w-36 h-36";
+  const imgSize = compact ? "w-20 h-20" : "w-28 h-28";
+  return (
+    <div className="relative flex items-center justify-center pointer-events-none select-none">
       {/* Outer glow halo */}
-      <div className="absolute w-52 h-52 rounded-full
+      <div className={`absolute ${haloSize} rounded-full
                       bg-indigo-500/10 blur-[60px]
-                      light_sakura:bg-rose-300/20" />
+                      light_sakura:bg-rose-300/20`} />
       {/* Concentric ring 1 */}
-      <div className="absolute w-44 h-44 rounded-full
+      <div className={`absolute ${ring1Size} rounded-full
                       border border-white/8
-                      light_sakura:border-rose-200/20" />
+                      light_sakura:border-rose-200/20`} />
       {/* Concentric ring 2 */}
-      <div className="absolute w-36 h-36 rounded-full
+      <div className={`absolute ${ring2Size} rounded-full
                       border border-white/5
-                      light_sakura:border-rose-200/15" />
+                      light_sakura:border-rose-200/15`} />
       {/* Logo image */}
       <motion.img
         src="/src/assets/images/user_logo_transparent.png"
@@ -51,12 +64,12 @@ const BrandPanelDecor: React.FC = () => (
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.25, duration: 0.7, ease: "easeOut" }}
-        className="relative w-28 h-28 object-contain drop-shadow-[0_0_32px_rgba(99,102,241,0.5)]
-                   light_sakura:drop-shadow-[0_0_32px_rgba(244,63,94,0.35)]"
+        className={`relative ${imgSize} object-contain drop-shadow-[0_0_32px_rgba(99,102,241,0.5)]
+                   light_sakura:drop-shadow-[0_0_32px_rgba(244,63,94,0.35)]`}
       />
     </div>
-  </>
-);
+  );
+};
 
 /* ─────────────────────────────────────────────────────────
    Floating stat chip used inside brand panel
@@ -145,6 +158,10 @@ export const Login: React.FC = () => {
 
   const [isSignUp, setIsSignUp]               = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
+  // Mobile-only flow: "landing" shows the welcome panel with Sign In / Create
+  // Account buttons; "form" shows the actual auth form. Desktop always shows
+  // both panels side-by-side, so this state is simply ignored at md+ widths.
+  const [mobileStage, setMobileStage]         = useState<"landing" | "form">("landing");
   const [email, setEmail]                     = useState("");
   const [password, setPassword]               = useState("");
   const [displayName, setDisplayName]         = useState("");
@@ -161,6 +178,15 @@ export const Login: React.FC = () => {
 
   const triggerShake = async () => {
     await shakeControls.start({ x: [-6, 6, -4, 4, 0], transition: { duration: 0.4 } });
+  };
+
+  // Switches the right-hand form between Sign In / Sign Up. Used by the
+  // desktop brand-panel tabs and the mobile landing buttons.
+  const goToAuthMode = (signUp: boolean) => {
+    audioFeedback.playClick();
+    setIsForgotPassword(false);
+    setIsSignUp(signUp);
+    setMobileStage("form");
   };
 
   /* ── Handlers ─────────────────────────────────────── */
@@ -293,9 +319,9 @@ export const Login: React.FC = () => {
         <div className="relative md:w-[42%] flex-shrink-0 hidden md:flex flex-col
                         bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950
                         light_sakura:from-rose-500 light_sakura:via-pink-400 light_sakura:to-rose-600
-                        p-10 justify-between overflow-hidden">
+                        p-10 overflow-hidden">
 
-          <BrandPanelDecor />
+          <BrandPanelArcs />
 
           {/* Brand header */}
           <div className="relative z-10">
@@ -333,31 +359,173 @@ export const Login: React.FC = () => {
             </motion.p>
           </div>
 
-          {/* Floating stat chips */}
-          <div className="relative z-10 flex flex-col gap-2 mt-10">
-            <StatChip value="🔒" label="End-to-end encrypted" delay={0.55} />
-            <StatChip value="☁️" label="Cloud sync across devices" delay={0.65} />
-            <StatChip value="⚡" label="Real-time transaction tracking" delay={0.75} />
+          {/* Logo mark — its own dedicated space, never overlapping the
+              header text above or the chips/tabs below */}
+          <div className="relative z-10 my-10 flex justify-center">
+            <BrandLogoMark />
+          </div>
+
+          {/* Bottom block: stat chips + Sign In/Sign Up tab switcher,
+              grouped together so spacing stays even regardless of card height */}
+          <div className="relative z-10 mt-auto flex flex-col gap-5">
+            {/* Floating stat chips */}
+            <div className="flex flex-col gap-2">
+              <StatChip value="🔒" label="End-to-end encrypted" delay={0.55} />
+              <StatChip value="☁️" label="Cloud sync across devices" delay={0.65} />
+              <StatChip value="⚡" label="Real-time transaction tracking" delay={0.75} />
+            </div>
+
+            {/* Divider to visually separate chips from the tab switcher */}
+            <div className="h-px bg-white/10 light_sakura:bg-rose-200/30" />
+
+            {/* Desktop Sign In / Sign Up tab switcher */}
+            <div className="flex items-center gap-1.5 p-1 rounded-full
+                            bg-white/10 border border-white/15 backdrop-blur-sm
+                            light_sakura:bg-rose-900/10 light_sakura:border-rose-200/30">
+              <button
+                type="button"
+                onClick={() => goToAuthMode(false)}
+                disabled={isLoading}
+                className={`flex-1 py-2 rounded-full text-xs font-semibold transition-all
+                           disabled:opacity-40 ${
+                             !isSignUp && !isForgotPassword
+                               ? "bg-white text-indigo-700 shadow-sm light_sakura:bg-white light_sakura:text-rose-600"
+                               : "text-white/70 hover:text-white light_sakura:text-rose-50/90"
+                           }`}
+              >
+                {t("auth.panel_tab_signin")}
+              </button>
+              <button
+                type="button"
+                onClick={() => goToAuthMode(true)}
+                disabled={isLoading}
+                className={`flex-1 py-2 rounded-full text-xs font-semibold transition-all
+                           disabled:opacity-40 ${
+                             isSignUp && !isForgotPassword
+                               ? "bg-white text-indigo-700 shadow-sm light_sakura:bg-white light_sakura:text-rose-600"
+                               : "text-white/70 hover:text-white light_sakura:text-rose-50/90"
+                           }`}
+              >
+                {t("auth.panel_tab_signup")}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* ══════════════════════════════════════════════
+            MOBILE-ONLY — Welcome landing panel
+            Shown before the form, mirrors the brand panel above but
+            full-width, with explicit Sign In / Create Account buttons.
+        ══════════════════════════════════════════════ */}
+        {mobileStage === "landing" && (
+          <div className="relative flex md:hidden flex-col
+                          bg-gradient-to-br from-indigo-900 via-slate-900 to-slate-950
+                          light_sakura:from-rose-500 light_sakura:via-pink-400 light_sakura:to-rose-600
+                          p-8 overflow-hidden">
+
+            <BrandPanelArcs />
+
+            <div className="relative z-10">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2, duration: 0.5 }}
+                className="flex items-center gap-3 mb-8"
+              >
+                <img
+                  src="/src/assets/images/user_logo_transparent.png"
+                  alt="E-Wallet Kita"
+                  className="w-9 h-9 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
+                />
+                <span className="font-bold text-base tracking-tight text-white/90">
+                  E-Wallet Kita
+                </span>
+              </motion.div>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.55 }}
+                className="font-bold text-2xl leading-snug text-white mb-3"
+              >
+                {t("auth.login_title")}
+              </motion.h1>
+              <motion.p
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4, duration: 0.55 }}
+                className="text-sm text-white/60 leading-relaxed"
+              >
+                {t("auth.login_subtitle")}
+              </motion.p>
+            </div>
+
+            {/* Logo mark — own dedicated space, clear of the subtitle above
+                and the buttons below */}
+            <div className="relative z-10 my-9 flex justify-center">
+              <BrandLogoMark compact />
+            </div>
+
+            {/* Sign In / Create Account entry buttons */}
+            <div className="relative z-10 flex flex-col gap-2.5">
+              <motion.button
+                whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
+                type="button"
+                onClick={() => goToAuthMode(false)}
+                className="w-full py-3.5 rounded-xl text-sm font-semibold
+                           bg-white text-indigo-700
+                           shadow-[0_4px_24px_rgba(0,0,0,0.25)]
+                           flex items-center justify-center gap-2
+                           light_sakura:text-rose-600"
+              >
+                <LogIn size={15} />
+                <span>{t("auth.btn_signin")}</span>
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
+                type="button"
+                onClick={() => goToAuthMode(true)}
+                className="w-full py-3.5 rounded-xl text-sm font-semibold
+                           border border-white/30 text-white
+                           flex items-center justify-center gap-2
+                           hover:bg-white/10 transition-colors"
+              >
+                <User size={15} />
+                <span>{t("auth.btn_signup")}</span>
+              </motion.button>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════
             RIGHT — Form panel
         ══════════════════════════════════════════════ */}
-        <div className="flex-1 flex flex-col justify-center
+        <div className={`flex-1 flex-col justify-center
                         bg-slate-900 light_sakura:bg-white
-                        p-8 md:p-10">
+                        p-8 md:p-10
+                        ${mobileStage === "form" ? "flex" : "hidden"} md:flex`}>
 
-          {/* Mobile-only brand mark */}
-          <div className="flex md:hidden items-center gap-2.5 mb-7">
-            <img
-              src="/src/assets/images/user_logo_transparent.png"
-              alt="E-Wallet Kita"
-              className="w-8 h-8 object-contain"
-            />
-            <span className="font-bold text-sm text-white light_sakura:text-slate-800">
-              E-Wallet Kita
-            </span>
+          {/* Mobile-only brand mark + back button */}
+          <div className="flex md:hidden items-center justify-between mb-7">
+            <div className="flex items-center gap-2.5">
+              <img
+                src="/src/assets/images/user_logo_transparent.png"
+                alt="E-Wallet Kita"
+                className="w-8 h-8 object-contain"
+              />
+              <span className="font-bold text-sm text-white light_sakura:text-slate-800">
+                E-Wallet Kita
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => { audioFeedback.playClick(); setMobileStage("landing"); }}
+              disabled={isLoading}
+              className="text-xs font-semibold text-indigo-400 hover:underline
+                         disabled:opacity-50 light_sakura:text-rose-500"
+            >
+              {t("auth.back_to_welcome")}
+            </button>
           </div>
 
           <AnimatePresence mode="wait">

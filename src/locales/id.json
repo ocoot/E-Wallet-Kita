@@ -61,7 +61,10 @@
     "confirm_continue": "Ya, Lanjutkan",
     "confirm_forgot_password_desc": "Apakah Anda yakin ingin mengirim tautan atur ulang kata sandi ke email {email}?",
     "loading_signup_desc": "Mendaftarkan dan mengonfigurasi dompet baru Anda...",
-    "loading_signin_desc": "Menghubungkan akun dan memuat lembar transaksi..."
+    "loading_signin_desc": "Menghubungkan akun dan memuat lembar transaksi...",
+    "back_to_welcome": "Kembali",
+    "panel_tab_signin": "Masuk",
+    "panel_tab_signup": "Daftar"
   },
   "dashboard": {
     "welcome": "Halo, {name} 👋",
