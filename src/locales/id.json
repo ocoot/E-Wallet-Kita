@@ -354,13 +354,17 @@
     "error_create": "Gagal membuat transaksi pembayaran. Coba lagi.",
     "locked_export": "Fitur ekspor PDF khusus untuk pengguna Premium.",
     "locked_telegram": "Sinkronisasi Bot Telegram khusus untuk pengguna Premium.",
-    "unlock_now": "Aktifkan Premium Sekarang"
+    "unlock_now": "Aktifkan Premium Sekarang",
+    "cancel_transaction": "Batalkan Transaksi"
   },
   "voucher": {
     "new_available": "🎁 Voucher Premium Baru Tersedia!",
     "claim": "Klaim Sekarang",
     "discount": "Diskon {percent}%",
     "title": "Voucher Premium",
+    "no_voucher": "Tanpa Voucher",
+    "price_before": "Harga Normal",
+    "total": "Total",
     "code": "Kode",
     "active": "Aktif",
     "revoke": "Cabut",

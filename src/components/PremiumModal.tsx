@@ -159,21 +159,30 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                 <div className="mt-4">
                   <p className="text-xs text-gray-400 mb-2">{t("voucher.title")}</p>
                   <select 
-                    className="w-full bg-slate-800 text-white p-2 rounded"
+                    className="w-full h-12 px-4 bg-slate-800/80 border border-slate-700 rounded-xl text-white font-medium focus:ring-2 focus:ring-indigo-500"
                     onChange={(e) => setSelectedVoucher(activeVouchers.find(v => v.id === e.target.value) || null)}
                   >
-                    <option value="">No Voucher</option>
+                    <option value="">{t("voucher.no_voucher")}</option>
                     {activeVouchers.map(v => <option key={v.id} value={v.id}>{v.code} - {v.discount_percent}% OFF</option>)}
                   </select>
                 </div>
               )}
 
               <div className="mt-4 p-4 bg-slate-800/50 rounded-xl text-xs space-y-1">
-                <p className="flex justify-between"><span>{t("voucher.price_before")}</span> <span>Rp {pricing.basePrice.toLocaleString("id-ID")}</span></p>
+                <p className="flex justify-between text-slate-300">
+                  <span>{t("voucher.price_before")}</span> 
+                  <span className="font-semibold text-white">Rp {pricing.basePrice.toLocaleString("id-ID")}</span>
+                </p>
                 {pricing.discountAmount > 0 && (
-                  <p className="flex justify-between text-emerald-400"><span>{t("voucher.discount")}</span> <span>-Rp {pricing.discountAmount.toLocaleString("id-ID")}</span></p>
+                  <p className="flex justify-between text-emerald-400">
+                    <span>{t("voucher.discount", { percent: pricing.discountPercent })}</span> 
+                    <span className="font-semibold">-Rp {pricing.discountAmount.toLocaleString("id-ID")}</span>
+                  </p>
                 )}
-                <p className="flex justify-between font-bold text-base mt-2"><span>Total</span> <span>Rp {pricing.finalPrice.toLocaleString("id-ID")}</span></p>
+                <p className="flex justify-between font-bold text-white text-base mt-2">
+                  <span>{t("voucher.total")}</span> 
+                  <span>Rp {pricing.finalPrice.toLocaleString("id-ID")}</span>
+                </p>
               </div>
 
               <ul className="text-left text-xs text-gray-400 mt-4 space-y-1.5 bg-slate-800/50 rounded-xl p-4">
@@ -213,6 +222,19 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                 <span>{t("premium.waiting_payment")}</span>
               </div>
               {isSandboxMode() && <p className="text-[10px] text-gray-500 mt-3">{t("premium.sandbox_notice")}</p>}
+              
+              <button
+                onClick={() => {
+                  if (pollRef.current) clearInterval(pollRef.current);
+                  if (timerRef.current) clearInterval(timerRef.current);
+
+                  setTx(null);
+                  setStep("terms");
+                }}
+                className="mt-4 w-full py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-medium text-sm"
+              >
+                {t("premium.cancel_transaction")}
+              </button>
             </div>
           )}
 

@@ -354,13 +354,17 @@
     "error_create": "Failed to create payment transaction. Try again.",
     "locked_export": "PDF export is a Premium-only feature.",
     "locked_telegram": "Telegram Bot sync is a Premium-only feature.",
-    "unlock_now": "Activate Premium Now"
+    "unlock_now": "Activate Premium Now",
+    "cancel_transaction": "Cancel Transaction"
   },
   "voucher": {
     "new_available": "🎁 New Premium Voucher Available!",
     "claim": "Claim Now",
     "discount": "{percent}% Discount",
     "title": "Premium Voucher",
+    "no_voucher": "No Voucher",
+    "price_before": "Original Price",
+    "total": "Total",
     "code": "Code",
     "active": "Active",
     "revoke": "Revoke",
