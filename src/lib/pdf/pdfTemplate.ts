@@ -1,4 +1,5 @@
 import { jsPDF, GState } from "jspdf";
+import { drawPdfBrandHeader } from "./pdfBranding";
 
 export type TFunc = (key: string, replacements?: Record<string, string | number>) => string;
 
@@ -19,49 +20,14 @@ export const drawHeader = (
     docNumber: string;
   }
 ): number => {
-  const pageWidth = doc.internal.pageSize.getWidth();
-  let y = MARGIN;
-
-  // "Logo" + app name
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
-  doc.setTextColor(40, 40, 90);
-  doc.text(opts.t("app.title"), MARGIN, y);
-
-  // Document number, top-right
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(120, 120, 120);
-  doc.text(`${opts.t("export.doc_number")}: ${opts.docNumber}`, pageWidth - MARGIN, y, {
-    align: "right",
-  });
-
-  y += 22;
-
-  // Report title
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.setTextColor(20, 20, 20);
-  doc.text(opts.reportTitle, MARGIN, y);
-  y += 20;
-
-  // Meta info block
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(90, 90, 90);
-  doc.text(`${opts.t("export.user")}: ${opts.userName}`, MARGIN, y);
-  doc.text(opts.generatedAtLabel, pageWidth - MARGIN, y, { align: "right" });
-  y += 14;
-  doc.text(`${opts.t("export.period")}: ${opts.periodLabel}`, MARGIN, y);
-  y += 18;
-
-  // Divider line
-  doc.setDrawColor(220, 220, 220);
-  doc.setLineWidth(0.75);
-  doc.line(MARGIN, y, pageWidth - MARGIN, y);
-  y += 16;
-
-  return y;
+  return drawPdfBrandHeader(doc, {
+    t: opts.t,
+    title: opts.reportTitle,
+    userName: opts.userName,
+    periodLabel: opts.periodLabel,
+    generatedAtLabel: opts.generatedAtLabel,
+    docNumber: opts.docNumber
+  }, MARGIN);
 };
 
 /**

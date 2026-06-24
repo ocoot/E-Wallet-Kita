@@ -1,4 +1,6 @@
 import jsPDF from "jspdf";
+import { LOGO_BASE64 } from "./pdf/logoBase64";
+import { PDF_BRAND } from "./pdf/pdfBranding";
 
 interface ReceiptData {
   orderId: string;
@@ -9,27 +11,53 @@ interface ReceiptData {
   sandbox: boolean;
 }
 
-export function generatePremiumReceipt(data: ReceiptData): jsPDF {
-  const doc = new jsPDF({ unit: "pt", format: [320, 520] });
-  const W = 320;
+/**
+ * Helper to draw the beautiful brand header with actual logo on dark banner
+ */
+export function drawReceiptBrand(doc: jsPDF, w: number, yStart: number): number {
+  let y = yStart;
+  try {
+    // Center logo horizontally (width 32, height 32)
+    doc.addImage(LOGO_BASE64, "PNG", w / 2 - 16, y, 32, 32);
+    y += 42;
+  } catch (e) {
+    console.error("Error drawing logo on receipt:", e);
+    y += 20;
+  }
 
-  doc.setFillColor(15, 23, 42);
-  doc.rect(0, 0, W, 110, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(18);
-  doc.text("E-Wallet Kita", W / 2, 45, { align: "center" });
+  doc.setFontSize(16);
+  doc.text(PDF_BRAND.appName, w / 2, y, { align: "center" });
+
+  return y;
+}
+
+export function generatePremiumReceipt(data: ReceiptData): jsPDF {
+  // Adjusted height from 520 to 540 to comfortably accommodate the logo
+  const doc = new jsPDF({ unit: "pt", format: [320, 540] });
+  const W = 320;
+
+  // Header background
+  doc.setFillColor(15, 23, 42);
+  doc.rect(0, 0, W, 130, "F");
+
+  // Draw brand header (Logo + App Name)
+  const brandY = drawReceiptBrand(doc, W, 15);
+
+  // Struk type title
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
-  doc.text("Struk Pembelian Premium", W / 2, 65, { align: "center" });
+  doc.text("Struk Pembelian Premium", W / 2, brandY + 18, { align: "center" });
 
+  // Status checkmark circle
   doc.setFillColor(99, 102, 241);
-  doc.circle(W / 2, 110, 22, "F");
+  doc.circle(W / 2, 130, 22, "F");
   doc.setTextColor(255, 255, 255);
   doc.setFontSize(16);
-  doc.text("✓", W / 2, 116, { align: "center" });
+  doc.text("✓", W / 2, 136, { align: "center" });
 
-  let y = 155;
+  let y = 175;
   doc.setTextColor(30, 41, 59);
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
