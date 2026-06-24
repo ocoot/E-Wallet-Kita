@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { PremiumVoucher } from "../types";
+import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "../contexts/ToastContext";
 
 export const AdminVoucherManager: React.FC = () => {
   const [vouchers, setVouchers] = useState<PremiumVoucher[]>([]);
   const [code, setCode] = useState("");
   const [percent, setPercent] = useState("");
+  const { session } = useAuth();
+  const { showToast } = useToast();
 
   const fetchVouchers = async () => {
     const { data } = await supabase.from("premium_vouchers").select("*");
@@ -15,10 +19,24 @@ export const AdminVoucherManager: React.FC = () => {
   useEffect(() => { fetchVouchers(); }, []);
 
   const createVoucher = async () => {
-    await supabase.from("premium_vouchers").insert({
-      code,
-      discount_percent: parseInt(percent),
-    });
+    if (!session?.user.id) return;
+
+    const { data, error } = await supabase
+      .from("premium_vouchers")
+      .insert({
+        code,
+        discount_percent: Number(percent),
+        created_by: session.user.id
+      })
+      .select();
+
+    if (error) {
+      console.error(error);
+      showToast(error.message, "error");
+      return;
+    }
+
+    showToast("Voucher created", "success");
     fetchVouchers();
     setCode("");
     setPercent("");
