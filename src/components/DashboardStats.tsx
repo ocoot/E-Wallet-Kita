@@ -79,8 +79,12 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
           <span className="font-sans text-xs font-semibold uppercase tracking-wider text-gray-400 light_sakura:text-slate-500">
             {t("dashboard.balance")}
           </span>
-          <div className={`p-2 rounded-xl transition-transform group-hover:scale-110 duration-300 ${summary.balance >= 0 ? "bg-teal-500/15 text-teal-400 light_sakura:bg-rose-50 light_sakura:text-rose-500" : "bg-red-500/15 text-red-400"}`}>
-            <DollarSign size={20} />
+          <div className="shrink-0 transition-transform group-hover:scale-110 duration-300">
+            <img 
+              src="/src/assets/images/user_logo_transparent.png" 
+              alt="EWK Icon" 
+              className="w-8 h-8 object-contain"
+            />
           </div>
         </div>
         <p className={`font-mono text-2xl font-bold tracking-tight relative z-10 ${summary.balance >= 0 ? "text-teal-400 light_sakura:text-rose-500" : "text-red-500"}`}>

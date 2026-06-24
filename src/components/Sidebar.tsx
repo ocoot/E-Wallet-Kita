@@ -89,7 +89,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* 1. Mobile top bar Header (visible only on mobile) */}
       <header className="lg:hidden flex items-center justify-between p-4 border-b bg-slate-950/90 border-slate-800 text-white dark_obsidian:bg-slate-950 dark_obsidian:border-slate-800 light_sakura:bg-rose-500 light_sakura:border-rose-400 light_sakura:text-white sticky top-0 z-40">
         <div className="flex items-center gap-2">
-          <Wallet size={24} className="text-teal-400 light_sakura:text-rose-100" />
+          <div className="shrink-0">
+            <img 
+              src="/src/assets/images/user_logo_transparent.png" 
+              alt="EWK Icon" 
+              className="w-8 h-8 object-contain"
+            />
+          </div>
           <h1 className="font-sans font-bold text-lg tracking-tight">
             {t("app.title")}
           </h1>
@@ -116,7 +122,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {/* Header Close triggers */}
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-2">
-                <Wallet size={24} className="text-teal-400 light_sakura:text-rose-500" />
+                <div className="shrink-0">
+                  <img 
+                    src="/src/assets/images/user_logo_transparent.png" 
+                    alt="EWK Icon" 
+                    className="w-8 h-8 object-contain"
+                  />
+                </div>
                 <span className="font-sans font-bold text-lg tracking-tight text-white dark_obsidian:text-white light_sakura:text-slate-900">
                   {t("app.title")}
                 </span>
@@ -227,8 +239,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Sidebar Brand header */}
         <div className="flex items-center justify-between p-6">
           <div className="flex items-center gap-3 overflow-hidden">
-            <div className="p-2 rounded-xl bg-indigo-600/10 text-teal-400 light_sakura:bg-rose-500/10 light_sakura:text-rose-500 shrink-0">
-              <Wallet size={24} />
+            <div className="shrink-0">
+              <img 
+                src="/src/assets/images/user_logo_transparent.png" 
+                alt="EWK Icon" 
+                className="w-9 h-9 object-contain"
+              />
             </div>
             {!isCollapsed && (
               <span className="font-sans font-bold text-lg tracking-tight select-none truncate text-white dark_obsidian:text-white light_sakura:text-slate-900">
