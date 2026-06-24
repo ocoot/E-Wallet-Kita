@@ -355,7 +355,19 @@
     "locked_export": "Fitur ekspor PDF khusus untuk pengguna Premium.",
     "locked_telegram": "Sinkronisasi Bot Telegram khusus untuk pengguna Premium.",
     "unlock_now": "Aktifkan Premium Sekarang",
-    "cancel_transaction": "Batalkan Transaksi"
+     "cancel_transaction": "Batalkan Transaksi",
+    "receipt_title": "Struk Pembelian Premium",
+    "receipt_status_success": "PEMBAYARAN BERHASIL",
+    "receipt_order_no": "No. Order",
+    "receipt_buyer": "Atas Nama",
+    "receipt_product": "Produk",
+    "receipt_product_val": "Premium Lifetime",
+    "receipt_amount": "Nominal",
+    "receipt_total_paid": "Total Dibayar",
+    "receipt_method": "Metode",
+    "receipt_date": "Tanggal",
+    "receipt_thanks": "Terima kasih telah berbelanja Premium Lifetime.",
+    "receipt_active_forever": "Akses premium aktif selamanya, tidak ada perpanjangan."
   },
   "voucher": {
     "new_available": "🎁 Voucher Premium Baru Tersedia!",
@@ -384,9 +396,13 @@
     "total": "Total",
     "active_vouchers": "Aktif",
     "inactive_vouchers": "Nonaktif",
-    "actions": "Aksi"
+    "actions": "Aksi",
+    "success_create": "Voucher berhasil dibuat",
+    "base_price": "Harga Dasar (Rp)",
+    "placeholder_code": "Contoh: WELCOME50"
   },
   "admin": {
+    "loading_data": "Memuat data...",
     "premium_price": "Harga Premium Global",
     "price_updated": "Harga premium berhasil diperbarui",
     "metrics_error": "Gagal memuat metrik pengguna.",
@@ -445,6 +461,7 @@
     "premium_monitor_title": "Monitor Transaksi Premium",
     "premium_monitor_desc": "Pantau pembayaran QRIS dan status revenue seumur hidup secara seketika.",
     "refresh_data": "Segarkan Data",
+    "refresh_success": "Data berhasil diperbarui",
     "total_revenue": "Total Pendapatan",
     "success_transactions": "transaksi sukses",
     "status_success": "Sukses",

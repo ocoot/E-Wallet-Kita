@@ -10,6 +10,8 @@ import {
   XCircle,
   AlertTriangle,
   Activity,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -84,13 +86,21 @@ function formatRelativeTime(iso: string | null, t: (k: string) => string): strin
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export const AdminAiMonitor: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { isAdmin } = useAdmin();
 
   const [summary, setSummary]     = useState<AiUsageSummary | null>(null);
   const [loading, setLoading]     = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [period, setPeriod]       = useState<PeriodOption>(30);
+  const [pageSize, setPageSize]   = useState<number | "all">(10);
+  const [page, setPage]   = useState(0);
+
+  const byKey = summary?.by_key ?? [];
+
+  useEffect(() => {
+    setPage(0);
+  }, [pageSize, byKey.length]);
 
   const load = useCallback(async (showRefreshing = false) => {
     if (showRefreshing) setRefreshing(true);
@@ -116,7 +126,6 @@ export const AdminAiMonitor: React.FC = () => {
   if (!isAdmin) return null;
 
   const byProvider = summary?.by_provider ?? [];
-  const byKey      = summary?.by_key ?? [];
 
   // Total panggilan semua provider untuk persentase relatif antar provider
   const grandTotal = byProvider.reduce((s, p) => s + p.total_calls, 0);
@@ -267,7 +276,7 @@ export const AdminAiMonitor: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
-                    {byKey.map((k) => {
+                    {(pageSize === "all" ? byKey : byKey.slice(page * pageSize, (page + 1) * pageSize)).map((k) => {
                       const sRate   = successRate(k.success_calls, k.total_calls);
                       const qRate   = quotaRate(k.quota_exceeded_calls, k.total_calls);
                       const hasQuotaIssue = qRate > 10;
@@ -333,6 +342,59 @@ export const AdminAiMonitor: React.FC = () => {
                     })}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Pagination Controls */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-slate-800 light_sakura:border-slate-100 font-sans text-xs text-slate-400 bg-slate-900/50 light_sakura:bg-slate-50/50">
+                {/* Page Size Selector */}
+                <div className="flex items-center gap-2">
+                  <span>{locale === "id" ? "Baris per halaman:" : "Rows per page:"}</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setPageSize(val === "all" ? "all" : Number(val));
+                      setPage(0);
+                    }}
+                    className="bg-slate-850 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-850 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+                  >
+                    <option value={5}>5</option>
+                    <option value={10}>10</option>
+                    <option value={15}>15</option>
+                    <option value={20}>20</option>
+                    <option value="all">{locale === "id" ? "Semua" : "All"}</option>
+                  </select>
+                </div>
+
+                {/* Pagination Info & Buttons */}
+                {pageSize !== "all" && byKey.length > pageSize ? (
+                  <div className="flex items-center gap-4">
+                    <div>
+                      {page * pageSize + 1}–{Math.min((page + 1) * pageSize, byKey.length)} dari {byKey.length}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        disabled={page === 0}
+                        onClick={() => setPage(p => p - 1)}
+                        className="p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                      >
+                        <ChevronLeft size={14} />
+                      </button>
+                      <span className="font-medium text-white light_sakura:text-slate-800">{page + 1} / {Math.ceil(byKey.length / pageSize)}</span>
+                      <button
+                        disabled={(page + 1) * pageSize >= byKey.length}
+                        onClick={() => setPage(p => p + 1)}
+                        className="p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                      >
+                        <ChevronRight size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-slate-500 text-xs">
+                    {locale === "id" ? `Menampilkan semua ${byKey.length} kunci` : `Showing all ${byKey.length} keys`}
+                  </div>
+                )}
               </div>
             </div>
           )}

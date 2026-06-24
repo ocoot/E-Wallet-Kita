@@ -59,7 +59,7 @@ export const drawWatermark = (
   const angleDeg = 45;
 
   doc.saveGraphicsState();
-  doc.setGState(new GState({ opacity: 0.08 }));
+  doc.setGState(new GState({ opacity: 0.02 }));
   doc.setFont("helvetica", "bold");
   doc.setFontSize(fontSize);
   doc.setTextColor(120, 120, 120);
@@ -99,15 +99,25 @@ export const drawFooter = (
   const pageHeight = doc.internal.pageSize.getHeight();
   const y = pageHeight - 24;
 
-  doc.setDrawColor(220, 220, 220);
+  doc.setDrawColor(226, 232, 240); // Slate-200
   doc.setLineWidth(0.5);
   doc.line(MARGIN, y - 10, pageWidth - MARGIN, y - 10);
 
-  doc.setFont("helvetica", "normal");
+  doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.setTextColor(140, 140, 140);
-  doc.text(opts.t("export.footer_generated_by"), MARGIN, y);
-  doc.text(opts.t("export.footer_confidential"), pageWidth / 2, y, { align: "center" });
+  doc.setTextColor(148, 163, 184); // Slate-400
+  doc.text(`${opts.t("export.footer_generated_by")} Premium`, MARGIN, y - 2);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7);
+  doc.setTextColor(180, 180, 180);
+  doc.text("www.ewalletkita.app", MARGIN, y + 6);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(148, 163, 184);
+  doc.text(opts.t("export.footer_confidential").toUpperCase(), pageWidth / 2, y, { align: "center" });
+
   // Page number is filled in later via finalizePageNumbers(), once total is known.
   doc.text(opts.pageLabelPrefix, pageWidth - MARGIN, y, { align: "right" });
 };
@@ -127,12 +137,12 @@ export const finalizePageNumbers = (doc: jsPDF, t: TFunc): void => {
     doc.setPage(i);
     // Cover the placeholder text with a white rectangle before redrawing.
     doc.setFillColor(255, 255, 255);
-    doc.rect(pageWidth - MARGIN - 160, y - 10, 160, 14, "F");
+    doc.rect(pageWidth - MARGIN - 160, y - 10, 160, 20, "F");
 
-    doc.setFont("helvetica", "normal");
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(8);
-    doc.setTextColor(140, 140, 140);
+    doc.setTextColor(100, 116, 139); // Slate-500
     const label = t("export.page_x_of_y", { current: i, total: pageCount });
-    doc.text(label, pageWidth - MARGIN, y, { align: "right" });
+    doc.text(label.toUpperCase(), pageWidth - MARGIN, y, { align: "right" });
   }
 };

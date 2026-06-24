@@ -23,9 +23,8 @@ export function drawPdfBrandHeader(doc: jsPDF, opts: BrandHeaderOpts, margin: nu
   const pageWidth = doc.internal.pageSize.getWidth();
   let y = margin;
 
-  // Draw Logo
+  // Draw Logo (width 32, height 32)
   try {
-    // Add image from Base64 (PNG format, width 32, height 32, aligned horizontally)
     doc.addImage(LOGO_BASE64, "PNG", margin, y - 10, 32, 32);
   } catch (e) {
     console.error("Error drawing logo in PDF:", e);
@@ -35,40 +34,54 @@ export function drawPdfBrandHeader(doc: jsPDF, opts: BrandHeaderOpts, margin: nu
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.setTextColor(PDF_BRAND.primaryColor[0], PDF_BRAND.primaryColor[1], PDF_BRAND.primaryColor[2]);
-  doc.text(PDF_BRAND.appName, margin + 42, y + 10);
+  doc.text(opts.t("title") || PDF_BRAND.appName, margin + 42, y + 10);
 
-  // Document number, top-right
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(9);
-  doc.setTextColor(120, 120, 120);
-  doc.text(`${opts.t("export.doc_number")}: ${opts.docNumber}`, pageWidth - margin, y + 10, {
+  // Document info, top-right
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(100, 116, 139); // Slate-500
+  doc.text(`${opts.t("export.doc_number").toUpperCase()}: ${opts.docNumber}`, pageWidth - margin, y + 4, {
     align: "right",
   });
 
-  y += 45;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(148, 163, 184); // Slate-400
+  doc.text(opts.generatedAtLabel, pageWidth - margin, y + 16, {
+    align: "right",
+  });
+
+  y += 45; // y = 85
 
   // Report title
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.setTextColor(30, 41, 59); // Slate-800
   doc.text(opts.title, margin, y);
-  y += 20;
+  y += 18; // y = 103
 
-  // Meta info block
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(100, 116, 139); // Slate-500
-  doc.text(`${opts.t("export.user")}: ${opts.userName}`, margin, y);
-  doc.text(opts.generatedAtLabel, pageWidth - margin, y, { align: "right" });
-  y += 14;
-  doc.text(`${opts.t("export.period")}: ${opts.periodLabel}`, margin, y);
-  y += 18;
+  // Draw Cover Ribbon (Visual banner with rounded corners)
+  doc.setFillColor(241, 245, 249); // Slate-100 (light premium gray)
+  doc.roundedRect(margin, y, pageWidth - 2 * margin, 24, 4, 4, "F");
+
+  // Inside Ribbon text
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(71, 85, 105); // Slate-600
+  doc.text(`${opts.t("export.user").toUpperCase()}: ${opts.userName.toUpperCase()}`, margin + 10, y + 15);
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(71, 85, 105); // Slate-600
+  doc.text(`${opts.t("export.period").toUpperCase()}: ${opts.periodLabel}`, pageWidth - margin - 10, y + 15, { align: "right" });
+
+  y += 36; // y = 139
 
   // Divider line
   doc.setDrawColor(226, 232, 240); // Slate-200
   doc.setLineWidth(1);
   doc.line(margin, y, pageWidth - margin, y);
-  y += 16;
+  y += 16; // y = 155
 
   return y;
 }

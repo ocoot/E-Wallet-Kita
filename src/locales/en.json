@@ -355,7 +355,19 @@
     "locked_export": "PDF export is a Premium-only feature.",
     "locked_telegram": "Telegram Bot sync is a Premium-only feature.",
     "unlock_now": "Activate Premium Now",
-    "cancel_transaction": "Cancel Transaction"
+    "cancel_transaction": "Cancel Transaction",
+    "receipt_title": "Premium Purchase Receipt",
+    "receipt_status_success": "PAYMENT SUCCESSFUL",
+    "receipt_order_no": "Order No.",
+    "receipt_buyer": "Buyer Name",
+    "receipt_product": "Product",
+    "receipt_product_val": "Premium Lifetime",
+    "receipt_amount": "Amount",
+    "receipt_total_paid": "Total Paid",
+    "receipt_method": "Method",
+    "receipt_date": "Date",
+    "receipt_thanks": "Thank you for purchasing Premium Lifetime.",
+    "receipt_active_forever": "Premium access is active forever, no renewal required."
   },
   "voucher": {
     "new_available": "🎁 New Premium Voucher Available!",
@@ -384,9 +396,13 @@
     "total": "Total",
     "active_vouchers": "Active",
     "inactive_vouchers": "Inactive",
-    "actions": "Actions"
+    "actions": "Actions",
+    "success_create": "Voucher created successfully",
+    "base_price": "Base Price (Rp)",
+    "placeholder_code": "Example: WELCOME50"
   },
   "admin": {
+    "loading_data": "Loading data...",
     "premium_price": "Global Premium Price",
     "price_updated": "Premium price updated",
     "metrics_error": "Failed to load user metrics.",
@@ -445,6 +461,7 @@
     "premium_monitor_title": "Premium Transaction Monitor",
     "premium_monitor_desc": "Monitor QRIS payments and lifetime revenue metrics in real-time.",
     "refresh_data": "Refresh Data",
+    "refresh_success": "Data refreshed successfully",
     "total_revenue": "Total Revenue",
     "success_transactions": "successful transactions",
     "status_success": "Success",

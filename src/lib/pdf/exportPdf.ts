@@ -15,8 +15,8 @@ import {
   generateDocNumber,
 } from "./dateRange";
 
-const HEADER_HEIGHT = 130; // px reserved at top of every page for the header block
-const SUMMARY_BLOCK_HEIGHT = 90; // extra space reserved on page 1 only, for the summary card
+const HEADER_HEIGHT = 155; // px reserved at top of every page for the header block
+const SUMMARY_BLOCK_HEIGHT = 100; // extra space reserved on page 1 only, for the summary card
 
 interface ExportContext {
   t: TFunc;
@@ -87,10 +87,38 @@ const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
     startY: firstPageStartY,
     margin: { top: HEADER_HEIGHT, left: 40, right: 40, bottom: 50 },
     styles: { fontSize: 9, cellPadding: 6 },
-    headStyles: { fillColor: [60, 60, 130], textColor: 255, fontStyle: "bold" },
-    alternateRowStyles: { fillColor: [245, 245, 250] },
+    headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [248, 249, 251] }, // Ultra light clean slate grey-blue
     columnStyles: {
-      4: { halign: "right" },
+      0: { cellWidth: 65, halign: "center" },
+      1: { cellWidth: 185, halign: "left" },
+      2: { cellWidth: 95, halign: "left" },
+      3: { cellWidth: 80, halign: "center" },
+      4: { cellWidth: 90, halign: "right" },
+    },
+    didParseCell: (data) => {
+      // Color and bold nominals with premium dark palette
+      if (data.section === "body" && data.column.index === 4) {
+        const val = String(data.cell.raw || "");
+        if (val.startsWith("+")) {
+          data.cell.styles.textColor = [4, 120, 87]; // Emerald-700 (premium dark emerald)
+          data.cell.styles.fontStyle = "bold";
+        } else if (val.startsWith("-")) {
+          data.cell.styles.textColor = [185, 28, 28]; // Red-700 (premium dark crimson)
+          data.cell.styles.fontStyle = "bold";
+        }
+      }
+      // Color and bullet style the type column
+      if (data.section === "body" && data.column.index === 3) {
+        const val = String(data.cell.raw || "");
+        if (val.includes(t("transaction.income"))) {
+          data.cell.styles.textColor = [4, 120, 87]; // Emerald-700
+          data.cell.styles.fontStyle = "bold";
+        } else {
+          data.cell.styles.textColor = [185, 28, 28]; // Red-700
+          data.cell.styles.fontStyle = "bold";
+        }
+      }
     },
     didDrawPage: () => {
       drawHeader(doc, headerOpts);
@@ -100,33 +128,75 @@ const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
     },
   });
 
-  // Summary card, drawn once on page 1 only, in the reserved gap above the table.
+  // Summary cards with semantical visual grouping and premium styling, drawn on page 1
   doc.setPage(1);
   const pageWidth = doc.internal.pageSize.getWidth();
   let sy = HEADER_HEIGHT;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
-  doc.setTextColor(30, 30, 30);
+  doc.setTextColor(30, 41, 59); // Slate-800
   doc.text(t("export.summary_title"), 40, sy);
-  sy += 18;
+  sy += 16;
 
-  const cardItems: [string, string][] = [
-    [t("export.total_income"), formatIDR(totals.income)],
-    [t("export.total_expense"), formatIDR(totals.expense)],
-    [t("export.net_balance"), formatIDR(totals.net)],
-    [t("export.transaction_count"), String(totals.count)],
+  const cardData = [
+    {
+      label: t("export.total_income"),
+      value: formatIDR(totals.income),
+      fillColor: [236, 253, 245], // Emerald-50
+      borderColor: [34, 197, 94], // Emerald-500
+      labelColor: [6, 95, 70], // Emerald-800
+      valueColor: [4, 120, 87] // Emerald-700
+    },
+    {
+      label: t("export.total_expense"),
+      value: formatIDR(totals.expense),
+      fillColor: [254, 242, 242], // Red-50
+      borderColor: [239, 68, 68], // Red-500
+      labelColor: [153, 27, 27], // Red-800
+      valueColor: [185, 28, 28] // Red-700
+    },
+    {
+      label: t("export.net_balance"),
+      value: formatIDR(totals.net),
+      fillColor: totals.net >= 0 ? [239, 246, 255] : [254, 242, 242], // Blue-50 or Red-50
+      borderColor: totals.net >= 0 ? [59, 130, 246] : [239, 68, 68], // Blue-500 or Red-500
+      labelColor: totals.net >= 0 ? [30, 64, 175] : [153, 27, 27], // Blue-800 or Red-800
+      valueColor: totals.net >= 0 ? [29, 78, 216] : [185, 28, 28] // Blue-700 or Red-700
+    },
+    {
+      label: t("export.transaction_count"),
+      value: String(totals.count),
+      fillColor: [250, 245, 255], // Purple-50
+      borderColor: [168, 85, 247], // Purple-500
+      labelColor: [107, 33, 168], // Purple-800
+      valueColor: [126, 34, 206] // Purple-700
+    }
   ];
-  const colWidth = (pageWidth - 80) / cardItems.length;
-  cardItems.forEach(([label, value], idx) => {
-    const x = 40 + idx * colWidth;
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.setTextColor(120, 120, 120);
-    doc.text(label, x, sy);
+
+  const colGap = 8;
+  const cardW = (pageWidth - 80 - 3 * colGap) / 4;
+  const cardH = 54;
+
+  cardData.forEach((card, idx) => {
+    const x = 40 + idx * (cardW + colGap);
+    
+    // Draw Rounded Card Container
+    doc.setFillColor(card.fillColor[0], card.fillColor[1], card.fillColor[2]);
+    doc.setDrawColor(card.borderColor[0], card.borderColor[1], card.borderColor[2]);
+    doc.setLineWidth(1);
+    doc.roundedRect(x, sy, cardW, cardH, 6, 6, "FD");
+
+    // Draw Card Label
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.setTextColor(30, 30, 30);
-    doc.text(value, x, sy + 16);
+    doc.setFontSize(8);
+    doc.setTextColor(card.labelColor[0], card.labelColor[1], card.labelColor[2]);
+    doc.text(card.label, x + 10, sy + 18);
+
+    // Draw Card Value
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(card.valueColor[0], card.valueColor[1], card.valueColor[2]);
+    doc.text(card.value, x + 10, sy + 38);
   });
 
   if (noDataMessage) {

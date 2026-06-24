@@ -132,6 +132,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
       paidAt,
       buyerName: user?.user_metadata?.full_name || user?.email || t("admin.guest_user"),
       sandbox: isSandboxMode(),
+      t,
     });
     doc.save(`struk-premium-${tx.order_id}.pdf`);
     showToast(t("premium.receipt_downloaded"), "success");

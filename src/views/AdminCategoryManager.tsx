@@ -4,7 +4,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
-import { Tag, Plus, Pencil, Check, X, RefreshCw } from "lucide-react";
+import { Tag, Plus, Pencil, Check, X, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Category {
   id: string;
@@ -17,7 +17,7 @@ interface Category {
 
 export const AdminCategoryManager: React.FC = () => {
   const { showToast } = useToast();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { isAdmin } = useAdmin();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +29,12 @@ export const AdminCategoryManager: React.FC = () => {
     isOpen: false,
     message: ""
   });
+  const [pageSize, setPageSize] = useState<number | "all">(10);
+  const [page, setPage] = useState(0);
+
+  useEffect(() => {
+    setPage(0);
+  }, [pageSize, categories.length]);
 
   const loadCategories = useCallback(async () => {
     setLoading(true);
@@ -188,7 +194,7 @@ export const AdminCategoryManager: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
-              {categories.map(cat => (
+              {(pageSize === "all" ? categories : categories.slice(page * pageSize, (page + 1) * pageSize)).map(cat => (
                 <tr key={cat.key} className={`transition-colors ${!cat.is_active ? "opacity-60" : ""} hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50`}>
                   <td className="px-6 py-4 font-mono text-xs text-slate-400 light_sakura:text-slate-500">{cat.key}</td>
 
@@ -255,6 +261,61 @@ export const AdminCategoryManager: React.FC = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {!loading && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">
+          {/* Page Size Selector */}
+          <div className="flex items-center gap-2">
+            <span>{locale === "id" ? "Baris per halaman:" : "Rows per page:"}</span>
+            <select
+              value={pageSize}
+              onChange={(e) => {
+                const val = e.target.value;
+                setPageSize(val === "all" ? "all" : Number(val));
+                setPage(0);
+              }}
+              className="bg-slate-800 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-850 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+            >
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={15}>15</option>
+              <option value={20}>20</option>
+              <option value="all">{locale === "id" ? "Semua" : "All"}</option>
+            </select>
+          </div>
+
+          {/* Pagination Info & Buttons */}
+          {pageSize !== "all" && categories.length > pageSize ? (
+            <div className="flex items-center gap-4">
+              <div>
+                {page * pageSize + 1}–{Math.min((page + 1) * pageSize, categories.length)} dari {categories.length}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  disabled={page === 0}
+                  onClick={() => setPage(p => p - 1)}
+                  className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+                <span className="font-medium text-white light_sakura:text-slate-800">{page + 1} / {Math.ceil(categories.length / pageSize)}</span>
+                <button
+                  disabled={(page + 1) * pageSize >= categories.length}
+                  onClick={() => setPage(p => p + 1)}
+                  className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                >
+                  <ChevronRight size={14} />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-slate-500 text-xs">
+              {locale === "id" ? `Menampilkan semua ${categories.length} kategori` : `Showing all ${categories.length} categories`}
+            </div>
+          )}
         </div>
       )}
       <LoadingOverlay isOpen={savingAction.isOpen} message={savingAction.message} />

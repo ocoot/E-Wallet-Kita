@@ -33,8 +33,6 @@ interface PremiumTransaction {
   created_at: string;
 }
 
-const PAGE_SIZE = 15;
-
 export const AdminPremiumMonitor: React.FC = () => {
   const { showToast } = useToast();
   const { t, locale } = useLanguage();
@@ -44,6 +42,7 @@ export const AdminPremiumMonitor: React.FC = () => {
   const [metrics, setMetrics] = useState<RevenueMetrics | null>(null);
   const [transactions, setTransactions] = useState<PremiumTransaction[]>([]);
   const [totalCount, setTotalCount] = useState(0);
+  const [pageSize, setPageSize] = useState<number | "all">(15);
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -64,10 +63,12 @@ export const AdminPremiumMonitor: React.FC = () => {
   const loadTransactions = useCallback(async () => {
     setLoading(true);
     try {
+      const limitVal = pageSize === "all" ? 1000000 : pageSize;
+      const offsetVal = pageSize === "all" ? 0 : page * pageSize;
       const [txRes, countRes] = await Promise.all([
         supabase.rpc("admin_get_premium_transactions", {
-          p_limit: PAGE_SIZE,
-          p_offset: page * PAGE_SIZE,
+          p_limit: limitVal,
+          p_offset: offsetVal,
           p_status: statusFilter
         }),
         supabase.rpc("admin_count_premium_transactions", { p_status: statusFilter })
@@ -83,9 +84,9 @@ export const AdminPremiumMonitor: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter, showToast, t]);
+  }, [page, pageSize, statusFilter, showToast, t]);
 
-  useEffect(() => { setPage(0); }, [statusFilter]);
+  useEffect(() => { setPage(0); }, [statusFilter, pageSize]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -99,7 +100,7 @@ export const AdminPremiumMonitor: React.FC = () => {
     }
   }, [loadTransactions, isAdmin]);
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const totalPages = pageSize === "all" ? 1 : Math.ceil(totalCount / pageSize);
 
   const formatIDR = (amount: number) => {
     return new Intl.NumberFormat(locale === "id" ? "id-ID" : "en-US", {
@@ -135,9 +136,9 @@ export const AdminPremiumMonitor: React.FC = () => {
               setRefreshing(true);
               try {
                 await Promise.all([loadMetrics(), loadTransactions()]);
-                showToast(t("admin.refresh_data") + " berhasil", "success");
+                showToast(t("admin.refresh_success"), "success");
               } catch (err: any) {
-                showToast(err.message || "Failed to refresh", "error");
+                showToast(err.message || t("toast.error_general"), "error");
               } finally {
                 setRefreshing(false);
               }
@@ -255,30 +256,57 @@ export const AdminPremiumMonitor: React.FC = () => {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between text-sm text-slate-400 light_sakura:text-slate-600 pt-4">
-          <span>
-            {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} dari {totalCount}
-          </span>
-          <div className="flex items-center gap-2">
-            <button
-              disabled={page === 0}
-              onClick={() => setPage(p => p - 1)}
-              className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <span className="font-medium text-white light_sakura:text-slate-800">{page + 1} / {totalPages}</span>
-            <button
-              disabled={page + 1 >= totalPages}
-              onClick={() => setPage(p => p + 1)}
-              className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">
+        {/* Page Size Selector */}
+        <div className="flex items-center gap-2">
+          <span>{locale === "id" ? "Baris per halaman:" : "Rows per page:"}</span>
+          <select
+            value={pageSize}
+            onChange={(e) => {
+              const val = e.target.value;
+              setPageSize(val === "all" ? "all" : Number(val));
+              setPage(0);
+            }}
+            className="bg-slate-800 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-850 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+          >
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+            <option value={15}>15</option>
+            <option value={20}>20</option>
+            <option value="all">{locale === "id" ? "Semua" : "All"}</option>
+          </select>
         </div>
-      )}
+
+        {/* Pagination Info & Buttons */}
+        {pageSize !== "all" && totalCount > pageSize ? (
+          <div className="flex items-center gap-4">
+            <div>
+              {page * pageSize + 1}–{Math.min((page + 1) * pageSize, totalCount)} dari {totalCount}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={page === 0}
+                onClick={() => setPage(p => p - 1)}
+                className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+              >
+                <ChevronLeft size={14} />
+              </button>
+              <span className="font-medium text-white light_sakura:text-slate-800">{page + 1} / {totalPages}</span>
+              <button
+                disabled={page + 1 >= totalPages}
+                onClick={() => setPage(p => p + 1)}
+                className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="text-slate-500 text-xs">
+            {locale === "id" ? `Menampilkan semua ${totalCount} transaksi` : `Showing all ${totalCount} transactions`}
+          </div>
+        )}
+      </div>
       
       <LoadingOverlay isOpen={refreshing || loading} message={t("admin.loading_data")} />
     </div>

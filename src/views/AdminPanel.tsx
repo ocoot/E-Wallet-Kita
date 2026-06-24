@@ -64,7 +64,7 @@ export const AdminPanel: React.FC = () => {
   });
 
   // Pagination state
-  const PAGE_SIZE = 20;
+  const [pageSize, setPageSize] = useState<number | "all">(20);
   const [page, setPage] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
 
@@ -141,9 +141,12 @@ export const AdminPanel: React.FC = () => {
         query = query.eq("is_banned", banFilter === "banned");
       }
 
+      const limitVal = pageSize === "all" ? 1000000 : pageSize;
+      const offsetVal = pageSize === "all" ? 0 : page * pageSize;
+
       query = query
         .order("created_at", { ascending: false })
-        .range(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE - 1);
+        .range(offsetVal, offsetVal + limitVal - 1);
 
       const { data, count, error } = await query;
 
@@ -169,14 +172,14 @@ export const AdminPanel: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [t, showToast, page, searchQuery, roleFilter, premiumFilter, banFilter]);
+  }, [t, showToast, page, pageSize, searchQuery, roleFilter, premiumFilter, banFilter]);
 
   useEffect(() => {
     if (isAdmin) {
       fetchUsers();
       loadMetrics();
     }
-  }, [isAdmin, fetchUsers, loadMetrics, page, searchQuery, roleFilter, premiumFilter, banFilter]);
+  }, [isAdmin, fetchUsers, loadMetrics, page, pageSize, searchQuery, roleFilter, premiumFilter, banFilter]);
 
   // Handle premium changes
   const handleTogglePremium = async (targetUser: UserProfile) => {
@@ -806,42 +809,69 @@ export const AdminPanel: React.FC = () => {
           </div>
 
           {/* Pagination controls */}
-          {totalUsers > PAGE_SIZE && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">
-              <div>
-                {t("admin.pagination_info")
-                  .replace("{start}", (page * PAGE_SIZE + 1).toString())
-                  .replace("{end}", Math.min((page + 1) * PAGE_SIZE, totalUsers).toString())
-                  .replace("{total}", totalUsers.toString())
-                }
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  disabled={page === 0}
-                  onClick={() => {
-                    audioFeedback.playClick();
-                    setPage(p => Math.max(0, p - 1));
-                  }}
-                  className="px-3 py-1.5 rounded-lg border border-slate-850 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
-                >
-                  {t("admin.prev")}
-                </button>
-                <span className="px-3 py-1 bg-slate-950/40 rounded-md border border-slate-900 light_sakura:bg-rose-50/10">
-                  {page + 1} / {Math.ceil(totalUsers / PAGE_SIZE)}
-                </span>
-                <button
-                  disabled={(page + 1) * PAGE_SIZE >= totalUsers}
-                  onClick={() => {
-                    audioFeedback.playClick();
-                    setPage(p => p + 1);
-                  }}
-                  className="px-3 py-1.5 rounded-lg border border-slate-850 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
-                >
-                  {t("admin.next")}
-                </button>
-              </div>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">
+            {/* Page Size Selector */}
+            <div className="flex items-center gap-2">
+              <span>{locale === "id" ? "Baris per halaman:" : "Rows per page:"}</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setPageSize(val === "all" ? "all" : Number(val));
+                  setPage(0);
+                }}
+                className="bg-slate-800 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-850 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+                <option value={20}>20</option>
+                <option value="all">{locale === "id" ? "Semua" : "All"}</option>
+              </select>
             </div>
-          )}
+
+            {/* Pagination Info & Buttons */}
+            {pageSize !== "all" && totalUsers > pageSize ? (
+              <div className="flex items-center gap-4">
+                <div>
+                  {t("admin.pagination_info")
+                    .replace("{start}", (page * pageSize + 1).toString())
+                    .replace("{end}", Math.min((page + 1) * pageSize, totalUsers).toString())
+                    .replace("{total}", totalUsers.toString())
+                  }
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={page === 0}
+                    onClick={() => {
+                      audioFeedback.playClick();
+                      setPage(p => Math.max(0, p - 1));
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-slate-850 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
+                  >
+                    {t("admin.prev")}
+                  </button>
+                  <span className="px-3 py-1 bg-slate-950/40 rounded-md border border-slate-900 light_sakura:bg-rose-50/10">
+                    {page + 1} / {Math.ceil(totalUsers / pageSize)}
+                  </span>
+                  <button
+                    disabled={(page + 1) * pageSize >= totalUsers}
+                    onClick={() => {
+                      audioFeedback.playClick();
+                      setPage(p => p + 1);
+                    }}
+                    className="px-3 py-1.5 rounded-lg border border-slate-850 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
+                  >
+                    {t("admin.next")}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-slate-500">
+                {locale === "id" ? `Menampilkan semua ${totalUsers} pengguna` : `Showing all ${totalUsers} users`}
+              </div>
+            )}
+          </div>
         </>
       )}
 
