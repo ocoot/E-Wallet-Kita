@@ -13,8 +13,10 @@ export const MaintenanceBanner: React.FC = () => {
 
   if (!status.is_active || !runningText) return null;
 
-  // Duplikasi teks agar marquee terlihat menyambung tanpa celah saat looping
-  const trackContent = `${runningText}\u00A0\u00A0\u00A0•\u00A0\u00A0\u00A0`;
+  // Teks ditampilkan satu kali saja. Dengan animasi entrance-from-right
+  // (lihat index.css), setiap siklus loop dimulai & berakhir di luar layar,
+  // jadi tidak perlu trik duplikasi teks untuk membuat loop menyambung.
+  const trackContent = runningText;
 
   return (
     <div
@@ -27,7 +29,6 @@ export const MaintenanceBanner: React.FC = () => {
           className="maintenance-marquee-track text-xs font-bold"
           style={{ animationDuration: "18s" }}
         >
-          <span>{trackContent}</span>
           <span>{trackContent}</span>
         </div>
       </div>

@@ -63,8 +63,13 @@ html, body {
 }
 
 /* Running text (marquee) animation used by the maintenance mode banner */
+/* Teks masuk dari luar layar sebelah kanan (100vw, dijamin di luar viewport
+   apa pun ukuran container-nya) lalu meluncur ke kiri sampai benar-benar
+   keluar di sisi kiri (-100% dari lebar teks itu sendiri). Dengan begini
+   pengguna selalu melihat awal kalimat peringatan saat ia muncul dari kanan,
+   bukan langsung "nongol" di tengah lalu hilang. */
 @keyframes maintenance-marquee {
-  0% { transform: translateX(0%); }
+  0% { transform: translateX(100vw); }
   100% { transform: translateX(-100%); }
 }
 
