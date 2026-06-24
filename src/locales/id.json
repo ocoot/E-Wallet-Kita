@@ -376,7 +376,15 @@
     "confirm_cancel_tx": "Batalkan transaksi?",
     "confirm_cancel_tx_desc": "QRIS yang sudah dibuat akan dianggap tidak digunakan.",
     "continue_payment": "Lanjutkan Pembayaran",
-    "cancel_tx": "Batalkan Transaksi"
+    "cancel_tx": "Batalkan Transaksi",
+    "create_voucher": "Buat Voucher Premium",
+    "voucher_code": "Kode Voucher",
+    "discount_percent": "Diskon (%)",
+    "create": "Buat",
+    "total": "Total",
+    "active_vouchers": "Aktif",
+    "inactive_vouchers": "Nonaktif",
+    "actions": "Aksi"
   },
   "admin": {
     "metrics_error": "Gagal memuat metrik pengguna.",

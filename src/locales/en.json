@@ -376,7 +376,15 @@
     "confirm_cancel_tx": "Cancel transaction?",
     "confirm_cancel_tx_desc": "The created QRIS will be considered unused.",
     "continue_payment": "Continue Payment",
-    "cancel_tx": "Cancel Transaction"
+    "cancel_tx": "Cancel Transaction",
+    "create_voucher": "Create Premium Voucher",
+    "voucher_code": "Voucher Code",
+    "discount_percent": "Discount (%)",
+    "create": "Create",
+    "total": "Total",
+    "active_vouchers": "Active",
+    "inactive_vouchers": "Inactive",
+    "actions": "Actions"
   },
   "admin": {
     "metrics_error": "Failed to load user metrics.",

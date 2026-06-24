@@ -63,7 +63,11 @@ export const AdminVoucherManager: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[{t:"Total",v:stats.total},{t:"Aktif",v:stats.active},{t:"Nonaktif",v:stats.inactive}].map(s=>(
+        {[
+          {t: t("voucher.total"), v: stats.total},
+          {t: t("voucher.active_vouchers"), v: stats.active},
+          {t: t("voucher.inactive_vouchers"), v: stats.inactive}
+        ].map(s=>(
           <div key={s.t} className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
             <p className="text-slate-400 text-sm">{s.t}</p>
             <p className="text-2xl font-bold text-white mt-1">{s.v}</p>
@@ -72,18 +76,23 @@ export const AdminVoucherManager: React.FC = () => {
       </div>
 
       <div className="bg-slate-900 border border-slate-800 p-6 rounded-2xl">
-        <h2 className="text-lg font-bold text-white mb-4">Buat Voucher Premium</h2>
+        <h2 className="text-lg font-bold text-white mb-4">{t("voucher.create_voucher")}</h2>
         <div className="flex gap-4">
-          <input placeholder="Kode Voucher" value={code} onChange={e => setCode(e.target.value)} className="flex-1 bg-slate-800 border border-slate-700 p-3 rounded-xl text-white" />
-          <input placeholder="Diskon (%)" type="number" value={percent} onChange={e => setPercent(e.target.value)} className="w-32 bg-slate-800 border border-slate-700 p-3 rounded-xl text-white" />
-          <button onClick={createVoucher} className="bg-indigo-600 text-white px-6 rounded-xl font-medium">Buat</button>
+          <input placeholder={t("voucher.voucher_code")} value={code} onChange={e => setCode(e.target.value)} className="flex-1 bg-slate-800 border border-slate-700 p-3 rounded-xl text-white" />
+          <input placeholder={t("voucher.discount_percent")} type="number" value={percent} onChange={e => setPercent(e.target.value)} className="w-32 bg-slate-800 border border-slate-700 p-3 rounded-xl text-white" />
+          <button onClick={createVoucher} className="bg-indigo-600 text-white px-6 rounded-xl font-medium">{t("voucher.create")}</button>
         </div>
       </div>
 
       <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
         <table className="w-full text-left text-sm text-slate-300">
           <thead className="bg-slate-800/50 text-xs text-slate-400 uppercase">
-            <tr><th className="p-4">Kode</th><th className="p-4">Diskon</th><th className="p-4">Status</th><th className="p-4">Aksi</th></tr>
+            <tr>
+              <th className="p-4">{t("voucher.code")}</th>
+              <th className="p-4">{t("voucher.discount", { percent: "" }).replace("{percent}%", "").trim()}</th>
+              <th className="p-4">{t("voucher.active")}</th>
+              <th className="p-4">{t("voucher.actions")}</th>
+            </tr>
           </thead>
           <tbody className="divide-y divide-slate-800">
             {vouchers.map(v => (
@@ -92,7 +101,7 @@ export const AdminVoucherManager: React.FC = () => {
                 <td className="p-4">{v.discount_percent}%</td>
                 <td className="p-4">
                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${v.is_active ? "bg-emerald-500/15 text-emerald-400" : "bg-slate-700/40 text-slate-300"}`}>
-                    {v.is_active ? "Aktif" : "Nonaktif"}
+                    {v.is_active ? t("voucher.active") : t("voucher.inactive_vouchers")}
                   </span>
                 </td>
                 <td className="p-4">
