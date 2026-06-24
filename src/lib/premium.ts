@@ -26,7 +26,7 @@ export function getPremiumPricing(basePrice: number, discountPercent: number = 0
 }
 
 export function isSandboxMode(): boolean {
-  return true;
+  return import.meta.env.DEV;
 }
 
 function randomUniqueCode(): number {
