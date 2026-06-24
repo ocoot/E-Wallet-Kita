@@ -46,6 +46,23 @@ async function logAiUsage(
   }
 }
 
+/** Cetak detail error asli dari provider (status, message, body) ke console. */
+function logRawProviderError(keyAlias: string, err: any): void {
+  const status = err?.status ?? err?.response?.status ?? err?.statusCode;
+  const message = err?.message ?? err?.error?.message;
+  let body = err?.error ?? err?.response?.data ?? err?.body;
+
+  try {
+    body = typeof body === "string" ? body : JSON.stringify(body);
+  } catch {
+    body = String(body);
+  }
+
+  console.error(
+    `🔍 [raw-error] ${keyAlias} | status=${status ?? "?"} | message=${message ?? "?"} | body=${body ?? "?"}`
+  );
+}
+
 /** Ekstrak HTTP status code dari pesan error jika tersedia. */
 function extractErrorCode(err: any): string | undefined {
   const msg = JSON.stringify(err);
@@ -76,6 +93,19 @@ const CLAUDE_KEYS = [
   process.env.ANTHROPIC_API_KEY_3,
   process.env.ANTHROPIC_API_KEY_4,
 ].filter(Boolean) as string[];
+
+// ─── Model chain per provider ───────────────────────────────────────────────
+// Setiap key akan mencoba SEMUA model di chain provider-nya secara berurutan
+// sebelum pindah ke key selanjutnya. Ini mengurangi kegagalan akibat 1 model
+// sedang overload (503/429), karena key yang sama masih punya kesempatan lain
+// lewat model alternatif sebelum dianggap "key ini gagal".
+//
+// Catatan: claude-3-5-sonnet-20241022 sudah RETIRED oleh Anthropic per
+// 28 Okt 2025 (selalu menghasilkan error 400, bukan soal kuota/key).
+// Diganti ke claude-haiku-4-5 (cepat & murah) dengan fallback claude-sonnet-4-6.
+const GEMINI_MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
+const OPENAI_MODELS = ["gpt-4o-mini", "gpt-4.1-mini"];
+const CLAUDE_MODELS = ["claude-haiku-4-5", "claude-sonnet-4-6"];
 
 export interface ParsedReceipt {
   merchant_name: string;
@@ -119,9 +149,9 @@ async function parseWithGemini(
   mimeType: string,
   apiKey: string,
   keyAlias: string,
-  source: string
+  source: string,
+  model: string
 ): Promise<ParsedReceipt> {
-  const model = "gemini-2.5-flash";
   const ai = new GoogleGenAI({
     apiKey: apiKey,
     httpOptions: {
@@ -158,6 +188,7 @@ async function parseWithGemini(
     };
   } catch (err) {
     // Log gagal
+    logRawProviderError(keyAlias, err);
     logAiUsage("gemini", keyAlias, model, source, false, extractErrorCode(err));
     throw err;
   }
@@ -167,9 +198,9 @@ async function parseWithOpenAI(
   imageBase64: string,
   apiKey: string,
   keyAlias: string,
-  source: string
+  source: string,
+  model: string
 ): Promise<ParsedReceipt> {
-  const model = "gpt-4o-mini";
   const openai = new OpenAI({ apiKey });
 
   try {
@@ -203,6 +234,7 @@ async function parseWithOpenAI(
       items: parsedJSON.items || []
     };
   } catch (err) {
+    logRawProviderError(keyAlias, err);
     logAiUsage("openai", keyAlias, model, source, false, extractErrorCode(err));
     throw err;
   }
@@ -212,9 +244,9 @@ async function parseWithClaude(
   imageBase64: string,
   apiKey: string,
   keyAlias: string,
-  source: string
+  source: string,
+  model: string
 ): Promise<ParsedReceipt> {
-  const model = "claude-3-5-sonnet-20241022";
   const claude = new Anthropic({ apiKey });
 
   try {
@@ -247,6 +279,7 @@ async function parseWithClaude(
       items: parsedJSON.items || []
     };
   } catch (err) {
+    logRawProviderError(keyAlias, err);
     logAiUsage("anthropic", keyAlias, model, source, false, extractErrorCode(err));
     throw err;
   }
@@ -261,33 +294,51 @@ export async function parseReceipt(imageBase64: string, source = "receipt_parser
     mimeType = parts[0].replace("data:", "").split(";")[0];
   }
 
+  // Gemini: untuk setiap key, coba semua model di GEMINI_MODELS sebelum pindah key.
   for (let i = 0; i < GEMINI_KEYS.length; i++) {
     const keyAlias = `gemini_key_${i + 1}`;
-    try {
-      return await parseWithGemini(cleanBase64, mimeType, GEMINI_KEYS[i], keyAlias, source);
-    } catch (err: any) {
-      if (!shouldFallback(err)) throw err;
-      console.log(`⚠️ ${keyAlias} unavailable, trying next...`);
+    for (const model of GEMINI_MODELS) {
+      try {
+        return await parseWithGemini(cleanBase64, mimeType, GEMINI_KEYS[i], keyAlias, source, model);
+      } catch (err: any) {
+        if (!shouldFallback(err)) {
+          console.log(`⚠️ ${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
+          continue;
+        }
+        console.log(`⚠️ ${keyAlias} (${model}) unavailable, trying next model...`);
+      }
     }
   }
 
+  // OpenAI: sama, coba semua model di OPENAI_MODELS per key.
   for (let i = 0; i < OPENAI_KEYS.length; i++) {
     const keyAlias = `openai_key_${i + 1}`;
-    try {
-      return await parseWithOpenAI(cleanBase64, OPENAI_KEYS[i], keyAlias, source);
-    } catch (err: any) {
-      if (!shouldFallback(err)) throw err;
-      console.log(`⚠️ ${keyAlias} unavailable, trying next...`);
+    for (const model of OPENAI_MODELS) {
+      try {
+        return await parseWithOpenAI(cleanBase64, OPENAI_KEYS[i], keyAlias, source, model);
+      } catch (err: any) {
+        if (!shouldFallback(err)) {
+          console.log(`⚠️ ${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
+          continue;
+        }
+        console.log(`⚠️ ${keyAlias} (${model}) unavailable, trying next model...`);
+      }
     }
   }
 
+  // Claude: sama, coba semua model di CLAUDE_MODELS per key.
   for (let i = 0; i < CLAUDE_KEYS.length; i++) {
     const keyAlias = `anthropic_key_${i + 1}`;
-    try {
-      return await parseWithClaude(cleanBase64, CLAUDE_KEYS[i], keyAlias, source);
-    } catch (err: any) {
-      if (!shouldFallback(err)) throw err;
-      console.log(`⚠️ ${keyAlias} unavailable, trying next...`);
+    for (const model of CLAUDE_MODELS) {
+      try {
+        return await parseWithClaude(cleanBase64, CLAUDE_KEYS[i], keyAlias, source, model);
+      } catch (err: any) {
+        if (!shouldFallback(err)) {
+          console.log(`⚠️ ${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
+          continue;
+        }
+        console.log(`⚠️ ${keyAlias} (${model}) unavailable, trying next model...`);
+      }
     }
   }
   
