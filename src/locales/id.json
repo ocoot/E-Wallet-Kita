@@ -387,6 +387,8 @@
     "actions": "Aksi"
   },
   "admin": {
+    "premium_price": "Harga Premium Global",
+    "price_updated": "Harga premium berhasil diperbarui",
     "metrics_error": "Gagal memuat metrik pengguna.",
     "fetch_error": "Gagal memuat daftar pengguna dari server.",
     "owner_no_premium_change": "Status premium Owner tidak dapat diubah!",

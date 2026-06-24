@@ -46,8 +46,8 @@ async function getAuthToken(): Promise<string> {
  * QR yang ditampilkan adalah QR dummy (encode string acak), karena di lingkungan
  * preview AI Studio tidak ada cara scan/transfer uang sungguhan.
  */
-export async function createPremiumTransaction(userId: string, voucherId?: string, discountPercent: number = 0): Promise<PremiumTransaction> {
-  const pricing = getPremiumPricing(PREMIUM_AMOUNT, discountPercent);
+export async function createPremiumTransaction(userId: string, voucherId?: string, discountPercent: number = 0, basePrice: number = PREMIUM_AMOUNT): Promise<PremiumTransaction> {
+  const pricing = getPremiumPricing(basePrice, discountPercent);
   
   if (isSandboxMode()) {
     const orderId = `SANDBOX-PREMIUM-${userId.slice(0, 8)}-${Date.now()}`;
@@ -60,7 +60,7 @@ export async function createPremiumTransaction(userId: string, voucherId?: strin
     const { data, error } = await supabase.from("premium_transactions").insert({
       user_id: userId,
       order_id: orderId,
-      amount: PREMIUM_AMOUNT,
+      amount: basePrice,
       total_amount: totalAmount,
       status: "PENDING",
       qris_url: qrisUrl,
@@ -72,7 +72,7 @@ export async function createPremiumTransaction(userId: string, voucherId?: strin
       final_amount: pricing.finalPrice,
     });
 
-    return { order_id: orderId, amount: PREMIUM_AMOUNT, total_amount: totalAmount, qris_url: qrisUrl, expired_at: expiredAt, status: "PENDING", voucher_id: voucherId, final_amount: pricing.finalPrice };
+    return { order_id: orderId, amount: basePrice, total_amount: totalAmount, qris_url: qrisUrl, expired_at: expiredAt, status: "PENDING", voucher_id: voucherId, final_amount: pricing.finalPrice };
   }
 
   const token = await getAuthToken();

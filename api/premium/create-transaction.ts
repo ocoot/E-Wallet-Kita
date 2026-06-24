@@ -2,7 +2,6 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-const BASE_AMOUNT = 20000;
 const EXPIRY_SECONDS = 90;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -33,8 +32,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  const discountAmount = Math.floor((BASE_AMOUNT * discountPercent) / 100);
-  const finalAmount = BASE_AMOUNT - discountAmount;
+  // Fetch global premium base price from app_settings
+  const { data: settingData } = await supabase
+    .from('app_settings')
+    .select('value')
+    .eq('key', 'premium_base_price')
+    .single();
+  const baseAmount = Number(settingData?.value ?? 20000);
+
+  const discountAmount = Math.floor((baseAmount * discountPercent) / 100);
+  const finalAmount = baseAmount - discountAmount;
   const orderId = `PREMIUM-${user.id.slice(0, 8)}-${Date.now()}`;
 
   try {
@@ -63,7 +70,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     await supabase.from('premium_transactions').insert({
       user_id: user.id,
       order_id: orderId,
-      amount: BASE_AMOUNT,
+      amount: baseAmount,
       total_amount: Math.round(parseFloat(d.total_amount)),
       status: 'PENDING',
       qris_url: d.qris_url,
@@ -80,7 +87,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({
       data: {
         order_id: orderId,
-        amount: BASE_AMOUNT,
+        amount: baseAmount,
         total_amount: Math.round(parseFloat(d.total_amount)),
         qris_url: d.qris_url,
         expired_at: expiredAt,

@@ -13,6 +13,8 @@ export const AdminVoucherManager: React.FC = () => {
   const [percent, setPercent] = useState("");
   const [revokeTarget, setRevokeTarget] = useState<PremiumVoucher | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<PremiumVoucher | null>(null);
+  const [premiumPrice, setPremiumPrice] = useState("20000");
+  const [isSavingPrice, setIsSavingPrice] = useState(false);
   const { session } = useAuth();
   const { showToast } = useToast();
   const { t } = useLanguage();
@@ -26,7 +28,22 @@ export const AdminVoucherManager: React.FC = () => {
     setVouchers(data || []);
   };
 
-  useEffect(() => { fetchVouchers(); }, []);
+  const loadPrice = async () => {
+    const { data } = await supabase
+      .from("app_settings")
+      .select("value")
+      .eq("key", "premium_base_price")
+      .single();
+
+    if (data) {
+      setPremiumPrice(data.value);
+    }
+  };
+
+  useEffect(() => {
+    fetchVouchers();
+    loadPrice();
+  }, []);
 
   const createVoucher = async () => {
     if (!session?.user.id) return;
@@ -54,6 +71,21 @@ export const AdminVoucherManager: React.FC = () => {
     fetchVouchers();
   };
 
+  const savePremiumPrice = async () => {
+    setIsSavingPrice(true);
+    const { error } = await supabase
+      .from("app_settings")
+      .update({ value: premiumPrice })
+      .eq("key", "premium_base_price");
+
+    setIsSavingPrice(false);
+    if (error) {
+      showToast(error.message, "error");
+      return;
+    }
+    showToast(t("admin.price_updated"), "success");
+  };
+
   const stats = {
     total: vouchers.length,
     active: vouchers.filter(v => v.is_active).length,
@@ -73,6 +105,30 @@ export const AdminVoucherManager: React.FC = () => {
             <p className={`text-3xl font-bold mt-2 ${s.color}`}>{s.v}</p>
           </div>
         ))}
+      </div>
+
+      {/* Global Premium Price Setting Card */}
+      <div className="bg-slate-900 light_sakura:bg-white p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm space-y-6">
+        <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">{t("admin.premium_price")}</h2>
+        <div className="flex flex-col sm:flex-row gap-4 items-end">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-1.5">Harga Dasar (Rp)</label>
+            <input 
+              type="number" 
+              placeholder="20000" 
+              value={premiumPrice} 
+              onChange={e => setPremiumPrice(e.target.value)} 
+              className="w-full bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 p-3 rounded-xl text-white light_sakura:text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-indigo-500" 
+            />
+          </div>
+          <button 
+            onClick={savePremiumPrice} 
+            disabled={isSavingPrice}
+            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 transition-all shadow-md active:scale-95"
+          >
+            {t("common.save")}
+          </button>
+        </div>
       </div>
 
       <div className="bg-slate-900 light_sakura:bg-white p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">

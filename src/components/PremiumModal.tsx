@@ -10,6 +10,7 @@ import { useVoucher } from "../hooks/useVoucher";
 import { PremiumVoucher, PremiumPricing } from "../types";
 import { generatePremiumReceipt } from "../lib/receipt";
 import { Modal } from "./Modal";
+import { getPremiumBasePrice } from "../lib/settings";
 
 type Step = "terms" | "qris" | "checking" | "success" | "expired" | "failed";
 
@@ -36,6 +37,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
   const { getActiveVouchers, getClaimedVoucher } = useVoucher();
   const [activeVouchers, setActiveVouchers] = useState<PremiumVoucher[]>([]);
   const [selectedVoucher, setSelectedVoucher] = useState<PremiumVoucher | null>(null);
+  const [basePrice, setBasePrice] = useState(PREMIUM_AMOUNT);
   const [pricing, setPricing] = useState<PremiumPricing>(getPremiumPricing(PREMIUM_AMOUNT));
 
   const reset = () => {
@@ -53,20 +55,21 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
   useEffect(() => {
     if (isOpen) {
       getActiveVouchers().then(setActiveVouchers).catch(console.error);
+      getPremiumBasePrice().then(setBasePrice).catch(console.error);
       reset();
     }
   }, [isOpen]);
 
   useEffect(() => {
-    const p = getPremiumPricing(PREMIUM_AMOUNT, selectedVoucher?.discount_percent || 0);
+    const p = getPremiumPricing(basePrice, selectedVoucher?.discount_percent || 0);
     setPricing(p);
-  }, [selectedVoucher]);
+  }, [selectedVoucher, basePrice]);
 
   const startPayment = async () => {
     if (!user) return;
     setStep("checking");
     try {
-      const transaction = await createPremiumTransaction(user.id, selectedVoucher?.id, selectedVoucher?.discount_percent);
+      const transaction = await createPremiumTransaction(user.id, selectedVoucher?.id, selectedVoucher?.discount_percent, basePrice);
       setTx(transaction);
       setSecondsLeft(QRIS_EXPIRY_SECONDS);
       setStep("qris");

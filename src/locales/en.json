@@ -387,6 +387,8 @@
     "actions": "Actions"
   },
   "admin": {
+    "premium_price": "Global Premium Price",
+    "price_updated": "Premium price updated",
     "metrics_error": "Failed to load user metrics.",
     "fetch_error": "Failed to load user list from server.",
     "owner_no_premium_change": "Owner premium status cannot be modified!",
