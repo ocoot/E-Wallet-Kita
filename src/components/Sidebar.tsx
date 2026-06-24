@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import logoUrl from "../assets/images/user_logo_transparent.png";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
+import { supabase } from "../lib/supabase";
 import { Link, useLocation } from "react-router-dom";
 import { 
   Wallet, 
@@ -32,12 +33,14 @@ interface SidebarProps {
   onLogoutClick: () => void;
   isCollapsed: boolean;
   onToggle: (collapsed: boolean) => void;
+  userDisplayName?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   onLogoutClick,
   isCollapsed,
-  onToggle
+  onToggle,
+  userDisplayName
 }) => {
   const { user } = useAuth();
   const { locale, setLocale, t } = useLanguage();
@@ -51,7 +54,30 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   // In Supabase, is_guest can be inferred from is_anonymous
   const isGuest = user?.is_anonymous ?? false;
-  const displayName = user?.user_metadata?.full_name || user?.email || t("admin.guest_user");
+  
+  const [displayName, setDisplayName] = useState<string>(userDisplayName || user?.user_metadata?.full_name || user?.email || t("admin.guest_user"));
+
+  useEffect(() => {
+    if (userDisplayName) {
+      setDisplayName(userDisplayName);
+    }
+  }, [userDisplayName]);
+
+  useEffect(() => {
+    if (userDisplayName) return;
+    if (!user) return;
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("display_name")
+        .eq("id", user.id)
+        .single();
+      if (!error && data?.display_name) {
+        setDisplayName(data.display_name);
+      }
+    };
+    fetchProfile();
+  }, [user, userDisplayName]);
 
   const menuItems: { id: string; label: string; icon: any; path: string; featureKey?: string }[] = [
     { id: "dashboard", label: t("nav.dashboard"), icon: LayoutDashboard, path: "/dashboard" },

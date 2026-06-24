@@ -4,6 +4,7 @@ import { ShieldCheck, Loader2, CheckCircle2, XCircle, Clock, Download, Sparkles,
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
+import { supabase } from "../lib/supabase";
 import { audioFeedback } from "../lib/audio";
 import { createPremiumTransaction, checkPremiumStatus, isSandboxMode, PREMIUM_AMOUNT, QRIS_EXPIRY_SECONDS, PremiumTransaction, getPremiumPricing } from "../lib/premium";
 import { useVoucher } from "../hooks/useVoucher";
@@ -26,6 +27,23 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
   const { showToast } = useToast();
 
   const [step, setStep] = useState<Step>("terms");
+  const [displayName, setDisplayName] = useState<string>("");
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("display_name")
+        .eq("id", user.id)
+        .single();
+      if (!error && data?.display_name) {
+        setDisplayName(data.display_name);
+      }
+    };
+    fetchProfile();
+  }, [user]);
+
   const [tx, setTx] = useState<PremiumTransaction | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(QRIS_EXPIRY_SECONDS);
   const [paidAt, setPaidAt] = useState<string | null>(null);
@@ -130,7 +148,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
       amount: tx.amount,
       totalAmount: tx.total_amount,
       paidAt,
-      buyerName: user?.user_metadata?.full_name || user?.email || t("admin.guest_user"),
+      buyerName: displayName || user?.user_metadata?.full_name || user?.email || t("admin.guest_user"),
       sandbox: isSandboxMode(),
       t,
     });

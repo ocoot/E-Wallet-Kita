@@ -154,6 +154,7 @@ const MainLayout: React.FC = () => {
         onLogoutClick={handleLogoutClick}
         isCollapsed={isSidebarCollapsed}
         onToggle={setIsSidebarCollapsed}
+        userDisplayName={userProfile?.display_name}
       />
 
       {/* Main active subview frame */}
