@@ -176,6 +176,21 @@ const MainLayout: React.FC = () => {
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </AnimatePresence>
+
+            {/* Footer Copyright */}
+            <footer className="mt-12 pt-6 border-t border-slate-900/10 dark:border-slate-800/50 text-center text-xs text-slate-500 transition-colors duration-300">
+              <p>
+                © {new Date().getFullYear()} E-Wallet Kita App. All Rights Reserved | Budi Hertanto |{" "}
+                <a 
+                  href="https://github.com/ocoot" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-emerald-500 light_sakura:hover:text-rose-500 transition-colors duration-200 underline inline-flex items-center gap-1"
+                >
+                  Github: @ocoot
+                </a>
+              </p>
+            </footer>
           </div>
         </div>
       </main>

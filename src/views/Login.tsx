@@ -291,7 +291,7 @@ export const Login: React.FC = () => {
 
   /* ── Render ───────────────────────────────────────── */
   return (
-    <div className="min-h-screen flex items-center justify-center p-4
+    <div className="min-h-screen flex flex-col items-center justify-center p-4
                     bg-slate-950 light_sakura:bg-rose-50/60
                     transition-colors duration-300 relative overflow-hidden">
 
@@ -783,6 +783,21 @@ export const Login: React.FC = () => {
           </AnimatePresence>
         </div>
       </motion.div>
+
+      {/* Footer Copyright */}
+      <footer className="mt-8 relative z-10 text-center text-xs text-slate-500 transition-colors duration-300">
+        <p>
+          © {new Date().getFullYear()} E-Wallet Kita App. All Rights Reserved | Budi Hertanto |{" "}
+          <a 
+            href="https://github.com/ocoot" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="hover:text-emerald-500 light_sakura:hover:text-rose-500 transition-colors duration-200 underline inline-flex items-center gap-1"
+          >
+            Github: @ocoot
+          </a>
+        </p>
+      </footer>
 
       {/* ── Confirmation Modal ── */}
       <Modal
