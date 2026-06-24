@@ -2,7 +2,7 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Type } from "@google/genai";
 import { getCategoryLabel, getAllCategoryKeys } from '../src/lib/categoryDefinitions.js';
-import { inferCategoryKey } from './utils.js';
+import { inferCategoryKey } from './_utils.js';
 import { parseAmountFromString } from '../src/lib/parserUtils.js';
 
 const supabase = createClient(

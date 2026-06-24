@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
-import { parseReceipt } from './lib/receipt-parser.js';
+import { parseReceipt } from './_lib/receipt-parser.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
