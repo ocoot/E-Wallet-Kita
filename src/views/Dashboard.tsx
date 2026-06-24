@@ -17,19 +17,45 @@ import { DashboardRecentTransactions } from "../components/DashboardRecentTransa
 interface DashboardProps {
   transactionsUpdatedTrigger: number;
   onTransactionAdded: () => void;
+  userDisplayName?: string;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
   transactionsUpdatedTrigger,
-  onTransactionAdded
+  onTransactionAdded,
+  userDisplayName
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
 
+  const [displayName, setDisplayName] = useState<string>(userDisplayName || "");
+
+  useEffect(() => {
+    if (userDisplayName) {
+      setDisplayName(userDisplayName);
+    }
+  }, [userDisplayName]);
+
+  useEffect(() => {
+    if (userDisplayName) return;
+    if (!user) return;
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("display_name")
+        .eq("id", user.id)
+        .single();
+      if (!error && data?.display_name) {
+        setDisplayName(data.display_name);
+      }
+    };
+    fetchProfile();
+  }, [user, userDisplayName]);
+
   const currentUser: UserSession = {
     id: user?.id || "",
-    display_name: user?.user_metadata?.full_name || t("admin.guest_user"),
+    display_name: displayName || user?.user_metadata?.full_name || t("admin.guest_user"),
     is_guest: user?.is_anonymous || false,
     preferred_language: "id",
     preferred_theme: "dark_obsidian"

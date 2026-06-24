@@ -46,6 +46,21 @@ export const Settings: React.FC<SettingsProps> = ({
   const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.email?.split('@')[0] || "");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('display_name')
+        .eq('id', user.id)
+        .single();
+      if (!error && data?.display_name) {
+        setDisplayName(data.display_name);
+      }
+    };
+    fetchProfile();
+  }, [user]);
+
   // Telegram Connection States
   const [linkingCode, setLinkingCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -116,6 +131,23 @@ export const Settings: React.FC<SettingsProps> = ({
         .eq('id', user?.id);
       
       if (error) throw error;
+      
+      // Sync with auth metadata
+      await supabase.auth.updateUser({
+        data: {
+          full_name: displayName
+        }
+      });
+
+      // Trigger refresh UI
+      const updatedUser: UserSession = {
+        id: user?.id || "",
+        display_name: displayName,
+        is_guest: user?.is_anonymous || false,
+        preferred_language: locale,
+        preferred_theme: theme
+      };
+      onUserPrefUpdated(updatedUser);
       
       setIsProfileModalOpen(false);
       showToast(t("toast.success_profile"), "success");

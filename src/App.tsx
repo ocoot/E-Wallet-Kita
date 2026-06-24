@@ -29,9 +29,25 @@ const MainLayout: React.FC = () => {
   const { showToast } = useToast();
   const { t } = useLanguage();
   
+  const [userProfile, setUserProfile] = useState<{ display_name: string } | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [transactionsUpdatedTrigger, setTransactionsUpdatedTrigger] = useState(0);
   const lastRealtimeId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchProfile = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("display_name")
+        .eq("id", user.id)
+        .single();
+      if (!error && data) {
+        setUserProfile(data);
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   const handleTransactionChange = () => {
     setTransactionsUpdatedTrigger(prev => prev + 1);
@@ -149,10 +165,12 @@ const MainLayout: React.FC = () => {
           <div className="max-w-7xl mx-auto w-full">
             <AnimatePresence mode="wait">
               <Routes>
-                <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} />} />
-                <Route path="/transactions/new" element={<FeatureLockGate featureKey="new_transaction"><NewTransaction onTransactionAdded={handleTransactionChange} /></FeatureLockGate>} />
-                <Route path="/transactions" element={<FeatureLockGate featureKey="history"><History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} /></FeatureLockGate>} />
-                <Route path="/settings" element={<FeatureLockGate featureKey="settings"><Settings onUserPrefUpdated={(user) => {}} /></FeatureLockGate>} />
+                <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} />} />
+                <Route path="/transactions/new" element={<FeatureLockGate featureKey="new_transaction"><NewTransaction onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
+                <Route path="/transactions" element={<FeatureLockGate featureKey="history"><History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
+                <Route path="/settings" element={<FeatureLockGate featureKey="settings"><Settings onUserPrefUpdated={(updatedUser) => {
+                  setUserProfile({ display_name: updatedUser.display_name });
+                }} /></FeatureLockGate>} />
                 <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/dashboard" replace />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>

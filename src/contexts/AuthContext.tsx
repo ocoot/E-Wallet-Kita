@@ -39,6 +39,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (session?.user) {
         // Sync user record to 'users' table
         try {
+          const { data: existingUser } = await supabase
+            .from('users')
+            .select('display_name')
+            .eq('id', session.user.id)
+            .maybeSingle();
+
           const fallbackName =
             session.user.user_metadata?.full_name ||
             session.user.email?.split('@')[0] ||
@@ -48,7 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             .from('users')
             .upsert({
               id: session.user.id,
-              display_name: fallbackName,
+              display_name: existingUser?.display_name || fallbackName,
               is_guest: session.user.is_anonymous || false,
               email: session.user.email || null,
               timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
