@@ -49,10 +49,10 @@ export const AdminPremiumMonitor: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const statusConfig = {
-    SUCCESS:  { color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/30", icon: CheckCircle, label: t("admin.status_success") },
-    PENDING:  { color: "text-amber-400",   bg: "bg-amber-500/10 border-amber-500/30",   icon: Clock, label: t("admin.status_pending") },
-    EXPIRED:  { color: "text-slate-400",   bg: "bg-slate-500/10 border-slate-500/30",   icon: XCircle, label: t("admin.status_expired") },
-    FAILED:   { color: "text-red-400",     bg: "bg-red-500/10 border-red-500/30",       icon: AlertCircle, label: t("admin.status_failed") },
+    SUCCESS:  { color: "text-emerald-600", bg: "bg-emerald-50", icon: CheckCircle, label: t("admin.status_success") },
+    PENDING:  { color: "text-amber-600",   bg: "bg-amber-50", icon: Clock, label: t("admin.status_pending") },
+    EXPIRED:  { color: "text-slate-600",   bg: "bg-slate-50", icon: XCircle, label: t("admin.status_expired") },
+    FAILED:   { color: "text-red-600",     bg: "bg-red-50", icon: AlertCircle, label: t("admin.status_failed") },
   };
 
   const loadMetrics = useCallback(async () => {
@@ -118,83 +118,69 @@ export const AdminPremiumMonitor: React.FC = () => {
   return (
     <div className="space-y-6">
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-sans font-black text-lg text-white flex items-center gap-2">
-            <CreditCard className="text-amber-400" size={20} />
-            {t("admin.premium_monitor_title")}
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            {t("admin.premium_monitor_desc")}
-          </p>
+      {/* Header Wrapped in One Card Container */}
+      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="font-bold text-xl text-white light_sakura:text-slate-800 flex items-center gap-2">
+              <CreditCard className="text-amber-500" size={24} />
+              {t("admin.premium_monitor_title")}
+            </h2>
+            <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1">
+              {t("admin.premium_monitor_desc")}
+            </p>
+          </div>
+          <button
+            onClick={async () => {
+              setRefreshing(true);
+              try {
+                await Promise.all([loadMetrics(), loadTransactions()]);
+                showToast(t("admin.refresh_data") + " berhasil", "success");
+              } catch (err: any) {
+                showToast(err.message || "Failed to refresh", "error");
+              } finally {
+                setRefreshing(false);
+              }
+            }}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-750 light_sakura:hover:bg-slate-50 transition-colors cursor-pointer shrink-0"
+          >
+            <RefreshCw size={16} />
+            {t("admin.refresh_data")}
+          </button>
         </div>
-        <button
-          onClick={async () => {
-            setRefreshing(true);
-            try {
-              await Promise.all([loadMetrics(), loadTransactions()]);
-              showToast(t("admin.refresh_data") + " berhasil", "success");
-            } catch (err: any) {
-              showToast(err.message || "Failed to refresh", "error");
-            } finally {
-              setRefreshing(false);
-            }
-          }}
-          className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-900 text-slate-300 cursor-pointer transition-colors"
-        >
-          <RefreshCw size={12} />
-          {t("admin.refresh_data")}
-        </button>
       </div>
 
       {/* Revenue Metrics */}
       {metrics && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
-            <p className="text-[10px] font-black uppercase tracking-wider text-amber-400/80 flex items-center gap-1">
-              <TrendingUp size={10} /> {t("admin.total_revenue")}
-            </p>
-            <h3 className="font-black text-xl text-amber-400 mt-1">
-              {formatIDR(metrics.totalRevenue)}
-            </h3>
-            <p className="text-[10px] text-amber-400/60 mt-0.5">
-              dari {metrics.successCount} {t("admin.success_transactions")}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-            <p className="text-[10px] font-black uppercase tracking-wider text-emerald-400/80">✅ {t("admin.status_success")}</p>
-            <h3 className="font-black text-xl text-emerald-400 mt-1">{metrics.successCount}</h3>
-          </div>
-          <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
-            <p className="text-[10px] font-black uppercase tracking-wider text-amber-400/80">⏳ {t("admin.status_pending")}</p>
-            <h3 className="font-black text-xl text-amber-400 mt-1">{metrics.pendingCount}</h3>
-          </div>
-          <div className="rounded-2xl border border-slate-700 bg-slate-800/30 p-4">
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">⌛ {t("admin.status_expired")}</p>
-            <h3 className="font-black text-xl text-slate-400 mt-1">{metrics.expiredCount}</h3>
-          </div>
-          <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4">
-            <p className="text-[10px] font-black uppercase tracking-wider text-red-400/80">❌ {t("admin.status_failed")}</p>
-            <h3 className="font-black text-xl text-red-400 mt-1">{metrics.failedCount}</h3>
-          </div>
-          <div className="rounded-2xl border border-slate-700 bg-slate-800/30 p-4">
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">📊 {t("admin.metrics.total")}</p>
-            <h3 className="font-black text-xl text-slate-300 mt-1">{metrics.totalTransactions}</h3>
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          {[
+            { label: t("admin.total_revenue"), val: formatIDR(metrics.totalRevenue), color: "text-amber-500 light_sakura:text-amber-600" },
+            { label: t("admin.status_success"), val: metrics.successCount, color: "text-emerald-500 light_sakura:text-emerald-600" },
+            { label: t("admin.status_pending"), val: metrics.pendingCount, color: "text-amber-500 light_sakura:text-amber-600" },
+            { label: t("admin.status_expired"), val: metrics.expiredCount, color: "text-slate-400 light_sakura:text-slate-600" },
+            { label: t("admin.status_failed"), val: metrics.failedCount, color: "text-red-500 light_sakura:text-red-600" },
+            { label: t("admin.metrics.total"), val: metrics.totalTransactions, color: "text-slate-200 light_sakura:text-slate-800" },
+          ].map((m, i) => (
+            <div key={i} className="bg-slate-900 light_sakura:bg-white p-6 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+              <p className="text-sm font-medium text-slate-400 light_sakura:text-slate-500">{m.label}</p>
+              <h3 className={`font-bold text-2xl mt-2 ${m.color}`}>
+                {m.val}
+              </h3>
+            </div>
+          ))}
         </div>
       )}
 
       {/* Filter */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 p-2 bg-slate-800 light_sakura:bg-slate-50 rounded-2xl w-fit">
         {["all", "SUCCESS", "PENDING", "EXPIRED", "FAILED"].map((s) => (
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
-            className={`px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all cursor-pointer
+            className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all
               ${statusFilter === s
-                ? "bg-teal-500/20 border-teal-500/40 text-teal-400"
-                : "bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-300"}`}
+                ? "bg-slate-700 light_sakura:bg-white text-white light_sakura:text-indigo-600 shadow-sm"
+                : "text-slate-400 light_sakura:text-slate-500 hover:text-slate-200 light_sakura:hover:text-slate-700"}`}
           >
             {s === "all" ? t("admin.status_all") : s}
           </button>
@@ -202,10 +188,10 @@ export const AdminPremiumMonitor: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/40">
+      <div className="overflow-hidden rounded-3xl border border-slate-800 light_sakura:border-slate-100 bg-slate-900 light_sakura:bg-white shadow-sm">
         {loading ? (
           <div className="py-16 flex items-center justify-center">
-            <Clock className="animate-spin text-teal-400" size={28} />
+            <Clock className="animate-spin text-indigo-500" size={28} />
           </div>
         ) : transactions.length === 0 ? (
           <div className="py-16 text-center text-slate-500 text-sm">
@@ -213,58 +199,52 @@ export const AdminPremiumMonitor: React.FC = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-slate-800 bg-slate-900/60 text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                  <th className="px-4 py-3">{t("admin.user_col")}</th>
-                  <th className="px-4 py-3">{t("admin.order_id")}</th>
-                  <th className="px-4 py-3">{t("admin.amount_col")}</th>
-                  <th className="px-4 py-3">{t("admin.status_col")}</th>
-                  <th className="px-4 py-3">{t("admin.mode_col")}</th>
-                  <th className="px-4 py-3">{t("admin.pay_time_col")}</th>
-                  <th className="px-4 py-3">{t("admin.create_time_col")}</th>
+            <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600">
+              <thead className="bg-slate-800 light_sakura:bg-slate-50 text-slate-400 light_sakura:text-slate-500 uppercase text-xs">
+                <tr>
+                  <th className="px-6 py-4">{t("admin.user_col")}</th>
+                  <th className="px-6 py-4">{t("admin.order_id")}</th>
+                  <th className="px-6 py-4">{t("admin.amount_col")}</th>
+                  <th className="px-6 py-4">{t("admin.status_col")}</th>
+                  <th className="px-6 py-4">{t("admin.mode_col")}</th>
+                  <th className="px-6 py-4">{t("admin.pay_time_col")}</th>
+                  <th className="px-6 py-4">{t("admin.create_time_col")}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/50">
+              <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
                 {transactions.map((tx) => {
                   const cfg = statusConfig[tx.status] || statusConfig.FAILED;
                   const StatusIcon = cfg.icon;
                   return (
-                    <tr key={tx.id} className="hover:bg-slate-900/20 transition-colors">
-                      <td className="px-4 py-3">
-                        <p className="font-bold text-xs text-slate-200">{tx.display_name || "—"}</p>
-                        <p className="text-[10px] text-slate-500">{tx.email || "—"}</p>
+                    <tr key={tx.id} className="hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50">
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-white light_sakura:text-slate-900">{tx.display_name || "—"}</p>
+                        <p className="text-xs text-slate-400 light_sakura:text-slate-500">{tx.email || "—"}</p>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="font-mono text-[10px] text-slate-400">{tx.order_id}</span>
+                      <td className="px-6 py-4">
+                        <span className="font-mono text-xs text-slate-400 light_sakura:text-slate-500">{tx.order_id}</span>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className="text-xs font-bold text-slate-200">{formatIDR(tx.total_amount)}</span>
+                      <td className="px-6 py-4">
+                        <p className="font-semibold text-white light_sakura:text-slate-900">{formatIDR(tx.total_amount)}</p>
                         {tx.total_amount !== tx.amount && (
-                          <p className="text-[10px] text-slate-500">
+                          <p className="text-xs text-slate-400 light_sakura:text-slate-500">
                             base: {formatIDR(tx.amount)}
                           </p>
                         )}
                       </td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-[9px] font-black uppercase border ${cfg.bg} ${cfg.color}`}>
-                          <StatusIcon size={9} />
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${cfg.bg.replace("bg-", "bg-opacity-20 bg-")} ${cfg.color}`}>
+                          <StatusIcon size={14} />
                           {cfg.label}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        {tx.is_sandbox ? (
-                          <span className="px-2 py-1 rounded-lg text-[9px] font-black bg-purple-500/10 border border-purple-500/30 text-purple-400 uppercase">
-                            {t("admin.sandbox_badge")}
-                          </span>
-                        ) : (
-                          <span className="px-2 py-1 rounded-lg text-[9px] font-black bg-teal-500/10 border border-teal-500/30 text-teal-400 uppercase">
-                            {t("admin.live_badge")}
-                          </span>
-                        )}
+                      <td className="px-6 py-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tx.is_sandbox ? "bg-purple-900/20 light_sakura:bg-purple-50 text-purple-300 light_sakura:text-purple-600" : "bg-teal-900/20 light_sakura:bg-teal-50 text-teal-300 light_sakura:text-teal-600"}`}>
+                          {tx.is_sandbox ? t("admin.sandbox_badge") : t("admin.live_badge")}
+                        </span>
                       </td>
-                      <td className="px-4 py-3 text-[10px] text-slate-400">{formatDate(tx.paid_at)}</td>
-                      <td className="px-4 py-3 text-[10px] text-slate-400">{formatDate(tx.created_at)}</td>
+                      <td className="px-6 py-4 text-xs text-slate-400 light_sakura:text-slate-500">{formatDate(tx.paid_at)}</td>
+                      <td className="px-6 py-4 text-xs text-slate-400 light_sakura:text-slate-500">{formatDate(tx.created_at)}</td>
                     </tr>
                   );
                 })}
@@ -276,7 +256,7 @@ export const AdminPremiumMonitor: React.FC = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between text-xs text-slate-400">
+        <div className="flex items-center justify-between text-sm text-slate-400 light_sakura:text-slate-600 pt-4">
           <span>
             {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, totalCount)} dari {totalCount}
           </span>
@@ -284,22 +264,22 @@ export const AdminPremiumMonitor: React.FC = () => {
             <button
               disabled={page === 0}
               onClick={() => setPage(p => p - 1)}
-              className="p-1.5 rounded-lg border border-slate-800 hover:bg-slate-900 disabled:opacity-30 cursor-pointer"
+              className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
             >
-              <ChevronLeft size={14} />
+              <ChevronLeft size={16} />
             </button>
-            <span>{page + 1} / {totalPages}</span>
+            <span className="font-medium text-white light_sakura:text-slate-800">{page + 1} / {totalPages}</span>
             <button
               disabled={page + 1 >= totalPages}
               onClick={() => setPage(p => p + 1)}
-              className="p-1.5 rounded-lg border border-slate-800 hover:bg-slate-900 disabled:opacity-30 cursor-pointer"
+              className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
             >
-              <ChevronRight size={14} />
+              <ChevronRight size={16} />
             </button>
           </div>
         </div>
       )}
-      {/* Loading overlay */}
+      
       <LoadingOverlay isOpen={refreshing || loading} message={t("admin.loading_data")} />
     </div>
   );

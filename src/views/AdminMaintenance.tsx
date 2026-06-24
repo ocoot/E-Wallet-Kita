@@ -106,29 +106,28 @@ export const AdminMaintenance: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h2 className="font-sans font-black text-lg text-white flex items-center gap-2 light_sakura:text-slate-800">
-          <Wrench className="text-amber-400 light_sakura:text-rose-500" size={20} />
-          {t("admin.maintenance_title")}
-        </h2>
-        <p className="text-xs text-slate-400 mt-0.5 light_sakura:text-slate-500">
-          {t("admin.maintenance_desc")}
-        </p>
-      </div>
+      <div className="bg-slate-900 light_sakura:bg-white p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm space-y-6">
+        {/* Header inside Card Container */}
+        <div className="border-b border-slate-800 light_sakura:border-slate-100 pb-5">
+          <h2 className="font-bold text-xl text-white light_sakura:text-slate-800 flex items-center gap-2">
+            <Wrench size={24} className="text-amber-500" />
+            {t("admin.maintenance_title")}
+          </h2>
+          <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1">
+            {t("admin.maintenance_desc")}
+          </p>
+        </div>
 
-      {/* Global maintenance toggle card */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-5 space-y-4 light_sakura:bg-white light_sakura:border-rose-100">
         <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl border ${isActive ? "bg-amber-500/10 border-amber-500/30 text-amber-400" : "bg-slate-900 border-slate-800 text-slate-500"}`}>
-              <Power size={18} />
+          <div className="flex items-center gap-4">
+            <div className={`p-3 rounded-2xl border ${isActive ? "bg-amber-900/20 light_sakura:bg-amber-50 border-amber-800/50 light_sakura:border-amber-100 text-amber-500 light_sakura:text-amber-600" : "bg-slate-800 light_sakura:bg-slate-50 border-slate-700 light_sakura:border-slate-100 text-slate-500"}`}>
+              <Power size={20} />
             </div>
             <div>
-              <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-800">
+              <p className="font-semibold text-white light_sakura:text-slate-900">
                 {t("admin.maintenance_global_toggle_label")}
               </p>
-              <p className="text-[10px] text-slate-400 light_sakura:text-slate-500">
+              <p className="text-xs text-slate-400 light_sakura:text-slate-500">
                 {isActive ? t("admin.maintenance_status_on") : t("admin.maintenance_status_off")}
               </p>
             </div>
@@ -138,81 +137,81 @@ export const AdminMaintenance: React.FC = () => {
           <button
             onClick={() => setIsActive(v => !v)}
             className={`relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0
-              ${isActive ? "bg-amber-500/80" : "bg-slate-800"}`}
+              ${isActive ? "bg-amber-600" : "bg-slate-700 light_sakura:bg-slate-200"}`}
             aria-pressed={isActive}
           >
             <span
-              className={`absolute top-0.5 left-0.5 w-6 h-6 rounded-full bg-white shadow transition-transform
+              className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform
                 ${isActive ? "translate-x-7" : "translate-x-0"}`}
             />
           </button>
         </div>
 
         {/* Running text message editors */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1 flex items-center gap-1 light_sakura:text-slate-500">
-              <MessageSquareWarning size={11} /> {t("admin.maintenance_message_id_label")}
+            <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-2 flex items-center gap-2">
+              <MessageSquareWarning size={16} /> {t("admin.maintenance_message_id_label")}
             </label>
             <textarea
               value={messageId}
               onChange={e => setMessageId(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 rounded-xl text-xs bg-slate-900 border border-slate-800 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 resize-none leading-relaxed light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800"
+              className="w-full px-4 py-3 rounded-2xl text-sm bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 text-white light_sakura:text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-amber-500 resize-none leading-relaxed"
             />
           </div>
           <div>
-            <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1 flex items-center gap-1 light_sakura:text-slate-500">
-              <MessageSquareWarning size={11} /> {t("admin.maintenance_message_en_label")}
+            <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-2 flex items-center gap-2">
+              <MessageSquareWarning size={16} /> {t("admin.maintenance_message_en_label")}
             </label>
             <textarea
               value={messageEn}
               onChange={e => setMessageEn(e.target.value)}
               rows={3}
-              className="w-full px-3 py-2 rounded-xl text-xs bg-slate-900 border border-slate-800 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-amber-500 resize-none leading-relaxed light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800"
+              className="w-full px-4 py-3 rounded-2xl text-sm bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 text-white light_sakura:text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-amber-500 resize-none leading-relaxed"
             />
           </div>
         </div>
 
-        <div className="flex justify-end gap-2">
+        <div className="flex justify-end gap-3">
           <button
             onClick={loadAll}
-            className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-900 transition-colors cursor-pointer text-slate-300 flex items-center gap-1.5 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+            className="px-6 py-3 text-sm font-semibold rounded-xl border border-slate-700 light_sakura:border-slate-200 hover:bg-slate-800 light_sakura:hover:bg-slate-50 text-slate-300 light_sakura:text-slate-600 cursor-pointer flex items-center gap-2"
           >
-            <RefreshCw size={12} /> {t("admin.refresh")}
+            <RefreshCw size={16} /> {t("admin.refresh")}
           </button>
           <button
             onClick={handleSaveGlobal}
-            className="px-4 py-2 text-xs font-bold rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 hover:bg-amber-500/25 transition-colors cursor-pointer flex items-center gap-1.5"
+            className="px-6 py-3 text-sm font-semibold rounded-xl bg-amber-600 text-white hover:bg-amber-700 cursor-pointer flex items-center gap-2"
           >
-            <Save size={12} /> {t("admin.maintenance_save_btn")}
+            <Save size={16} /> {t("admin.maintenance_save_btn")}
           </button>
         </div>
       </div>
 
       {/* Per-feature lock list */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-950/40 overflow-hidden light_sakura:bg-white light_sakura:border-rose-100">
-        <div className="px-5 py-4 border-b border-slate-800 light_sakura:border-rose-100">
-          <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-800">
+      <div className="bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm overflow-hidden">
+        <div className="px-8 py-6 border-b border-slate-800 light_sakura:border-slate-100">
+          <p className="font-semibold text-white light_sakura:text-slate-900">
             {t("admin.maintenance_feature_lock_title")}
           </p>
-          <p className="text-[10px] text-slate-400 mt-0.5 light_sakura:text-slate-500">
+          <p className="text-xs text-slate-400 light_sakura:text-slate-500 mt-1">
             {t("admin.maintenance_feature_lock_desc")}
           </p>
         </div>
 
-        <div className="divide-y divide-slate-800/50 light_sakura:divide-rose-100">
+        <div className="divide-y divide-slate-800 light_sakura:divide-slate-100">
           {features.map(feature => (
-            <div key={feature.feature_key} className="flex items-center justify-between gap-4 px-5 py-3.5">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg border ${feature.is_locked ? "bg-red-500/10 border-red-500/25 text-red-400" : "bg-emerald-500/10 border-emerald-500/25 text-emerald-400"}`}>
-                  {feature.is_locked ? <Lock size={14} /> : <Unlock size={14} />}
+            <div key={feature.feature_key} className="flex items-center justify-between gap-6 px-8 py-5">
+              <div className="flex items-center gap-4">
+                <div className={`p-3 rounded-xl border ${feature.is_locked ? "bg-red-950/40 light_sakura:bg-red-50 border-red-900/50 light_sakura:border-red-100 text-red-400 light_sakura:text-red-600" : "bg-emerald-950/40 light_sakura:bg-emerald-50 border-emerald-900/50 light_sakura:border-emerald-100 text-emerald-400 light_sakura:text-emerald-600"}`}>
+                  {feature.is_locked ? <Lock size={18} /> : <Unlock size={18} />}
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-800">
+                  <p className="text-sm font-semibold text-white light_sakura:text-slate-900">
                     {getFeatureLabel(feature.feature_key)}
                   </p>
-                  <p className="text-[10px] text-slate-500">
+                  <p className="text-xs text-slate-400 light_sakura:text-slate-500">
                     {feature.is_locked ? t("admin.maintenance_feature_locked") : t("admin.maintenance_feature_unlocked")}
                   </p>
                 </div>
@@ -220,13 +219,13 @@ export const AdminMaintenance: React.FC = () => {
 
               <button
                 onClick={() => handleToggleFeature(feature.feature_key, !feature.is_locked)}
-                className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer shrink-0
-                  ${feature.is_locked ? "bg-red-500/70" : "bg-slate-800"}`}
+                className={`relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0
+                  ${feature.is_locked ? "bg-red-600" : "bg-slate-700 light_sakura:bg-slate-200"}`}
                 aria-pressed={feature.is_locked}
               >
                 <span
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform
-                    ${feature.is_locked ? "translate-x-6" : "translate-x-0"}`}
+                  className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform
+                    ${feature.is_locked ? "translate-x-7" : "translate-x-0"}`}
                 />
               </button>
             </div>

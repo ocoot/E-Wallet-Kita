@@ -123,62 +123,63 @@ export const AdminAiMonitor: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-black text-slate-100 flex items-center gap-2 light_sakura:text-slate-800">
-            <Brain size={18} className="text-teal-400 light_sakura:text-rose-500" />
-            {t("ai_monitor.title")}
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5 light_sakura:text-slate-500">
-            {t("ai_monitor.desc")}
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Period selector */}
-          <div className="flex rounded-xl border border-slate-800 overflow-hidden light_sakura:border-rose-200">
-            {PERIOD_OPTIONS.map((d) => (
-              <button
-                key={d}
-                onClick={() => setPeriod(d)}
-                className={`px-3 py-1.5 text-[10px] font-black cursor-pointer transition-colors
-                  ${period === d
-                    ? "bg-teal-500/20 text-teal-400 light_sakura:bg-rose-100 light_sakura:text-rose-600"
-                    : "text-slate-500 hover:text-slate-300 light_sakura:hover:text-slate-600"
-                  }`}
-              >
-                {d}{t("ai_monitor.days_suffix")}
-              </button>
-            ))}
+      {/* Header Wrapped in One Card Container */}
+      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="font-bold text-xl text-white light_sakura:text-slate-800 flex items-center gap-2">
+              <Brain size={24} className="text-indigo-500" />
+              {t("ai_monitor.title")}
+            </h2>
+            <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1">
+              {t("ai_monitor.desc")}
+            </p>
           </div>
 
-          <button
-            onClick={() => load(true)}
-            disabled={refreshing}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-black rounded-xl border border-slate-800 hover:bg-slate-900 transition-colors cursor-pointer text-slate-300 disabled:opacity-50 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50"
-          >
-            <RefreshCw size={11} className={refreshing ? "animate-spin" : ""} />
-            {t("ai_monitor.refresh")}
-          </button>
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            {/* Period selector */}
+            <div className="flex rounded-xl border border-slate-800 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-slate-50 p-1">
+              {PERIOD_OPTIONS.map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setPeriod(d)}
+                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer transition-colors
+                    ${period === d
+                      ? "bg-slate-700 light_sakura:bg-white shadow-sm text-teal-400 light_sakura:text-indigo-600"
+                      : "text-slate-400 light_sakura:text-slate-500 hover:text-slate-200 light_sakura:hover:text-slate-750"
+                    }`}
+                >
+                  {d}{t("ai_monitor.days_suffix")}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={() => load(true)}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-slate-800 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-white hover:bg-slate-750 light_sakura:hover:bg-slate-50 text-slate-300 light_sakura:text-slate-600 cursor-pointer transition-colors disabled:opacity-50"
+            >
+              <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
+              {t("ai_monitor.refresh")}
+            </button>
+          </div>
         </div>
       </div>
 
       {loading ? (
         <div className="py-20 flex items-center justify-center">
-          <Activity className="animate-pulse text-teal-400" size={28} />
+          <Activity className="animate-pulse text-indigo-500" size={32} />
         </div>
       ) : (
         <>
           {/* Provider Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {byProvider.length === 0 ? (
-              <div className="col-span-3 py-12 text-center text-slate-500 text-sm border border-dashed border-slate-800 rounded-2xl">
+              <div className="col-span-3 py-16 text-center text-slate-500 light_sakura:text-slate-500 text-sm border border-dashed border-slate-700 light_sakura:border-slate-200 rounded-3xl">
                 {t("ai_monitor.no_data")}
               </div>
             ) : (
               byProvider.map((p) => {
-                const colors = PROVIDER_COLORS[p.provider] ?? PROVIDER_COLORS.gemini;
                 const sRate  = successRate(p.success_calls, p.total_calls);
                 const qRate  = quotaRate(p.quota_exceeded_calls, p.total_calls);
                 const sharePercent = grandTotal > 0 ? Math.round((p.total_calls / grandTotal) * 100) : 0;
@@ -186,34 +187,34 @@ export const AdminAiMonitor: React.FC = () => {
                 return (
                   <div
                     key={p.provider}
-                    className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 space-y-3 light_sakura:bg-rose-50/40 light_sakura:border-rose-200"
+                    className="rounded-3xl border border-slate-700 light_sakura:border-slate-100 bg-slate-900 light_sakura:bg-white p-6 shadow-sm space-y-4"
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`px-2 py-0.5 rounded-lg text-[10px] font-black uppercase border ${colors.badge}`}>
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-900/50 light_sakura:bg-indigo-50 text-indigo-300 light_sakura:text-indigo-600 uppercase">
                         {p.provider}
                       </span>
-                      <span className="text-[10px] text-slate-400">{sharePercent}% {t("ai_monitor.share_of_total")}</span>
+                      <span className="text-xs text-slate-400 light_sakura:text-slate-500">{sharePercent}% {t("ai_monitor.share_of_total")}</span>
                     </div>
 
                     <div>
-                      <p className="text-2xl font-black text-slate-100 light_sakura:text-slate-800">
+                      <p className="text-3xl font-bold text-white light_sakura:text-slate-900">
                         {p.total_calls.toLocaleString()}
                       </p>
-                      <p className="text-[10px] text-slate-400">{t("ai_monitor.total_calls")}</p>
+                      <p className="text-sm text-slate-400 light_sakura:text-slate-500">{t("ai_monitor.total_calls")}</p>
                     </div>
 
                     {/* Success rate bar */}
                     <div className="space-y-1">
-                      <div className="flex justify-between text-[10px] text-slate-400">
+                      <div className="flex justify-between text-xs text-slate-300 light_sakura:text-slate-600">
                         <span className="flex items-center gap-1">
-                          <CheckCircle size={9} className="text-emerald-400" />
+                          <CheckCircle size={12} className="text-emerald-500" />
                           {t("ai_monitor.success_rate")}
                         </span>
-                        <span className="font-bold text-emerald-400">{sRate}%</span>
+                        <span className="font-semibold text-emerald-400 light_sakura:text-emerald-600">{sRate}%</span>
                       </div>
-                      <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                      <div className="h-2 rounded-full bg-slate-700 light_sakura:bg-slate-100 overflow-hidden">
                         <div
-                          className={`h-full rounded-full ${colors.bar} opacity-80 transition-all duration-500`}
+                          className="h-full rounded-full bg-indigo-500 transition-all duration-500"
                           style={{ width: `${sRate}%` }}
                         />
                       </div>
@@ -221,20 +222,20 @@ export const AdminAiMonitor: React.FC = () => {
 
                     {/* Quota exceeded */}
                     {qRate > 0 && (
-                      <div className="flex items-center gap-1.5 text-[10px] text-amber-400">
-                        <AlertTriangle size={9} />
+                      <div className="flex items-center gap-2 text-xs text-amber-500 light_sakura:text-amber-600 font-medium">
+                        <AlertTriangle size={14} />
                         {qRate}% {t("ai_monitor.quota_exceeded")}
                       </div>
                     )}
 
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <div className="bg-slate-900/60 rounded-xl p-2 light_sakura:bg-rose-100/40">
-                        <p className="text-xs font-black text-emerald-400">{p.success_calls.toLocaleString()}</p>
-                        <p className="text-[9px] text-slate-500">{t("ai_monitor.success")}</p>
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                      <div className="bg-slate-800 light_sakura:bg-slate-50 rounded-xl p-3">
+                        <p className="text-sm font-bold text-emerald-400 light_sakura:text-emerald-600">{p.success_calls.toLocaleString()}</p>
+                        <p className="text-xs text-slate-400 light_sakura:text-slate-500">{t("ai_monitor.success")}</p>
                       </div>
-                      <div className="bg-slate-900/60 rounded-xl p-2 light_sakura:bg-rose-100/40">
-                        <p className="text-xs font-black text-red-400">{p.failed_calls.toLocaleString()}</p>
-                        <p className="text-[9px] text-slate-500">{t("ai_monitor.failed")}</p>
+                      <div className="bg-slate-800 light_sakura:bg-slate-50 rounded-xl p-3">
+                        <p className="text-sm font-bold text-red-400 light_sakura:text-red-600">{p.failed_calls.toLocaleString()}</p>
+                        <p className="text-xs text-slate-400 light_sakura:text-slate-500">{t("ai_monitor.failed")}</p>
                       </div>
                     </div>
                   </div>
@@ -245,29 +246,28 @@ export const AdminAiMonitor: React.FC = () => {
 
           {/* Per-Key Detail Table */}
           {byKey.length > 0 && (
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/40 overflow-hidden light_sakura:bg-rose-50/40 light_sakura:border-rose-200">
-              <div className="px-5 py-4 border-b border-slate-800 light_sakura:border-rose-200">
-                <h3 className="text-sm font-black text-slate-200 light_sakura:text-slate-700">
+            <div className="rounded-3xl border border-slate-800 light_sakura:border-slate-100 bg-slate-900 light_sakura:bg-white shadow-sm overflow-hidden">
+              <div className="px-6 py-5 border-b border-slate-800 light_sakura:border-slate-100">
+                <h3 className="text-base font-semibold text-white light_sakura:text-slate-900">
                   {t("ai_monitor.per_key_title")}
                 </h3>
-                <p className="text-[10px] text-slate-400 mt-0.5">{t("ai_monitor.per_key_desc")}</p>
+                <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-0.5">{t("ai_monitor.per_key_desc")}</p>
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-left">
-                  <thead>
-                    <tr className="border-b border-slate-800 bg-slate-900/60 text-[10px] font-black text-slate-400 uppercase tracking-wider light_sakura:border-rose-200 light_sakura:bg-rose-100/30">
-                      <th className="px-4 py-3">{t("ai_monitor.col_key")}</th>
-                      <th className="px-4 py-3">{t("ai_monitor.col_model")}</th>
-                      <th className="px-4 py-3 text-right">{t("ai_monitor.col_total")}</th>
-                      <th className="px-4 py-3">{t("ai_monitor.col_success_rate")}</th>
-                      <th className="px-4 py-3 text-right">{t("ai_monitor.col_quota")}</th>
-                      <th className="px-4 py-3">{t("ai_monitor.col_last_used")}</th>
+                <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600">
+                  <thead className="bg-slate-800 light_sakura:bg-slate-50 uppercase text-xs font-semibold text-slate-400 light_sakura:text-slate-500">
+                    <tr>
+                      <th className="px-6 py-4">{t("ai_monitor.col_key")}</th>
+                      <th className="px-6 py-4">{t("ai_monitor.col_model")}</th>
+                      <th className="px-6 py-4 text-right">{t("ai_monitor.col_total")}</th>
+                      <th className="px-6 py-4">{t("ai_monitor.col_success_rate")}</th>
+                      <th className="px-6 py-4 text-right">{t("ai_monitor.col_quota")}</th>
+                      <th className="px-6 py-4">{t("ai_monitor.col_last_used")}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/50 light_sakura:divide-rose-200/50">
+                  <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
                     {byKey.map((k) => {
-                      const colors  = PROVIDER_COLORS[k.provider] ?? PROVIDER_COLORS.gemini;
                       const sRate   = successRate(k.success_calls, k.total_calls);
                       const qRate   = quotaRate(k.quota_exceeded_calls, k.total_calls);
                       const hasQuotaIssue = qRate > 10;
@@ -275,57 +275,57 @@ export const AdminAiMonitor: React.FC = () => {
                       return (
                         <tr
                           key={`${k.provider}-${k.key_alias}`}
-                          className="hover:bg-slate-900/20 transition-colors light_sakura:hover:bg-rose-50/50"
+                          className="hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50 transition-colors"
                         >
-                          <td className="px-4 py-3">
-                            <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase border mr-2 ${colors.badge}`}>
+                          <td className="px-6 py-4">
+                            <span className="px-2 py-1 rounded-lg text-[10px] font-semibold bg-indigo-950/50 light_sakura:bg-indigo-50 text-indigo-300 light_sakura:text-indigo-600 uppercase mr-2">
                               {k.provider}
                             </span>
-                            <span className="font-mono text-[10px] text-slate-300 light_sakura:text-slate-600">
+                            <span className="font-mono text-xs text-slate-200 light_sakura:text-slate-700">
                               {k.key_alias}
                             </span>
                           </td>
-                          <td className="px-4 py-3 font-mono text-[10px] text-slate-400">
+                          <td className="px-6 py-4 font-mono text-xs text-slate-400 light_sakura:text-slate-500">
                             {k.model}
                           </td>
-                          <td className="px-4 py-3 text-right text-xs font-bold text-slate-200 light_sakura:text-slate-700">
+                          <td className="px-6 py-4 text-right text-sm font-semibold text-white light_sakura:text-slate-900">
                             {k.total_calls.toLocaleString()}
                           </td>
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2 min-w-[100px]">
-                              <div className="flex-1 h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3 min-w-[120px]">
+                              <div className="flex-1 h-2 rounded-full bg-slate-700 light_sakura:bg-slate-100 overflow-hidden">
                                 <div
                                   className={`h-full rounded-full transition-all ${sRate >= 80 ? "bg-emerald-500" : sRate >= 50 ? "bg-amber-500" : "bg-red-500"}`}
                                   style={{ width: `${sRate}%` }}
                                 />
                               </div>
-                              <span className={`text-[10px] font-bold w-8 ${sRate >= 80 ? "text-emerald-400" : sRate >= 50 ? "text-amber-400" : "text-red-400"}`}>
+                              <span className={`text-xs font-semibold w-8 ${sRate >= 80 ? "text-emerald-400 light_sakura:text-emerald-600" : sRate >= 50 ? "text-amber-400 light_sakura:text-amber-600" : "text-red-400 light_sakura:text-red-600"}`}>
                                 {sRate}%
                               </span>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-right">
+                          <td className="px-6 py-4 text-right">
                             {hasQuotaIssue ? (
-                              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400">
-                                <AlertTriangle size={9} />
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-400 light_sakura:text-amber-600">
+                                <AlertTriangle size={14} />
                                 {qRate}%
                               </span>
                             ) : (
-                              <span className="text-[10px] text-slate-500">{qRate}%</span>
+                              <span className="text-xs text-slate-400 light_sakura:text-slate-500">{qRate}%</span>
                             )}
                           </td>
-                          <td className="px-4 py-3">
+                          <td className="px-6 py-4 text-xs text-slate-400 light_sakura:text-slate-600">
                             {k.last_used_at ? (
                               <div>
-                                <p className="text-[10px] text-slate-300 light_sakura:text-slate-600">
+                                <p className="text-white light_sakura:text-slate-900">
                                   {formatRelativeTime(k.last_used_at, t)}
                                 </p>
-                                <p className="text-[9px] text-slate-500">
+                                <p className="text-slate-400 light_sakura:text-slate-500">
                                   {new Date(k.last_used_at).toLocaleDateString()}
                                 </p>
                               </div>
                             ) : (
-                              <span className="text-[10px] text-slate-600">{t("ai_monitor.never")}</span>
+                              <span className="text-slate-400 light_sakura:text-slate-500">{t("ai_monitor.never")}</span>
                             )}
                           </td>
                         </tr>
@@ -339,18 +339,18 @@ export const AdminAiMonitor: React.FC = () => {
 
           {/* Failed / Quota Warning notice */}
           {byKey.some((k) => quotaRate(k.quota_exceeded_calls, k.total_calls) > 20) && (
-            <div className="flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 px-4 py-3">
-              <AlertTriangle size={14} className="text-amber-400 mt-0.5 shrink-0" />
+            <div className="flex items-start gap-4 rounded-3xl border border-amber-800/50 light_sakura:border-amber-100 bg-amber-950/20 light_sakura:bg-amber-50 p-6">
+              <AlertTriangle size={20} className="text-amber-500 mt-0.5 shrink-0" />
               <div>
-                <p className="text-xs font-bold text-amber-400">{t("ai_monitor.high_quota_warning_title")}</p>
-                <p className="text-[10px] text-amber-400/70 mt-0.5">{t("ai_monitor.high_quota_warning_desc")}</p>
+                <p className="text-sm font-semibold text-amber-200 light_sakura:text-amber-800">{t("ai_monitor.high_quota_warning_title")}</p>
+                <p className="text-xs text-amber-300 light_sakura:text-amber-700 mt-1">{t("ai_monitor.high_quota_warning_desc")}</p>
               </div>
             </div>
           )}
 
           {/* Footer info */}
           {summary && (
-            <p className="text-[10px] text-slate-600 text-center">
+            <p className="text-xs text-slate-400 light_sakura:text-slate-500 text-center">
               {t("ai_monitor.footer_since")} {new Date(summary.since).toLocaleDateString()} — {summary.period_days} {t("ai_monitor.footer_days")}
             </p>
           )}

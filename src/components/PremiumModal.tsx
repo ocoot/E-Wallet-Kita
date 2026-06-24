@@ -9,6 +9,7 @@ import { createPremiumTransaction, checkPremiumStatus, isSandboxMode, PREMIUM_AM
 import { useVoucher } from "../hooks/useVoucher";
 import { PremiumVoucher, PremiumPricing } from "../types";
 import { generatePremiumReceipt } from "../lib/receipt";
+import { Modal } from "./Modal";
 
 type Step = "terms" | "qris" | "checking" | "success" | "expired" | "failed";
 

@@ -4,7 +4,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
-import { Tag, Plus, Pencil, Check, X, ToggleLeft, ToggleRight, RefreshCw } from "lucide-react";
+import { Tag, Plus, Pencil, Check, X, RefreshCw } from "lucide-react";
 
 interface Category {
   id: string;
@@ -29,12 +29,6 @@ export const AdminCategoryManager: React.FC = () => {
     isOpen: false,
     message: ""
   });
-
-  const typeColors = {
-    income:  "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
-    expense: "bg-red-500/10 border-red-500/20 text-red-400",
-    both:    "bg-purple-500/10 border-purple-500/20 text-purple-400",
-  };
 
   const loadCategories = useCallback(async () => {
     setLoading(true);
@@ -68,7 +62,7 @@ export const AdminCategoryManager: React.FC = () => {
   };
 
   const saveEdit = async (key: string) => {
-    setSavingAction({ isOpen: true, message: "Menyimpan kategori..." });
+    setSavingAction({ isOpen: true, message: "Saving category..." });
     try {
       const { error } = await supabase.rpc("admin_update_category", {
         p_key: key,
@@ -78,7 +72,7 @@ export const AdminCategoryManager: React.FC = () => {
         p_is_active: editForm.is_active,
       });
       if (error) { showToast(error.message, "error"); return; }
-      showToast("Kategori berhasil diperbarui", "success");
+      showToast("Category updated", "success");
       setEditingKey(null);
       loadCategories();
     } finally {
@@ -88,10 +82,10 @@ export const AdminCategoryManager: React.FC = () => {
 
   const handleAdd = async () => {
     if (!addForm.key || !addForm.label_id) {
-      showToast("Key & Label wajib diisi", "error");
+      showToast("Key & Label required", "error");
       return;
     }
-    setSavingAction({ isOpen: true, message: "Menambahkan kategori baru..." });
+    setSavingAction({ isOpen: true, message: "Adding new category..." });
     try {
       const { error } = await supabase.rpc("admin_add_category", {
         p_key: addForm.key.toLowerCase().replace(/\s+/g, "_"),
@@ -100,7 +94,7 @@ export const AdminCategoryManager: React.FC = () => {
         p_type: addForm.type,
       });
       if (error) { showToast(error.message, "error"); return; }
-      showToast("Kategori baru berhasil ditambahkan", "success");
+      showToast("Category added", "success");
       setShowAddForm(false);
       setAddForm({ key: "", label_id: "", label_en: "", type: "expense" });
       loadCategories();
@@ -110,49 +104,49 @@ export const AdminCategoryManager: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-sans font-black text-lg text-white flex items-center gap-2 light_sakura:text-slate-800">
-            <Tag className="text-purple-400 light_sakura:text-rose-500" size={20} />
-            {t("admin.category_manager_title")}
-          </h2>
-          <p className="text-xs text-slate-400 mt-0.5 light_sakura:text-slate-500">
-            {t("admin.category_manager_desc")}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={loadCategories}
-            className="p-2 rounded-xl border border-slate-800 hover:bg-slate-900 text-slate-400 cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:hover:bg-rose-100"
-          >
-            <RefreshCw size={14} />
-          </button>
-          <button
-            onClick={() => setShowAddForm(v => !v)}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-black rounded-xl bg-teal-500/10 border border-teal-500/30 text-teal-400 hover:bg-teal-500/20 cursor-pointer transition-colors light_sakura:bg-rose-100 light_sakura:border-rose-300 light_sakura:text-rose-600"
-          >
-            <Plus size={12} /> {t("admin.add_category")}
-          </button>
+    <div className="space-y-6">
+      {/* Header Wrapped in One Card Container */}
+      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 className="font-bold text-xl text-white light_sakura:text-slate-800 flex items-center gap-2">
+              <Tag className="text-purple-500" size={24} />
+              {t("admin.category_manager_title")}
+            </h2>
+            <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1">
+              {t("admin.category_manager_desc")}
+            </p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              onClick={loadCategories}
+              className="p-2 rounded-xl border border-slate-700 light_sakura:border-slate-200 hover:bg-slate-800 light_sakura:hover:bg-slate-50 text-slate-300 light_sakura:text-slate-600 cursor-pointer transition-colors"
+            >
+              <RefreshCw size={16} />
+            </button>
+            <button
+              onClick={() => setShowAddForm(v => !v)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer transition-colors"
+            >
+              <Plus size={16} /> {t("admin.add_category")}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Add Form */}
       {showAddForm && (
-        <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-5 space-y-3 light_sakura:border-rose-200 light_sakura:bg-rose-100/10">
-          <p className="text-xs font-black text-teal-400 uppercase tracking-wider light_sakura:text-rose-600">
-            {t("admin.add_category_title")}
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="bg-slate-900 light_sakura:bg-white p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm space-y-6">
+          <h3 className="font-semibold text-white light_sakura:text-slate-800">{t("admin.add_category_title")}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputField label={t("admin.key_label")} value={addForm.key}
-              onChange={v => setAddForm(f => ({ ...f, key: v }))} placeholder="misal: transport_online" />
+              onChange={v => setAddForm(f => ({ ...f, key: v }))} placeholder="e.g., transport_online" />
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">{t("admin.type_label")}</label>
+              <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-1.5">{t("admin.type_label")}</label>
               <select
                 value={addForm.type}
                 onChange={e => setAddForm(f => ({ ...f, type: e.target.value }))}
-                className="w-full px-3 py-2 rounded-xl text-xs bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none cursor-pointer light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                className="w-full px-4 py-3 rounded-xl border border-slate-700 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-slate-50 text-white light_sakura:text-slate-900 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
               >
                 <option value="income">Income</option>
                 <option value="expense">Expense</option>
@@ -160,17 +154,17 @@ export const AdminCategoryManager: React.FC = () => {
               </select>
             </div>
             <InputField label={t("admin.label_id_label")} value={addForm.label_id}
-              onChange={v => setAddForm(f => ({ ...f, label_id: v }))} placeholder="misal: Transportasi Online" />
+              onChange={v => setAddForm(f => ({ ...f, label_id: v }))} placeholder="e.g., Online Transport" />
             <InputField label={t("admin.label_en_label")} value={addForm.label_en}
-              onChange={v => setAddForm(f => ({ ...f, label_en: v }))} placeholder="misal: Online Transport" />
+              onChange={v => setAddForm(f => ({ ...f, label_en: v }))} placeholder="e.g., Online Transport" />
           </div>
           <div className="flex gap-2 justify-end">
             <button onClick={() => setShowAddForm(false)}
-              className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200 light_sakura:text-slate-500">
+              className="px-6 py-3 text-sm font-semibold rounded-xl text-slate-400 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 cursor-pointer">
               {t("admin.cancel_btn")}
             </button>
             <button onClick={handleAdd}
-              className="px-4 py-2 text-xs font-bold rounded-xl bg-teal-500/20 border border-teal-500/30 text-teal-400 hover:bg-teal-500/30 cursor-pointer light_sakura:bg-rose-200 light_sakura:border-rose-300 light_sakura:text-rose-600">
+              className="px-6 py-3 text-sm font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer">
               {t("admin.save_category_btn")}
             </button>
           </div>
@@ -179,82 +173,80 @@ export const AdminCategoryManager: React.FC = () => {
 
       {/* Category List */}
       {loading ? (
-        <div className="py-12 text-center text-slate-500 text-sm light_sakura:text-rose-500">{t("admin.loading")}</div>
+        <div className="py-16 text-center text-slate-400 light_sakura:text-slate-500 text-sm">{t("admin.loading")}</div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/40 light_sakura:border-rose-100 light_sakura:bg-white">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-slate-800 bg-slate-900/60 text-[10px] font-black text-slate-400 uppercase tracking-wider light_sakura:border-rose-100 light_sakura:bg-rose-50/50 light_sakura:text-slate-500">
-                <th className="px-4 py-3">{t("admin.table_key_col")}</th>
-                <th className="px-4 py-3">{t("admin.table_label_id_col")}</th>
-                <th className="px-4 py-3">{t("admin.table_label_en_col")}</th>
-                <th className="px-4 py-3">{t("admin.table_type_col")}</th>
-                <th className="px-4 py-3">{t("admin.table_status_col")}</th>
-                <th className="px-4 py-3 text-right">{t("admin.table_actions_col")}</th>
+        <div className="overflow-hidden rounded-3xl border border-slate-800 light_sakura:border-slate-100 bg-slate-900 light_sakura:bg-white shadow-sm">
+          <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600">
+            <thead className="bg-slate-800 light_sakura:bg-slate-50 text-slate-400 light_sakura:text-slate-500 uppercase text-xs">
+              <tr>
+                <th className="px-6 py-4">{t("admin.table_key_col")}</th>
+                <th className="px-6 py-4">{t("admin.table_label_id_col")}</th>
+                <th className="px-6 py-4">{t("admin.table_label_en_col")}</th>
+                <th className="px-6 py-4">{t("admin.table_type_col")}</th>
+                <th className="px-6 py-4">{t("admin.table_status_col")}</th>
+                <th className="px-6 py-4 text-right">{t("admin.table_actions_col")}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/50 light_sakura:divide-rose-100">
+            <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
               {categories.map(cat => (
-                <tr key={cat.key} className={`transition-colors ${!cat.is_active ? "opacity-50" : ""} hover:bg-slate-900/20 light_sakura:hover:bg-rose-50/30`}>
-                  <td className="px-4 py-3 font-mono text-[10px] text-slate-400 light_sakura:text-slate-500">{cat.key}</td>
+                <tr key={cat.key} className={`transition-colors ${!cat.is_active ? "opacity-60" : ""} hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50`}>
+                  <td className="px-6 py-4 font-mono text-xs text-slate-400 light_sakura:text-slate-500">{cat.key}</td>
 
                   {editingKey === cat.key ? (
                     <>
-                      <td className="px-4 py-2">
+                      <td className="px-6 py-4">
                         <input value={editForm.label_id} onChange={e => setEditForm(f => ({ ...f, label_id: e.target.value }))}
-                          className="w-full px-2 py-1 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-teal-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700" />
+                          className="w-full px-3 py-2 text-sm bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 rounded-xl text-white light_sakura:text-slate-900 focus:ring-2 focus:ring-indigo-500" />
                       </td>
-                      <td className="px-4 py-2">
+                      <td className="px-6 py-4">
                         <input value={editForm.label_en} onChange={e => setEditForm(f => ({ ...f, label_en: e.target.value }))}
-                          className="w-full px-2 py-1 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-teal-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700" />
+                          className="w-full px-3 py-2 text-sm bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 rounded-xl text-white light_sakura:text-slate-900 focus:ring-2 focus:ring-indigo-500" />
                       </td>
-                      <td className="px-4 py-2">
+                      <td className="px-6 py-4">
                         <select value={editForm.type} onChange={e => setEditForm(f => ({ ...f, type: e.target.value as any }))}
-                          className="px-2 py-1 text-xs bg-slate-900 border border-slate-700 rounded-lg text-slate-300 focus:outline-none cursor-pointer light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700">
+                          className="px-3 py-2 text-sm bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 rounded-xl text-white light_sakura:text-slate-900 focus:ring-2 focus:ring-indigo-500 cursor-pointer">
                           <option value="income">Income</option>
                           <option value="expense">Expense</option>
                           <option value="both">Both</option>
                         </select>
                       </td>
-                      <td className="px-4 py-2">
+                      <td className="px-6 py-4">
                         <button onClick={() => setEditForm(f => ({ ...f, is_active: !f.is_active }))}
-                          className={`flex items-center gap-1 text-[10px] font-bold cursor-pointer ${editForm.is_active ? "text-emerald-400" : "text-slate-500"}`}>
-                          {editForm.is_active ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                          className={`text-sm font-semibold cursor-pointer ${editForm.is_active ? "text-emerald-400 light_sakura:text-emerald-600" : "text-slate-400 light_sakura:text-slate-500"}`}>
                           {editForm.is_active ? t("admin.status_active_col") : t("admin.status_inactive_col")}
                         </button>
                       </td>
-                      <td className="px-4 py-2 text-right">
-                        <div className="flex items-center justify-end gap-1.5">
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
                           <button onClick={() => saveEdit(cat.key)}
-                            className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20 cursor-pointer">
-                            <Check size={12} />
+                            className="p-2 rounded-xl bg-emerald-950/40 light_sakura:bg-emerald-50 text-emerald-400 light_sakura:text-emerald-600 hover:bg-emerald-950/60 light_sakura:hover:bg-emerald-100 cursor-pointer">
+                            <Check size={16} />
                           </button>
                           <button onClick={() => setEditingKey(null)}
-                            className="p-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-400 hover:bg-slate-700 cursor-pointer">
-                            <X size={12} />
+                            className="p-2 rounded-xl bg-slate-800 light_sakura:bg-slate-100 text-slate-400 light_sakura:text-slate-600 hover:bg-slate-700 light_sakura:hover:bg-slate-200 cursor-pointer">
+                            <X size={16} />
                           </button>
                         </div>
                       </td>
                     </>
                   ) : (
                     <>
-                      <td className="px-4 py-3 text-xs text-slate-300 light_sakura:text-slate-800">{cat.label_id || "—"}</td>
-                      <td className="px-4 py-3 text-xs text-slate-400 light_sakura:text-slate-500">{cat.label_en || "—"}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-0.5 rounded-md text-[9px] font-black uppercase border
-                          ${cat.type === "income" ? typeColors.income : cat.type === "expense" ? typeColors.expense : typeColors.both}`}>
+                      <td className="px-6 py-4 text-sm text-white light_sakura:text-slate-900">{cat.label_id || "—"}</td>
+                      <td className="px-6 py-4 text-sm text-slate-400 light_sakura:text-slate-500">{cat.label_en || "—"}</td>
+                      <td className="px-6 py-4">
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 light_sakura:bg-slate-100 text-slate-400 light_sakura:text-slate-600 capitalize">
                           {cat.type}
                         </span>
                       </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-[10px] font-bold ${cat.is_active ? "text-emerald-400" : "text-slate-600"}`}>
+                      <td className="px-6 py-4">
+                        <span className={`text-sm font-semibold ${cat.is_active ? "text-emerald-400 light_sakura:text-emerald-600" : "text-slate-400 light_sakura:text-slate-500"}`}>
                           {cat.is_active ? t("admin.status_active_col") : t("admin.status_inactive_col")}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-right">
+                      <td className="px-6 py-4 text-right">
                         <button onClick={() => startEdit(cat)}
-                          className="p-1.5 rounded-lg border border-slate-800 text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer transition-colors light_sakura:border-rose-100 light_sakura:text-slate-500 light_sakura:hover:bg-rose-100">
-                          <Pencil size={12} />
+                          className="p-2 rounded-xl border border-slate-700 light_sakura:border-slate-200 text-slate-400 light_sakura:text-slate-500 hover:bg-slate-800 light_sakura:hover:bg-slate-50 cursor-pointer transition-colors">
+                          <Pencil size={16} />
                         </button>
                       </td>
                     </>
@@ -273,12 +265,12 @@ export const AdminCategoryManager: React.FC = () => {
 const InputField: React.FC<{ label: string; value: string; onChange: (v: string) => void; placeholder?: string }> = ({ label, value, onChange, placeholder }) => {
   return (
     <div>
-      <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">{label}</label>
+      <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-1.5">{label}</label>
       <input
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-3 py-2 rounded-xl text-xs bg-slate-900 border border-slate-800 text-slate-200 placeholder-slate-600 focus:outline-none focus:border-teal-500 light_sakura:bg-white light_sakura:border-rose-250 light_sakura:text-slate-800 light_sakura:placeholder-slate-400"
+        className="w-full px-4 py-3 rounded-xl border border-slate-700 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-slate-50 text-white light_sakura:text-slate-900 focus:ring-2 focus:ring-indigo-500 placeholder-slate-500"
       />
     </div>
   );

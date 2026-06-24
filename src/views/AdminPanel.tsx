@@ -430,11 +430,11 @@ export const AdminPanel: React.FC = () => {
   return (
     <div className="space-y-6">
       
-      {/* Upper header section */}
-      <div className="border-b border-slate-800/50 pb-0 light_sakura:border-rose-100/30">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6">
+      {/* Upper header section - Wrapped in one card container */}
+      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-sans font-black text-2xl tracking-tight text-white dark_obsidian:text-white light_sakura:text-slate-900 flex items-center gap-2">
+            <h1 className="font-sans font-black text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
               <Shield className="text-teal-400 light_sakura:text-rose-500" />
               <span>{t("nav.admin_panel")}</span>
             </h1>
@@ -442,7 +442,7 @@ export const AdminPanel: React.FC = () => {
               {t("admin.panel_desc")}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             {activeTab === "users" && (
               <button
                 onClick={handleExportCSV}
@@ -456,15 +456,17 @@ export const AdminPanel: React.FC = () => {
                 fetchUsers();
                 loadMetrics();
               }}
-              className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-900 transition-colors cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+              className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
             >
               {t("admin.refresh")}
             </button>
           </div>
         </div>
+      </div>
 
-        {/* Tab Navigation links */}
-        <div className="flex gap-1 overflow-x-auto pb-0">
+      {/* Tab Navigation links - Wrapped in one card container */}
+      <div className="bg-slate-900 light_sakura:bg-white p-4 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+        <div className="flex gap-1 overflow-x-auto">
           {([
             { key: "users",       label: locale === "id" ? "👥 Manajemen User" : "👥 Manage Users" },
             { key: "premium",     label: locale === "id" ? "💳 Monitor Premium" : "💳 Premium Monitor" },
@@ -480,10 +482,10 @@ export const AdminPanel: React.FC = () => {
                 audioFeedback.playClick();
                 setActiveTab(tab.key);
               }}
-              className={`px-4 py-2.5 text-xs font-black whitespace-nowrap rounded-t-xl transition-all cursor-pointer border-b-2
+              className={`px-4 py-2.5 text-xs font-black whitespace-nowrap rounded-xl transition-all cursor-pointer border border-transparent
                 ${activeTab === tab.key
-                  ? "border-teal-400 text-teal-400 bg-teal-500/5 light_sakura:border-rose-500 light_sakura:text-rose-600 light_sakura:bg-rose-100/10"
-                  : "border-transparent text-slate-500 hover:text-slate-300 light_sakura:text-slate-400 light_sakura:hover:text-slate-600"}`}
+                  ? "bg-teal-500/10 text-teal-400 border-teal-500/20 light_sakura:bg-rose-100 light_sakura:text-rose-600 light_sakura:border-rose-200"
+                  : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500 light_sakura:hover:text-slate-800"}`}
             >
               {tab.label}
             </button>
@@ -494,99 +496,103 @@ export const AdminPanel: React.FC = () => {
       {/* Tab Contents: Users List */}
       {activeTab === "users" && (
         <>
-          {/* Metrics Cards Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 shadow-sm light_sakura:bg-rose-100/10 light_sakura:border-rose-200">
-              <p className="font-sans text-[10px] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600">
-                {t("admin.metrics.total")}
-              </p>
-              <h2 className="font-sans font-black text-2xl text-slate-100 light_sakura:text-slate-900 mt-1">
-                {metrics.totalUsers}
-              </h2>
-            </div>
+          {/* Metrics Cards Grid - Wrapped in One Card Container */}
+          <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 shadow-sm light_sakura:bg-rose-100/10 light_sakura:border-rose-200">
+                <p className="font-sans text-[10px] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600">
+                  {t("admin.metrics.total")}
+                </p>
+                <h2 className="font-sans font-black text-2xl text-slate-100 light_sakura:text-slate-900 mt-1">
+                  {metrics.totalUsers}
+                </h2>
+              </div>
 
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm">
-              <p className="font-sans text-[10px] uppercase font-black tracking-wider text-amber-400/80">
-                {t("admin.metrics.premium")}
-              </p>
-              <h2 className="font-sans font-black text-2xl text-amber-400 mt-1">
-                {metrics.premiumUsers}
-              </h2>
-            </div>
+              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm light_sakura:bg-amber-100/30 light_sakura:border-amber-200">
+                <p className="font-sans text-[10px] uppercase font-black tracking-wider text-amber-400/80 light_sakura:text-amber-600">
+                  {t("admin.metrics.premium")}
+                </p>
+                <h2 className="font-sans font-black text-2xl text-amber-400 light_sakura:text-amber-600 mt-1">
+                  {metrics.premiumUsers}
+                </h2>
+              </div>
 
-            <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-4 shadow-sm">
-              <p className="font-sans text-[10px] uppercase font-black tracking-wider text-teal-400/80">
-                {t("admin.metrics.admin")}
-              </p>
-              <h2 className="font-sans font-black text-2xl text-teal-400 mt-1">
-                {metrics.adminUsers}
-              </h2>
-            </div>
+              <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-4 shadow-sm light_sakura:bg-teal-100/30 light_sakura:border-teal-200">
+                <p className="font-sans text-[10px] uppercase font-black tracking-wider text-teal-400/80 light_sakura:text-teal-600">
+                  {t("admin.metrics.admin")}
+                </p>
+                <h2 className="font-sans font-black text-2xl text-teal-400 light_sakura:text-teal-600 mt-1">
+                  {metrics.adminUsers}
+                </h2>
+              </div>
 
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 shadow-sm">
-              <p className="font-sans text-[10px] uppercase font-black tracking-wider text-red-400/80">
-                {t("admin.metrics.suspended")}
-              </p>
-              <h2 className="font-sans font-black text-2xl text-red-400/80 mt-1">
-                {metrics.bannedUsers}
-              </h2>
+              <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 shadow-sm light_sakura:bg-red-100/30 light_sakura:border-red-200">
+                <p className="font-sans text-[10px] uppercase font-black tracking-wider text-red-400/80 light_sakura:text-red-600">
+                  {t("admin.metrics.suspended")}
+                </p>
+                <h2 className="font-sans font-black text-2xl text-red-400/80 light_sakura:text-red-600 mt-1">
+                  {metrics.bannedUsers}
+                </h2>
+              </div>
             </div>
           </div>
 
-          {/* Control panel (Search & filters) */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-950/40 border border-slate-850/60 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm shadow-black/10">
-            <div className="relative">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 light_sakura:text-rose-400" size={16} />
-              <input
-                type="text"
-                placeholder={t("admin.search_placeholder")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:placeholder-slate-400"
-              />
-            </div>
-            
-            <div>
-              <select
-                value={roleFilter}
-                onChange={(e) => setRoleFilter(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
-              >
-                <option value="all">{t("admin.filter_role")}: {t("common.all")}</option>
-                <option value="owner">{t("admin.filter_role")}: Owner</option>
-                <option value="admin">{t("admin.filter_role")}: Admin</option>
-                <option value="user">{t("admin.filter_role")}: User</option>
-              </select>
-            </div>
+          {/* Control panel (Search & filters) - Wrapped in One Card Container */}
+          <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 light_sakura:text-rose-400" size={16} />
+                <input
+                  type="text"
+                  placeholder={t("admin.search_placeholder")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl font-sans text-xs bg-slate-850 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:placeholder-slate-400"
+                />
+              </div>
+              
+              <div>
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-850 border border-slate-800 text-slate-300 focus:outline-none focus:border-teal-400 cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-700"
+                >
+                  <option value="all">{t("admin.filter_role")}: {t("common.all")}</option>
+                  <option value="owner">{t("admin.filter_role")}: Owner</option>
+                  <option value="admin">{t("admin.filter_role")}: Admin</option>
+                  <option value="user">{t("admin.filter_role")}: User</option>
+                </select>
+              </div>
 
-            <div>
-              <select
-                value={premiumFilter}
-                onChange={(e) => setPremiumFilter(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
-              >
-                <option value="all">{t("admin.filter_premium")}: {t("common.all")}</option>
-                <option value="premium">{t("admin.filter_premium")}: {t("admin.status_active")}</option>
-                <option value="normal">{t("admin.filter_premium")}: {t("admin.premium_lite")}</option>
-              </select>
-            </div>
+              <div>
+                <select
+                  value={premiumFilter}
+                  onChange={(e) => setPremiumFilter(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-850 border border-slate-800 text-slate-300 focus:outline-none focus:border-teal-400 cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-700"
+                >
+                  <option value="all">{t("admin.filter_premium")}: {t("common.all")}</option>
+                  <option value="premium">{t("admin.filter_premium")}: {t("admin.status_active")}</option>
+                  <option value="normal">{t("admin.filter_premium")}: {t("admin.premium_lite")}</option>
+                </select>
+              </div>
 
-            <div>
-              <select
-                value={banFilter}
-                onChange={(e) => setBanFilter(e.target.value)}
-                className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
-              >
-                <option value="all">{t("admin.filter_status")}: {t("common.all")}</option>
-                <option value="normal">{t("admin.filter_status")}: {t("admin.status_active")}</option>
-                <option value="banned">{t("admin.filter_status")}: {t("admin.metrics.suspended")}</option>
-              </select>
+              <div>
+                <select
+                  value={banFilter}
+                  onChange={(e) => setBanFilter(e.target.value)}
+                  className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-850 border border-slate-800 text-slate-300 focus:outline-none focus:border-teal-400 cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-700"
+                >
+                  <option value="all">{t("admin.filter_status")}: {t("common.all")}</option>
+                  <option value="normal">{t("admin.filter_status")}: {t("admin.status_active")}</option>
+                  <option value="banned">{t("admin.filter_status")}: {t("admin.metrics.suspended")}</option>
+                </select>
+              </div>
             </div>
           </div>
 
           {/* Bulk Action Bar */}
           {selectedIds.size > 0 && (
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-teal-500/20 bg-teal-500/5 light_sakura:bg-rose-50 light_sakura:border-rose-200">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-6 py-4 rounded-3xl border border-teal-500/20 bg-teal-500/5 light_sakura:bg-rose-50 light_sakura:border-rose-200">
               <span className="text-xs font-bold text-teal-400 light_sakura:text-rose-600">
                 {selectedIds.size} {locale === "id" ? "pengguna dipilih" : "users selected"}
               </span>
@@ -616,8 +622,8 @@ export const AdminPanel: React.FC = () => {
             </div>
           )}
 
-          {/* Main Users Table */}
-          <div className="overflow-hidden rounded-2xl border border-slate-850/60 bg-slate-950/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100/50 shadow-md">
+          {/* Main Users Table - Wrapped in One Card Container */}
+          <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm overflow-hidden">
             {loading ? (
               <div className="py-20 flex flex-col items-center justify-center space-y-3">
                 <Clock className="animate-spin text-teal-400 light_sakura:text-rose-500" size={32} />
@@ -639,13 +645,13 @@ export const AdminPanel: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse table-auto">
                   <thead>
-                    <tr className="border-b border-slate-850/60 bg-slate-900/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:border-rose-100/40 light_sakura:text-slate-600">
+                    <tr className="border-b border-slate-800 bg-slate-850/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:border-rose-200 light_sakura:text-slate-600">
                       <th className="px-4 py-4 w-10">
                         <input
-                          type="checkbox"
-                          onChange={toggleSelectAll}
-                          checked={selectedIds.size > 0 && selectedIds.size === users.filter(u => u.role !== "owner" && u.id !== currentUser?.id).length}
-                          className="w-3.5 h-3.5 accent-teal-500 light_sakura:accent-rose-500 cursor-pointer"
+                           type="checkbox"
+                           onChange={toggleSelectAll}
+                           checked={selectedIds.size > 0 && selectedIds.size === users.filter(u => u.role !== "owner" && u.id !== currentUser?.id).length}
+                           className="w-3.5 h-3.5 accent-teal-500 light_sakura:accent-rose-500 cursor-pointer"
                         />
                       </th>
                       <th className="px-6 py-4">{t("admin.table_user")}</th>
@@ -656,13 +662,13 @@ export const AdminPanel: React.FC = () => {
                       <th className="px-6 py-4 text-right">{t("admin.table_actions")}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-850/50 light_sakura:divide-rose-100/20">
+                  <tbody className="divide-y divide-slate-800 light_sakura:divide-rose-100/20">
                     {users.map((user) => {
                       const isSelf = user.id === currentUser?.id;
                       return (
                         <tr 
                           key={user.id} 
-                          className={`hover:bg-slate-900/20 transition-all duration-150 ${user.is_banned ? "bg-red-950/5" : ""} light_sakura:hover:bg-rose-100/10`}
+                          className={`hover:bg-slate-850/50 transition-all duration-150 ${user.is_banned ? "bg-red-950/10" : ""} light_sakura:hover:bg-rose-50/50`}
                         >
                           {/* Checkbox column */}
                           <td className="px-4 py-4">
@@ -680,14 +686,14 @@ export const AdminPanel: React.FC = () => {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <div className={`w-8 h-8 rounded-xl font-bold flex items-center justify-center shrink-0 
-                                ${user.is_banned ? "bg-red-500/20 text-red-400" : "bg-slate-900 text-teal-400 light_sakura:bg-rose-200 light_sakura:text-rose-600"}`}>
+                                ${user.is_banned ? "bg-red-500/20 text-red-400" : "bg-slate-800 text-teal-400 light_sakura:bg-rose-100 light_sakura:text-rose-600"}`}>
                                 {user.display_name.charAt(0).toUpperCase()}
                               </div>
                               <div>
-                                <span className="font-sans font-bold text-xs text-slate-200 light_sakura:text-slate-800 block">
+                                <span className="font-sans font-bold text-xs text-white light_sakura:text-slate-800 block">
                                   {user.display_name} {isSelf && t("admin.self_label")}
                                 </span>
-                                <span className="font-mono text-[9px] text-slate-500 block">
+                                <span className="font-mono text-[9px] text-slate-400 block">
                                   ID: {user.id.slice(0, 8)}...
                                 </span>
                               </div>
@@ -696,7 +702,7 @@ export const AdminPanel: React.FC = () => {
 
                           {/* Email */}
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-1.5 font-sans text-xs text-slate-400 light_sakura:text-slate-600">
+                            <div className="flex items-center gap-1.5 font-sans text-xs text-slate-300 light_sakura:text-slate-600">
                                <Mail size={12} className="text-slate-500 shrink-0" />
                                <span>{user.email || t("admin.no_email")}</span>
                             </div>
@@ -711,11 +717,11 @@ export const AdminPanel: React.FC = () => {
                               title={t("admin.refresh")}
                             >
                               {user.is_premium ? (
-                                <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-lg flex items-center gap-1 inline-flex hover:bg-amber-500/25">
+                                <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-lg flex items-center gap-1 inline-flex hover:bg-amber-500/25 light_sakura:bg-amber-100 light_sakura:text-amber-700 light_sakura:border-amber-200">
                                   👑 {t("admin.premium_active")}
                                 </span>
                               ) : (
-                                <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-slate-800 text-slate-400 border border-slate-800/80 rounded-lg hover:bg-slate-700/50 inline-flex">
+                                <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-slate-800 text-slate-400 border border-slate-700 rounded-lg hover:bg-slate-700/50 inline-flex light_sakura:bg-slate-100 light_sakura:text-slate-600 light_sakura:border-slate-200">
                                   {t("admin.premium_lite")}
                                 </span>
                               )}
@@ -725,10 +731,10 @@ export const AdminPanel: React.FC = () => {
                           {/* Role column */}
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
-                              <span className={`px-2 py-1 text-[9px] font-extrabold tracking-wider rounded-lg uppercase
-                                ${user.role === "owner" ? "bg-red-500/10 text-red-400 border border-red-500/20" :
-                                  user.role === "admin" ? "bg-teal-500/10 text-teal-400 border border-teal-500/20" : 
-                                  "bg-slate-800 text-slate-400"}`}>
+                              <span className={`px-2 py-1 text-[9px] font-extrabold tracking-wider rounded-lg uppercase border
+                                ${user.role === "owner" ? "bg-red-500/10 text-red-400 border-red-500/20 light_sakura:bg-red-100 light_sakura:text-red-700 light_sakura:border-red-200" :
+                                  user.role === "admin" ? "bg-teal-500/10 text-teal-400 border-teal-500/20 light_sakura:bg-teal-100 light_sakura:text-teal-700 light_sakura:border-teal-200" : 
+                                  "bg-slate-800 text-slate-400 border-slate-700 light_sakura:bg-slate-100 light_sakura:text-slate-600 light_sakura:border-slate-200"}`}>
                                 {user.role}
                               </span>
                             </div>
@@ -737,12 +743,12 @@ export const AdminPanel: React.FC = () => {
                           {/* Suspend Status */}
                           <td className="px-6 py-4">
                             {user.is_banned ? (
-                              <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-red-500/15 text-red-500 border border-red-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase">
+                              <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-red-500/15 text-red-500 border border-red-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-red-100 light_sakura:text-red-700 light_sakura:border-red-200">
                                 <XCircle size={10} />
                                 {t("admin.status_suspended")}
                               </span>
                             ) : (
-                              <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase">
+                              <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-emerald-100 light_sakura:text-emerald-700 light_sakura:border-emerald-200">
                                 <CheckCircle size={10} />
                                 {t("admin.status_active")}
                               </span>
@@ -758,7 +764,7 @@ export const AdminPanel: React.FC = () => {
                                   audioFeedback.playClick();
                                   setDetailUser(user);
                                 }}
-                                className="p-1 px-2.5 text-[10px] font-bold text-slate-400 border border-slate-800 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100"
+                                className="p-1 px-2.5 text-[10px] font-bold text-slate-300 border border-slate-800 hover:bg-slate-850 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
                                 title={t("admin.user_detail_title")}
                               >
                                 <User size={10} />
@@ -769,7 +775,7 @@ export const AdminPanel: React.FC = () => {
                               <button
                                 disabled={isSelf || user.role === "owner" || !isOwner}
                                 onClick={() => handleToggleRole(user)}
-                                className="p-1 px-2.5 text-[10px] font-bold text-slate-400 border border-slate-800 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 light_sakura:border-rose-200"
+                                className="p-1 px-2.5 text-[10px] font-bold text-slate-300 border border-slate-800 hover:bg-slate-850 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
                                 title={t("admin.role_title")}
                               >
                                 <Shield size={10} />
@@ -782,8 +788,8 @@ export const AdminPanel: React.FC = () => {
                                 onClick={() => handleToggleBan(user)}
                                 className={`p-1.5 rounded-lg border transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer
                                   ${user.is_banned 
-                                    ? "border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/10" 
-                                    : "border-red-500/20 text-red-400 hover:bg-red-500/10"}`}
+                                    ? "border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/10 light_sakura:border-emerald-200 light_sakura:text-emerald-600 light_sakura:hover:bg-emerald-50" 
+                                    : "border-red-500/20 text-red-400 hover:bg-red-500/10 light_sakura:border-red-200 light_sakura:text-red-600 light_sakura:hover:bg-red-50"}`}
                                 title={user.is_banned ? t("admin.restore_title") : t("admin.suspend_title")}
                               >
                                 {user.is_banned ? <UserCheck size={12} /> : <UserX size={12} />}
