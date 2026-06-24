@@ -28,6 +28,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
   const [secondsLeft, setSecondsLeft] = useState(QRIS_EXPIRY_SECONDS);
   const [paidAt, setPaidAt] = useState<string | null>(null);
   const [askDownload, setAskDownload] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
@@ -42,6 +43,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
     setSecondsLeft(QRIS_EXPIRY_SECONDS);
     setPaidAt(null);
     setAskDownload(false);
+    setShowCancelConfirm(false);
     setSelectedVoucher(null);
     if (pollRef.current) clearInterval(pollRef.current);
     if (timerRef.current) clearInterval(timerRef.current);
@@ -224,17 +226,22 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               {isSandboxMode() && <p className="text-[10px] text-gray-500 mt-3">{t("premium.sandbox_notice")}</p>}
               
               <button
-                onClick={() => {
-                  if (pollRef.current) clearInterval(pollRef.current);
-                  if (timerRef.current) clearInterval(timerRef.current);
-
-                  setTx(null);
-                  setStep("terms");
-                }}
+                onClick={() => setShowCancelConfirm(true)}
                 className="mt-4 w-full py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-medium text-sm"
               >
                 {t("premium.cancel_transaction")}
               </button>
+              
+              <Modal
+                isOpen={showCancelConfirm}
+                title={t("voucher.confirm_cancel_tx")}
+                description={t("voucher.confirm_cancel_tx_desc")}
+                type="warning"
+                confirmLabel={t("voucher.cancel_tx")}
+                cancelLabel={t("voucher.continue_payment")}
+                onConfirm={reset}
+                onCancel={() => setShowCancelConfirm(false)}
+              />
             </div>
           )}
 

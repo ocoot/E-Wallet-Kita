@@ -368,7 +368,15 @@
     "code": "Kode",
     "active": "Aktif",
     "revoke": "Cabut",
-    "claimed": "Diklaim"
+    "claimed": "Diklaim",
+    "confirm_revoke": "Konfirmasi Revoke",
+    "confirm_revoke_desc": "Apakah Anda yakin ingin menonaktifkan voucher ini? Voucher tidak akan bisa digunakan lagi oleh pengguna.",
+    "confirm_delete": "Konfirmasi Hapus",
+    "confirm_delete_desc": "Hapus voucher ini? Tindakan ini tidak dapat dibatalkan.",
+    "confirm_cancel_tx": "Batalkan transaksi?",
+    "confirm_cancel_tx_desc": "QRIS yang sudah dibuat akan dianggap tidak digunakan.",
+    "continue_payment": "Lanjutkan Pembayaran",
+    "cancel_tx": "Batalkan Transaksi"
   },
   "admin": {
     "metrics_error": "Gagal memuat metrik pengguna.",

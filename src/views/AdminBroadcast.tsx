@@ -155,15 +155,15 @@ export const AdminBroadcast: React.FC = () => {
       {lastResult && (
         <div className={`rounded-2xl border px-4 py-3 text-xs font-bold
           ${lastResult.failCount === 0
-            ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-400"
-            : "bg-amber-500/5 border-amber-500/20 text-amber-400"}`}>
-          ✅ Terkirim: {lastResult.successCount} &nbsp;|&nbsp;
-          ❌ Gagal: {lastResult.failCount}
+            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+            : "bg-amber-500/10 border-amber-500/20 text-amber-400"}`}>
+          ✅ {t("admin.broadcast_success")}: {lastResult.successCount} &nbsp;|&nbsp;
+          ❌ {t("admin.broadcast_failed")}: {lastResult.failCount}
         </div>
       )}
 
       {/* Loading overlay for mass notifications */}
-      <LoadingOverlay isOpen={sending} message="Mengirim broadcast ke pengguna..." />
+      <LoadingOverlay isOpen={sending} message={t("admin.sending_broadcast")} />
     </div>
   );
 };

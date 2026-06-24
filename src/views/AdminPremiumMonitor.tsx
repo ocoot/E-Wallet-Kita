@@ -300,7 +300,7 @@ export const AdminPremiumMonitor: React.FC = () => {
         </div>
       )}
       {/* Loading overlay */}
-      <LoadingOverlay isOpen={refreshing} message="Memuat data monitor premium..." />
+      <LoadingOverlay isOpen={refreshing || loading} message={t("admin.loading_data")} />
     </div>
   );
 };

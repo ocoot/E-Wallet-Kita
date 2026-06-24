@@ -357,7 +357,7 @@ export const AdminAiMonitor: React.FC = () => {
         </>
       )}
 
-      <LoadingOverlay isOpen={refreshing} message={t("ai_monitor.loading")} />
+      <LoadingOverlay isOpen={refreshing || loading} message={t("ai_monitor.loading")} />
     </div>
   );
 };

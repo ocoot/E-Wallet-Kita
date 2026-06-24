@@ -10,6 +10,7 @@ import { motion, useAnimation } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
 import { useNavigate } from "react-router-dom";
+import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ReceiptUploader } from "../components/ReceiptUploader";
 import { ReceiptPreview } from "../components/ReceiptPreview";
 
@@ -369,15 +370,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
       />
 
       {/* Loading state indicator */}
-      {isLoading && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center">
-          <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col items-center gap-3 text-white">
-            <span className="w-8 h-8 border-3 border-t-transparent border-indigo-500 rounded-full animate-spin" />
-            <p className="font-sans text-xs tracking-wide">{t("common.loading")}</p>
-          </div>
-        </div>
-      )}
-
+      <LoadingOverlay isOpen={isLoading} message={t("common.loading")} />
     </div>
   );
 };

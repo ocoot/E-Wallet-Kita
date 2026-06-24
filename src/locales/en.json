@@ -368,7 +368,15 @@
     "code": "Code",
     "active": "Active",
     "revoke": "Revoke",
-    "claimed": "Claimed"
+    "claimed": "Claimed",
+    "confirm_revoke": "Confirm Revoke",
+    "confirm_revoke_desc": "Are you sure you want to deactivate this voucher? It will no longer be usable by users.",
+    "confirm_delete": "Confirm Delete",
+    "confirm_delete_desc": "Delete this voucher? This action cannot be undone.",
+    "confirm_cancel_tx": "Cancel transaction?",
+    "confirm_cancel_tx_desc": "The created QRIS will be considered unused.",
+    "continue_payment": "Continue Payment",
+    "cancel_tx": "Cancel Transaction"
   },
   "admin": {
     "metrics_error": "Failed to load user metrics.",
