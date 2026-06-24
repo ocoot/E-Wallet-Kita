@@ -61,3 +61,15 @@ html, body {
 .light_sakura ::-webkit-scrollbar-thumb {
   background: #fca5a5;
 }
+
+/* Running text (marquee) animation used by the maintenance mode banner */
+@keyframes maintenance-marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-100%); }
+}
+
+.maintenance-marquee-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: maintenance-marquee linear infinite;
+}

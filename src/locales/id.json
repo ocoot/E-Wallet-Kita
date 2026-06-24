@@ -448,11 +448,11 @@
     "table_actions_col": "Aksi",
     "status_active_col": "● Aktif",
     "status_inactive_col": "○ Nonaktif",
-    "broadcast_title": "Siaran Pesan Telegram",
-    "broadcast_desc": "Kirim pengumuman massal ke seluruh pengguna aktif yang terhubung dengan bot Telegram.",
+    "broadcast_title": "Broadcast Telegram",
+    "broadcast_desc": "Kirim pengumuman massal ke semua pengguna yang sudah menghubungkan Telegram.",
     "connected_users": "{count} pengguna terhubung bot",
     "connected_users_desc": "Hanya akun aktif yang tidak disuspend yang akan menerima pesan siaran.",
-    "broadcast_warning": "Peringatan: Pesan dikirim langsung dan sekaligus. Pastikan isi tulisan sudah benar sebelum menyiarkan.",
+    "broadcast_warning": "Pesan broadcast akan dikirim ke semua pengguna sekaligus. Aksi ini tidak dapat dibatalkan.",
     "message_body_label": "Isi Pesan Siaran",
     "message_placeholder": "Tulis pesan pengumuman di sini... (mendukung format Markdown Telegram: *tebal*, _miring_, `kode`)",
     "markdown_hint": "Format didukung: *tebal*, _miring_, `dan kode`",
@@ -490,10 +490,7 @@
     "detail_telegram": "Telegram Chat ID",
     "detail_stats": "Statistik Transaksi",
     "detail_net_balance": "Saldo Bersih (Lifetime)",
-    "broadcast_title": "Broadcast Telegram",
-    "broadcast_desc": "Kirim pengumuman massal ke semua pengguna yang sudah menghubungkan Telegram.",
     "broadcast_linked_count": "{count} pengguna terhubung Telegram",
-    "broadcast_warning": "Pesan broadcast akan dikirim ke semua pengguna sekaligus. Aksi ini tidak dapat dibatalkan.",
     "broadcast_placeholder": "Tulis pesan pengumuman di sini...",
     "broadcast_send": "Kirim ke {count} Pengguna Telegram",
     "broadcast_sending": "Mengirim broadcast...",
@@ -518,7 +515,33 @@
     "revenue_sandbox": "Sandbox",
     "revenue_live": "Live",
     "revenue_paid_at": "Waktu Bayar",
-    "revenue_created_at": "Dibuat"
+    "revenue_created_at": "Dibuat",
+    "tab_maintenance": "🛠️ Maintenance",
+    "maintenance_title": "Mode Maintenance",
+    "maintenance_desc": "Aktifkan mode maintenance, atur pesan running text, dan kunci fitur tertentu agar tidak dapat diakses pengguna.",
+    "maintenance_load_error": "Gagal memuat status maintenance.",
+    "maintenance_saving": "Menyimpan perubahan maintenance...",
+    "maintenance_save_success": "Pengaturan maintenance berhasil disimpan.",
+    "maintenance_save_error": "Gagal menyimpan pengaturan maintenance.",
+    "maintenance_global_toggle_label": "Mode Maintenance Global",
+    "maintenance_status_on": "Aktif — running text ditampilkan ke semua pengguna",
+    "maintenance_status_off": "Nonaktif — aplikasi berjalan normal",
+    "maintenance_message_id_label": "Pesan Running Text (Bahasa Indonesia)",
+    "maintenance_message_en_label": "Pesan Running Text (English)",
+    "maintenance_save_btn": "Simpan Pengaturan",
+    "maintenance_feature_lock_title": "Kunci Fitur",
+    "maintenance_feature_lock_desc": "Kunci fitur tertentu agar tidak dapat diakses pengguna selama maintenance berlangsung.",
+    "maintenance_feature_locked": "Terkunci untuk pengguna",
+    "maintenance_feature_unlocked": "Dapat diakses normal",
+    "maintenance_feature_update_success": "Status kunci fitur berhasil diperbarui.",
+    "maintenance_feature_update_error": "Gagal memperbarui status kunci fitur.",
+    "maintenance_feature": {
+      "new_transaction": "Transaksi Baru",
+      "history": "Riwayat Transaksi",
+      "settings": "Pengaturan",
+      "receipt_scan": "Pindai Struk (AI)",
+      "telegram_bot": "Bot Telegram"
+    }
   },
   "ai_monitor": {
     "title": "Monitor Penggunaan AI",
@@ -547,5 +570,9 @@
     "high_quota_warning_desc": "Satu atau lebih API key memiliki tingkat penolakan kuota di atas 20%. Pertimbangkan untuk merotasi atau menambah key baru.",
     "footer_since": "Data sejak",
     "footer_days": "hari"
+  },
+  "maintenance": {
+    "feature_locked_title": "Fitur Sedang Maintenance",
+    "feature_locked_desc": "Fitur ini sementara dikunci oleh admin karena sedang dilakukan maintenance. Silakan coba lagi beberapa saat lagi."
   }
 }

@@ -21,10 +21,12 @@ import {
   ShieldAlert,
   Volume2,
   VolumeX,
-  Shield
+  Shield,
+  Lock
 } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
 import { useAdmin } from "../hooks/useAdmin";
+import { useMaintenance } from "../contexts/MaintenanceContext";
 
 interface SidebarProps {
   onLogoutClick: () => void;
@@ -41,6 +43,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { locale, setLocale, t } = useLanguage();
   const { theme, setTheme } = useTheme();
   const { isAdmin } = useAdmin();
+  const { isFeatureLocked } = useMaintenance();
   const location = useLocation();
   
   // Mobile drawer overlay state
@@ -50,11 +53,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isGuest = user?.is_anonymous ?? false;
   const displayName = user?.user_metadata?.full_name || user?.email || t("admin.guest_user");
 
-  const menuItems = [
+  const menuItems: { id: string; label: string; icon: any; path: string; featureKey?: string }[] = [
     { id: "dashboard", label: t("nav.dashboard"), icon: LayoutDashboard, path: "/dashboard" },
-    { id: "new_transaction", label: t("nav.new_transaction"), icon: PlusCircle, path: "/transactions/new" },
-    { id: "history", label: t("nav.history"), icon: HistoryIcon, path: "/transactions" },
-    { id: "settings", label: t("nav.settings"), icon: SettingsIcon, path: "/settings" },
+    { id: "new_transaction", label: t("nav.new_transaction"), icon: PlusCircle, path: "/transactions/new", featureKey: "new_transaction" },
+    { id: "history", label: t("nav.history"), icon: HistoryIcon, path: "/transactions", featureKey: "history" },
+    { id: "settings", label: t("nav.settings"), icon: SettingsIcon, path: "/settings", featureKey: "settings" },
   ];
 
   if (isAdmin) {
@@ -164,6 +167,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {menuItems.map((item) => {
                 const IconComp = item.icon;
                 const isActive = activeTab === item.id;
+                const locked = !!item.featureKey && isFeatureLocked(item.featureKey);
                 return (
                   <Link
                     key={item.id}
@@ -172,11 +176,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-sans text-sm font-medium transition-all duration-150 cursor-pointer
                       ${isActive 
                         ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 light_sakura:bg-rose-500 light_sakura:text-white" 
-                        : "text-gray-300 hover:bg-slate-800 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                        : locked
+                          ? "text-slate-500 light_sakura:text-slate-400"
+                          : "text-gray-300 hover:bg-slate-800 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
                       }`}
                   >
                     <IconComp size={18} />
-                    <span>{item.label}</span>
+                    <span className="flex-1">{item.label}</span>
+                    {locked && <Lock size={14} className="text-amber-400 shrink-0" />}
                   </Link>
                 );
               })}
@@ -305,6 +312,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {menuItems.map((item) => {
             const IconComp = item.icon;
             const isActive = activeTab === item.id;
+            const locked = !!item.featureKey && isFeatureLocked(item.featureKey);
             return (
               <Link
                 key={item.id}
@@ -314,11 +322,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   ${isCollapsed ? "justify-center" : "gap-3"}
                   ${isActive 
                     ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 light_sakura:bg-rose-500 light_sakura:text-white" 
-                    : "text-slate-300 hover:bg-slate-900 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100/70"
+                    : locked
+                      ? "text-slate-500 light_sakura:text-slate-400"
+                      : "text-slate-300 hover:bg-slate-900 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100/70"
                   }`}
               >
                 <IconComp size={18} className="shrink-0" />
-                {!isCollapsed && <span>{item.label}</span>}
+                {!isCollapsed && <span className="flex-1">{item.label}</span>}
+                {!isCollapsed && locked && <Lock size={14} className="text-amber-400 shrink-0" />}
               </Link>
             );
           })}

@@ -30,9 +30,10 @@ import { AdminPremiumMonitor } from "./AdminPremiumMonitor";
 import { AdminCategoryManager } from "./AdminCategoryManager";
 import { AdminBroadcast } from "./AdminBroadcast";
 import { AdminAiMonitor } from "./AdminAiMonitor";
+import { AdminMaintenance } from "./AdminMaintenance";
 import { AdminUserDetailModal } from "../components/AdminUserDetailModal";
 
-type AdminTab = "users" | "premium" | "categories" | "broadcast" | "ai_monitor";
+type AdminTab = "users" | "premium" | "categories" | "broadcast" | "ai_monitor" | "maintenance";
 
 export const AdminPanel: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -464,11 +465,12 @@ export const AdminPanel: React.FC = () => {
         {/* Tab Navigation links */}
         <div className="flex gap-1 overflow-x-auto pb-0">
           {([
-            { key: "users",      label: locale === "id" ? "👥 Manajemen User" : "👥 Manage Users" },
-            { key: "premium",    label: locale === "id" ? "💳 Monitor Premium" : "💳 Premium Monitor" },
-            { key: "categories", label: locale === "id" ? "🏷️ Kategori" : "🏷️ Categories" },
-            { key: "broadcast",  label: locale === "id" ? "📢 Broadcast" : "📢 Broadcast Notice" },
-            { key: "ai_monitor", label: locale === "id" ? "🤖 Monitor AI" : "🤖 AI Monitor" },
+            { key: "users",       label: locale === "id" ? "👥 Manajemen User" : "👥 Manage Users" },
+            { key: "premium",     label: locale === "id" ? "💳 Monitor Premium" : "💳 Premium Monitor" },
+            { key: "categories",  label: locale === "id" ? "🏷️ Kategori" : "🏷️ Categories" },
+            { key: "broadcast",   label: locale === "id" ? "📢 Broadcast" : "📢 Broadcast Notice" },
+            { key: "ai_monitor",  label: locale === "id" ? "🤖 Monitor AI" : "🤖 AI Monitor" },
+            { key: "maintenance", label: t("admin.tab_maintenance") },
           ] as { key: AdminTab; label: string }[]).map(tab => (
             <button
               key={tab.key}
@@ -842,6 +844,8 @@ export const AdminPanel: React.FC = () => {
       {activeTab === "broadcast" && <AdminBroadcast />}
 
       {activeTab === "ai_monitor" && <AdminAiMonitor />}
+
+      {activeTab === "maintenance" && <AdminMaintenance />}
 
       {/* Global detail user modal */}
       <AdminUserDetailModal

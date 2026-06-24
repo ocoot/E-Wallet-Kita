@@ -4,6 +4,7 @@ import { GoogleGenAI, Type } from '@google/genai';
 import { parseAmountFromString } from '../src/lib/parserUtils.js';
 import { parseReceipt } from './lib/receipt-parser.js';
 import { createReceiptDraft, approveReceiptDraft, cancelReceiptDraft, getReceiptDraft, updateReceiptCategory } from './lib/receipt-service.js';
+import { getMaintenanceStatus, isFeatureLocked, getMaintenanceMessage, MaintenanceStatus } from './lib/maintenance.js';
 
 type Lang = "id" | "en";
 
@@ -467,11 +468,38 @@ const botText = {
     id: () => "✅ Bahasa Indonesia dipilih!",
     en: () => "✅ English selected!",
   },
+  // Fitur sedang dikunci oleh admin lewat tab Maintenance di Admin Panel.
+  // `reason` adalah pesan running text yang diatur admin (boleh kosong),
+  // sehingga teks aktual selalu berasal dari data, bukan dari hardcode.
+  featureUnderMaintenance: {
+    id: (reason: string) =>
+      reason
+        ? `🛠️ *Fitur ini sedang tidak dapat digunakan karena sedang dilakukan maintenance.*\n\n_${reason}_`
+        : `🛠️ *Fitur ini sedang tidak dapat digunakan karena sedang dilakukan maintenance.*`,
+    en: (reason: string) =>
+      reason
+        ? `🛠️ *This feature is temporarily unavailable due to ongoing maintenance.*\n\n_${reason}_`
+        : `🛠️ *This feature is temporarily unavailable due to ongoing maintenance.*`,
+  },
 };
 
 function tr<K extends keyof typeof botText>(key: K, lang: Lang, ...args: Parameters<(typeof botText)[K][Lang]>): string {
   const entry = botText[key][lang] as (...a: any[]) => string;
   return entry(...args);
+}
+
+/**
+ * Kirim pesan maintenance ke user dan hentikan pemrosesan lebih lanjut.
+ * `reason` (running text yang diatur admin) disisipkan apa adanya, tanpa
+ * teks tambahan yang di-hardcode, supaya konsisten dengan apa yang
+ * ditampilkan ke pengguna web.
+ */
+async function respondFeatureUnderMaintenance(
+  chatId: number,
+  lang: Lang,
+  reason: string
+) {
+  await sendTelegramMessage(chatId, tr("featureUnderMaintenance", lang, reason));
 }
 
 function buildDraftKeyboard(lang: Lang) {
@@ -759,7 +787,7 @@ If no category matches, use 'other'. Always return the numeric IDR value in 'amo
   };
 }
 
-async function handleReceiptPhoto(message: any) {
+async function handleReceiptPhoto(message: any, maintenanceStatus: MaintenanceStatus) {
   const chatId = message.chat.id;
   
   // Resolve user first
@@ -770,6 +798,12 @@ async function handleReceiptPhoto(message: any) {
   }
 
   const lang = userCtx.lang;
+
+  // Maintenance gate: pemindaian struk (OCR) termasuk fitur "receipt_scan".
+  if (isFeatureLocked(maintenanceStatus, "receipt_scan")) {
+    await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
+    return;
+  }
   
   // Send initial informational status message
   const statusMsg = lang === "id" 
@@ -900,7 +934,15 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     await supabaseBackend.rpc("cleanup_expired_pending_transactions");
 
     const update = req.body;
-    
+
+    // ──────────────────────────────────────────────────────────
+    // MAINTENANCE MODE: load current status once per request.
+    // Sumber data sama dengan yang dikelola admin di tab Maintenance pada
+    // Admin Panel (tabel maintenance_settings & maintenance_feature_locks),
+    // jadi tidak ada endpoint baru maupun teks hardcode — semua dari DB.
+    // ──────────────────────────────────────────────────────────
+    const maintenanceStatus = await getMaintenanceStatus(supabaseBackend);
+
     // Check for duplicate updates to prevent processing retries sent by Telegram
     if (update && update.update_id) {
       if (isDuplicateTelegramUpdate(update.update_id)) {
@@ -919,6 +961,34 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     }
 
     // ──────────────────────────────────────────────────────────
+    // GLOBAL MAINTENANCE KILL-SWITCH ("telegram_bot" feature)
+    // Jika admin mengunci fitur "telegram_bot" secara spesifik, seluruh
+    // bot tidak dapat digunakan. /start, /help, dan pemilihan bahasa tetap
+    // dibiarkan berjalan supaya pengguna tidak kebingungan total.
+    // ──────────────────────────────────────────────────────────
+    if (isFeatureLocked(maintenanceStatus, "telegram_bot")) {
+      const incomingText = (update.message?.text || "").trim().toLowerCase();
+      const incomingCallback = update.callback_query?.data as string | undefined;
+      const isAllowedDuringLockdown =
+        incomingText.startsWith("/start") ||
+        incomingText.startsWith("/help") ||
+        incomingCallback === "set_lang_id" ||
+        incomingCallback === "set_lang_en";
+
+      if (!isAllowedDuringLockdown) {
+        const targetChatId = update.message?.chat?.id ?? update.callback_query?.message?.chat?.id;
+        if (targetChatId) {
+          const lockdownLang = await resolveLangOnly(targetChatId);
+          if (update.callback_query?.id) {
+            await answerTelegramCallback(update.callback_query.id);
+          }
+          await respondFeatureUnderMaintenance(targetChatId, lockdownLang, getMaintenanceMessage(maintenanceStatus, lockdownLang));
+        }
+        res.status(200).json({ ok: true }); return;
+      }
+    }
+
+    // ──────────────────────────────────────────────────────────
     // CALLBACK QUERY HANDLER
     // ──────────────────────────────────────────────────────────
     if (update.callback_query) {
@@ -930,6 +1000,25 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       if (!chatId || !msgId) { res.status(200).json({ ok: true }); return; }
 
       const lang = await resolveLangOnly(chatId);
+
+      // Maintenance gate: aksi terkait pencatatan transaksi (tx_*) dipetakan
+      // ke fitur "new_transaction", aksi terkait struk (rcpt_*) ke fitur
+      // "receipt_scan". Aksi pemilihan bahasa tidak digate agar user tetap
+      // bisa mengganti bahasa meski sedang maintenance.
+      const isTxAction = actionData.startsWith("tx_");
+      const isReceiptAction = actionData.startsWith("rcpt_");
+
+      if (isTxAction && isFeatureLocked(maintenanceStatus, "new_transaction")) {
+        await answerTelegramCallback(queryId);
+        await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
+        res.status(200).json({ ok: true }); return;
+      }
+
+      if (isReceiptAction && isFeatureLocked(maintenanceStatus, "receipt_scan")) {
+        await answerTelegramCallback(queryId);
+        await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
+        res.status(200).json({ ok: true }); return;
+      }
 
       // FIX #10: Language selection callback (set lang preference)
       if (actionData === "set_lang_id" || actionData === "set_lang_en") {
@@ -1183,7 +1272,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
       // Handle photo uploads (Receipt OCR scanning)
       if (update.message.photo) {
-        await handleReceiptPhoto(update.message);
+        await handleReceiptPhoto(update.message, maintenanceStatus);
         res.status(200).json({ ok: true });
         return;
       }
@@ -1324,6 +1413,12 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         // ── /saldo ── FIX #11: Includes last-month comparison
         if (command === "/saldo") {
           const lang = await resolveLangOnly(chatId);
+
+          if (isFeatureLocked(maintenanceStatus, "history")) {
+            await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
           const { data, error } = await supabaseBackend.rpc("get_telegram_user_summary_v2", { p_chat_id: chatId });
 
           if (error) {
@@ -1367,6 +1462,12 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         // ── /riwayat ── FIX #8: New command - last 5 transactions
         if (command === "/riwayat") {
           const lang = await resolveLangOnly(chatId);
+
+          if (isFeatureLocked(maintenanceStatus, "history")) {
+            await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
           const { data, error } = await supabaseBackend.rpc("get_telegram_recent_transactions", { p_chat_id: chatId, p_limit: 5 });
 
           if (error) {
@@ -1400,6 +1501,12 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         // ── /hapus ── FIX #12: New command - delete last transaction
         if (command === "/hapus") {
           const lang = await resolveLangOnly(chatId);
+
+          if (isFeatureLocked(maintenanceStatus, "new_transaction")) {
+            await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
           const { data, error } = await supabaseBackend.rpc("delete_last_telegram_transaction", { p_chat_id: chatId });
 
           if (error) {
@@ -1441,6 +1548,13 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       }
 
       const { lang } = userCtx;
+
+      // Maintenance gate: pencatatan transaksi lewat teks natural termasuk
+      // fitur "new_transaction".
+      if (isFeatureLocked(maintenanceStatus, "new_transaction")) {
+        await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
+        res.status(200).json({ ok: true }); return;
+      }
 
       // Check if user is editing an amount (reply to edit prompt)
       // "Edit: 75rb" or just "75rb" after an edit-amount prompt

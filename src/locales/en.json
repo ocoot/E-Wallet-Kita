@@ -448,11 +448,11 @@
     "table_actions_col": "Actions",
     "status_active_col": "● Active",
     "status_inactive_col": "○ Inactive",
-    "broadcast_title": "Telegram Message Broadcast",
-    "broadcast_desc": "Send bulk push notifications to all active users connected to the Telegram bot.",
+    "broadcast_title": "Telegram Broadcast",
+    "broadcast_desc": "Send mass announcements to all users who have linked their Telegram.",
     "connected_users": "{count} bot-connected users",
     "connected_users_desc": "Only active, non-suspended accounts will receive this broadcast notification.",
-    "broadcast_warning": "Warning: Messages are sent instantly and simultaneously. Verify all contents before broadcasting.",
+    "broadcast_warning": "This message will be sent to all users at once. This action cannot be undone.",
     "message_body_label": "Broadcast Message Body",
     "message_placeholder": "Write your notice here... (supports Telegram Markdown: *bold*, _italic_, `code`)",
     "markdown_hint": "Supported markup: *bold*, _italic_, `and code`",
@@ -490,10 +490,7 @@
     "detail_telegram": "Telegram Chat ID",
     "detail_stats": "Transaction Stats",
     "detail_net_balance": "Net Balance (Lifetime)",
-    "broadcast_title": "Telegram Broadcast",
-    "broadcast_desc": "Send mass announcements to all users who have linked their Telegram.",
     "broadcast_linked_count": "{count} users linked to Telegram",
-    "broadcast_warning": "This message will be sent to all users at once. This action cannot be undone.",
     "broadcast_placeholder": "Write your announcement here...",
     "broadcast_send": "Send to {count} Telegram Users",
     "broadcast_sending": "Sending broadcast...",
@@ -518,7 +515,33 @@
     "revenue_sandbox": "Sandbox",
     "revenue_live": "Live",
     "revenue_paid_at": "Paid At",
-    "revenue_created_at": "Created"
+    "revenue_created_at": "Created",
+    "tab_maintenance": "🛠️ Maintenance",
+    "maintenance_title": "Maintenance Mode",
+    "maintenance_desc": "Turn maintenance mode on, set the running text message, and lock specific features from being accessed by users.",
+    "maintenance_load_error": "Failed to load maintenance status.",
+    "maintenance_saving": "Saving maintenance changes...",
+    "maintenance_save_success": "Maintenance settings saved successfully.",
+    "maintenance_save_error": "Failed to save maintenance settings.",
+    "maintenance_global_toggle_label": "Global Maintenance Mode",
+    "maintenance_status_on": "Active — running text is shown to all users",
+    "maintenance_status_off": "Inactive — app is running normally",
+    "maintenance_message_id_label": "Running Text Message (Indonesian)",
+    "maintenance_message_en_label": "Running Text Message (English)",
+    "maintenance_save_btn": "Save Settings",
+    "maintenance_feature_lock_title": "Feature Lock",
+    "maintenance_feature_lock_desc": "Lock specific features so users cannot access them while maintenance is ongoing.",
+    "maintenance_feature_locked": "Locked for users",
+    "maintenance_feature_unlocked": "Accessible normally",
+    "maintenance_feature_update_success": "Feature lock status updated successfully.",
+    "maintenance_feature_update_error": "Failed to update feature lock status.",
+    "maintenance_feature": {
+      "new_transaction": "New Transaction",
+      "history": "Transaction History",
+      "settings": "Settings",
+      "receipt_scan": "Receipt Scan (AI)",
+      "telegram_bot": "Telegram Bot"
+    }
   },
   "ai_monitor": {
     "title": "AI Usage Monitor",
@@ -547,5 +570,9 @@
     "high_quota_warning_desc": "One or more API keys have exceeded 20% quota rejection rate. Consider rotating or adding new keys.",
     "footer_since": "Data since",
     "footer_days": "days"
+  },
+  "maintenance": {
+    "feature_locked_title": "Feature Under Maintenance",
+    "feature_locked_desc": "This feature has been temporarily locked by an admin for maintenance. Please try again later."
   }
 }
