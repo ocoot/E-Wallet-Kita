@@ -4,7 +4,12 @@ import {BrowserRouter} from 'react-router-dom';
 import App from './App.tsx';
 import './index.css';
 import {AuthProvider} from './contexts/AuthContext';
-import './i18n.ts';
+// NOTE: './i18n.ts' (i18next) used to be imported here but was never
+// actually used anywhere (no useTranslation()/i18n.t() calls exist in
+// the codebase) — it was a dead, parallel translation system that
+// duplicated category labels found nowhere else. The app's real i18n
+// is LanguageContext.tsx + src/locales/{en,id}.json. Removed to avoid
+// future drift/confusion. Delete src/i18n.ts if you haven't already.
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

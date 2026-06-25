@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { sendTelegramMessageOrThrow } from '../_lib/telegram.js';
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "";
@@ -73,24 +74,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   for (const target of (targets || [])) {
     try {
-      const telRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: Number(target.chat_id),
-          text: broadcastText,
-          parse_mode: "Markdown"
-        })
-      });
-      const telJson: any = await telRes.json();
-      if (telJson.ok) {
-        successCount++;
-      } else {
-        console.error(`Telegram sendMessage failed for chat ${target.chat_id}:`, telJson);
-        failCount++;
-      }
+      // Centralized helper: same retry/backoff behavior as the webhook,
+      // instead of a bare fetch() with no resilience to transient
+      // Telegram API hiccups.
+      await sendTelegramMessageOrThrow(Number(target.chat_id), broadcastText);
+      successCount++;
     } catch (err) {
-      console.error(`Telegram fetch error for chat ${target.chat_id}:`, err);
+      console.error(`Telegram sendMessage failed for chat ${target.chat_id}:`, err);
       failCount++;
     }
     // Rate limit prevention

@@ -19,9 +19,6 @@
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "framer-motion": "^12.40.0",
-    "i18next": "^26.3.1",
-    "i18next-browser-languagedetector": "^8.2.1",
-    "i18next-http-backend": "^4.0.0",
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8",
     "lucide-react": "^0.546.0",
@@ -29,7 +26,6 @@
     "openai": "^6.44.0",
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
-    "react-i18next": "^17.0.8",
     "react-router-dom": "^7.18.0",
     "recharts": "^3.8.1",
     "vite": "^6.2.3"
