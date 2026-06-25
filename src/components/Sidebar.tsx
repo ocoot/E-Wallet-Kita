@@ -5,6 +5,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import { Link, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "motion/react";
 import { 
   Wallet, 
   LayoutDashboard, 
@@ -139,129 +140,141 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </header>
 
       {/* 2. Mobile Drawer Screen overlay (when open) */}
-      {isMobileOpen && (
-        <div className="fixed inset-0 z-50 flex lg:hidden">
-          {/* Overlay mask backing */}
-          <div 
-            className="fixed inset-0 bg-black/70 backdrop-blur-xs"
-            onClick={() => setIsMobileOpen(false)}
-          />
+      <AnimatePresence>
+        {isMobileOpen && (
+          <div className="fixed inset-0 z-50 flex lg:hidden">
+            {/* Overlay mask backing */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/70 backdrop-blur-xs"
+              onClick={() => setIsMobileOpen(false)}
+            />
 
-          {/* Drawer content */}
-          <div className="relative flex flex-col w-72 max-w-[80vw] h-full p-6 bg-slate-900 border-r border-slate-800 text-white dark_obsidian:bg-slate-900 dark_obsidian:border-slate-800 light_sakura:bg-rose-50 light_sakura:text-slate-800 light_sakura:border-rose-100">
-            {/* Header Close triggers */}
-            <div className="flex items-center justify-between mb-8">
-              <div className="flex items-center gap-2">
-                <div className="shrink-0">
-                  <img 
-                    src={logoUrl} 
-                    alt="EWK Icon" 
-                    className="w-8 h-8 object-contain"
-                  />
+            {/* Drawer content */}
+            <motion.div 
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 220 }}
+              className="relative flex flex-col w-72 max-w-[80vw] h-full p-6 bg-slate-900 border-r border-slate-800 text-white dark_obsidian:bg-slate-900 dark_obsidian:border-slate-800 light_sakura:bg-rose-50 light_sakura:text-slate-800 light_sakura:border-rose-100"
+            >
+              {/* Header Close triggers */}
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-2">
+                  <div className="shrink-0">
+                    <img 
+                      src={logoUrl} 
+                      alt="EWK Icon" 
+                      className="w-8 h-8 object-contain"
+                    />
+                  </div>
+                  <span className="font-sans font-bold text-lg tracking-tight text-white dark_obsidian:text-white light_sakura:text-slate-900">
+                    {t("app.title")}
+                  </span>
                 </div>
-                <span className="font-sans font-bold text-lg tracking-tight text-white dark_obsidian:text-white light_sakura:text-slate-900">
-                  {t("app.title")}
-                </span>
-              </div>
-              <button 
-                onClick={() => setIsMobileOpen(false)}
-                className="p-1 rounded-lg hover:bg-white/10 light_sakura:hover:bg-slate-200 cursor-pointer text-white dark_obsidian:text-white light_sakura:text-slate-800"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {/* Profile widget summary */}
-            <div className="p-4 mb-6 rounded-xl border bg-slate-950/40 border-slate-800 light_sakura:bg-rose-100/50 light_sakura:border-rose-200">
-              <p className="font-mono text-[10px] text-gray-400 light_sakura:text-rose-600 uppercase tracking-widest">
-                {isGuest ? t("history.status_guest") : t("history.status_verified")}
-              </p>
-              <div className="flex items-center gap-2.5 mt-1">
-                {isGuest ? (
-                  <ShieldAlert size={16} className="text-amber-400" />
-                ) : (
-                  <ShieldCheck size={16} className="text-emerald-400 light_sakura:text-emerald-600" />
-                )}
-                <span className="font-sans font-semibold text-sm truncate max-w-[180px] dark_obsidian:text-slate-200 light_sakura:text-slate-900">
-                  {displayName}
-                </span>
-              </div>
-            </div>
-
-            {/* Menu Items */}
-            <nav className="flex-1 space-y-1.5">
-              {menuItems.map((item) => {
-                const IconComp = item.icon;
-                const isActive = activeTab === item.id;
-                const locked = !!item.featureKey && isFeatureLocked(item.featureKey);
-                return (
-                  <Link
-                    key={item.id}
-                    to={item.path}
-                    onClick={() => setIsMobileOpen(false)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-sans text-sm font-medium transition-all duration-150 cursor-pointer
-                      ${isActive 
-                        ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 light_sakura:bg-rose-500 light_sakura:text-white" 
-                        : locked
-                          ? "text-slate-500 light_sakura:text-slate-400"
-                          : "text-gray-300 hover:bg-slate-800 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
-                      }`}
-                  >
-                    <IconComp size={18} />
-                    <span className="flex-1">{item.label}</span>
-                    {locked && <Lock size={14} className="text-amber-400 shrink-0" />}
-                  </Link>
-                );
-              })}
-            </nav>
-
-            {/* Bottom Controls / Language / Theme switchers */}
-            <div className="space-y-4 pt-4 border-t border-slate-800 light_sakura:border-rose-100">
-              {/* Theme, Language, and Audio inline controller */}
-              <div className="grid grid-cols-3 gap-1.5">
-                <button
-                  onClick={toggleLanguage}
-                  className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-850 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                <button 
+                  onClick={() => setIsMobileOpen(false)}
+                  className="p-1 rounded-lg hover:bg-white/10 light_sakura:hover:bg-slate-200 cursor-pointer text-white dark_obsidian:text-white light_sakura:text-slate-800"
                 >
-                  <Globe size={13} className="mb-0.5" />
-                  <span>{locale.toUpperCase()}</span>
+                  <X size={20} />
                 </button>
-                <button
-                  onClick={toggleTheme}
-                  className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-850 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
-                >
-                  <SunMoon size={13} className="mb-0.5" />
-                  <span>{theme === "dark_obsidian" ? t("common.dark") : t("common.light")}</span>
-                </button>
-                <button
-                  onClick={toggleMute}
-                  className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-850 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100 animate-fade-in"
-                  title="Mute / Unmute"
-                >
-                  {isMuted ? (
-                    <VolumeX size={13} className="text-red-400 light_sakura:text-red-500 mb-0.5 animate-pulse" />
+              </div>
+
+              {/* Profile widget summary */}
+              <div className="p-4 mb-6 rounded-xl border bg-slate-950/40 border-slate-800 light_sakura:bg-rose-100/50 light_sakura:border-rose-200">
+                <p className="font-mono text-[10px] text-gray-400 light_sakura:text-rose-600 uppercase tracking-widest">
+                  {isGuest ? t("history.status_guest") : t("history.status_verified")}
+                </p>
+                <div className="flex items-center gap-2.5 mt-1">
+                  {isGuest ? (
+                    <ShieldAlert size={16} className="text-amber-400" />
                   ) : (
-                    <Volume2 size={13} className="text-teal-400 light_sakura:text-rose-500 mb-0.5" />
+                    <ShieldCheck size={16} className="text-emerald-400 light_sakura:text-emerald-600" />
                   )}
-                  <span>{isMuted ? t("common.muted") : t("common.sound")}</span>
-                </button>
+                  <span className="font-sans font-semibold text-sm truncate max-w-[180px] dark_obsidian:text-slate-200 light_sakura:text-slate-900">
+                    {displayName}
+                  </span>
+                </div>
               </div>
 
-              {/* Log out */}
-              <button
-                onClick={() => {
-                  setIsMobileOpen(false);
-                  onLogoutClick();
-                }}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border bg-slate-950/40 border-red-500/20 text-red-400 hover:bg-red-500/10 font-sans text-sm font-semibold transition-colors cursor-pointer light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:text-red-600 light_sakura:hover:bg-red-100"
-              >
-                <LogOut size={16} />
-                <span>{t("nav.logout")}</span>
-              </button>
-            </div>
+              {/* Menu Items */}
+              <nav className="flex-1 space-y-1.5">
+                {menuItems.map((item) => {
+                  const IconComp = item.icon;
+                  const isActive = activeTab === item.id;
+                  const locked = !!item.featureKey && isFeatureLocked(item.featureKey);
+                  return (
+                    <Link
+                      key={item.id}
+                      to={item.path}
+                      onClick={() => setIsMobileOpen(false)}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-sans text-sm font-medium transition-all duration-150 cursor-pointer
+                        ${isActive 
+                          ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 light_sakura:bg-rose-500 light_sakura:text-white" 
+                          : locked
+                            ? "text-slate-500 light_sakura:text-slate-400"
+                            : "text-gray-300 hover:bg-slate-800 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                        }`}
+                    >
+                      <IconComp size={18} />
+                      <span className="flex-1">{item.label}</span>
+                      {locked && <Lock size={14} className="text-amber-400 shrink-0" />}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              {/* Bottom Controls / Language / Theme switchers */}
+              <div className="space-y-4 pt-4 border-t border-slate-800 light_sakura:border-rose-100">
+                {/* Theme, Language, and Audio inline controller */}
+                <div className="grid grid-cols-3 gap-1.5">
+                  <button
+                    onClick={toggleLanguage}
+                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-850 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                  >
+                    <Globe size={13} className="mb-0.5" />
+                    <span>{locale.toUpperCase()}</span>
+                  </button>
+                  <button
+                    onClick={toggleTheme}
+                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-850 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                  >
+                    <SunMoon size={13} className="mb-0.5" />
+                    <span>{theme === "dark_obsidian" ? t("common.dark") : t("common.light")}</span>
+                  </button>
+                  <button
+                    onClick={toggleMute}
+                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-850 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100 animate-fade-in"
+                    title="Mute / Unmute"
+                  >
+                    {isMuted ? (
+                      <VolumeX size={13} className="text-red-400 light_sakura:text-red-500 mb-0.5 animate-pulse" />
+                    ) : (
+                      <Volume2 size={13} className="text-teal-400 light_sakura:text-rose-500 mb-0.5" />
+                    )}
+                    <span>{isMuted ? t("common.muted") : t("common.sound")}</span>
+                  </button>
+                </div>
+
+                {/* Log out */}
+                <button
+                  onClick={() => {
+                    setIsMobileOpen(false);
+                    onLogoutClick();
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border bg-slate-950/40 border-red-500/20 text-red-400 hover:bg-red-500/10 font-sans text-sm font-semibold transition-colors cursor-pointer light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:text-red-600 light_sakura:hover:bg-red-100"
+                >
+                  <LogOut size={16} />
+                  <span>{t("nav.logout")}</span>
+                </button>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
 
       {/* 3. Desktop Persistent and Collapsible Sidebar */}
       <aside 
@@ -280,18 +293,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className="w-9 h-9 object-contain"
               />
             </div>
-            {!isCollapsed && (
-              <span className="font-sans font-bold text-lg tracking-tight select-none truncate text-white dark_obsidian:text-white light_sakura:text-slate-900">
+            <div className={`transition-all duration-300 flex items-center overflow-hidden ${isCollapsed ? "w-0 opacity-0 -translate-x-4" : "w-auto opacity-100 translate-x-0"}`}>
+              <span className="font-sans font-bold text-lg tracking-tight select-none truncate text-white dark_obsidian:text-white light_sakura:text-slate-900 whitespace-nowrap">
                 {t("app.title")}
               </span>
-            )}
+            </div>
           </div>
           
           {/* Collapse/Expand action trigger button */}
           {!isCollapsed && (
             <button
               onClick={() => onToggle(true)}
-              className="p-1 rounded-lg hover:bg-white/5 light_sakura:hover:bg-slate-200 cursor-pointer hidden md:block text-slate-400 hover:text-white light_sakura:text-slate-600 light_sakura:hover:text-slate-800"
+              className="p-1 rounded-lg hover:bg-white/5 light_sakura:hover:bg-slate-200 cursor-pointer hidden md:block text-slate-400 hover:text-white light_sakura:text-slate-600 light_sakura:hover:text-slate-800 transition-all duration-205"
             >
               <ChevronLeft size={16} />
             </button>
@@ -299,7 +312,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {isCollapsed && (
             <button
               onClick={() => onToggle(false)}
-              className="absolute -right-3 top-8 p-1.5 rounded-full border bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:scale-105 active:scale-95 transition-transform cursor-pointer light_sakura:bg-slate-100 light_sakura:border-slate-200 light_sakura:text-slate-800"
+              className="absolute -right-3 top-8 p-1.5 rounded-full border bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:scale-105 active:scale-95 transition-all duration-205 cursor-pointer light_sakura:bg-slate-100 light_sakura:border-slate-200 light_sakura:text-slate-800"
             >
               <ChevronRight size={14} />
             </button>
@@ -308,29 +321,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Profile widget summary and state */}
         <div className="px-4 mb-6">
-          {isCollapsed ? (
-            <div className="flex justify-center">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-slate-900 text-teal-400 light_sakura:bg-rose-200 light_sakura:text-rose-600">
-                {displayName.charAt(0).toUpperCase()}
-              </div>
+          <div className={`transition-all duration-300 rounded-xl border flex items-center ${isCollapsed ? "bg-transparent border-transparent p-0 justify-center" : "p-3 bg-slate-900/40 border-slate-900 light_sakura:bg-rose-100/40 light_sakura:border-rose-100/70 gap-2.5"}`}>
+            <div className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center bg-slate-900 text-teal-400 light_sakura:bg-rose-200 light_sakura:text-rose-600 text-xs font-bold shadow-xs transition-all duration-300">
+              {displayName.charAt(0).toUpperCase()}
             </div>
-          ) : (
-            <div className="p-4 rounded-xl border bg-slate-900/40 border-slate-900 light_sakura:bg-rose-100/40 light_sakura:border-rose-100/70">
-              <p className="font-mono text-[9px] text-gray-400 light_sakura:text-rose-500 uppercase tracking-widest">
+            
+            <div className={`transition-all duration-300 flex flex-col min-w-0 overflow-hidden ${isCollapsed ? "w-0 opacity-0 -translate-x-4" : "w-full opacity-100 translate-x-0"}`}>
+              <p className="font-mono text-[9px] text-gray-400 light_sakura:text-rose-500 uppercase tracking-widest leading-none whitespace-nowrap">
                 {isGuest ? t("history.status_guest") : t("history.status_verified")}
               </p>
-              <div className="flex items-center gap-2.5 mt-1">
+              <div className="flex items-center gap-1.5 mt-1">
                 {isGuest ? (
-                  <ShieldAlert size={14} className="text-amber-400" />
+                  <ShieldAlert size={12} className="text-amber-400 shrink-0" />
                 ) : (
-                  <ShieldCheck size={14} className="text-emerald-400 light_sakura:text-emerald-600" />
+                  <ShieldCheck size={12} className="text-emerald-400 light_sakura:text-emerald-600 shrink-0" />
                 )}
-                <span className="font-sans font-semibold text-xs truncate max-w-[150px] text-slate-200 light_sakura:text-slate-800">
+                <span className="font-sans font-semibold text-xs truncate text-slate-200 light_sakura:text-slate-800 whitespace-nowrap">
                   {displayName}
                 </span>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Menu Items listings */}
@@ -344,8 +355,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 key={item.id}
                 to={item.path}
                 title={isCollapsed ? item.label : undefined}
-                className={`w-full flex items-center px-4 py-3 rounded-xl font-sans text-sm font-medium transition-all duration-150 cursor-pointer
-                  ${isCollapsed ? "justify-center" : "gap-3"}
+                className={`w-full flex items-center px-4 py-3 rounded-xl font-sans text-sm font-medium transition-all duration-300 cursor-pointer
+                  ${isCollapsed ? "gap-0 justify-center" : "gap-3"}
                   ${isActive 
                     ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 light_sakura:bg-rose-500 light_sakura:text-white" 
                     : locked
@@ -353,9 +364,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       : "text-slate-300 hover:bg-slate-900 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100/70"
                   }`}
               >
-                <IconComp size={18} className="shrink-0" />
-                {!isCollapsed && <span className="flex-1">{item.label}</span>}
-                {!isCollapsed && locked && <Lock size={14} className="text-amber-400 shrink-0" />}
+                <IconComp size={18} className="shrink-0 transition-transform duration-300 hover:scale-105" />
+                <div className={`transition-all duration-300 flex items-center justify-between min-w-0 overflow-hidden flex-1 ${isCollapsed ? "w-0 opacity-0 -translate-x-4" : "w-auto opacity-100 translate-x-0"}`}>
+                  <span className="truncate whitespace-nowrap">{item.label}</span>
+                  {locked && <Lock size={14} className="text-amber-400 shrink-0 ml-2" />}
+                </div>
               </Link>
             );
           })}
@@ -364,12 +377,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Footer controls */}
         <div className="p-4 border-t border-slate-900 light_sakura:border-rose-100 space-y-3">
           {/* Theme, Language, and Sound inline switcher controls */}
-          {!isCollapsed ? (
-            <div className="grid grid-cols-3 gap-1">
+          <div className="relative min-h-[36px]">
+            <div className={`transition-all duration-300 ${isCollapsed ? "opacity-0 scale-75 pointer-events-none absolute inset-x-0 top-0" : "opacity-100 scale-100 grid grid-cols-3 gap-1"}`}>
               <button
                 onClick={toggleLanguage}
                 title={t("settings.language")}
-                className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[10px] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                className="flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[10px] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
               >
                 <Globe size={11} className="mb-0.5" />
                 <span>{locale.toUpperCase()}</span>
@@ -377,7 +390,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={toggleTheme}
                 title={t("settings.theme")}
-                className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[10px] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                className="flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[10px] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
               >
                 <SunMoon size={11} className="mb-0.5" />
                 <span>{theme === "dark_obsidian" ? t("common.dark") : t("common.light")}</span>
@@ -385,7 +398,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={toggleMute}
                 title="Toggle Effects Sound"
-                className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[10px] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                className="flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[10px] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
               >
                 {isMuted ? (
                   <VolumeX size={11} className="text-red-400 light_sakura:text-red-500 mb-0.5" />
@@ -395,8 +408,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <span>{isMuted ? t("common.muted") : t("common.sound")}</span>
               </button>
             </div>
-          ) : (
-            <div className="flex flex-col items-center gap-2">
+
+            <div className={`transition-all duration-300 flex flex-col items-center gap-2 ${isCollapsed ? "opacity-100 scale-100" : "opacity-0 scale-75 pointer-events-none absolute inset-x-0 top-0"}`}>
               <button
                 onClick={toggleLanguage}
                 title={t("settings.language")}
@@ -423,16 +436,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 )}
               </button>
             </div>
-          )}
+          </div>
 
           {/* Log out actions */}
           <button
             onClick={onLogoutClick}
-            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border bg-slate-950/40 border-red-500/20 text-red-400 hover:bg-red-500/10 font-sans text-xs font-semibold transition-colors cursor-pointer light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:text-red-600 light_sakura:hover:bg-red-100/70
-              ${isCollapsed ? "px-0" : "px-3"}`}
+            className={`w-full flex items-center justify-center rounded-xl border bg-slate-950/40 border-red-500/20 text-red-400 hover:bg-red-500/10 font-sans text-xs font-semibold transition-all duration-300 cursor-pointer light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:text-red-600 light_sakura:hover:bg-red-100/70 py-2.5
+              ${isCollapsed ? "px-0 gap-0 justify-center" : "px-3 gap-2"}`}
           >
             <LogOut size={14} className="shrink-0" />
-            {!isCollapsed && <span>{t("nav.logout")}</span>}
+            <div className={`transition-all duration-300 overflow-hidden flex items-center ${isCollapsed ? "w-0 opacity-0 -translate-x-4" : "w-auto opacity-100 translate-x-0"}`}>
+              <span className="whitespace-nowrap">{t("nav.logout")}</span>
+            </div>
           </button>
         </div>
       </aside>
