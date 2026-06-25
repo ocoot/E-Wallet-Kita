@@ -267,7 +267,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       {/* Mobile-optimized smaller version of FAB */}
-      <div className="fixed bottom-20 right-4 z-40 sm:hidden">
+      <div className="fixed bottom-6 right-6 z-40 sm:hidden">
         <motion.button
           id="btn-quick-add-transaction-fab-mobile"
           onClick={() => {

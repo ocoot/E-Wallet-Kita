@@ -223,7 +223,7 @@ export const SupportChatWidget: React.FC = () => {
         aria-label={t("support.fab_label")}
         onClick={() => setIsOpen((prev) => !prev)}
         whileTap={{ scale: 0.92 }}
-        className="fixed bottom-5 right-5 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-emerald-500 text-white shadow-2xl shadow-emerald-900/40 hover:bg-emerald-400 transition-colors duration-200 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-900/20"
+        className="fixed bottom-24 sm:bottom-32 right-6 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-emerald-500 text-white shadow-2xl shadow-emerald-900/40 hover:bg-emerald-400 transition-colors duration-200 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-900/20"
       >
         <AnimatePresence mode="wait" initial={false}>
           {isOpen ? (
@@ -245,7 +245,7 @@ export const SupportChatWidget: React.FC = () => {
             initial={{ opacity: 0, y: 16, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
-            className="fixed z-40 bottom-24 right-4 left-4 sm:left-auto sm:right-5 sm:w-96 max-h-[70vh] flex flex-col rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
+            className="fixed z-40 bottom-44 right-4 left-4 sm:left-auto sm:bottom-52 sm:right-6 sm:w-96 max-h-[70vh] flex flex-col rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
           >
             {/* Header */}
             <div className="px-4 py-3 border-b border-slate-800 light_sakura:border-rose-100">
