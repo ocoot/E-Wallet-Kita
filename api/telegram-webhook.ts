@@ -1208,7 +1208,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         await answerTelegramCallback(queryId, tr("cbCategoryUpdated", lang));
         // Trigger back to preview
         const categories = await getActiveCategories();
-        const receipt = draft.receipt_data;
+        const receipt = draft.raw_ai_response;
         let itemLines = "";
         if (receipt.items && receipt.items.length > 0) {
           receipt.items.forEach((it: any) => {
@@ -1254,7 +1254,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           res.status(200).json({ ok: true }); return;
         }
         const catLabel = await getCategoryLabel(draft.category || 'other', lang);
-        const receipt = draft.receipt_data;
+        const receipt = draft.raw_ai_response;
         let itemLines = "";
         if (receipt.items && receipt.items.length > 0) {
           receipt.items.forEach((it: any) => {
