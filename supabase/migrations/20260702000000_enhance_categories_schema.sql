@@ -31,6 +31,10 @@ UPDATE categories SET
 WHERE key = 'salary';
 
 -- Update RPCs to handle new fields
+-- First drop old overloads to avoid confusion
+DROP FUNCTION IF EXISTS public.admin_update_category(TEXT, TEXT, TEXT, TEXT, BOOLEAN);
+DROP FUNCTION IF EXISTS public.admin_add_category(TEXT, TEXT, TEXT, TEXT);
+
 CREATE OR REPLACE FUNCTION admin_update_category(
   p_key TEXT,
   p_label_id TEXT,
@@ -41,12 +45,19 @@ CREATE OR REPLACE FUNCTION admin_update_category(
   p_description_en TEXT DEFAULT NULL,
   p_priority INTEGER DEFAULT 100
 ) RETURNS VOID AS $$
+DECLARE
+  v_role TEXT;
 BEGIN
+  SELECT role INTO v_role FROM public.users WHERE id = auth.uid();
+  IF v_role NOT IN ('admin', 'owner') THEN
+    RAISE EXCEPTION 'UNAUTHORIZED';
+  END IF;
+
   UPDATE public.categories
   SET 
     label_id = p_label_id,
     label_en = p_label_en,
-    type = p_type::public.category_type,
+    type = p_type,
     is_active = p_is_active,
     description_id = p_description_id,
     description_en = p_description_en,
@@ -64,9 +75,16 @@ CREATE OR REPLACE FUNCTION admin_add_category(
   p_description_en TEXT DEFAULT NULL,
   p_priority INTEGER DEFAULT 100
 ) RETURNS VOID AS $$
+DECLARE
+  v_role TEXT;
 BEGIN
+  SELECT role INTO v_role FROM public.users WHERE id = auth.uid();
+  IF v_role NOT IN ('admin', 'owner') THEN
+    RAISE EXCEPTION 'UNAUTHORIZED';
+  END IF;
+
   INSERT INTO public.categories (key, label_id, label_en, type, description_id, description_en, priority, is_active)
-  VALUES (p_key, p_label_id, p_label_en, p_type::public.category_type, p_description_id, p_description_en, p_priority, true);
+  VALUES (p_key, p_label_id, p_label_en, p_type, p_description_id, p_description_en, p_priority, true);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
