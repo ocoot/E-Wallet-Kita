@@ -853,7 +853,14 @@ async function handleReceiptPhoto(message: any, maintenanceStatus: MaintenanceSt
     const receipt = await parseReceipt(base64);
 
     // Step 5: Save draft
-    const draft = await createReceiptDraft(userCtx.id, receipt, "telegram", String(chatId));
+    // Snapshot the currently active expense/both categories so that later
+    // "Edit Category" button presses always resolve to the same set,
+    // even if categories are added/removed/reordered afterwards.
+    const categoriesForSnapshot = await getActiveCategories();
+    const categorySnapshot = categoriesForSnapshot
+      .filter(c => c.type === "expense" || c.type === "both")
+      .map(c => ({ key: c.key, label_id: c.label_id, label_en: c.label_en }));
+    const draft = await createReceiptDraft(userCtx.id, receipt, "telegram", String(chatId), categorySnapshot);
 
     // Step 6: Render and send preview
     let itemLines = "";
@@ -1145,14 +1152,26 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       }
       else if (actionData.startsWith("rcpt_editcat:")) {
         const draftId = actionData.split(":")[1];
-        const categories = await getActiveCategories();
+        const draftForEdit = await getReceiptDraft(draftId);
+        if (!draftForEdit) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        // Prefer the snapshot captured when the draft was created, so button
+        // indexes stay valid even if categories changed since then. Fall back
+        // to a live fetch for old drafts created before this snapshot existed.
+        const matching: { key: string; label_id: string | null; label_en: string | null }[] =
+          draftForEdit.category_options && draftForEdit.category_options.length > 0
+            ? draftForEdit.category_options
+            : (await getActiveCategories()).filter(c => c.type === "expense" || c.type === "both");
         const rows = [];
-        const matching = categories.filter(c => c.type === "expense" || c.type === "both");
         for (let i = 0; i < matching.length; i += 2) {
           const pair = matching.slice(i, i + 2);
-          rows.push(pair.map(c => ({
+          rows.push(pair.map((c, j) => ({
             text: lang === "id" ? (c.label_id || c.key) : (c.label_en || c.key),
-            callback_data: `rcpt_setcat:${draftId}:${c.key}`
+            // Use index instead of c.key to keep callback_data well under Telegram's 64-byte limit,
+            // since category keys can be arbitrarily long (custom categories from the DB).
+            callback_data: `rcpt_setcat:${draftId}:${i + j}`
           })));
         }
         rows.push([{ text: tr("btnBackToDraft", lang), callback_data: `rcpt_back:${draftId}` }]);
@@ -1160,7 +1179,23 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         await answerTelegramCallback(queryId);
       }
       else if (actionData.startsWith("rcpt_setcat:")) {
-        const [, draftId, catKey] = actionData.split(":");
+        const [, draftId, catIndexStr] = actionData.split(":");
+        const draftForSetcat = await getReceiptDraft(draftId);
+        if (!draftForSetcat) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        const matchingCats: { key: string }[] =
+          draftForSetcat.category_options && draftForSetcat.category_options.length > 0
+            ? draftForSetcat.category_options
+            : (await getActiveCategories()).filter(c => c.type === "expense" || c.type === "both");
+        const catIndex = parseInt(catIndexStr, 10);
+        const selectedCat = matchingCats[catIndex];
+        if (!selectedCat) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        const catKey = selectedCat.key;
         await updateReceiptCategory(draftId, catKey);
         // Go back to preview
         const draft = await getReceiptDraft(draftId);

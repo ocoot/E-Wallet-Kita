@@ -11,7 +11,8 @@ export async function createReceiptDraft(
   userId: string,
   parsed: any,
   source: string,
-  telegramChatId?: string
+  telegramChatId?: string,
+  categoryOptions?: { key: string; label_id: string | null; label_en: string | null }[]
 ) {
   const { data, error } = await supabaseBackend
     .from('receipt_drafts')
@@ -24,6 +25,7 @@ export async function createReceiptDraft(
       items: parsed.items || [],
       raw_ai_response: parsed,
       category: parsed.category || 'other',
+      category_options: categoryOptions ?? null,
       approved: false,
       source,
       telegram_chat_id: telegramChatId ? String(telegramChatId) : null
