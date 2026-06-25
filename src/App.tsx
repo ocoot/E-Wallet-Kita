@@ -18,6 +18,7 @@ import { Modal } from "./components/Modal";
 import { ResetPasswordModal } from "./components/ResetPasswordModal";
 import { MaintenanceBanner } from "./components/MaintenanceBanner";
 import { FeatureLockGate } from "./components/FeatureLockGate";
+import { SupportChatWidget } from "./components/SupportChatWidget";
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut } from "lucide-react";
 import { supabase } from "./lib/supabase";
@@ -222,6 +223,9 @@ const MainLayout: React.FC = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating support chat widget (FAQ rule-based + live chat admin) -- tampil di semua halaman dashboard */}
+      <SupportChatWidget />
 
     </div>
   );

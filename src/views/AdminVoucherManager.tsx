@@ -348,7 +348,7 @@ export const AdminVoucherManager: React.FC = () => {
         title={t("voucher.confirm_revoke")}
         description={t("voucher.confirm_revoke_desc")}
         type="warning"
-        confirmLabel={t("common.revoke")}
+        confirmLabel={t("voucher.revoke")}
         cancelLabel={t("common.cancel")}
         onConfirm={revokeVoucher}
         onCancel={() => setRevokeTarget(null)}
