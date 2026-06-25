@@ -34,7 +34,22 @@ export function drawPdfBrandHeader(doc: jsPDF, opts: BrandHeaderOpts, margin: nu
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
   doc.setTextColor(PDF_BRAND.primaryColor[0], PDF_BRAND.primaryColor[1], PDF_BRAND.primaryColor[2]);
-  doc.text(opts.t("title") || PDF_BRAND.appName, margin + 42, y + 10);
+  
+  const translatedTitle = opts.t("title");
+  const appName = translatedTitle && translatedTitle !== "title" ? translatedTitle : PDF_BRAND.appName;
+  doc.text(appName, margin + 42, y + 10);
+
+  // Tagline
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(120, 120, 120);
+  const tagline = opts.t("export.pdf_tagline");
+  doc.text(
+    tagline && tagline !== "pdf_tagline" ? tagline : "Atur Keuangan Semudah Kirim Pesan",
+    margin + 42,
+    y + 18
+  );
+  doc.setTextColor(0, 0, 0); // Reset color
 
   // Document info, top-right
   doc.setFont("helvetica", "bold");

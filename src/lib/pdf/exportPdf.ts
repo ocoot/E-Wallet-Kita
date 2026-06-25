@@ -3,7 +3,6 @@ import autoTable from "jspdf-autotable";
 import { Transaction } from "../../types";
 import {
   drawHeader,
-  drawWatermark,
   drawFooter,
   finalizePageNumbers,
   TFunc,
@@ -120,10 +119,10 @@ const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
         }
       }
     },
+    willDrawPage: () => {
+    },
     didDrawPage: () => {
       drawHeader(doc, headerOpts);
-      const pageHeight = doc.internal.pageSize.getHeight();
-      drawWatermark(doc, watermarkText, { top: HEADER_HEIGHT, bottom: pageHeight - 50 });
       drawFooter(doc, { t, pageLabelPrefix: "" });
     },
   });

@@ -312,6 +312,7 @@
     "page_x_of_y": "Page {current} of {total}",
     "file_prefix_summary": "Report",
     "file_prefix_full": "Report",
+    "pdf_tagline": "Managing Finances as Simple as Sending a Message",
     "modal_full_title": "Export Full PDF",
     "modal_full_desc": "Choose a month range for the report. Maximum range is 3 calendar months.",
     "from_month": "From Month",

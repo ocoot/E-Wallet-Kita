@@ -312,6 +312,7 @@
     "page_x_of_y": "Halaman {current} dari {total}",
     "file_prefix_summary": "Laporan",
     "file_prefix_full": "Laporan",
+    "pdf_tagline": "Atur Keuangan Semudah Kirim Pesan",
     "modal_full_title": "Ekspor PDF Lengkap",
     "modal_full_desc": "Pilih rentang bulan untuk laporan. Maksimal rentang adalah 3 bulan kalender.",
     "from_month": "Bulan Awal",

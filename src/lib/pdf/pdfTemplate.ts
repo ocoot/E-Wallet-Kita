@@ -1,4 +1,4 @@
-import { jsPDF, GState } from "jspdf";
+import { jsPDF } from "jspdf";
 import { drawPdfBrandHeader } from "./pdfBranding";
 
 export type TFunc = (key: string, replacements?: Record<string, string | number>) => string;
@@ -30,66 +30,6 @@ export const drawHeader = (
   }, MARGIN);
 };
 
-/**
- * Draws a low-opacity diagonal watermark centered within the *content area*
- * of the page (between the header and footer), not the raw page center.
- *
- * IMPORTANT: jsPDF's built-in `align`/`baseline` options compute their
- * offset in absolute page space BEFORE the rotation matrix is applied, not
- * in the text's own rotated frame. Combined with `angle`, this causes the
- * rendered text to land visibly off-center (the wider the text, the bigger
- * the drift). To avoid that bug entirely, we skip align/baseline and
- * manually compute the anchor point with basic trigonometry so the
- * rotated text's true geometric center lands exactly on (centerX, centerY).
- */
-export const drawWatermark = (
-  doc: jsPDF,
-  text: string,
-  contentBounds?: { top: number; bottom: number }
-): void => {
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const pageHeight = doc.internal.pageSize.getHeight();
-
-  const top = contentBounds?.top ?? 0;
-  const bottom = contentBounds?.bottom ?? pageHeight;
-  const centerX = pageWidth / 2;
-  const centerY = (top + bottom) / 2;
-
-  const fontSize = 60;
-  const angleDeg = 45;
-
-  doc.saveGraphicsState();
-  doc.setGState(new GState({ opacity: 0.02 }));
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(fontSize);
-  doc.setTextColor(120, 120, 120);
-
-  const textWidth = doc.getTextWidth(text);
-  const capHeight = fontSize * 0.72; // approximation for bold all-caps text
-
-  const rad = (angleDeg * Math.PI) / 180;
-  const cosT = Math.cos(rad);
-  const sinT = Math.sin(rad);
-
-  // Local offset (in the text's own unrotated frame) from the default
-  // baseline-left anchor to the text's true visual center.
-  const dx = textWidth / 2;
-  const dy = -capHeight / 2;
-
-  // Rotate that local offset by angleDeg (counter-clockwise as viewed,
-  // matching jsPDF's default rotation direction with a y-down page).
-  const offsetX = dx * cosT + dy * sinT;
-  const offsetY = -dx * sinT + dy * cosT;
-
-  // Place the anchor so that, once rotated, the text's center lands
-  // exactly on (centerX, centerY).
-  const anchorX = centerX - offsetX;
-  const anchorY = centerY - offsetY;
-
-  doc.text(text, anchorX, anchorY, { angle: angleDeg });
-  doc.restoreGraphicsState();
-};
-
 /** Draws the footer (left: app credit/confidential note, right: page number placeholder). */
 export const drawFooter = (
   doc: jsPDF,
@@ -107,11 +47,6 @@ export const drawFooter = (
   doc.setFontSize(8);
   doc.setTextColor(148, 163, 184); // Slate-400
   doc.text(`${opts.t("export.footer_generated_by")} Premium`, MARGIN, y - 2);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7);
-  doc.setTextColor(180, 180, 180);
-  doc.text("www.ewalletkita.app", MARGIN, y + 6);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
