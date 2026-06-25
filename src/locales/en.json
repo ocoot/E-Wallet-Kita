@@ -209,7 +209,12 @@
     "diagnostics_desc": "Verify key local multiplier parser matches manually.",
     "btn_run_tests": "Run Parser Suite",
     "test_input": "Input String",
-    "test_output": "Detected Numerical Subtotal"
+    "test_output": "Detected Numerical Subtotal",
+    "pwa_section": "Progressive Web App (PWA)",
+    "pwa_desc": "Install E-Wallet Kita directly on your device for instant access and complete offline support.",
+    "pwa_btn_install": "Install E-Wallet Kita",
+    "pwa_installed": "Already Installed",
+    "pwa_not_supported": "Your browser does not support this auto-installation button. Please use the 'Add to Home Screen' option manually from your browser's menu."
   },
   "common": {
     "active": "Active",
@@ -257,6 +262,7 @@
     "success_delete": "Transaction deleted successfully.",
     "success_delete_all": "All history records successfully wiped permanently.",
     "success_profile": "Profile display name successfully updated!",
+    "success_pwa": "E-Wallet Kita installed successfully! 🎉",
     "success_link": "Telegram Bot successfully integrated!",
     "success_unlink": "Telegram Bot disconnected successfully.",
     "success_pref": "Preferences successfully saved to cloud database.",

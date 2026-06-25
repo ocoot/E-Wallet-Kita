@@ -21,7 +21,8 @@ import {
   RefreshCw,
   Sparkles,
   ShieldCheck,
-  Lock
+  Lock,
+  Smartphone
 } from "lucide-react";
 import { motion } from "motion/react";
 import { UserSession } from "../types";
@@ -44,6 +45,70 @@ export const Settings: React.FC<SettingsProps> = ({
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
   const isGuest = user?.is_anonymous ?? false;
   const isTelegramLocked = isGuest || !isPremium;
+
+  // PWA Custom Installation States
+  const [canInstall, setCanInstall] = useState(!!window.deferredPrompt);
+  const [isStandalone, setIsStandalone] = useState(
+    window.matchMedia("(display-mode: standalone)").matches || 
+    (navigator as any).standalone === true
+  );
+
+  useEffect(() => {
+    const handleInstallable = () => setCanInstall(true);
+    const handleInstalled = () => {
+      setCanInstall(false);
+      setIsStandalone(true);
+    };
+
+    window.addEventListener("pwa-installable", handleInstallable);
+    window.addEventListener("pwa-installed", handleInstalled);
+
+    // Monitor display-mode matches directly
+    const mediaQuery = window.matchMedia("(display-mode: standalone)");
+    const handleMediaChange = (e: MediaQueryListEvent) => {
+      setIsStandalone(e.matches);
+    };
+    
+    // Add support for older browsers
+    try {
+      mediaQuery.addEventListener("change", handleMediaChange);
+    } catch (e) {
+      try {
+        mediaQuery.addListener(handleMediaChange);
+      } catch (err) {}
+    }
+
+    return () => {
+      window.removeEventListener("pwa-installable", handleInstallable);
+      window.removeEventListener("pwa-installed", handleInstalled);
+      try {
+        mediaQuery.removeEventListener("change", handleMediaChange);
+      } catch (e) {
+        try {
+          mediaQuery.removeListener(handleMediaChange);
+        } catch (err) {}
+      }
+    };
+  }, []);
+
+  const handleInstallClick = async () => {
+    audioFeedback.playClick();
+    const promptEvent = window.deferredPrompt;
+    if (!promptEvent) {
+      showToast(t("settings.pwa_not_supported"), "info");
+      return;
+    }
+    // Show prompt banner
+    promptEvent.prompt();
+    // Wait for resolution
+    const { outcome } = await promptEvent.userChoice;
+    console.log(`[PWA] Install choice outcome: ${outcome}`);
+    if (outcome === "accepted") {
+      window.deferredPrompt = null;
+      setCanInstall(false);
+      showToast(t("toast.success_pwa"), "success");
+    }
+  };
 
   // Profile Edit States
   const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.email?.split('@')[0] || "");
@@ -385,6 +450,42 @@ export const Settings: React.FC<SettingsProps> = ({
               </div>
             </div>
 
+          </div>
+
+          {/* Section 3: PWA Installation Block */}
+          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-850/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
+            <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
+              <Smartphone size={14} className="text-teal-400 light_sakura:text-rose-500" />
+              <span>{t("settings.pwa_section")}</span>
+            </h3>
+
+            <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
+              {t("settings.pwa_desc")}
+            </p>
+
+            {isStandalone ? (
+              <div className="flex items-center gap-2 text-emerald-400 light_sakura:text-emerald-600 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
+                <CheckCircle size={16} />
+                <span className="font-sans text-xs font-semibold">{t("settings.pwa_installed")}</span>
+              </div>
+            ) : canInstall ? (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="button"
+                onClick={handleInstallClick}
+                className="w-full cursor-pointer py-3 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl font-sans text-xs font-bold shadow-lg shadow-teal-500/10 flex items-center justify-center gap-2 transition-all"
+              >
+                <Smartphone size={14} />
+                <span>{t("settings.pwa_btn_install")}</span>
+              </motion.button>
+            ) : (
+              <div className="p-3 bg-slate-950 rounded-xl border border-slate-850 text-slate-400 text-xs leading-relaxed light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 light_sakura:text-slate-650">
+                <p className="font-sans text-[11px]">
+                  {t("settings.pwa_not_supported")}
+                </p>
+              </div>
+            )}
           </div>
 
             {/* Section 5: Unit Test scenarios validator diagnostics - REMOVED */}

@@ -209,7 +209,12 @@
     "diagnostics_desc": "Verifikasi akurasi regulasi parser singkatan nominal secara lokal.",
     "btn_run_tests": "Jalankan Tes Parser",
     "test_input": "Input Teks",
-    "test_output": "Jumlah Dolar/Rupiah Terdeteksi"
+    "test_output": "Jumlah Dolar/Rupiah Terdeteksi",
+    "pwa_section": "Aplikasi Web Progresif (PWA)",
+    "pwa_desc": "Pasang E-Wallet Kita langsung di perangkat Anda untuk akses instan cepat dan dukungan offline penuh.",
+    "pwa_btn_install": "Instal E-Wallet Kita",
+    "pwa_installed": "Aplikasi Sudah Terpasang",
+    "pwa_not_supported": "Browser Anda tidak mendukung tombol instalasi otomatis ini. Silakan gunakan opsi 'Tambahkan ke Layar Utama' (Add to Home Screen) secara manual dari menu browser Anda."
   },
   "common": {
     "active": "Aktif",
@@ -257,6 +262,7 @@
     "success_delete": "Transaksi berhasil dihapus.",
     "success_delete_all": "Seluruh riwayat keuangan telah dikosongkan secara permanen.",
     "success_profile": "Nama profil berhasil diperbarui!",
+    "success_pwa": "E-Wallet Kita berhasil dipasang! 🎉",
     "success_link": "Bot Telegram sukses dihubungkan!",
     "success_unlink": "Hubungan bot Telegram berhasil diputuskan.",
     "success_pref": "Preferensi berhasil disimpan ke cloud database kita.",
