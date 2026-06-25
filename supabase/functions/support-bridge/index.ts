@@ -102,6 +102,7 @@ serve(async (req) => {
 
       // Live Chat Reply: admin replies to a forwarded message
       if (message.reply_to_message && text) {
+        console.log("ADMIN TEXT:", text);
         const repliedText = message.reply_to_message.text || "";
         console.log("REPLIED TEXT:", repliedText);
         const match = repliedText.match(/#([A-Z0-9]+)/);
@@ -109,6 +110,7 @@ serve(async (req) => {
 
         if (match) {
           const shortCode = match[1];
+          console.log("SHORT CODE:", shortCode);
 
           // Fetch active support session
           const { data: session, error: sessError } = await supabase
@@ -117,6 +119,9 @@ serve(async (req) => {
             .eq("short_code", shortCode)
             .in("status", ["open", "claimed"])
             .maybeSingle();
+
+          console.log("SESSION:", session);
+          console.log("SESSION ERROR:", sessError);
 
           if (sessError) {
             await sendTelegram(token, chatId, `❌ Database error: ${sessError.message}`);
@@ -136,6 +141,9 @@ serve(async (req) => {
               sender: "admin",
               content: text,
             });
+
+          console.log("SESSION ID:", session.id);
+          console.log("INSERT ERROR:", insertError);
 
           if (insertError) {
             await sendTelegram(token, chatId, `❌ Gagal menyimpan pesan: ${insertError.message}`);
