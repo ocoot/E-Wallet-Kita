@@ -400,7 +400,16 @@
     "actions": "Actions",
     "success_create": "Voucher created successfully",
     "base_price": "Base Price (Rp)",
-    "placeholder_code": "Example: WELCOME50"
+    "placeholder_code": "Example: WELCOME50",
+    "activate": "Activate",
+    "confirm_activate": "Activate Voucher",
+    "confirm_activate_desc": "The voucher will be available again for users to use.",
+    "success_activate": "Voucher successfully reactivated",
+    "usage": "Used",
+    "last_used": "Last Used",
+    "never_used": "Never Used",
+    "used_times": "Used {count}x",
+    "cannot_delete_used": "Voucher is already used in transactions and cannot be deleted"
   },
   "admin": {
     "loading_data": "Loading data...",

@@ -7,12 +7,18 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { Modal } from "../components/Modal";
 import { Trash2, PlusCircle, ChevronLeft, ChevronRight } from "lucide-react";
 
+interface PremiumVoucherWithUsage extends PremiumVoucher {
+  usage_count?: number;
+  last_used_at?: string | null;
+}
+
 export const AdminVoucherManager: React.FC = () => {
-  const [vouchers, setVouchers] = useState<PremiumVoucher[]>([]);
+  const [vouchers, setVouchers] = useState<PremiumVoucherWithUsage[]>([]);
   const [code, setCode] = useState("");
   const [percent, setPercent] = useState("");
-  const [revokeTarget, setRevokeTarget] = useState<PremiumVoucher | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<PremiumVoucher | null>(null);
+  const [revokeTarget, setRevokeTarget] = useState<PremiumVoucherWithUsage | null>(null);
+  const [activateTarget, setActivateTarget] = useState<PremiumVoucherWithUsage | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<PremiumVoucherWithUsage | null>(null);
   const [premiumPrice, setPremiumPrice] = useState("20000");
   const [isSavingPrice, setIsSavingPrice] = useState(false);
   const [pageSize, setPageSize] = useState<number | "all">(10);
@@ -28,10 +34,30 @@ export const AdminVoucherManager: React.FC = () => {
   const fetchVouchers = async () => {
     const { data } = await supabase
       .from("premium_vouchers")
-      .select("*")
+      .select(`
+        *,
+        premium_transactions (
+          id,
+          created_at
+        )
+      `)
       .order("is_active", { ascending: false })
       .order("created_at", { ascending: false });
-    setVouchers(data || []);
+
+    const mapped = (data || []).map((v: any) => {
+      const txs = v.premium_transactions || [];
+      const usage_count = txs.length;
+      const last_used_at = txs.length > 0
+        ? txs.map((t: any) => t.created_at).sort((a: string, b: string) => b.localeCompare(a))[0]
+        : null;
+      return {
+        ...v,
+        usage_count,
+        last_used_at
+      };
+    });
+
+    setVouchers(mapped);
   };
 
   const loadPrice = async () => {
@@ -67,12 +93,57 @@ export const AdminVoucherManager: React.FC = () => {
     if (!revokeTarget) return;
     await supabase.from("premium_vouchers").update({ is_active: false, revoked_at: new Date().toISOString() }).eq("id", revokeTarget.id);
     setRevokeTarget(null);
+    showToast(t("voucher.success_revoke") || "Voucher berhasil dinonaktifkan", "success");
+    fetchVouchers();
+  };
+
+  const activateVoucher = async () => {
+    if (!activateTarget) return;
+    const { error } = await supabase
+      .from("premium_vouchers")
+      .update({ is_active: true, revoked_at: null })
+      .eq("id", activateTarget.id);
+
+    if (error) {
+      showToast(error.message, "error");
+      return;
+    }
+
+    showToast(t("voucher.success_activate"), "success");
+    setActivateTarget(null);
     fetchVouchers();
   };
 
   const deleteVoucher = async () => {
     if (!deleteTarget) return;
-    await supabase.from("premium_vouchers").delete().eq("id", deleteTarget.id);
+
+    const { count, error: countError } = await supabase
+      .from("premium_transactions")
+      .select("*", { count: "exact", head: true })
+      .eq("voucher_id", deleteTarget.id);
+
+    if (countError) {
+      showToast(countError.message, "error");
+      return;
+    }
+
+    if (count && count > 0) {
+      showToast(t("voucher.cannot_delete_used"), "error");
+      setDeleteTarget(null);
+      return;
+    }
+
+    const { error: deleteError } = await supabase
+      .from("premium_vouchers")
+      .delete()
+      .eq("id", deleteTarget.id);
+
+    if (deleteError) {
+      showToast(deleteError.message, "error");
+      return;
+    }
+
+    showToast(t("common.delete_success") || "Voucher berhasil dihapus", "success");
     setDeleteTarget(null);
     fetchVouchers();
   };
@@ -96,6 +167,20 @@ export const AdminVoucherManager: React.FC = () => {
     total: vouchers.length,
     active: vouchers.filter(v => v.is_active).length,
     inactive: vouchers.filter(v => !v.is_active).length
+  };
+
+  const formatDate = (isoStr: string | null | undefined) => {
+    if (!isoStr) return "-";
+    try {
+      const d = new Date(isoStr);
+      return d.toLocaleDateString(locale === "id" ? "id-ID" : "en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      });
+    } catch (e) {
+      return "-";
+    }
   };
 
   return (
@@ -156,33 +241,50 @@ export const AdminVoucherManager: React.FC = () => {
 
       <div className="bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[600px]">
+          <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[700px]">
             <thead className="bg-slate-800 light_sakura:bg-slate-50 text-slate-400 light_sakura:text-slate-500 uppercase text-xs">
               <tr>
                 <th className="p-6">{t("voucher.code")}</th>
                 <th className="p-6">{t("voucher.discount", { percent: "" }).replace("{percent}%", "").trim()}</th>
                 <th className="p-6">{t("voucher.active")}</th>
+                <th className="p-6">{t("voucher.usage")}</th>
+                <th className="p-6">{t("voucher.last_used")}</th>
                 <th className="p-6 text-right">{t("voucher.actions")}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
-              {(pageSize === "all" ? vouchers : vouchers.slice(page * pageSize, (page + 1) * pageSize)).map(v => (
-                <tr key={v.id} className="hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50">
-                  <td className="p-6 font-semibold text-white light_sakura:text-slate-900">{v.code}</td>
-                  <td className="p-6">{v.discount_percent}%</td>
-                  <td className="p-6">
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${v.is_active ? "bg-emerald-900/20 light_sakura:bg-emerald-50 text-emerald-400 light_sakura:text-emerald-600" : "bg-slate-800 light_sakura:bg-slate-100 text-slate-400 light_sakura:text-slate-600"}`}>
-                      {v.is_active ? t("voucher.active") : t("voucher.inactive_vouchers")}
-                    </span>
-                  </td>
-                  <td className="p-6 text-right">
-                    <div className="flex items-center justify-end gap-3">
-                      {v.is_active && <button onClick={() => setRevokeTarget(v)} className="text-amber-500 hover:text-amber-600 font-medium cursor-pointer">{t("voucher.revoke")}</button>}
-                      <button onClick={() => setDeleteTarget(v)} className="text-red-400 hover:text-red-500 cursor-pointer"><Trash2 size={18}/></button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {(pageSize === "all" ? vouchers : vouchers.slice(page * pageSize, (page + 1) * pageSize)).map(v => {
+                const usageCount = v.usage_count || 0;
+                return (
+                  <tr key={v.id} className="hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50">
+                    <td className="p-6 font-semibold text-white light_sakura:text-slate-900">{v.code}</td>
+                    <td className="p-6">{v.discount_percent}%</td>
+                    <td className="p-6">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${v.is_active ? "bg-emerald-900/20 light_sakura:bg-emerald-50 text-emerald-400 light_sakura:text-emerald-600" : "bg-slate-800 light_sakura:bg-slate-100 text-slate-400 light_sakura:text-slate-600"}`}>
+                        {v.is_active ? t("voucher.active") : t("voucher.inactive_vouchers")}
+                      </span>
+                    </td>
+                    <td className="p-6">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${usageCount === 0 ? "bg-slate-800 light_sakura:bg-slate-100 text-slate-400 light_sakura:text-slate-600" : "bg-indigo-900/20 light_sakura:bg-indigo-50 text-indigo-400 light_sakura:text-indigo-600"}`}>
+                        {usageCount === 0 ? t("voucher.never_used") : t("voucher.used_times", { count: usageCount }).replace("{count}", String(usageCount))}
+                      </span>
+                    </td>
+                    <td className="p-6 text-slate-300 light_sakura:text-slate-600">
+                      {formatDate(v.last_used_at)}
+                    </td>
+                    <td className="p-6 text-right">
+                      <div className="flex items-center justify-end gap-3">
+                        {v.is_active ? (
+                          <button onClick={() => setRevokeTarget(v)} className="text-amber-500 hover:text-amber-600 font-medium cursor-pointer">{t("voucher.revoke")}</button>
+                        ) : (
+                          <button onClick={() => setActivateTarget(v)} className="text-emerald-500 hover:text-emerald-600 font-medium cursor-pointer">{t("voucher.activate")}</button>
+                        )}
+                        <button onClick={() => setDeleteTarget(v)} className="text-red-400 hover:text-red-500 cursor-pointer"><Trash2 size={18}/></button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -250,6 +352,17 @@ export const AdminVoucherManager: React.FC = () => {
         cancelLabel={t("common.cancel")}
         onConfirm={revokeVoucher}
         onCancel={() => setRevokeTarget(null)}
+      />
+
+      <Modal
+        isOpen={!!activateTarget}
+        title={t("voucher.confirm_activate")}
+        description={t("voucher.confirm_activate_desc")}
+        type="info"
+        confirmLabel={t("voucher.activate")}
+        cancelLabel={t("common.cancel")}
+        onConfirm={activateVoucher}
+        onCancel={() => setActivateTarget(null)}
       />
 
       <Modal

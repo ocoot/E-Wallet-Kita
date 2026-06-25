@@ -400,7 +400,16 @@
     "actions": "Aksi",
     "success_create": "Voucher berhasil dibuat",
     "base_price": "Harga Dasar (Rp)",
-    "placeholder_code": "Contoh: WELCOME50"
+    "placeholder_code": "Contoh: WELCOME50",
+    "activate": "Aktifkan",
+    "confirm_activate": "Aktifkan Voucher",
+    "confirm_activate_desc": "Voucher akan tersedia kembali untuk digunakan pengguna.",
+    "success_activate": "Voucher berhasil diaktifkan kembali",
+    "usage": "Digunakan",
+    "last_used": "Terakhir Dipakai",
+    "never_used": "Belum Dipakai",
+    "used_times": "Dipakai {count}x",
+    "cannot_delete_used": "Voucher sudah digunakan pada transaksi dan tidak dapat dihapus"
   },
   "admin": {
     "loading_data": "Memuat data...",
