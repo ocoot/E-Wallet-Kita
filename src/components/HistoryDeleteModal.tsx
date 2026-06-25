@@ -1,6 +1,6 @@
 import React from "react";
 import { useLanguage } from "../contexts/LanguageContext";
-import { Transaction } from "../types";
+import { Transaction, Category } from "../types";
 import { AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
@@ -10,6 +10,7 @@ interface HistoryDeleteModalProps {
   deleteTargetId: string | null;
   setDeleteTargetId: (id: string | null) => void;
   transactions: Transaction[];
+  categories: Category[];
   formatIDR: (num: number) => string;
   onConfirmSingleDelete: () => void;
   
@@ -24,6 +25,7 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
   deleteTargetId,
   setDeleteTargetId,
   transactions,
+  categories,
   formatIDR,
   onConfirmSingleDelete,
   
@@ -33,9 +35,15 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
   setDeleteAllConfirmText,
   onConfirmDeleteAll,
 }) => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   const targetTransaction = transactions.find(t => t.id === deleteTargetId);
+
+  const resolveCategoryLabel = (key: string) => {
+    const cat = categories.find(c => c.key === key);
+    if (!cat) return key;
+    return locale === "id" ? (cat.label_id || key) : (cat.label_en || key);
+  };
 
   return (
     <>
@@ -45,7 +53,7 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
         title={t("confirm.delete_item_title")}
         description={t("confirm.delete_item_desc", {
           amount: targetTransaction ? formatIDR(targetTransaction.amount) : "",
-          note: targetTransaction ? (targetTransaction.note || t(`categories.${targetTransaction.category}`)) : ""
+          note: targetTransaction ? (targetTransaction.note || resolveCategoryLabel(targetTransaction.category)) : ""
         })}
         type="danger"
         confirmLabel={t("confirm.delete_item_confirm")}

@@ -113,15 +113,14 @@ function isDuplicateTelegramUpdate(updateId: number): boolean {
 
 import { getActiveCategories, generateCategoryPrompt, validateCategoryKey, Category } from './_lib/categories.js';
 
-// FIX #10: Import categories from centralized definition (Keep this for non-AI labels if needed, or remove if fully switched)
-import { getCategoryLabel as getCategoryLabelFromDef } from '../src/lib/categoryDefinitions.js';
-
-// Use centralized definition with DB fallback
+// Resolve category label strictly from DB (categories table as master source).
+// Falls back to the raw key so the message is still readable if the category
+// was deleted or deactivated after the transaction was saved.
 async function getCategoryLabel(categoryKey: string, lang: Lang): Promise<string> {
   const categories = await getActiveCategories();
   const cat = categories.find(c => c.key === categoryKey);
-  if (!cat) return getCategoryLabelFromDef(categoryKey, lang);
-  return lang === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key);
+  if (!cat) return categoryKey;
+  return lang === "id" ? (cat.label_id || categoryKey) : (cat.label_en || categoryKey);
 }
 
 function formatIDR(amount: number): string {
@@ -1028,247 +1027,247 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         res.status(200).json({ ok: true }); return;
       }
 
-      // FIX #10: Language selection callback (set lang preference)
-      if (actionData === "set_lang_id" || actionData === "set_lang_en") {
-        const chosenLang: Lang = actionData === "set_lang_en" ? "en" : "id";
-        await supabaseBackend.rpc("set_telegram_language", { p_chat_id: chatId, p_lang: chosenLang });
-        await answerTelegramCallback(queryId, tr("cbLangSet", chosenLang));
-        await editTelegramMessage(chatId, msgId, tr("start", chosenLang));
-        res.status(200).json({ ok: true }); return;
-      }
-
-      // FIX #11: Edit amount callback
-      if (actionData === "tx_edit_amount") {
-        const editLang = await resolveLangOnly(chatId);
-        await answerTelegramCallback(queryId);
-        await sendTelegramMessage(chatId, tr("editAmountPrompt", editLang));
-        res.status(200).json({ ok: true }); return;
-      }
-
-// Edit category callback
-      if (actionData === "tx_edit_category") {
-        const editLang = await resolveLangOnly(chatId);
-        await answerTelegramCallback(queryId);
-        
-        const { data: pendingRows } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
-        const pending = pendingRows?.[0];
-        if (!pending) {
-          await editTelegramMessage(chatId, msgId, tr("msgExpired", editLang));
-          res.status(200).json({ ok: true }); return;
-        }
-        
-        const categories = await getActiveCategories();
-        const catMarkup = buildCategoryKeyboard(pending.type, editLang, categories);
-        await editTelegramMessage(chatId, msgId, tr("editCategoryPrompt", editLang), catMarkup);
-        res.status(200).json({ ok: true }); return;
-      }
-
-      if (actionData === "tx_edit_category_cancel") {
-        const editLang = await resolveLangOnly(chatId);
-        await answerTelegramCallback(queryId);
-        
-        const { data: pendingRows } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
-        const pending = pendingRows?.[0];
-        if (!pending) {
-          await editTelegramMessage(chatId, msgId, tr("msgExpired", editLang));
-          res.status(200).json({ ok: true }); return;
-        }
-        
-        const catLabel  = await getCategoryLabel(pending.category_key, editLang);
-        const typeLabel = pending.type === "income" ? tr("txTypeIncome", editLang) : tr("txTypeExpense", editLang);
-        const draftMarkup = buildDraftKeyboard(editLang);
-        await editTelegramMessage(chatId, msgId, tr("draftPrompt", editLang, typeLabel, catLabel, formatIDR(pending.amount), pending.original_text), draftMarkup);
-        res.status(200).json({ ok: true }); return;
-      }
-
+      // Handle Category Selection for Draft
       if (actionData.startsWith("tx_set_cat:")) {
-        const newCat = actionData.split(":")[1];
-        const editLang = await resolveLangOnly(chatId);
-        
-        const { data: pendingRows } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
-        const pending = pendingRows?.[0];
-        if (!pending) {
-          await answerTelegramCallback(queryId, tr("cbExpired", editLang));
-          await editTelegramMessage(chatId, msgId, tr("msgExpired", editLang));
-          res.status(200).json({ ok: true }); return;
-        }
-
-        await supabaseBackend.rpc("upsert_pending_telegram_tx", {
+        const newCatKey = actionData.split(":")[1];
+        const { error: updateErr } = await supabaseBackend.rpc("update_pending_telegram_tx_category", {
           p_chat_id: chatId,
-          p_type: pending.type,
-          p_category_key: newCat,
-          p_amount: pending.amount,
-          p_original_text: pending.original_text
+          p_category_key: newCatKey
         });
 
-        await answerTelegramCallback(queryId, tr("cbCategoryUpdated", editLang));
-
-        const catLabel  = await getCategoryLabel(newCat, editLang);
-        const typeLabel = pending.type === "income" ? tr("txTypeIncome", editLang) : tr("txTypeExpense", editLang);
-        const draftMarkup = buildDraftKeyboard(editLang);
-        await editTelegramMessage(chatId, msgId, tr("draftPrompt", editLang, typeLabel, catLabel, formatIDR(pending.amount), pending.original_text), draftMarkup);
-        res.status(200).json({ ok: true }); return;
-      }
-
-      // FIX #4 (race condition): Use atomic confirm_and_delete_pending_telegram_tx RPC
-      // which checks existence and inserts in a single transaction, preventing double-tap duplicates
-      if (actionData === "tx_confirm") {
-        const { data: confirmResult, error: confirmErr } = await supabaseBackend.rpc(
-          "confirm_and_insert_telegram_tx",
-          { p_chat_id: chatId, p_date: new Date().toISOString().split("T")[0] }
-        );
-
-        if (confirmErr) {
-          console.error("❌ RPC confirm_and_insert_telegram_tx error:", confirmErr);
+        if (updateErr) {
           await answerTelegramCallback(queryId, tr("cbSaveFailed", lang));
-          await editTelegramMessage(chatId, msgId, tr("msgSaveFailed", lang, confirmErr.message));
           res.status(200).json({ ok: true }); return;
         }
 
-        const result = confirmResult && confirmResult.length > 0 ? confirmResult[0] : null;
+        // Reload draft to show updated label
+        const { data: draft } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
+        if (!draft || draft.length === 0) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
 
-        if (!result || result.status === "not_found" || result.status === "expired") {
+        const row = draft[0];
+        const typeLabel = row.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
+        const catLabel  = await getCategoryLabel(row.category_key, lang);
+        const amountStr = formatIDR(row.amount);
+
+        await editTelegramMessage(
+          chatId, msgId,
+          tr("draftPrompt", lang, typeLabel, catLabel, amountStr, row.original_text),
+          buildDraftKeyboard(lang)
+        );
+
+        await answerTelegramCallback(queryId, tr("cbCategoryUpdated", lang));
+        res.status(200).json({ ok: true }); return;
+      }
+
+      if (actionData === "tx_confirm") {
+        const { data: draft, error: fetchErr } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
+        
+        if (fetchErr || !draft || draft.length === 0) {
           await answerTelegramCallback(queryId, tr("cbExpired", lang));
           await editTelegramMessage(chatId, msgId, tr("msgExpired", lang));
           res.status(200).json({ ok: true }); return;
         }
 
-        if (result.status === "already_confirmed") {
-          // Double-tap: silently acknowledge without inserting again
+        const row = draft[0];
+
+        // Final Save to Transactions table
+        const { error: saveErr } = await supabaseBackend.rpc("confirm_pending_telegram_tx", {
+          p_chat_id: chatId
+        });
+
+        if (saveErr) {
+          console.error("❌ confirm_pending_telegram_tx error:", saveErr);
+          await answerTelegramCallback(queryId, tr("cbSaveFailed", lang));
+          await editTelegramMessage(chatId, msgId, tr("msgSaveFailed", lang, saveErr.message));
+        } else {
+          const typeLabel = row.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
+          const catLabel  = await getCategoryLabel(row.category_key, lang);
+          const amountStr = formatIDR(row.amount);
+
           await answerTelegramCallback(queryId, tr("cbSaveSuccess", lang));
-          res.status(200).json({ ok: true }); return;
+          await editTelegramMessage(chatId, msgId, tr("msgSaveSuccess", lang, typeLabel, catLabel, amountStr, row.original_text));
         }
-
-        // status === "saved"
-        const catLabel  = await getCategoryLabel(result.category_key, lang);
-        const amountStr = formatIDR(result.amount);
-        const typeLabel = result.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
-
-        await answerTelegramCallback(queryId, tr("cbSaveSuccess", lang));
-        await editTelegramMessage(chatId, msgId, tr("msgSaveSuccess", lang, typeLabel, catLabel, amountStr, result.original_text));
-        res.status(200).json({ ok: true }); return;
-      }
-
-      if (actionData === "tx_cancel") {
-        await supabaseBackend.rpc("delete_pending_telegram_tx", { p_chat_id: chatId });
+      } 
+      else if (actionData === "tx_cancel") {
+        await supabaseBackend.rpc("cancel_pending_telegram_tx", { p_chat_id: chatId });
         await answerTelegramCallback(queryId, tr("cbCancelled", lang));
         await editTelegramMessage(chatId, msgId, tr("msgCancelled", lang));
-        res.status(200).json({ ok: true }); return;
       }
-
-      // Receipt Approve Callback Action
-      if (actionData.startsWith("rcpt_approve:")) {
-        const draftId = actionData.split(":")[1];
-        try {
-          const { draft, transaction } = await approveReceiptDraft(draftId);
-          await answerTelegramCallback(queryId, lang === "id" ? "Transaksi struk berhasil dicatat!" : "Receipt transaction successfully recorded!");
-          
-          if (!transaction) {
-            await editTelegramMessage(chatId, msgId, lang === "id" 
-              ? "✅ *Transaksi struk ini sudah pernah disimpan.*"
-              : "✅ *This receipt transaction has already been saved.*");
-            res.status(200).json({ ok: true }); 
-            return;
-          }
-
-          const msgSuccess = lang === "id"
-            ? `✅ *Transaksi Berhasil Dicatat dari Struk!*\n\n` +
-              `• *Tipe*: 📤 Pengeluaran\n` +
-              `• *Toko*: *${draft.merchant_name}*\n` +
-              `• *Jumlah*: *${formatIDR(draft.total_amount)}*\n` +
-              `• *Kategori*: ${await getCategoryLabel(draft.category || 'other', lang)}\n` +
-              `• *Catatan*: "${draft.total_items} item barang (${draft.merchant_name})"\n\n` +
-              `_Catatan struk Anda telah aman disimpan ke E-Wallet Kita._ 🌸`
-            : `✅ *Transaction Successfully Recorded from Receipt!*\n\n` +
-              `• *Type*: 📤 Expense\n` +
-              `• *Store*: *${draft.merchant_name}*\n` +
-              `• *Amount*: *${formatIDR(draft.total_amount)}*\n` +
-              `• *Category*: ${await getCategoryLabel(draft.category || 'other', lang)}\n` +
-              `• *Note*: "${draft.total_items} item goods (${draft.merchant_name})"\n\n` +
-              `_Your receipt record has been safely saved to E-Wallet Kita._ 🌸`;
-
-          await editTelegramMessage(chatId, msgId, msgSuccess);
-        } catch (err: any) {
-          console.error("❌ rcpt_approve error:", err);
-          await answerTelegramCallback(queryId, lang === "id" ? "Gagal menyimpan draf struk." : "Failed to approve receipt draft.");
-          await editTelegramMessage(chatId, msgId, lang === "id"
-             ? `❌ *Gagal Menyimpan Transaksi Struk*\n_Error: ${err.message || 'Koneksi database bermasalah'}_`
-             : `❌ *Failed to Save Receipt Transaction*\n_Error: ${err.message || 'Database connection issue'}_`);
-        }
-        res.status(200).json({ ok: true }); 
-        return;
+      else if (actionData === "tx_edit_amount") {
+        // We don't have a sophisticated "edit state" so we just tell them to re-type
+        await answerTelegramCallback(queryId);
+        await sendTelegramMessage(chatId, tr("editAmountPrompt", lang));
       }
-      
-      // Receipt Edit Category Callback Action
-      if (actionData.startsWith("rcpt_editcat:")) {
-        const draftId = actionData.split(":")[1];
-        const draft = await getReceiptDraft(draftId);
-        if (!draft) {
-          await answerTelegramCallback(queryId, lang === "id" ? "Draf tidak ditemukan" : "Draft not found");
+      else if (actionData === "tx_edit_category") {
+        const { data: draft } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
+        if (!draft || draft.length === 0) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
           res.status(200).json({ ok: true }); return;
         }
-
         const categories = await getActiveCategories();
-        const keyboard = {
-          inline_keyboard: categories.filter(c => c.type === 'expense' || c.type === "both").map(cat => ([
-            { text: lang === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key), callback_data: `rcpt_cat:${cat.key}:${draftId}` }
-          ]))
-        };
-
-        await editTelegramMessage(chatId, msgId, lang === "id" ? "Pilih kategori transaksi:" : "Select transaction category:", keyboard);
-        await answerTelegramCallback(queryId, lang === "id" ? "Silakan pilih kategori" : "Please select a category");
-        res.status(200).json({ ok: true }); return;
+        await editTelegramMessage(chatId, msgId, tr("editCategoryPrompt", lang), buildCategoryKeyboard(draft[0].type, lang, categories));
+        await answerTelegramCallback(queryId);
       }
-
-      if (actionData.startsWith("rcpt_cat:")) {
-        const parts = actionData.split(":");
-        const category = parts[1];
-        const draftId = parts[2];
-        const draft = await updateReceiptCategory(draftId, category);
-
-        // Re-render
-        const catLabel = await getCategoryLabel(category, lang);
-        
-        const itemLines = (draft.items as any[]).map(i => `• ${i.name} x${i.qty}: ${formatIDR(i.subtotal)}`).join("\n");
-        const receiptDate = new Date(draft.receipt_date).toISOString().split('T')[0];
+      else if (actionData === "tx_edit_category_cancel") {
+        const { data: draft } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
+        if (!draft || draft.length === 0) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        const row = draft[0];
+        const typeLabel = row.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
+        const catLabel  = await getCategoryLabel(row.category_key, lang);
+        await editTelegramMessage(chatId, msgId, tr("draftPrompt", lang, typeLabel, catLabel, formatIDR(row.amount), row.original_text), buildDraftKeyboard(lang));
+        await answerTelegramCallback(queryId);
+      }
+      // OCR Callbacks
+      else if (actionData.startsWith("rcpt_approve:")) {
+        const draftId = actionData.split(":")[1];
+        try {
+          const resApprove = await approveReceiptDraft(draftId);
+          await answerTelegramCallback(queryId, tr("cbSaveSuccess", lang));
+          const catLabel = await getCategoryLabel(resApprove.draft.category || 'other', lang);
+          const typeLabel = tr("txTypeExpense", lang);
+          await editTelegramMessage(chatId, msgId, tr("msgSaveSuccess", lang, typeLabel, catLabel, formatIDR(resApprove.draft.total_amount), resApprove.draft.merchant_name || 'Receipt Scan'));
+        } catch (err: any) {
+          await answerTelegramCallback(queryId, tr("cbSaveFailed", lang));
+          await editTelegramMessage(chatId, msgId, tr("msgSaveFailed", lang, err.message));
+        }
+      }
+      else if (actionData.startsWith("rcpt_cancel:")) {
+        const draftId = actionData.split(":")[1];
+        await cancelReceiptDraft(draftId);
+        await answerTelegramCallback(queryId, tr("cbCancelled", lang));
+        await editTelegramMessage(chatId, msgId, tr("msgCancelled", lang));
+      }
+      else if (actionData.startsWith("rcpt_editcat:")) {
+        const draftId = actionData.split(":")[1];
+        const categories = await getActiveCategories();
+        const rows = [];
+        const matching = categories.filter(c => c.type === "expense" || c.type === "both");
+        for (let i = 0; i < matching.length; i += 2) {
+          const pair = matching.slice(i, i + 2);
+          rows.push(pair.map(c => ({
+            text: lang === "id" ? (c.label_id || c.key) : (c.label_en || c.key),
+            callback_data: `rcpt_setcat:${draftId}:${c.key}`
+          })));
+        }
+        rows.push([{ text: tr("btnBackToDraft", lang), callback_data: `rcpt_back:${draftId}` }]);
+        await editTelegramMessage(chatId, msgId, tr("editCategoryPrompt", lang), { inline_keyboard: rows });
+        await answerTelegramCallback(queryId);
+      }
+      else if (actionData.startsWith("rcpt_setcat:")) {
+        const [, draftId, catKey] = actionData.split(":");
+        await updateReceiptCategory(draftId, catKey);
+        // Go back to preview
+        const draft = await getReceiptDraft(draftId);
+        if (!draft) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        const catLabel = await getCategoryLabel(catKey, lang);
+        // Minimal refresh - technically should re-render the whole receipt preview but for simplicity just answer
+        await answerTelegramCallback(queryId, tr("cbCategoryUpdated", lang));
+        // Trigger back to preview
+        const categories = await getActiveCategories();
+        const receipt = draft.receipt_data;
+        let itemLines = "";
+        if (receipt.items && receipt.items.length > 0) {
+          receipt.items.forEach((it: any) => {
+            itemLines += `• *${it.name}*\n  Qty ${it.qty} · ${formatIDR(it.unit_price)} (${formatIDR(it.subtotal)})\n`;
+          });
+        }
+        const receiptDateFormatted = receipt.receipt_date ? new Date(receipt.receipt_date).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", {
+          day: "numeric", month: "long", year: "numeric"
+        }) : "-";
         
         const textPreview = lang === "id" 
-          ? `🧾 *Hasil Pembacaan Struk*\n\n*Toko*: ${draft.merchant_name}\n*Tanggal*: ${receiptDate}\n*Kategori*: ${catLabel}\n\n*Detail*:\n${itemLines}\n\n*Total*: *${formatIDR(draft.total_amount)}*`
-          : `🧾 *Receipt Reading Result*\n\n*Store*: ${draft.merchant_name}\n*Date*: ${receiptDate}\n*Category*: ${catLabel}\n\n*Detail*:\n${itemLines}\n\n*Total*: *${formatIDR(draft.total_amount)}*`;
+          ? `🧾 *Hasil Pembacaan Struk (OCR-Gemini)* 🌸\n\n` +
+            `*Toko*: ${receipt.merchant_name}\n` +
+            `*Tanggal*: ${receiptDateFormatted}\n` +
+            `*Kategori*: ${catLabel}\n\n` +
+            `*Rincian Barang*:\n${itemLines}\n` +
+            `━━━━━━━━━━━━━━━━━━━━\n\n` +
+            `*Total Belanja*: *${formatIDR(receipt.total_amount)}*\n\n` +
+            `_Konfirmasi pencatatan pengeluaran di bawah ini:_`
+          : `🧾 *Receipt Reading Result (OCR-Gemini)* 🌸\n\n` +
+            `*Store*: ${receipt.merchant_name}\n` +
+            `*Date*: ${receiptDateFormatted}\n` +
+            `*Category*: ${catLabel}\n\n` +
+            `*Itemized Detail*:\n${itemLines}\n` +
+            `━━━━━━━━━━━━━━━━━━━━\n\n` +
+            `*Total Cost*: *${formatIDR(receipt.total_amount)}*\n\n` +
+            `_Confirm saving this expense below:_`;
 
         const inlineKeyboard = {
           inline_keyboard: [
-            [{ text: lang === "id" ? "✏️ Edit Kategori" : "✏️ Edit Category", callback_data: `rcpt_editcat:${draft.id}` }],
-            [
-              { text: lang === "id" ? "✅ Simpan Transaksi" : "✅ Save Transaction", callback_data: `rcpt_approve:${draft.id}` },
-              { text: lang === "id" ? "❌ Batal" : "❌ Cancel", callback_data: `rcpt_cancel:${draft.id}` }
-            ]
+            [{ text: lang === "id" ? "✏️ Edit Kategori" : "✏️ Edit Category", callback_data: `rcpt_editcat:${draftId}` }],
+            [{ text: lang === "id" ? "✅ Simpan Transaksi" : "✅ Save Transaction", callback_data: `rcpt_approve:${draftId}` },
+             { text: lang === "id" ? "❌ Batal" : "❌ Cancel", callback_data: `rcpt_cancel:${draftId}` }]
           ]
         };
-
         await editTelegramMessage(chatId, msgId, textPreview, inlineKeyboard);
-        await answerTelegramCallback(queryId, lang === "id" ? "Kategori diperbarui" : "Category updated");
-        res.status(200).json({ ok: true }); return;
       }
-
-      // Receipt Cancel Callback Action
-      if (actionData.startsWith("rcpt_cancel:")) {
+      else if (actionData.startsWith("rcpt_back:")) {
         const draftId = actionData.split(":")[1];
-        try {
-          await cancelReceiptDraft(draftId);
-          await answerTelegramCallback(queryId, lang === "id" ? "Pencatatan struk dibatalkan." : "Receipt cancelled.");
-          await editTelegramMessage(chatId, msgId, lang === "id"
-            ? "❌ *Pencatatan transaksi struk telah dibatalkan.*"
-            : "❌ *Receipt transaction recording has been cancelled.*");
-        } catch (err: any) {
-          console.error("❌ rcpt_cancel error:", err);
-          await answerTelegramCallback(queryId);
-          await editTelegramMessage(chatId, msgId, lang === "id"
-            ? "❌ *Daftar draf struk dibatalkan.*"
-            : "❌ *Receipt draft cancelled with error.*");
+        const draft = await getReceiptDraft(draftId);
+        if (!draft) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
         }
-        res.status(200).json({ ok: true }); 
-        return;
+        const catLabel = await getCategoryLabel(draft.category || 'other', lang);
+        const receipt = draft.receipt_data;
+        let itemLines = "";
+        if (receipt.items && receipt.items.length > 0) {
+          receipt.items.forEach((it: any) => {
+            itemLines += `• *${it.name}*\n  Qty ${it.qty} · ${formatIDR(it.unit_price)} (${formatIDR(it.subtotal)})\n`;
+          });
+        }
+        const receiptDateFormatted = receipt.receipt_date ? new Date(receipt.receipt_date).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", {
+          day: "numeric", month: "long", year: "numeric"
+        }) : "-";
+        const textPreview = lang === "id" 
+          ? `🧾 *Hasil Pembacaan Struk (OCR-Gemini)* 🌸\n\n` +
+            `*Toko*: ${receipt.merchant_name}\n` +
+            `*Tanggal*: ${receiptDateFormatted}\n` +
+            `*Kategori*: ${catLabel}\n\n` +
+            `*Rincian Barang*:\n${itemLines}\n` +
+            `━━━━━━━━━━━━━━━━━━━━\n\n` +
+            `*Total Belanja*: *${formatIDR(receipt.total_amount)}*\n\n` +
+            `_Konfirmasi pencatatan pengeluaran di bawah ini:_`
+          : `🧾 *Receipt Reading Result (OCR-Gemini)* 🌸\n\n` +
+            `*Store*: ${receipt.merchant_name}\n` +
+            `*Date*: ${receiptDateFormatted}\n` +
+            `*Category*: ${catLabel}\n\n` +
+            `*Itemized Detail*:\n${itemLines}\n` +
+            `━━━━━━━━━━━━━━━━━━━━\n\n` +
+            `*Total Cost*: *${formatIDR(receipt.total_amount)}*\n\n` +
+            `_Confirm saving this expense below:_`;
+        const inlineKeyboard = {
+          inline_keyboard: [
+            [{ text: lang === "id" ? "✏️ Edit Kategori" : "✏️ Edit Category", callback_data: `rcpt_editcat:${draftId}` }],
+            [{ text: lang === "id" ? "✅ Simpan Transaksi" : "✅ Save Transaction", callback_data: `rcpt_approve:${draftId}` },
+             { text: lang === "id" ? "❌ Batal" : "❌ Cancel", callback_data: `rcpt_cancel:${draftId}` }]
+          ]
+        };
+        await editTelegramMessage(chatId, msgId, textPreview, inlineKeyboard);
+        await answerTelegramCallback(queryId);
+      }
+      // Language selection
+      else if (actionData === "set_lang_id" || actionData === "set_lang_en") {
+        const newLang = actionData === "set_lang_id" ? "id" : "en";
+        await supabaseBackend.from("telegram_users").upsert({
+          chat_id: chatId,
+          preferred_language: newLang,
+          updated_at: new Date().toISOString()
+        }, { onConflict: "chat_id" });
+
+        await answerTelegramCallback(queryId, tr("cbLangSet", newLang));
+        // Update the original message to show next steps in the chosen language
+        await editTelegramMessage(chatId, msgId, tr("start", newLang));
       }
 
       res.status(200).json({ ok: true }); return;
@@ -1279,320 +1278,251 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     // ──────────────────────────────────────────────────────────
     if (update.message) {
       const chatId = update.message.chat.id;
+      const text   = (update.message.text || "").trim();
 
-      // Handle photo uploads (Receipt OCR scanning)
-      if (update.message.photo) {
+      // Handle photos (Receipt Scan)
+      if (update.message.photo && update.message.photo.length > 0) {
         await handleReceiptPhoto(update.message, maintenanceStatus);
         res.status(200).json({ ok: true });
         return;
       }
 
-      if (update.message.text) {
-        const text = update.message.text.trim();
+      if (!text) { res.status(200).json({ ok: true }); return; }
 
-      // FIX #5: Resolve user context (lang + profile) in ONE DB call for command handling
-      // For commands that need profile we use resolveUserContext()
-      // For /start which runs before any account exists, fallback to "id"
+      const lang = await resolveLangOnly(chatId);
 
-      if (text.startsWith("/")) {
-        const parts   = text.split(" ");
-        const command = parts[0].toLowerCase().split("@")[0]; // handle /cmd@botname format
+      // 1. COMMAND: /start
+      if (text.startsWith("/start")) {
+        const langKeyboard = {
+          inline_keyboard: [
+            [
+              { text: "🇮🇩 Bahasa Indonesia", callback_data: "set_lang_id" },
+              { text: "🇺🇸 English", callback_data: "set_lang_en" }
+            ]
+          ]
+        };
+        await sendTelegramMessage(chatId, tr("langPrompt", lang), langKeyboard);
+        res.status(200).json({ ok: true }); return;
+      }
 
-        // ── /start ──
-        if (command === "/start") {
-          const lang = await resolveLangOnly(chatId);
-          // FIX #10: Show language selector on /start
-          const langKeyboard = {
-            inline_keyboard: [[
-              { text: "🇮🇩 Indonesia", callback_data: "set_lang_id" },
-              { text: "🇺🇸 English",   callback_data: "set_lang_en" }
-            ]]
-          };
-          await sendTelegramMessage(chatId, tr("langPrompt", lang), langKeyboard);
+      // 2. COMMAND: /help
+      if (text.startsWith("/help")) {
+        await sendTelegramMessage(chatId, tr("help", lang));
+        res.status(200).json({ ok: true }); return;
+      }
+
+      // 3. COMMAND: /link <code>
+      if (text.startsWith("/link")) {
+        // Maintenance gate: /link maps to "new_transaction" as it is a write operation
+        // that enables the core bot logic.
+        if (isFeatureLocked(maintenanceStatus, "new_transaction")) {
+          await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
           res.status(200).json({ ok: true }); return;
         }
 
-        // ── /help ──
-        if (command === "/help") {
-          const lang = await resolveLangOnly(chatId);
-          await sendTelegramMessage(chatId, tr("help", lang));
+        const parts = text.split(" ");
+        if (parts.length < 2) {
+          await sendTelegramMessage(chatId, tr("linkBadFormat", lang));
           res.status(200).json({ ok: true }); return;
         }
 
-        // ── /link ──
-        if (command === "/link") {
-          const lang = await resolveLangOnly(chatId);
-          
-          // FIX #8: Rate limit & lockout check
-          const now = Date.now();
-          let linkAttempt = linkRateLimiter.get(chatId) || { attempts: 0, lastAttempt: now, lockedUntil: null };
-          
-          // Check if currently locked out
-          if (linkAttempt.lockedUntil && now < linkAttempt.lockedUntil) {
-            const remainingMin = Math.ceil((linkAttempt.lockedUntil - now) / 1000 / 60);
-            await sendTelegramMessage(chatId, 
-              lang === "id" 
-                ? `🔒 Terlalu banyak percobaan yang gagal. Silakan coba lagi dalam ${remainingMin} menit.`
-                : `🔒 Too many failed attempts. Please try again in ${remainingMin} minutes.`
-            );
-            res.status(200).json({ ok: true }); return;
-          }
-          
-          // Reset attempts if window expired
-          if (now - linkAttempt.lastAttempt > LINK_WINDOW) {
-            linkAttempt = { attempts: 0, lastAttempt: now, lockedUntil: null };
-          }
-          
-          const code = parts[1];
-          if (!code || !/^\d{5}$/.test(code)) {
-            linkAttempt.attempts++;
-            linkAttempt.lastAttempt = now;
-            
-            // Lock out after max attempts
-            if (linkAttempt.attempts >= LINK_MAX_ATTEMPTS) {
-              linkAttempt.lockedUntil = now + LINK_LOCKOUT;
-              await sendTelegramMessage(chatId,
-                lang === "id"
-                  ? `🔒 Terlalu banyak kode yang tidak valid. Akun ini terkunci selama 15 menit.`
-                  : `🔒 Too many invalid codes. Your account is locked for 15 minutes.`
-              );
-            } else {
-              const remaining = LINK_MAX_ATTEMPTS - linkAttempt.attempts;
-              await sendTelegramMessage(chatId, 
-                lang === "id"
-                  ? `⚠️ Format kode tidak valid. Coba lagi. (Kesempatan tersisa: ${remaining}/${LINK_MAX_ATTEMPTS})`
-                  : `⚠️ Invalid code format. Try again. (Attempts left: ${remaining}/${LINK_MAX_ATTEMPTS})`
-              );
-            }
-            linkRateLimiter.set(chatId, linkAttempt);
-            res.status(200).json({ ok: true }); return;
-          }
+        const code = parts[1];
 
-          const { data, error } = await supabaseBackend.rpc("link_telegram_user", {
-            p_code: code,
-            p_chat_id: chatId
+        // Brute force protection
+        const now = Date.now();
+        const state = linkRateLimiter.get(chatId) || { attempts: 0, lastAttempt: 0, lockedUntil: null };
+
+        if (state.lockedUntil && now < state.lockedUntil) {
+          const remaining = Math.ceil((state.lockedUntil - now) / 60000);
+          await sendTelegramMessage(chatId, tr("linkLockedOut", lang, remaining));
+          res.status(200).json({ ok: true }); return;
+        }
+
+        try {
+          const { data, error } = await supabaseBackend.rpc("link_telegram_account", {
+            p_chat_id: chatId,
+            p_link_code: code
           });
 
           if (error) {
-            console.error("❌ RPC link_telegram_user error:", error);
-            linkAttempt.attempts++;
-            linkAttempt.lastAttempt = now;
-            if (linkAttempt.attempts >= LINK_MAX_ATTEMPTS) {
-              linkAttempt.lockedUntil = now + LINK_LOCKOUT;
-              await sendTelegramMessage(chatId, tr("linkLockedOut", lang, 15));
-            } else {
-              await sendTelegramMessage(chatId, tr("linkInternalError", lang, error.message));
+            // Update rate limit state
+            state.attempts++;
+            state.lastAttempt = now;
+            if (state.attempts >= LINK_MAX_ATTEMPTS) {
+              state.lockedUntil = now + LINK_LOCKOUT;
             }
-            linkRateLimiter.set(chatId, linkAttempt);
-          } else if (data && data.length > 0 && data[0]?.success) {
-            // Success: reset attempts
+            linkRateLimiter.set(chatId, state);
+
+            await sendTelegramMessage(chatId, tr("linkFailed", lang, error.message || tr("linkInvalidCodeFallback", lang)));
+          } else {
+            // Success
             linkRateLimiter.delete(chatId);
-            const displayName = data[0]?.display_name || (lang === "en" ? "User" : "Pengguna");
-            await sendTelegramMessage(chatId, tr("linkSuccess", lang, displayName));
-          } else {
-            // Failed attempt
-            linkAttempt.attempts++;
-            linkAttempt.lastAttempt = now;
-            if (linkAttempt.attempts >= LINK_MAX_ATTEMPTS) {
-              linkAttempt.lockedUntil = now + LINK_LOCKOUT;
-              await sendTelegramMessage(chatId, tr("linkLockedOut", lang, 15));
-            } else {
-              const remaining = LINK_MAX_ATTEMPTS - linkAttempt.attempts;
-              const errMsg = data?.[0]?.message || tr("linkInvalidCodeFallback", lang);
-              await sendTelegramMessage(chatId, 
-                lang === "id"
-                  ? `❌ ${errMsg}\n\n⚠️ Kesempatan tersisa: ${remaining}/${LINK_MAX_ATTEMPTS}`
-                  : `❌ ${errMsg}\n\n⚠️ Attempts left: ${remaining}/${LINK_MAX_ATTEMPTS}`
-              );
-            }
-            linkRateLimiter.set(chatId, linkAttempt);
+            const userDisplay = data?.[0]?.display_name || "User";
+            await sendTelegramMessage(chatId, tr("linkSuccess", lang, userDisplay));
           }
-
-          res.status(200).json({ ok: true }); return;
+        } catch (err: any) {
+          await sendTelegramMessage(chatId, tr("linkInternalError", lang, err.message));
         }
 
-        // ── /unlink ──
-        if (command === "/unlink") {
-          const lang = await resolveLangOnly(chatId);
-          const { error } = await supabaseBackend.rpc("unlink_telegram_user", { p_chat_id: chatId });
-          if (error) await sendTelegramMessage(chatId, tr("unlinkFailed", lang, error.message));
-          else       await sendTelegramMessage(chatId, tr("unlinkSuccess", lang));
-          res.status(200).json({ ok: true }); return;
-        }
+        res.status(200).json({ ok: true }); return;
+      }
 
-        // ── /saldo ── FIX #11: Includes last-month comparison
-        if (command === "/saldo") {
-          const lang = await resolveLangOnly(chatId);
-
-          if (isFeatureLocked(maintenanceStatus, "history")) {
-            await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
-            res.status(200).json({ ok: true }); return;
-          }
-
-          const { data, error } = await supabaseBackend.rpc("get_telegram_user_summary_v2", { p_chat_id: chatId });
-
+      // 4. COMMAND: /unlink
+      if (text.startsWith("/unlink")) {
+        try {
+          const { error } = await supabaseBackend.from("telegram_users").delete().eq("chat_id", chatId);
           if (error) {
-            console.error("❌ RPC get_telegram_user_summary_v2 error:", error);
-            await sendTelegramMessage(chatId, tr("saldoError", lang));
-          } else if (!data || data.length === 0 || !data[0]?.display_name) {
+            await sendTelegramMessage(chatId, tr("unlinkFailed", lang, error.message));
+          } else {
+            await sendTelegramMessage(chatId, tr("unlinkSuccess", lang));
+          }
+        } catch (err: any) {
+          await sendTelegramMessage(chatId, tr("unlinkFailed", lang, err.message));
+        }
+        res.status(200).json({ ok: true }); return;
+      }
+
+      // 5. COMMAND: /saldo
+      if (text.startsWith("/saldo")) {
+        try {
+          const userCtx = await resolveUserContext(chatId);
+          if (!userCtx) {
             await sendTelegramMessage(chatId, tr("saldoNotLinked", lang));
-          } else {
-            const s = data[0];
-            const prevExp   = s.prev_total_expense ?? 0;
-            const currExp   = s.total_expense ?? 0;
-            let expDiffIcon = "➡️";
-            let expDiffPct  = lang === "id" ? "sama" : "the same";
+            res.status(200).json({ ok: true }); return;
+          }
 
-            if (prevExp > 0) {
-              const pct = ((currExp - prevExp) / prevExp) * 100;
-              if (pct > 1) {
-                expDiffIcon = "📈";
-                expDiffPct  = lang === "id" ? `naik ${pct.toFixed(0)}%` : `up ${pct.toFixed(0)}%`;
-              } else if (pct < -1) {
-                expDiffIcon = "📉";
-                expDiffPct  = lang === "id" ? `turun ${Math.abs(pct).toFixed(0)}%` : `down ${Math.abs(pct).toFixed(0)}%`;
-              }
+          // Fetch dashboard summary via existing RPC
+          const { data, error } = await supabaseBackend.rpc("get_dashboard_summary", { p_user_id: userCtx.id });
+          if (error) throw error;
+
+          const stats = data[0];
+          const incStr = formatIDR(stats.income_total);
+          const expStr = formatIDR(stats.expense_total);
+          const balStr = formatIDR(stats.balance);
+
+          // Comparative data
+          const prevIncStr = formatIDR(stats.prev_income_total || 0);
+          const prevExpStr = formatIDR(stats.prev_expense_total || 0);
+
+          let diffIcon = "✅";
+          let diffPct = "0%";
+
+          if (stats.prev_expense_total > 0) {
+            const ratio = stats.expense_total / stats.prev_expense_total;
+            const pct = Math.abs(Math.round((ratio - 1) * 100));
+            diffPct = `${pct}%`;
+            if (ratio > 1.1) {
+              diffIcon = "⚠️"; // Spending significantly more (>10% increase)
+            } else if (ratio < 0.9) {
+              diffIcon = "✨"; // Spending significantly less (>10% decrease)
             }
-
-            await sendTelegramMessage(chatId, tr(
-              "saldoSummary", lang,
-              s.display_name,
-              formatIDR(s.total_income),
-              formatIDR(currExp),
-              formatIDR(s.net_balance),
-              formatIDR(s.prev_total_income ?? 0),
-              formatIDR(prevExp),
-              expDiffIcon,
-              expDiffPct
-            ));
           }
-          res.status(200).json({ ok: true }); return;
+
+          await sendTelegramMessage(
+            chatId,
+            tr("saldoSummary", lang, userCtx.display_name, incStr, expStr, balStr, prevIncStr, prevExpStr, diffIcon, diffPct)
+          );
+
+        } catch (err: any) {
+          console.error("❌ /saldo error:", err);
+          await sendTelegramMessage(chatId, tr("saldoError", lang));
         }
+        res.status(200).json({ ok: true }); return;
+      }
 
-        // ── /riwayat ── FIX #8: New command - last 5 transactions
-        if (command === "/riwayat") {
-          const lang = await resolveLangOnly(chatId);
-
-          if (isFeatureLocked(maintenanceStatus, "history")) {
-            await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
+      // 6. COMMAND: /riwayat
+      if (text.startsWith("/riwayat")) {
+        try {
+          const userCtx = await resolveUserContext(chatId);
+          if (!userCtx) {
+            await sendTelegramMessage(chatId, tr("riwayatNotLinked", lang));
             res.status(200).json({ ok: true }); return;
           }
 
-          const { data, error } = await supabaseBackend.rpc("get_telegram_recent_transactions", { p_chat_id: chatId, p_limit: 5 });
+          // Fetch last 5 transactions
+          const { data, error } = await supabaseBackend
+            .from("transactions")
+            .select("type, amount, category, note, transaction_date")
+            .eq("user_id", userCtx.id)
+            .order("created_at", { ascending: false })
+            .limit(5);
 
-          if (error) {
-            console.error("❌ RPC get_telegram_recent_transactions error:", error);
-            await sendTelegramMessage(chatId, tr("riwayatError", lang));
-            res.status(200).json({ ok: true }); return;
-          }
+          if (error) throw error;
 
           if (!data || data.length === 0) {
-            const userCtx = await resolveUserContext(chatId);
-            if (!userCtx) await sendTelegramMessage(chatId, tr("riwayatNotLinked", lang));
-            else          await sendTelegramMessage(chatId, tr("riwayatEmpty", lang));
-            res.status(200).json({ ok: true }); return;
+            await sendTelegramMessage(chatId, tr("riwayatEmpty", lang));
+          } else {
+            let msg = tr("riwayatHeader", lang);
+            for (const tx of data) {
+              const icon = tx.type === "income" ? "📥" : "📤";
+              const catLabel = await getCategoryLabel(tx.category, lang);
+              msg += `${icon} *${formatIDR(tx.amount)}*\n` +
+                     `└ _${catLabel}_ · ${tx.note || '-'}\n\n`;
+            }
+            msg += tr("riwayatFooter", lang);
+            await sendTelegramMessage(chatId, msg);
           }
-
-          let msg = tr("riwayatHeader", lang);
-          let i = 0;
-          for (const tx of data) {
-            const typeEmoji = tx.type === "income" ? "📥" : "📤";
-            const catLabel  = await getCategoryLabel(tx.category, lang);
-            const amount    = formatIDR(tx.amount);
-            const date      = tx.transaction_date;
-            msg += `${i + 1}. ${typeEmoji} *${amount}* — ${catLabel}\n`;
-            msg += `   _${tx.note || "-"}_ · ${date}\n\n`;
-            i++;
-          }
-          msg += tr("riwayatFooter", lang);
-
-          await sendTelegramMessage(chatId, msg);
-          res.status(200).json({ ok: true }); return;
+        } catch (err: any) {
+          console.error("❌ /riwayat error:", err);
+          await sendTelegramMessage(chatId, tr("riwayatError", lang));
         }
-
-        // ── /hapus ── FIX #12: New command - delete last transaction
-        if (command === "/hapus") {
-          const lang = await resolveLangOnly(chatId);
-
-          if (isFeatureLocked(maintenanceStatus, "new_transaction")) {
-            await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
-            res.status(200).json({ ok: true }); return;
-          }
-
-          const { data, error } = await supabaseBackend.rpc("delete_last_telegram_transaction", { p_chat_id: chatId });
-
-          if (error) {
-            console.error("❌ RPC delete_last_telegram_transaction error:", error);
-            await sendTelegramMessage(chatId, tr("hapusError", lang, error.message));
-            res.status(200).json({ ok: true }); return;
-          }
-
-          if (!data || data.length === 0 || !data[0]?.deleted) {
-            const userCtx = await resolveUserContext(chatId);
-            if (!userCtx) await sendTelegramMessage(chatId, tr("hapusNotLinked", lang));
-            else          await sendTelegramMessage(chatId, tr("hapusNone", lang));
-            res.status(200).json({ ok: true }); return;
-          }
-
-          const deleted   = data[0];
-          const catLabel  = await getCategoryLabel(deleted.category, lang);
-          const amountStr = formatIDR(deleted.amount);
-          const typeLabel = deleted.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
-          await sendTelegramMessage(chatId, tr("hapusSuccess", lang, typeLabel, catLabel, amountStr, deleted.note || "-"));
-          res.status(200).json({ ok: true }); return;
-        }
-
-        // Fallback: unknown command
-        const lang = await resolveLangOnly(chatId);
-        await sendTelegramMessage(chatId, tr("unknownCommand", lang));
         res.status(200).json({ ok: true }); return;
       }
 
-      // ──────────────────────────────────────────────────────────
-      // TRANSACTION PARSING from natural text
-      // FIX #5: Single resolveUserContext() call replaces 2 separate DB calls
-      // ──────────────────────────────────────────────────────────
+      // 7. COMMAND: /hapus
+      if (text.startsWith("/hapus")) {
+        try {
+          const userCtx = await resolveUserContext(chatId);
+          if (!userCtx) {
+            await sendTelegramMessage(chatId, tr("hapusNotLinked", lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
+          // Get last transaction first for the confirmation message
+          const { data: lastTx } = await supabaseBackend
+            .from("transactions")
+            .select("*")
+            .eq("user_id", userCtx.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+
+          if (!lastTx) {
+            await sendTelegramMessage(chatId, tr("hapusNone", lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
+          // Delete it
+          const { error: delErr } = await supabaseBackend
+            .from("transactions")
+            .delete()
+            .eq("id", lastTx.id);
+
+          if (delErr) throw delErr;
+
+          const typeLabel = lastTx.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
+          const catLabel  = await getCategoryLabel(lastTx.category, lang);
+
+          await sendTelegramMessage(chatId, tr("hapusSuccess", lang, typeLabel, catLabel, formatIDR(lastTx.amount), lastTx.note || "-"));
+
+        } catch (err: any) {
+          console.error("❌ /hapus error:", err);
+          await sendTelegramMessage(chatId, tr("hapusError", lang, err.message));
+        }
+        res.status(200).json({ ok: true }); return;
+      }
+
+      // DEFAULT: Handle as financial natural language query
       const userCtx = await resolveUserContext(chatId);
-
       if (!userCtx) {
-        await sendTelegramMessage(chatId, tr("notLinkedForTx", "id"));
+        await sendTelegramMessage(chatId, tr("notLinkedForTx", lang));
         res.status(200).json({ ok: true }); return;
       }
 
-      const { lang } = userCtx;
-
-      // Maintenance gate: pencatatan transaksi lewat teks natural termasuk
-      // fitur "new_transaction".
+      // Maintenance gate: pencatatan transaksi natural language masuk ke fitur "new_transaction".
       if (isFeatureLocked(maintenanceStatus, "new_transaction")) {
         await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
         res.status(200).json({ ok: true }); return;
-      }
-
-      // Check if user is editing an amount (reply to edit prompt)
-      // "Edit: 75rb" or just "75rb" after an edit-amount prompt
-      const isEditAmountReply = /^edit[:\s]/i.test(text);
-      const editAmountText = isEditAmountReply ? text.replace(/^edit[:\s]*/i, "").trim() : null;
-
-      if (editAmountText) {
-        const newAmount = parseAmountFromString(editAmountText);
-        if (newAmount > 0) {
-          const { data: pendingRows } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
-          const pending = pendingRows?.[0];
-          if (pending) {
-            await supabaseBackend.rpc("upsert_pending_telegram_tx", {
-              p_chat_id: chatId,
-              p_type: pending.type,
-              p_category_key: pending.category_key,
-              p_amount: newAmount,
-              p_original_text: pending.original_text
-            });
-            const catLabel  = await getCategoryLabel(pending.category_key, lang);
-            const typeLabel = pending.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
-            const draftMarkup = buildDraftKeyboard(lang);
-            await sendTelegramMessage(chatId, tr("draftPrompt", lang, typeLabel, catLabel, formatIDR(newAmount), pending.original_text), draftMarkup);
-            res.status(200).json({ ok: true }); return;
-          }
-        }
       }
 
       await sendTelegramMessage(chatId, tr("analyzing", lang));
@@ -1638,7 +1568,6 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       }
 
       res.status(200).json({ ok: true }); return;
-      }
     }
 
     res.status(200).json({ ok: true });

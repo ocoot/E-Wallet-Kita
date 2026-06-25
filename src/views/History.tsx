@@ -293,7 +293,7 @@ export const History: React.FC<HistoryProps> = ({
         toISODate(start),
         toISODate(end)
       );
-      const filename = exportSummaryPdf({ t, userName: currentUser.display_name, transactions: data });
+      const filename = exportSummaryPdf({ t, userName: currentUser.display_name, transactions: data, categories });
       audioFeedback.playChime();
       showToast(t("export.success_export", { filename }), "success");
     } catch (err) {
@@ -319,6 +319,7 @@ export const History: React.FC<HistoryProps> = ({
         t,
         userName: currentUser.display_name,
         transactions: data,
+        categories,
         fromMonth,
         toMonth,
       });
@@ -397,6 +398,7 @@ export const History: React.FC<HistoryProps> = ({
         deleteTargetId={deleteTargetId}
         setDeleteTargetId={setDeleteTargetId}
         transactions={transactions}
+        categories={categories}
         formatIDR={formatIDR}
         onConfirmSingleDelete={executeDeleteItem}
         isDeleteAllOpen={isDeleteAllOpen}

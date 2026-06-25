@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Transaction } from "../../types";
+import { Transaction, Category } from "../../types";
 import {
   drawHeader,
   drawFooter,
@@ -21,8 +21,16 @@ interface ExportContext {
   t: TFunc;
   userName: string;
   transactions: Transaction[];
+  categories: Category[];
   periodLabel: string;
   reportTitle: string;
+}
+
+/** Resolve category label from DB categories, fallback to key if not found. */
+function resolveCategoryLabel(key: string, categories: Category[], locale: "id" | "en"): string {
+  const cat = categories.find(c => c.key === key);
+  if (!cat) return key;
+  return locale === "id" ? (cat.label_id || key) : (cat.label_en || key);
 }
 
 const formatIDR = (num: number) => "Rp" + Math.round(num).toLocaleString("id-ID");
@@ -43,7 +51,9 @@ const computeTotals = (transactions: Transaction[]) => {
 
 /** Renders the full PDF document (header/footer/watermark on every page + summary + table). */
 const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
-  const { t, userName, transactions, periodLabel, reportTitle } = ctx;
+  const { t, userName, transactions, categories, periodLabel, reportTitle } = ctx;
+  // Determine locale from i18n: if t("transaction.income") returns "Pemasukan" → "id", else "en"
+  const locale: "id" | "en" = t("transaction.income") === "Pemasukan" ? "id" : "en";
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const totals = computeTotals(transactions);
   const watermarkText = t("export.watermark");
@@ -68,7 +78,7 @@ const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
     return [
       tx.transaction_date,
       tx.note ? tx.note : "-",
-      t(`categories.${tx.category}`),
+      resolveCategoryLabel(tx.category, categories, locale),
       tx.type === "income" ? t("transaction.income") : t("transaction.expense"),
       `${sign}${formatIDR(tx.amount)}`,
     ];
@@ -218,8 +228,9 @@ export const exportSummaryPdf = (params: {
   t: TFunc;
   userName: string;
   transactions: Transaction[];
+  categories: Category[];
 }) => {
-  const { t, userName, transactions } = params;
+  const { t, userName, transactions, categories } = params;
   const { start, end } = getCurrentMonthToDateRange();
   const periodLabel = `${toISODate(start)} - ${toISODate(end)}`;
   const docNumber = generateDocNumber();
@@ -229,6 +240,7 @@ export const exportSummaryPdf = (params: {
       t,
       userName,
       transactions,
+      categories,
       periodLabel,
       reportTitle: t("export.summary_report_title"),
     },
@@ -253,10 +265,11 @@ export const exportFullPdf = (params: {
   t: TFunc;
   userName: string;
   transactions: Transaction[];
+  categories: Category[];
   fromMonth: string;
   toMonth: string;
 }) => {
-  const { t, userName, transactions, fromMonth, toMonth } = params;
+  const { t, userName, transactions, categories, fromMonth, toMonth } = params;
   const { start, end } = getMonthRange(fromMonth, toMonth);
   const periodLabel = `${toISODate(start)} - ${toISODate(end)}`;
   const docNumber = generateDocNumber();
@@ -266,6 +279,7 @@ export const exportFullPdf = (params: {
       t,
       userName,
       transactions,
+      categories,
       periodLabel,
       reportTitle: t("export.full_report_title"),
     },
