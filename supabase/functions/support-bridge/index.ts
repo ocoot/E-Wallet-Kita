@@ -103,7 +103,9 @@ serve(async (req) => {
       // Live Chat Reply: admin replies to a forwarded message
       if (message.reply_to_message && text) {
         const repliedText = message.reply_to_message.text || "";
-        const match = repliedText.match(/#([A-Z0-9]{6})/);
+        console.log("REPLIED TEXT:", repliedText);
+        const match = repliedText.match(/#([A-Z0-9]+)/);
+        console.log("MATCH RESULT:", match);
 
         if (match) {
           const shortCode = match[1];
