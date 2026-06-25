@@ -20,6 +20,7 @@ import { ResetPasswordModal } from "./components/ResetPasswordModal";
 import { MaintenanceBanner } from "./components/MaintenanceBanner";
 import { FeatureLockGate } from "./components/FeatureLockGate";
 import { SupportChatWidget } from "./components/SupportChatWidget";
+import { Breadcrumbs } from "./components/Breadcrumbs";
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut } from "lucide-react";
 import { supabase } from "./lib/supabase";
@@ -166,6 +167,7 @@ const MainLayout: React.FC = () => {
 
         <div className="p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto w-full">
+            <Breadcrumbs />
             <AnimatePresence mode="wait">
               <Routes>
                 <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} />} />
