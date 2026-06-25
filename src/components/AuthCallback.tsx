@@ -28,7 +28,10 @@ export const AuthCallback: React.FC = () => {
             });
             
             if (!error && data.session) {
-              navigate('/dashboard', { replace: true });
+              requestAnimationFrame(() => {
+                window.dispatchEvent(new Event("resize"));
+                navigate('/dashboard', { replace: true });
+              });
               return;
             }
           }
@@ -38,7 +41,10 @@ export const AuthCallback: React.FC = () => {
         if (code) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
           if (!error && data.session) {
-            navigate('/dashboard', { replace: true });
+            requestAnimationFrame(() => {
+              window.dispatchEvent(new Event("resize"));
+              navigate('/dashboard', { replace: true });
+            });
             return;
           }
         }
@@ -46,7 +52,10 @@ export const AuthCallback: React.FC = () => {
         // 3. Last fallback: Check current session
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session) {
-          navigate('/dashboard', { replace: true });
+          requestAnimationFrame(() => {
+            window.dispatchEvent(new Event("resize"));
+            navigate('/dashboard', { replace: true });
+          });
           return;
         }
 
