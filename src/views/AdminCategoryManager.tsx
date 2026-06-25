@@ -12,6 +12,9 @@ interface Category {
   type: "income" | "expense" | "both";
   label_id: string | null;
   label_en: string | null;
+  description_id: string | null;
+  description_en: string | null;
+  priority: number;
   is_active: boolean;
 }
 
@@ -22,9 +25,25 @@ export const AdminCategoryManager: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingKey, setEditingKey] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState({ label_id: "", label_en: "", type: "expense" as string, is_active: true });
+  const [editForm, setEditForm] = useState({ 
+    label_id: "", 
+    label_en: "", 
+    type: "expense" as string, 
+    is_active: true,
+    description_id: "",
+    description_en: "",
+    priority: 100
+  });
   const [showAddForm, setShowAddForm] = useState(false);
-  const [addForm, setAddForm] = useState({ key: "", label_id: "", label_en: "", type: "expense" });
+  const [addForm, setAddForm] = useState({ 
+    key: "", 
+    label_id: "", 
+    label_en: "", 
+    type: "expense",
+    description_id: "",
+    description_en: "",
+    priority: 100
+  });
   const [savingAction, setSavingAction] = useState<{ isOpen: boolean; message: string }>({
     isOpen: false,
     message: ""
@@ -41,6 +60,7 @@ export const AdminCategoryManager: React.FC = () => {
     const { data, error } = await supabase
       .from("categories")
       .select("*")
+      .order("priority", { ascending: false })
       .order("type")
       .order("key");
     if (error) { 
@@ -64,6 +84,9 @@ export const AdminCategoryManager: React.FC = () => {
       label_en: cat.label_en || "",
       type: cat.type,
       is_active: cat.is_active,
+      description_id: cat.description_id || "",
+      description_en: cat.description_en || "",
+      priority: cat.priority ?? 100,
     });
   };
 
@@ -76,6 +99,9 @@ export const AdminCategoryManager: React.FC = () => {
         p_label_en: editForm.label_en,
         p_type: editForm.type,
         p_is_active: editForm.is_active,
+        p_description_id: editForm.description_id || null,
+        p_description_en: editForm.description_en || null,
+        p_priority: editForm.priority,
       });
       if (error) { showToast(error.message, "error"); return; }
       showToast("Category updated", "success");
@@ -98,11 +124,22 @@ export const AdminCategoryManager: React.FC = () => {
         p_label_id: addForm.label_id,
         p_label_en: addForm.label_en,
         p_type: addForm.type,
+        p_description_id: addForm.description_id || null,
+        p_description_en: addForm.description_en || null,
+        p_priority: addForm.priority,
       });
       if (error) { showToast(error.message, "error"); return; }
       showToast("Category added", "success");
       setShowAddForm(false);
-      setAddForm({ key: "", label_id: "", label_en: "", type: "expense" });
+      setAddForm({ 
+        key: "", 
+        label_id: "", 
+        label_en: "", 
+        type: "expense",
+        description_id: "",
+        description_en: "",
+        priority: 100
+      });
       loadCategories();
     } finally {
       setSavingAction({ isOpen: false, message: "" });
@@ -163,6 +200,12 @@ export const AdminCategoryManager: React.FC = () => {
               onChange={v => setAddForm(f => ({ ...f, label_id: v }))} placeholder="e.g., Online Transport" />
             <InputField label={t("admin.label_en_label")} value={addForm.label_en}
               onChange={v => setAddForm(f => ({ ...f, label_en: v }))} placeholder="e.g., Online Transport" />
+            <InputField label="Description (ID)" value={addForm.description_id}
+              onChange={v => setAddForm(f => ({ ...f, description_id: v }))} placeholder="Context for AI (ID)..." />
+            <InputField label="Description (EN)" value={addForm.description_en}
+              onChange={v => setAddForm(f => ({ ...f, description_en: v }))} placeholder="Context for AI (EN)..." />
+            <InputField label="Priority" value={String(addForm.priority)}
+              onChange={v => setAddForm(f => ({ ...f, priority: Number(v) || 0 }))} placeholder="100" />
           </div>
           <div className="flex gap-2 justify-end">
             <button onClick={() => setShowAddForm(false)}
@@ -185,9 +228,11 @@ export const AdminCategoryManager: React.FC = () => {
           <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600">
             <thead className="bg-slate-800 light_sakura:bg-slate-50 text-slate-400 light_sakura:text-slate-500 uppercase text-xs">
               <tr>
+                <th className="px-6 py-4">Priority</th>
                 <th className="px-6 py-4">{t("admin.table_key_col")}</th>
                 <th className="px-6 py-4">{t("admin.table_label_id_col")}</th>
                 <th className="px-6 py-4">{t("admin.table_label_en_col")}</th>
+                <th className="px-6 py-4">Description</th>
                 <th className="px-6 py-4">{t("admin.table_type_col")}</th>
                 <th className="px-6 py-4">{t("admin.table_status_col")}</th>
                 <th className="px-6 py-4 text-right">{t("admin.table_actions_col")}</th>
@@ -196,6 +241,14 @@ export const AdminCategoryManager: React.FC = () => {
             <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
               {(pageSize === "all" ? categories : categories.slice(page * pageSize, (page + 1) * pageSize)).map(cat => (
                 <tr key={cat.key} className={`transition-colors ${!cat.is_active ? "opacity-60" : ""} hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50`}>
+                  <td className="px-6 py-4">
+                    {editingKey === cat.key ? (
+                      <input type="number" value={editForm.priority} onChange={e => setEditForm(f => ({ ...f, priority: Number(e.target.value) || 0 }))}
+                        className="w-16 px-2 py-1 text-xs bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 rounded text-white light_sakura:text-slate-900" />
+                    ) : (
+                      <span className="text-xs text-slate-500">{cat.priority}</span>
+                    )}
+                  </td>
                   <td className="px-6 py-4 font-mono text-xs text-slate-400 light_sakura:text-slate-500">{cat.key}</td>
 
                   {editingKey === cat.key ? (
@@ -207,6 +260,14 @@ export const AdminCategoryManager: React.FC = () => {
                       <td className="px-6 py-4">
                         <input value={editForm.label_en} onChange={e => setEditForm(f => ({ ...f, label_en: e.target.value }))}
                           className="w-full px-3 py-2 text-sm bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 rounded-xl text-white light_sakura:text-slate-900 focus:ring-2 focus:ring-indigo-500" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          <input placeholder="ID" value={editForm.description_id} onChange={e => setEditForm(f => ({ ...f, description_id: e.target.value }))}
+                            className="w-full px-2 py-1 text-xs bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 rounded text-white light_sakura:text-slate-900" />
+                          <input placeholder="EN" value={editForm.description_en} onChange={e => setEditForm(f => ({ ...f, description_en: e.target.value }))}
+                            className="w-full px-2 py-1 text-xs bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 rounded text-white light_sakura:text-slate-900" />
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <select value={editForm.type} onChange={e => setEditForm(f => ({ ...f, type: e.target.value as any }))}
@@ -239,6 +300,9 @@ export const AdminCategoryManager: React.FC = () => {
                     <>
                       <td className="px-6 py-4 text-sm text-white light_sakura:text-slate-900">{cat.label_id || "—"}</td>
                       <td className="px-6 py-4 text-sm text-slate-400 light_sakura:text-slate-500">{cat.label_en || "—"}</td>
+                      <td className="px-6 py-4 text-xs text-slate-500 truncate max-w-[150px]" title={cat.description_id || ""}>
+                        {cat.description_id || "—"}
+                      </td>
                       <td className="px-6 py-4">
                         <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 light_sakura:bg-slate-100 text-slate-400 light_sakura:text-slate-600 capitalize">
                           {cat.type}

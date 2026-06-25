@@ -11,6 +11,9 @@ export interface Category {
   type: "income" | "expense" | "both";
   label_id: string | null;
   label_en: string | null;
+  description_id: string | null;
+  description_en: string | null;
+  priority: number;
   is_active: boolean;
 }
 
@@ -31,6 +34,7 @@ export async function getActiveCategories(): Promise<Category[]> {
     .from("categories")
     .select("*")
     .eq("is_active", true)
+    .order("priority", { ascending: false })
     .order("key");
 
   if (error) {
@@ -44,6 +48,7 @@ export async function getActiveCategories(): Promise<Category[]> {
 
 /**
  * Generate a dynamic prompt string for AI model instructions.
+ * Now includes descriptions for better context as requested.
  */
 export function generateCategoryPrompt(categories: Category[], typeFilter?: "income" | "expense"): string {
   const filtered = typeFilter 
@@ -51,8 +56,12 @@ export function generateCategoryPrompt(categories: Category[], typeFilter?: "inc
     : categories;
 
   return filtered
-    .map(c => `- ${c.key}: ${c.label_id || c.key} (${c.label_en || c.key})`)
-    .join("\n");
+    .map(c => {
+      const label = c.label_id || c.key;
+      const desc = c.description_id || c.description_en || "";
+      return `- Key: ${c.key}\n  Label: ${label}\n  Used for: ${desc}`;
+    })
+    .join("\n\n");
 }
 
 /**

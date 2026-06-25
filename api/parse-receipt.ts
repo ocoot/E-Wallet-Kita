@@ -69,6 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         total_items: parsedJSON.total_items || (parsedJSON.items ? parsedJSON.items.length : 0),
         items: parsedJSON.items || [],
         raw_ai_response: parsedJSON,
+        category: parsedJSON.category || 'other',
         source: 'ai_web',
         approved: false
       })

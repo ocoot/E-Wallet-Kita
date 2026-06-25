@@ -35,6 +35,9 @@ export interface Category {
   type: "income" | "expense" | "both";
   label_id: string | null;
   label_en: string | null;
+  description_id?: string | null;
+  description_en?: string | null;
+  priority?: number;
   is_active: boolean;
 }
 
