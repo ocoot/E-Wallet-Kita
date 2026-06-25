@@ -32,7 +32,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
         <EmptyState message={t("history.no_transactions")} />
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full border-collapse font-sans text-left text-xs">
+          <table className="w-full border-collapse font-sans text-left text-xs min-w-[700px]">
             {/* Header row desktop labels */}
             <thead>
               <tr className="border-b border-slate-800/60 bg-slate-950/20 text-gray-400 uppercase tracking-wider select-none font-bold light_sakura:border-rose-100/60 light_sakura:bg-rose-50/20 light_sakura:text-slate-600">

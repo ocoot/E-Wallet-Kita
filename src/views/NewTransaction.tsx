@@ -26,7 +26,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   userDisplayName
 }) => {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user } = useAuth();
 
   const [displayName, setDisplayName] = useState<string>(userDisplayName || "");
@@ -303,7 +303,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
               >
                 {activeCategories.map((cat) => (
                   <option key={cat.key} value={cat.key}>
-                    {useLanguage().locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key)}
+                    {locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key)}
                   </option>
                 ))}
               </select>
@@ -391,7 +391,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
           category: (() => {
             const cat = categories.find(c => c.key === category);
             if (!cat) return category;
-            return useLanguage().locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key);
+            return locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key);
           })()
         })}
         type="info"

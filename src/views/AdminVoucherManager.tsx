@@ -155,35 +155,37 @@ export const AdminVoucherManager: React.FC = () => {
       </div>
 
       <div className="bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm overflow-hidden">
-        <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600">
-          <thead className="bg-slate-800 light_sakura:bg-slate-50 text-slate-400 light_sakura:text-slate-500 uppercase text-xs">
-            <tr>
-              <th className="p-6">{t("voucher.code")}</th>
-              <th className="p-6">{t("voucher.discount", { percent: "" }).replace("{percent}%", "").trim()}</th>
-              <th className="p-6">{t("voucher.active")}</th>
-              <th className="p-6 text-right">{t("voucher.actions")}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
-            {(pageSize === "all" ? vouchers : vouchers.slice(page * pageSize, (page + 1) * pageSize)).map(v => (
-              <tr key={v.id} className="hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50">
-                <td className="p-6 font-semibold text-white light_sakura:text-slate-900">{v.code}</td>
-                <td className="p-6">{v.discount_percent}%</td>
-                <td className="p-6">
-                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${v.is_active ? "bg-emerald-900/20 light_sakura:bg-emerald-50 text-emerald-400 light_sakura:text-emerald-600" : "bg-slate-800 light_sakura:bg-slate-100 text-slate-400 light_sakura:text-slate-600"}`}>
-                    {v.is_active ? t("voucher.active") : t("voucher.inactive_vouchers")}
-                  </span>
-                </td>
-                <td className="p-6 text-right">
-                  <div className="flex items-center justify-end gap-3">
-                    {v.is_active && <button onClick={() => setRevokeTarget(v)} className="text-amber-500 hover:text-amber-600 font-medium cursor-pointer">{t("voucher.revoke")}</button>}
-                    <button onClick={() => setDeleteTarget(v)} className="text-red-400 hover:text-red-500 cursor-pointer"><Trash2 size={18}/></button>
-                  </div>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[600px]">
+            <thead className="bg-slate-800 light_sakura:bg-slate-50 text-slate-400 light_sakura:text-slate-500 uppercase text-xs">
+              <tr>
+                <th className="p-6">{t("voucher.code")}</th>
+                <th className="p-6">{t("voucher.discount", { percent: "" }).replace("{percent}%", "").trim()}</th>
+                <th className="p-6">{t("voucher.active")}</th>
+                <th className="p-6 text-right">{t("voucher.actions")}</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
+              {(pageSize === "all" ? vouchers : vouchers.slice(page * pageSize, (page + 1) * pageSize)).map(v => (
+                <tr key={v.id} className="hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50">
+                  <td className="p-6 font-semibold text-white light_sakura:text-slate-900">{v.code}</td>
+                  <td className="p-6">{v.discount_percent}%</td>
+                  <td className="p-6">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${v.is_active ? "bg-emerald-900/20 light_sakura:bg-emerald-50 text-emerald-400 light_sakura:text-emerald-600" : "bg-slate-800 light_sakura:bg-slate-100 text-slate-400 light_sakura:text-slate-600"}`}>
+                      {v.is_active ? t("voucher.active") : t("voucher.inactive_vouchers")}
+                    </span>
+                  </td>
+                  <td className="p-6 text-right">
+                    <div className="flex items-center justify-end gap-3">
+                      {v.is_active && <button onClick={() => setRevokeTarget(v)} className="text-amber-500 hover:text-amber-600 font-medium cursor-pointer">{t("voucher.revoke")}</button>}
+                      <button onClick={() => setDeleteTarget(v)} className="text-red-400 hover:text-red-500 cursor-pointer"><Trash2 size={18}/></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Pagination Controls */}

@@ -264,7 +264,7 @@ export const AdminAiMonitor: React.FC = () => {
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600">
+                <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[800px]">
                   <thead className="bg-slate-800 light_sakura:bg-slate-50 uppercase text-xs font-semibold text-slate-400 light_sakura:text-slate-500">
                     <tr>
                       <th className="px-6 py-4">{t("ai_monitor.col_key")}</th>

@@ -646,7 +646,7 @@ export const AdminPanel: React.FC = () => {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse table-auto">
+                <table className="w-full text-left border-collapse table-auto min-w-[800px]">
                   <thead>
                     <tr className="border-b border-slate-800 bg-slate-850/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:border-rose-200 light_sakura:text-slate-600">
                       <th className="px-4 py-4 w-10">
