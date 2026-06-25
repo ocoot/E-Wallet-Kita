@@ -13,6 +13,7 @@ import { NewTransaction } from "./views/NewTransaction";
 import { History } from "./views/History";
 import { Settings } from "./views/Settings";
 import { AdminPanel } from "./views/AdminPanel";
+import { Onboarding } from "./views/Onboarding";
 import { useAdmin } from "./hooks/useAdmin";
 import { Modal } from "./components/Modal";
 import { ResetPasswordModal } from "./components/ResetPasswordModal";
@@ -173,6 +174,7 @@ const MainLayout: React.FC = () => {
                 <Route path="/settings" element={<FeatureLockGate featureKey="settings"><Settings onUserPrefUpdated={(updatedUser) => {
                   setUserProfile({ display_name: updatedUser.display_name });
                 }} /></FeatureLockGate>} />
+                <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/dashboard" replace />} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>

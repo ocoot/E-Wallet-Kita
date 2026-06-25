@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabase";
 import { UserSession, Transaction } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Plus } from "lucide-react";
+import { Plus, BookOpen, X } from "lucide-react";
 import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
@@ -71,6 +71,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
   // Interactive Recharts configuration states
   const [chartMode, setChartMode] = useState<"area" | "line">("area");
   const [chartType, setChartType] = useState<"daily" | "cumulative">("cumulative");
+  const [showOnboardingBanner, setShowOnboardingBanner] = useState<boolean>(() => {
+    return localStorage.getItem("ewallet_onboarding_completed") !== "true";
+  });
 
   // Locale labels for chart representation
   const labelIncome = t("dashboard.income");
@@ -218,6 +221,51 @@ export const Dashboard: React.FC<DashboardProps> = ({
         currentUser={currentUser} 
         telegramStatus={telegramStatus} 
       />
+
+      {/* Onboarding Interactive Banner for new users */}
+      {showOnboardingBanner && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="p-5 bg-gradient-to-r from-emerald-500/10 to-indigo-500/10 border border-emerald-500/20 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl shadow-emerald-900/5 light_sakura:from-rose-500/10 light_sakura:to-indigo-500/10 light_sakura:border-rose-300/30"
+        >
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500 flex-shrink-0 mt-0.5">
+              <BookOpen size={20} />
+            </div>
+            <div>
+              <h4 className="text-sm font-bold text-white light_sakura:text-slate-800">
+                {t("onboarding.dashboard_banner_title")}
+              </h4>
+              <p className="text-xs text-slate-400 light_sakura:text-slate-600 mt-0.5 leading-relaxed max-w-2xl">
+                {t("onboarding.dashboard_banner_desc")}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 self-end sm:self-auto">
+            <button
+              onClick={() => {
+                audioFeedback.playClick();
+                setShowOnboardingBanner(false);
+                localStorage.setItem("ewallet_onboarding_completed", "true");
+              }}
+              className="px-3.5 py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-300 hover:bg-slate-800/50 rounded-xl transition-colors light_sakura:text-slate-500 light_sakura:hover:text-slate-700 light_sakura:hover:bg-rose-50"
+            >
+              {t("onboarding.dashboard_banner_btn_dismiss")}
+            </button>
+            <button
+              onClick={() => {
+                audioFeedback.playClick();
+                navigate("/onboarding");
+              }}
+              className="px-4 py-2 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl shadow-lg shadow-emerald-500/10 flex items-center gap-1.5 transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+            >
+              <span>{t("onboarding.dashboard_banner_btn_start")}</span>
+            </button>
+          </div>
+        </motion.div>
+      )}
 
       {/* 2. Scorecard Summaries (3 Column Bento format) */}
       <DashboardStats 
