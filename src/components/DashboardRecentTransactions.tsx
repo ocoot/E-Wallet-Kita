@@ -1,6 +1,6 @@
 import React from "react";
 import { useLanguage } from "../contexts/LanguageContext";
-import { Transaction } from "../types";
+import { Transaction, Category } from "../types";
 import { ArrowUpRight, ArrowDownLeft, ArrowRight, Send, Sparkles, User } from "lucide-react";
 import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
@@ -10,6 +10,7 @@ interface DashboardRecentTransactionsProps {
   formatIDR: (num: number) => string;
   formatDateLabel: (dateStr: string) => string;
   onNavigateToHistory: () => void;
+  categories: Category[];
 }
 
 export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsProps> = ({
@@ -17,8 +18,9 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
   formatIDR,
   formatDateLabel,
   onNavigateToHistory,
+  categories,
 }) => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   // Sort and slice top 5 latest transactions
   const latestTransactions = [...transactions]
@@ -91,13 +93,22 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
                   {getSourceIcon(tx.source)}
                   <div>
                     <div className="font-sans text-xs font-bold text-white light_sakura:text-slate-800">
-                      {tx.note || t(`categories.${tx.category}`)}
+                      {(() => {
+                        if (tx.note) return tx.note;
+                        const cat = categories.find(c => c.key === tx.category);
+                        if (!cat) return tx.category;
+                        return locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key);
+                      })()}
                     </div>
                     <div className="font-sans text-[10px] text-gray-400 light_sakura:text-slate-500 mt-0.5 flex items-center gap-1.5">
                       <span>{formatDateLabel(tx.transaction_date)}</span>
                       <span className="w-1 h-1 rounded-full bg-slate-700 light_sakura:bg-rose-100" />
                       <span className="font-semibold text-slate-300 light_sakura:text-slate-600">
-                        {t(`categories.${tx.category}`)}
+                        {(() => {
+                          const cat = categories.find(c => c.key === tx.category);
+                          if (!cat) return tx.category;
+                          return locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key);
+                        })()}
                       </span>
                     </div>
                   </div>

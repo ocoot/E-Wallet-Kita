@@ -13,6 +13,7 @@ import { DashboardHeader } from "../components/DashboardHeader";
 import { DashboardStats } from "../components/DashboardStats";
 import { DashboardChart } from "../components/DashboardChart";
 import { DashboardRecentTransactions } from "../components/DashboardRecentTransactions";
+import { useCategories } from "../hooks/useCategories";
 
 interface DashboardProps {
   transactionsUpdatedTrigger: number;
@@ -28,6 +29,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { categories } = useCategories();
 
   const [displayName, setDisplayName] = useState<string>(userDisplayName || "");
 
@@ -244,6 +246,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         formatIDR={formatIDR}
         formatDateLabel={formatDateLabel}
         onNavigateToHistory={() => navigate("/transactions")}
+        categories={categories}
       />
 
       {/* 5. Modern quick add transaction floating action button */}

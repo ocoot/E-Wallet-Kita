@@ -111,12 +111,17 @@ function isDuplicateTelegramUpdate(updateId: number): boolean {
   return false;
 }
 
-// FIX #10: Import categories from centralized definition
-import { CATEGORIES, getCategoryLabel as getCategoryLabelFromDef } from '../src/lib/categoryDefinitions.js';
+import { getActiveCategories, generateCategoryPrompt, validateCategoryKey, Category } from './_lib/categories.js';
 
-// Use centralized definition
-function getCategoryLabel(categoryKey: string, lang: Lang): string {
-  return getCategoryLabelFromDef(categoryKey, lang);
+// FIX #10: Import categories from centralized definition (Keep this for non-AI labels if needed, or remove if fully switched)
+import { getCategoryLabel as getCategoryLabelFromDef } from '../src/lib/categoryDefinitions.js';
+
+// Use centralized definition with DB fallback
+async function getCategoryLabel(categoryKey: string, lang: Lang): Promise<string> {
+  const categories = await getActiveCategories();
+  const cat = categories.find(c => c.key === categoryKey);
+  if (!cat) return getCategoryLabelFromDef(categoryKey, lang);
+  return lang === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key);
 }
 
 function formatIDR(amount: number): string {
@@ -517,13 +522,13 @@ function buildDraftKeyboard(lang: Lang) {
   };
 }
 
-function buildCategoryKeyboard(type: "income" | "expense", lang: Lang) {
-  const matching = CATEGORIES.filter(c => c.type === type);
+function buildCategoryKeyboard(type: "income" | "expense", lang: Lang, categories: Category[]) {
+  const matching = categories.filter(c => c.type === type || c.type === "both");
   const rows = [];
   for (let i = 0; i < matching.length; i += 2) {
     const pair = matching.slice(i, i + 2);
     const row = pair.map(c => ({
-      text: lang === "id" ? c.id : c.en,
+      text: lang === "id" ? (c.label_id || c.key) : (c.label_en || c.key),
       callback_data: `tx_set_cat:${c.key}`
     }));
     rows.push(row);
@@ -694,18 +699,20 @@ async function parseFinancialQuery(query: string): Promise<{
   original_text: string;
 }> {
   const codeParsedAmount = parseAmountFromString(query);
+  const categories = await getActiveCategories();
 
   if (!ai) {
-    const inferredCategory = inferCategoryKey(query);
+    const inferredCategory = validateCategoryKey(inferCategoryKey(query), categories);
     const inferredType = /gaji|bonus|salary|upah|thr|transfer masuk|sampingan|freelance|komisi/.test(query.toLowerCase()) ? "income" : "expense";
     return { source: "fallback_server_regex", type: inferredType, category_key: inferredCategory, amount: codeParsedAmount, original_text: query };
   }
 
+  const categoryMapping = generateCategoryPrompt(categories);
+
   const systemInstruction = `You are a financial parsing expert for 'E-Wallet Kita'.
 Analyze natural language transactions in Indonesian or English and output structured JSON.
-Category keys (use exactly as written):
-  Income: 'salary', 'bonus'
-  Expense: 'food_drink', 'monthly_groceries', 'vegetables', 'bills', 'transport', 'health', 'shopping', 'entertainment', 'education', 'other'
+Valid category keys are:
+${categoryMapping}
 
 Indonesian amount abbreviations:
   'rb' / 'ribu' = thousands (25rb → 25000)
@@ -713,7 +720,8 @@ Indonesian amount abbreviations:
   'jt' / 'juta' = millions (1.5jt → 1500000)
   'Rp 250.000' or '250.000' = 250000 (dot is thousands separator in Indonesian)
 
-If no category matches, use 'other'. Always return the numeric IDR value in 'amount'.`;
+If no category matches, use 'other'. Always return the numeric IDR value in 'amount'.
+PENTING: Nilai 'category_key' HARUS berupa key dari daftar di atas.`;
 
   let lastError: any = null;
 
@@ -764,7 +772,7 @@ If no category matches, use 'other'. Always return the numeric IDR value in 'amo
       return {
         source: model,
         type: parsedJSON.type || "expense",
-        category_key: parsedJSON.category_key || inferCategoryKey(query),
+        category_key: validateCategoryKey(parsedJSON.category_key, categories),
         amount: finalAmount || codeParsedAmount || 0,
         original_text: query
       };
@@ -875,7 +883,7 @@ async function handleReceiptPhoto(message: any, maintenanceStatus: MaintenanceSt
       : `🧾 *Receipt Reading Result (OCR-Gemini)* 🌸\n\n` +
         `*Store*: ${receipt.merchant_name}\n` +
         `*Date*: ${receiptDateFormatted}\n` +
-        `*Category*: ${getCategoryLabelFromDef(draft.category || 'other', lang)}\n\n` +
+        `*Category*: ${await getCategoryLabel(draft.category || 'other', lang)}\n\n` +
         `*Itemized Detail*:\n${itemLines}\n` +
         `━━━━━━━━━━━━━━━━━━━━\n\n` +
         `*Total Cost*: *${formatIDR(receipt.total_amount)}*\n\n` +
@@ -1037,7 +1045,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         res.status(200).json({ ok: true }); return;
       }
 
-      // Edit category callback
+// Edit category callback
       if (actionData === "tx_edit_category") {
         const editLang = await resolveLangOnly(chatId);
         await answerTelegramCallback(queryId);
@@ -1049,7 +1057,8 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           res.status(200).json({ ok: true }); return;
         }
         
-        const catMarkup = buildCategoryKeyboard(pending.type, editLang);
+        const categories = await getActiveCategories();
+        const catMarkup = buildCategoryKeyboard(pending.type, editLang, categories);
         await editTelegramMessage(chatId, msgId, tr("editCategoryPrompt", editLang), catMarkup);
         res.status(200).json({ ok: true }); return;
       }
@@ -1065,7 +1074,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           res.status(200).json({ ok: true }); return;
         }
         
-        const catLabel  = getCategoryLabel(pending.category_key, editLang);
+        const catLabel  = await getCategoryLabel(pending.category_key, editLang);
         const typeLabel = pending.type === "income" ? tr("txTypeIncome", editLang) : tr("txTypeExpense", editLang);
         const draftMarkup = buildDraftKeyboard(editLang);
         await editTelegramMessage(chatId, msgId, tr("draftPrompt", editLang, typeLabel, catLabel, formatIDR(pending.amount), pending.original_text), draftMarkup);
@@ -1094,7 +1103,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
         await answerTelegramCallback(queryId, tr("cbCategoryUpdated", editLang));
 
-        const catLabel  = getCategoryLabel(newCat, editLang);
+        const catLabel  = await getCategoryLabel(newCat, editLang);
         const typeLabel = pending.type === "income" ? tr("txTypeIncome", editLang) : tr("txTypeExpense", editLang);
         const draftMarkup = buildDraftKeyboard(editLang);
         await editTelegramMessage(chatId, msgId, tr("draftPrompt", editLang, typeLabel, catLabel, formatIDR(pending.amount), pending.original_text), draftMarkup);
@@ -1131,7 +1140,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         }
 
         // status === "saved"
-        const catLabel  = getCategoryLabel(result.category_key, lang);
+        const catLabel  = await getCategoryLabel(result.category_key, lang);
         const amountStr = formatIDR(result.amount);
         const typeLabel = result.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
 
@@ -1167,14 +1176,14 @@ export default async (req: VercelRequest, res: VercelResponse) => {
               `• *Tipe*: 📤 Pengeluaran\n` +
               `• *Toko*: *${draft.merchant_name}*\n` +
               `• *Jumlah*: *${formatIDR(draft.total_amount)}*\n` +
-              `• *Kategori*: ${getCategoryLabelFromDef(draft.category || 'other', lang)}\n` +
+              `• *Kategori*: ${await getCategoryLabel(draft.category || 'other', lang)}\n` +
               `• *Catatan*: "${draft.total_items} item barang (${draft.merchant_name})"\n\n` +
               `_Catatan struk Anda telah aman disimpan ke E-Wallet Kita._ 🌸`
             : `✅ *Transaction Successfully Recorded from Receipt!*\n\n` +
               `• *Type*: 📤 Expense\n` +
               `• *Store*: *${draft.merchant_name}*\n` +
               `• *Amount*: *${formatIDR(draft.total_amount)}*\n` +
-              `• *Category*: ${getCategoryLabelFromDef(draft.category || 'other', lang)}\n` +
+              `• *Category*: ${await getCategoryLabel(draft.category || 'other', lang)}\n` +
               `• *Note*: "${draft.total_items} item goods (${draft.merchant_name})"\n\n` +
               `_Your receipt record has been safely saved to E-Wallet Kita._ 🌸`;
 
@@ -1199,9 +1208,10 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           res.status(200).json({ ok: true }); return;
         }
 
+        const categories = await getActiveCategories();
         const keyboard = {
-          inline_keyboard: CATEGORIES.filter(c => c.type === 'expense').map(cat => ([
-            { text: cat.id, callback_data: `rcpt_cat:${cat.key}:${draftId}` }
+          inline_keyboard: categories.filter(c => c.type === 'expense' || c.type === "both").map(cat => ([
+            { text: lang === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key), callback_data: `rcpt_cat:${cat.key}:${draftId}` }
           ]))
         };
 
@@ -1217,7 +1227,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         const draft = await updateReceiptCategory(draftId, category);
 
         // Re-render
-        const catLabel = getCategoryLabelFromDef(category, lang);
+        const catLabel = await getCategoryLabel(category, lang);
         
         const itemLines = (draft.items as any[]).map(i => `• ${i.name} x${i.qty}: ${formatIDR(i.subtotal)}`).join("\n");
         const receiptDate = new Date(draft.receipt_date).toISOString().split('T')[0];
@@ -1484,14 +1494,16 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           }
 
           let msg = tr("riwayatHeader", lang);
-          data.forEach((tx: any, i: number) => {
+          let i = 0;
+          for (const tx of data) {
             const typeEmoji = tx.type === "income" ? "📥" : "📤";
-            const catLabel  = getCategoryLabel(tx.category, lang);
+            const catLabel  = await getCategoryLabel(tx.category, lang);
             const amount    = formatIDR(tx.amount);
             const date      = tx.transaction_date;
             msg += `${i + 1}. ${typeEmoji} *${amount}* — ${catLabel}\n`;
             msg += `   _${tx.note || "-"}_ · ${date}\n\n`;
-          });
+            i++;
+          }
           msg += tr("riwayatFooter", lang);
 
           await sendTelegramMessage(chatId, msg);
@@ -1523,7 +1535,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           }
 
           const deleted   = data[0];
-          const catLabel  = getCategoryLabel(deleted.category, lang);
+          const catLabel  = await getCategoryLabel(deleted.category, lang);
           const amountStr = formatIDR(deleted.amount);
           const typeLabel = deleted.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
           await sendTelegramMessage(chatId, tr("hapusSuccess", lang, typeLabel, catLabel, amountStr, deleted.note || "-"));
@@ -1574,7 +1586,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
               p_amount: newAmount,
               p_original_text: pending.original_text
             });
-            const catLabel  = getCategoryLabel(pending.category_key, lang);
+            const catLabel  = await getCategoryLabel(pending.category_key, lang);
             const typeLabel = pending.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
             const draftMarkup = buildDraftKeyboard(lang);
             await sendTelegramMessage(chatId, tr("draftPrompt", lang, typeLabel, catLabel, formatIDR(newAmount), pending.original_text), draftMarkup);
@@ -1607,7 +1619,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           res.status(200).json({ ok: true }); return;
         }
 
-        const localizedCat = getCategoryLabel(parsed.category_key, lang);
+        const localizedCat = await getCategoryLabel(parsed.category_key, lang);
         const currencyStr  = formatIDR(parsed.amount);
         const typeLabel    = parsed.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
 

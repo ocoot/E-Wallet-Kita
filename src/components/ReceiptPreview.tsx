@@ -3,7 +3,7 @@ import { Receipt, Calendar, Store, CreditCard, Tag, Check, X, Edit3, Trash } fro
 import { motion } from "motion/react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { audioFeedback } from "../lib/audio";
-import { CATEGORIES } from "../lib/categoryDefinitions";
+import { useCategories } from "../hooks/useCategories";
 
 interface ReceiptItem {
   name: string;
@@ -39,7 +39,8 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
   onApprove,
   onCancel,
 }) => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+  const { categories } = useCategories();
 
   // Local editable states initialized with draft values
   const [merchantName, setMerchantName] = useState(draft.merchant_name || "");
@@ -62,7 +63,14 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
   const [isEditingItems, setIsEditingItems] = useState(false);
   const [items, setItems] = useState<ReceiptItem[]>(draft.items || []);
 
-  const expenseCategories = CATEGORIES.filter(c => c.type === 'expense').map(c => c.key);
+  const expenseCategories = categories.filter(c => c.type === 'expense' || c.type === 'both');
+
+  // Sync category if draft.category is loaded later or if first load
+  useEffect(() => {
+    if (draft.category && !category) {
+      setCategory(draft.category);
+    }
+  }, [draft.category]);
 
   // Format IDR Helper
   const formatIDR = (num: number) => {
@@ -196,9 +204,9 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-white focus:border-indigo-500 outline-none light_sakura:bg-white light_sakura:border-rose-200/60 light_sakura:text-slate-800"
               >
-                {expenseCategories.map((key) => (
-                  <option key={key} value={key}>
-                    {t(`categories.${key}`)}
+                {expenseCategories.map((cat) => (
+                  <option key={cat.key} value={cat.key}>
+                    {locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key)}
                   </option>
                 ))}
               </select>

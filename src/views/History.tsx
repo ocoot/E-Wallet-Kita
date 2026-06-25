@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { dbService } from "../lib/db";
 import { supabase } from "../lib/supabase";
-import { UserSession, Transaction } from "../types";
+import { UserSession, Transaction, Category } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
@@ -21,6 +21,7 @@ import { HistoryDeleteModal } from "../components/HistoryDeleteModal";
 import { HistoryEditModal } from "../components/HistoryEditModal";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "../components/PremiumModal";
+import { useCategories } from "../hooks/useCategories";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -34,6 +35,7 @@ export const History: React.FC<HistoryProps> = ({
   userDisplayName
 }) => {
   const { t } = useLanguage();
+  const { categories } = useCategories();
   const { user } = useAuth();
 
   const [displayName, setDisplayName] = useState<string>(userDisplayName || "");
@@ -78,6 +80,7 @@ export const History: React.FC<HistoryProps> = ({
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; // current YearMonth YYYY-MM
   });
+  const [filterCategory, setFilterCategory] = useState<string>("all");
 
   // Pagination states
   const [pageSize, setPageSize] = useState<number | "all">(10);
@@ -141,20 +144,32 @@ export const History: React.FC<HistoryProps> = ({
     setCurrentPage(1); // reset page on filter change
   }, [filterMonth, currentUser.id, transactionsUpdatedTrigger]);
 
-  // Apply quick text search filter locally
+  // Apply filters locally
   useEffect(() => {
     let result = transactions;
+    
+    // Search filter
     if (search.trim()) {
       const s = search.toLowerCase();
       result = result.filter(item => {
         const matchesNote = item.note && item.note.toLowerCase().includes(s);
-        const matchesCategory = t(`categories.${item.category}`).toLowerCase().includes(s);
+        const cat = categories.find(c => c.key === item.category);
+        const catLabel = cat 
+          ? (useLanguage().locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key))
+          : item.category;
+        const matchesCategory = catLabel.toLowerCase().includes(s);
         return matchesNote || matchesCategory;
       });
     }
+
+    // Category filter
+    if (filterCategory !== "all") {
+      result = result.filter(item => item.category === filterCategory);
+    }
+
     setFilteredTransactions(result);
     setCurrentPage(1); // Reset page on query search
-  }, [search, transactions]);
+  }, [search, filterCategory, transactions, categories]);
 
   // Page index math calculations
   const totalItems = filteredTransactions.length;
@@ -350,6 +365,9 @@ export const History: React.FC<HistoryProps> = ({
           setSearch={setSearch}
           pageSize={pageSize}
           setPageSize={setPageSize}
+          filterCategory={filterCategory}
+          setFilterCategory={setFilterCategory}
+          categories={categories}
         />
 
         {/* 3. Transaction Data Table/Cards */}
@@ -360,6 +378,7 @@ export const History: React.FC<HistoryProps> = ({
           getSourceIconLabel={getSourceIconLabel}
           onDeleteItem={handleDeleteItem}
           onEditItem={handleEditItem}
+          categories={categories}
         />
 
         {/* 4. Footer Pagination bars */}

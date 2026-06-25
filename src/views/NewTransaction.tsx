@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { dbService } from "../lib/db";
 import { supabase } from "../lib/supabase";
-import { UserSession } from "../types";
+import { UserSession, Category } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ReceiptUploader } from "../components/ReceiptUploader";
 import { ReceiptPreview } from "../components/ReceiptPreview";
+import { useCategories } from "../hooks/useCategories";
 
 interface NewTransactionProps {
   onTransactionAdded: () => void;
@@ -61,6 +62,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   };
   const { showToast } = useToast();
   const shakeControls = useAnimation();
+  const { categories } = useCategories();
 
   // Trigger shake animation
   const triggerShake = async () => {
@@ -126,16 +128,17 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
   // Re-adjust categories on type switch
   useEffect(() => {
-    if (type === "income") {
-      setCategory("salary");
-    } else {
-      setCategory("food_drink");
+    const filtered = categories.filter(c => c.type === type || c.type === "both");
+    if (filtered.length > 0) {
+      // Check if current category is still in the new list
+      const stillValid = filtered.some(c => c.key === category);
+      if (!stillValid) {
+        setCategory(filtered[0].key);
+      }
     }
-  }, [type]);
+  }, [type, categories]);
 
-  const incomeCategories = ["salary", "bonus", "other"];
-  const expenseCategories = ["food_drink", "monthly_groceries", "vegetables", "bills", "other"];
-  const activeCategories = type === "income" ? incomeCategories : expenseCategories;
+  const activeCategories = categories.filter(c => c.type === type || c.type === "both");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -298,9 +301,9 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                 }}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 font-sans text-xs text-white outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
               >
-                {activeCategories.map((key) => (
-                  <option key={key} value={key}>
-                    {t(`categories.${key}`)}
+                {activeCategories.map((cat) => (
+                  <option key={cat.key} value={cat.key}>
+                    {useLanguage().locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key)}
                   </option>
                 ))}
               </select>
@@ -385,7 +388,11 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         title={t("confirm.save_transaction_title")}
         description={t("confirm.save_transaction_desc", {
           amount: amount !== "" ? formatIDR(amount) : "Rp0",
-          category: t(`categories.${category}`)
+          category: (() => {
+            const cat = categories.find(c => c.key === category);
+            if (!cat) return category;
+            return useLanguage().locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key);
+          })()
         })}
         type="info"
         confirmLabel={t("common.confirm")}

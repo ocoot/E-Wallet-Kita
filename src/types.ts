@@ -29,6 +29,15 @@ export interface Transaction {
   created_at: string;
 }
 
+export interface Category {
+  id: string;
+  key: string;
+  type: "income" | "expense" | "both";
+  label_id: string | null;
+  label_en: string | null;
+  is_active: boolean;
+}
+
 export interface PremiumVoucher {
   id: string;
   code: string;

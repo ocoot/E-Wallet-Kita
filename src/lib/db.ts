@@ -1,7 +1,23 @@
 import { supabase } from "./supabase";
-import { Transaction } from "../types";
+import { Transaction, Category } from "../types";
 
 export const dbService = {
+  async getCategories(): Promise<Category[]> {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .eq('is_active', true)
+      .order('type')
+      .order('key');
+
+    if (error) {
+      console.error('Error fetching categories:', error);
+      throw error;
+    }
+
+    return data as Category[];
+  },
+
   async getTransactions(userId: string, filterMonth?: string): Promise<Transaction[]> {
     let query = supabase
       .from('transactions')

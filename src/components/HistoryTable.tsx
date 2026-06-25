@@ -1,6 +1,6 @@
 import React from "react";
 import { useLanguage } from "../contexts/LanguageContext";
-import { Transaction } from "../types";
+import { Transaction, Category } from "../types";
 import { Trash2, Send, Pencil } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { EmptyState } from "./EmptyState";
@@ -12,6 +12,7 @@ interface HistoryTableProps {
   getSourceIconLabel: (source: "manual" | "ai_web" | "telegram") => string;
   onDeleteItem: (id: string) => void;
   onEditItem: (tx: Transaction) => void;
+  categories: Category[];
 }
 
 export const HistoryTable: React.FC<HistoryTableProps> = ({
@@ -21,8 +22,9 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
   getSourceIconLabel,
   onDeleteItem,
   onEditItem,
+  categories,
 }) => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   return (
     <div id="history-data-table-container" className="border border-slate-800/80 rounded-2xl bg-slate-950/40 relative overflow-hidden light_sakura:border-rose-100/50 light_sakura:bg-rose-50/10">
@@ -82,7 +84,11 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
 
                       {/* Category lookup key */}
                       <td className="p-4 font-semibold text-slate-200 light_sakura:text-slate-900">
-                        {t(`categories.${tx.category}`)}
+                        {(() => {
+                          const cat = categories.find(c => c.key === tx.category);
+                          if (!cat) return tx.category;
+                          return locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key);
+                        })()}
                       </td>
 
                       {/* Description / source details */}

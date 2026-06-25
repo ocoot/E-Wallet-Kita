@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Pencil, X } from "lucide-react";
 import { Transaction } from "../types";
-import { CATEGORIES } from "../lib/categoryDefinitions";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useCategories } from "../hooks/useCategories";
 
 interface HistoryEditModalProps {
   transaction: Transaction | null;
@@ -19,6 +19,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
   isSaving,
 }) => {
   const { t, locale } = useLanguage();
+  const { categories } = useCategories();
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState<number | "">("");
 
@@ -31,7 +32,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
 
   if (!transaction) return null;
 
-  const categoryOptions = CATEGORIES.filter(c => c.type === transaction.type);
+  const categoryOptions = categories.filter(c => c.type === transaction.type || c.type === "both");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,7 +87,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
               >
                 {categoryOptions.map(c => (
                   <option key={c.key} value={c.key}>
-                    {locale === "id" ? c.id : c.en}
+                    {locale === "id" ? (c.label_id || c.key) : (c.label_en || c.key)}
                   </option>
                 ))}
               </select>

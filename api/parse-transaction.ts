@@ -1,9 +1,9 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Type } from "@google/genai";
-import { getCategoryLabel, getAllCategoryKeys } from '../src/lib/categoryDefinitions.js';
-import { inferCategoryKey } from './_utils.js';
+import { getActiveCategories, generateCategoryPrompt, validateCategoryKey } from './_lib/categories.js';
 import { parseAmountFromString } from '../src/lib/parserUtils.js';
+import { inferCategoryKey } from './_utils.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -180,17 +180,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const allKeys = getAllCategoryKeys();
-    const categoryMapping = allKeys
-      .map(key => `- '${key}' (${getCategoryLabel(key, 'en')})`)
-      .join('\n');
+    const categories = await getActiveCategories();
+    const categoryMapping = generateCategoryPrompt(categories);
 
     const systemInstruction = `You are a financial parsing expert for 'E-Wallet Kita'. 
 Analyze natural language transactions in Indonesian or English and output structured JSON.
 Valid category keys are:
 ${categoryMapping}
 
-If categories do not match any, default category_key to 'other'.`;
+If categories do not match any, default category_key to 'other'.
+ALWAYS return the 'category_key' from the list above.`;
 
     const codeParsedAmount = parseAmountFromString(query);
     let parsedJSON: any = null;
@@ -270,7 +269,7 @@ If categories do not match any, default category_key to 'other'.`;
     res.json({
       source: usedModel,
       type: parsedJSON.type || "expense",
-      category_key: parsedJSON.category_key || inferCategoryKey(query),
+      category_key: validateCategoryKey(parsedJSON.category_key, categories),
       amount: parsedJSON.amount || codeParsedAmount || 0,
       original_text: query
     });

@@ -2,6 +2,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
+import { getActiveCategories, generateCategoryPrompt, validateCategoryKey, Category } from "./categories.js";
 
 // ─── Supabase service-role client (server-side only) ───────────────────────
 const supabaseLogger = createClient(
@@ -133,16 +134,24 @@ function shouldFallback(err: any) {
   );
 }
 
-const systemInstruction = `Anda adalah OCR parser struk belanja Indonesia tepercaya.
+function generateSystemInstruction(categories: Category[]) {
+  const categoryMapping = generateCategoryPrompt(categories, "expense");
+  
+  return `Anda adalah OCR parser struk belanja Indonesia tepercaya.
 Analisis gambar struk belanja yang diberikan dan ekstrak detail berikut dalam bentuk JSON terstruktur:
 1. 'merchant_name': Nama toko/merchant (misal: Indomaret, Alfamart, dll.).
 2. 'receipt_date': Tanggal di struk belanja dalam format ISO (YYYY-MM-DD).
 3. 'total_amount': Total nominal uang yang dibayarkan.
 4. 'total_items': Jumlah total item barang.
-5. 'category': Kategori transaksi yang paling relevan (pilih salah satu: 'monthly_groceries', 'food', 'transport', 'vehicle_maintenance', 'shopping', 'health', 'other').
+5. 'category': Kategori transaksi yang paling relevan. Gunakan HANYA salah satu key dari daftar di bawah.
 6. 'items': Daftar barang belanjaan, masing-masing berisi 'name', 'qty', 'unit_price', dan 'subtotal'.
 
-Kembalikan data kosong atau nilai default yang logis jika ada kolom informasi yang tidak terbaca sama sekali dari struk. JANGAN mengarang data fiktif.`;
+Kategori pengeluaran yang valid:
+${categoryMapping}
+
+Kembalikan data kosong atau nilai default yang logis jika ada kolom informasi yang tidak terbaca sama sekali dari struk. JANGAN mengarang data fiktif.
+PENTING: Nilai 'category' HARUS berupa key dari daftar di atas. Jika tidak yakin, gunakan 'other'.`;
+}
 
 async function parseWithGemini(
   imageBase64: string,
@@ -150,7 +159,8 @@ async function parseWithGemini(
   apiKey: string,
   keyAlias: string,
   source: string,
-  model: string
+  model: string,
+  categories: Category[]
 ): Promise<ParsedReceipt> {
   const ai = new GoogleGenAI({
     apiKey: apiKey,
@@ -158,6 +168,8 @@ async function parseWithGemini(
       headers: { 'User-Agent': 'aistudio-build' }
     }
   });
+
+  const systemInstruction = generateSystemInstruction(categories);
   
   try {
     const response = await ai.models.generateContent({
@@ -183,7 +195,7 @@ async function parseWithGemini(
       receipt_date: parsedJSON.receipt_date || new Date().toISOString().split("T")[0],
       total_amount: parsedJSON.total_amount || 0,
       total_items: parsedJSON.total_items || (parsedJSON.items ? parsedJSON.items.length : 0),
-      category: parsedJSON.category || "other",
+      category: validateCategoryKey(parsedJSON.category, categories),
       items: parsedJSON.items || []
     };
   } catch (err) {
@@ -199,9 +211,11 @@ async function parseWithOpenAI(
   apiKey: string,
   keyAlias: string,
   source: string,
-  model: string
+  model: string,
+  categories: Category[]
 ): Promise<ParsedReceipt> {
   const openai = new OpenAI({ apiKey });
+  const systemInstruction = generateSystemInstruction(categories);
 
   try {
     const response = await openai.chat.completions.create({
@@ -230,7 +244,7 @@ async function parseWithOpenAI(
       receipt_date: parsedJSON.receipt_date || new Date().toISOString().split("T")[0],
       total_amount: parsedJSON.total_amount || 0,
       total_items: parsedJSON.total_items || (parsedJSON.items ? parsedJSON.items.length : 0),
-      category: parsedJSON.category || "other",
+      category: validateCategoryKey(parsedJSON.category, categories),
       items: parsedJSON.items || []
     };
   } catch (err) {
@@ -245,9 +259,11 @@ async function parseWithClaude(
   apiKey: string,
   keyAlias: string,
   source: string,
-  model: string
+  model: string,
+  categories: Category[]
 ): Promise<ParsedReceipt> {
   const claude = new Anthropic({ apiKey });
+  const systemInstruction = generateSystemInstruction(categories);
 
   try {
     const response = await claude.messages.create({
@@ -275,7 +291,7 @@ async function parseWithClaude(
       receipt_date: parsedJSON.receipt_date || new Date().toISOString().split("T")[0],
       total_amount: parsedJSON.total_amount || 0,
       total_items: parsedJSON.total_items || (parsedJSON.items ? parsedJSON.items.length : 0),
-      category: parsedJSON.category || "other",
+      category: validateCategoryKey(parsedJSON.category, categories),
       items: parsedJSON.items || []
     };
   } catch (err) {
@@ -294,12 +310,15 @@ export async function parseReceipt(imageBase64: string, source = "receipt_parser
     mimeType = parts[0].replace("data:", "").split(";")[0];
   }
 
+  // Fetch active categories once
+  const categories = await getActiveCategories();
+
   // Gemini: untuk setiap key, coba semua model di GEMINI_MODELS sebelum pindah key.
   for (let i = 0; i < GEMINI_KEYS.length; i++) {
     const keyAlias = `gemini_key_${i + 1}`;
     for (const model of GEMINI_MODELS) {
       try {
-        return await parseWithGemini(cleanBase64, mimeType, GEMINI_KEYS[i], keyAlias, source, model);
+        return await parseWithGemini(cleanBase64, mimeType, GEMINI_KEYS[i], keyAlias, source, model, categories);
       } catch (err: any) {
         if (!shouldFallback(err)) {
           console.log(`⚠️ ${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
@@ -315,7 +334,7 @@ export async function parseReceipt(imageBase64: string, source = "receipt_parser
     const keyAlias = `openai_key_${i + 1}`;
     for (const model of OPENAI_MODELS) {
       try {
-        return await parseWithOpenAI(cleanBase64, OPENAI_KEYS[i], keyAlias, source, model);
+        return await parseWithOpenAI(cleanBase64, OPENAI_KEYS[i], keyAlias, source, model, categories);
       } catch (err: any) {
         if (!shouldFallback(err)) {
           console.log(`⚠️ ${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
@@ -331,7 +350,7 @@ export async function parseReceipt(imageBase64: string, source = "receipt_parser
     const keyAlias = `anthropic_key_${i + 1}`;
     for (const model of CLAUDE_MODELS) {
       try {
-        return await parseWithClaude(cleanBase64, CLAUDE_KEYS[i], keyAlias, source, model);
+        return await parseWithClaude(cleanBase64, CLAUDE_KEYS[i], keyAlias, source, model, categories);
       } catch (err: any) {
         if (!shouldFallback(err)) {
           console.log(`⚠️ ${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);

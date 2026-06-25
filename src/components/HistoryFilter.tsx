@@ -1,7 +1,8 @@
 import React from "react";
 import { useLanguage } from "../contexts/LanguageContext";
-import { Search } from "lucide-react";
+import { Search, Filter } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
+import { Category } from "../types";
 
 interface HistoryFilterProps {
   filterMonth: string;
@@ -11,6 +12,9 @@ interface HistoryFilterProps {
   setSearch: (val: string) => void;
   pageSize: number | "all";
   setPageSize: (val: number | "all") => void;
+  filterCategory: string;
+  setFilterCategory: (val: string) => void;
+  categories: Category[];
 }
 
 export const HistoryFilter: React.FC<HistoryFilterProps> = ({
@@ -21,12 +25,15 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
   setSearch,
   pageSize,
   setPageSize,
+  filterCategory,
+  setFilterCategory,
+  categories,
 }) => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
 
   return (
-    <div id="history-controls-row" className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-2">
-      {/* Month Selector dropdown */}
+    <div id="history-controls-row" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pb-2">
+      {/* 1. Month Selector dropdown */}
       <div className="space-y-1.5">
         <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
           {t("history.filter_month")}
@@ -49,7 +56,30 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
         </div>
       </div>
 
-      {/* Text Filter search bar */}
+      {/* 2. Category Filter */}
+      <div className="space-y-1.5">
+        <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500 flex items-center gap-1.5">
+          <Filter size={10} />
+          <span>{t("transaction.label_category")}</span>
+        </label>
+        <select
+          value={filterCategory}
+          onChange={(e) => {
+            audioFeedback.playClick();
+            setFilterCategory(e.target.value);
+          }}
+          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
+        >
+          <option value="all">{locale === "id" ? "Semua Kategori" : "All Categories"}</option>
+          {categories.map((cat) => (
+            <option key={cat.key} value={cat.key}>
+              {locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key)}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* 3. Text Filter search bar */}
       <div className="space-y-1.5">
         <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
           {t("history.search_label")}
@@ -73,7 +103,7 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
         </div>
       </div>
 
-      {/* Dynamic page sizing selector key */}
+      {/* 4. Dynamic page sizing selector */}
       <div className="space-y-1.5">
         <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
           {t("history.page_size")}
