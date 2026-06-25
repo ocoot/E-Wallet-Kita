@@ -6,17 +6,25 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useMaintenance } from "../contexts/MaintenanceContext";
 import { audioFeedback } from "../lib/audio";
+import { usePremium } from "../hooks/usePremium";
+import { PremiumModal } from "./PremiumModal";
 
 interface ReceiptUploaderProps {
   onParsed: (draft: any) => void;
 }
 
 export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) => {
-  const { session } = useAuth();
-  const { t } = useLanguage();
+  const { session, user } = useAuth();
+  const { t, locale } = useLanguage();
   const { showToast } = useToast();
   const { isFeatureLocked } = useMaintenance();
   const isLocked = isFeatureLocked("receipt_scan");
+  
+  const { isPremium, refresh: refreshPremium } = usePremium();
+  const isGuest = user?.is_anonymous ?? false;
+  const isOcrLocked = isGuest || !isPremium;
+  const [isPremiumOpen, setIsPremiumOpen] = useState(false);
+
   const [isDragActive, setIsDragActive] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
@@ -37,6 +45,21 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
     e.stopPropagation();
     setIsDragActive(false);
 
+    if (isOcrLocked) {
+      audioFeedback.playDullPluck();
+      if (isGuest) {
+        showToast(
+          locale === "id"
+            ? "Fitur Unggah Struk adalah fitur premium. Silakan masuk atau daftar akun terlebih dahulu untuk menggunakannya."
+            : "Receipt Upload is a premium feature. Please sign in or register an account to use it.",
+          "error"
+        );
+      } else {
+        setIsPremiumOpen(true);
+      }
+      return;
+    }
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       await processFile(file);
@@ -44,6 +67,21 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (isOcrLocked) {
+      audioFeedback.playDullPluck();
+      if (isGuest) {
+        showToast(
+          locale === "id"
+            ? "Fitur Unggah Struk adalah fitur premium. Silakan masuk atau daftar akun terlebih dahulu untuk menggunakannya."
+            : "Receipt Upload is a premium feature. Please sign in or register an account to use it.",
+          "error"
+        );
+      } else {
+        setIsPremiumOpen(true);
+      }
+      return;
+    }
+
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       await processFile(file);
@@ -52,6 +90,20 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
 
   const handleClickZone = () => {
     audioFeedback.playClick();
+    if (isOcrLocked) {
+      if (isGuest) {
+        audioFeedback.playDullPluck();
+        showToast(
+          locale === "id"
+            ? "Fitur Unggah Struk adalah fitur premium. Silakan masuk atau daftar akun terlebih dahulu untuk menggunakannya."
+            : "Receipt Upload is a premium feature. Please sign in or register an account to use it.",
+          "error"
+        );
+      } else {
+        setIsPremiumOpen(true);
+      }
+      return;
+    }
     fileInputRef.current?.click();
   };
 
@@ -262,15 +314,25 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
               animate={{ opacity: 1 }}
               className="flex flex-col items-center space-y-2"
             >
-              <div className="p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10 text-indigo-400 light_sakura:bg-rose-100/30 light_sakura:border-rose-100/50 light_sakura:text-rose-500">
-                <UploadCloud size={24} />
-              </div>
+              {isOcrLocked ? (
+                <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-500 light_sakura:bg-rose-500/10 light_sakura:border-rose-500/20 light_sakura:text-rose-500">
+                  <Lock size={24} className="animate-pulse" />
+                </div>
+              ) : (
+                <div className="p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10 text-indigo-400 light_sakura:bg-rose-100/30 light_sakura:border-rose-100/50 light_sakura:text-rose-500">
+                  <UploadCloud size={24} />
+                </div>
+              )}
               <div className="space-y-1">
-                <p className="font-sans text-xs font-bold text-gray-200 light_sakura:text-slate-700">
-                  {t("dashboard.ocr_drag_drop")}
+                <p className="font-sans text-xs font-bold text-gray-200 light_sakura:text-slate-700 flex items-center justify-center gap-1.5">
+                  {isOcrLocked && <Lock size={12} className="text-amber-400 light_sakura:text-rose-500" />}
+                  <span>{t("dashboard.ocr_drag_drop")}</span>
                 </p>
                 <p className="font-sans text-[11px] text-gray-500 light_sakura:text-slate-400">
-                  {t("dashboard.ocr_supported")}
+                  {isOcrLocked
+                    ? (locale === "id" ? "Fitur khusus Pengguna Premium" : "Exclusive Premium Feature")
+                    : t("dashboard.ocr_supported")
+                  }
                 </p>
               </div>
             </motion.div>
@@ -296,6 +358,16 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
           </div>
         </motion.div>
       )}
+
+      {/* Premium modal popup helper */}
+      <PremiumModal
+        isOpen={isPremiumOpen}
+        onClose={() => setIsPremiumOpen(false)}
+        onPremiumActivated={() => {
+          refreshPremium();
+          setIsPremiumOpen(false);
+        }}
+      />
       </>
       )}
     </div>

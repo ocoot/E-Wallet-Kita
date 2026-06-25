@@ -20,7 +20,8 @@ import {
   Copy,
   RefreshCw,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  Lock
 } from "lucide-react";
 import { motion } from "motion/react";
 import { UserSession } from "../types";
@@ -41,6 +42,8 @@ export const Settings: React.FC<SettingsProps> = ({
 
   const { isPremium, refresh: refreshPremium } = usePremium();
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
+  const isGuest = user?.is_anonymous ?? false;
+  const isTelegramLocked = isGuest || !isPremium;
 
   // Profile Edit States
   const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.email?.split('@')[0] || "");
@@ -416,8 +419,9 @@ export const Settings: React.FC<SettingsProps> = ({
               <h3 className="font-sans font-bold text-sm text-slate-200 light_sakura:text-slate-800 flex items-center gap-2">
                 <Send size={14} className="text-sky-400" />
                 <span>{t("settings.telegram_sec")}</span>
+                {isTelegramLocked && <Lock size={12} className="text-amber-500 light_sakura:text-rose-500" />}
               </h3>
-              {isTelegramLinked && (
+              {isTelegramLinked && !isTelegramLocked && (
                 <span className="px-2 py-0.5 text-[9px] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/30">
                   {t("common.active")}
                 </span>
@@ -429,7 +433,42 @@ export const Settings: React.FC<SettingsProps> = ({
             </p>
 
             {/* Connection Status indicator info */}
-            {isTelegramLinked ? (
+            {isTelegramLocked ? (
+              <div className="flex flex-col items-center justify-center py-6 px-4 text-center space-y-4 border border-dashed border-amber-500/25 bg-amber-500/5 rounded-2xl light_sakura:border-rose-300/30 light_sakura:bg-rose-50/50">
+                <div className="p-3 bg-amber-500/10 rounded-xl text-amber-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                  <Lock size={24} className="animate-pulse" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-sans font-bold text-xs text-white light_sakura:text-slate-850">
+                    {locale === "id" ? "Fitur Khusus Premium" : "Premium Exclusive Feature"}
+                  </h4>
+                  <p className="font-sans text-[11px] text-slate-400 light_sakura:text-slate-600 max-w-sm leading-relaxed">
+                    {isGuest 
+                      ? (locale === "id" 
+                          ? "Silakan daftar atau masuk akun terlebih dahulu untuk menggunakan Telegram bot pencatatan instan." 
+                          : "Please register or sign in first to use the instant-logging Telegram bot.")
+                      : (locale === "id" 
+                          ? "Aktifkan Premium untuk menghubungkan Telegram Bot dan melakukan pencatatan instan lewat chat atau foto struk!" 
+                          : "Activate Premium to connect the Telegram Bot and log transactions instantly via chat or receipt photos!")
+                    }
+                  </p>
+                </div>
+                {!isGuest && (
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      audioFeedback.playClick();
+                      setIsPremiumOpen(true);
+                    }}
+                    className="cursor-pointer px-4 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl shadow-lg shadow-amber-500/10 flex items-center gap-1.5 transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:text-white"
+                  >
+                    <Sparkles size={13} />
+                    <span>{t("premium.menu_label")}</span>
+                  </motion.button>
+                )}
+              </div>
+            ) : isTelegramLinked ? (
               <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-500/5 light_sakura:border-emerald-250 light_sakura:bg-emerald-50/20 shadow-xs">
                   <div className="flex items-center gap-3.5">

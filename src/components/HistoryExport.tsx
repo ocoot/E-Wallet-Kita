@@ -1,9 +1,11 @@
 import React from "react";
 import { useLanguage } from "../contexts/LanguageContext";
-import { FileDown, ChevronDown, Trash2 } from "lucide-react";
+import { FileDown, ChevronDown, Trash2, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { usePremium } from "../hooks/usePremium";
+import { useAuth } from "../contexts/AuthContext";
+import { useToast } from "../contexts/ToastContext";
 
 interface HistoryExportProps {
   isExportMenuOpen: boolean;
@@ -24,8 +26,13 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
   hasTransactions,
   onRequirePremium,
 }) => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { isPremium } = usePremium();
+  const { user } = useAuth();
+  const { showToast } = useToast();
+
+  const isGuest = user?.is_anonymous ?? false;
+  const isExportLocked = isGuest || !isPremium;
 
   return (
     <div id="history-export-header-row" className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
@@ -44,13 +51,34 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
           <button
             onClick={() => {
               audioFeedback.playClick();
+              if (isExportLocked) {
+                if (isGuest) {
+                  audioFeedback.playDullPluck();
+                  showToast(
+                    locale === "id"
+                      ? "Fitur Ekspor PDF adalah fitur premium. Silakan masuk atau daftar akun terlebih dahulu untuk menggunakannya."
+                      : "PDF Export is a premium feature. Please sign in or register an account to use it.",
+                    "error"
+                  );
+                } else {
+                  onRequirePremium();
+                }
+                return;
+              }
               setIsExportMenuOpen((prev) => !prev);
             }}
-            className="cursor-pointer px-4.5 py-3 border border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors light_sakura:text-indigo-600 cursor-pointer"
+            className={`cursor-pointer px-4.5 py-3 border text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer
+              ${isExportLocked
+                ? "border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/15 text-amber-400 light_sakura:text-rose-600 light_sakura:border-rose-300/30 light_sakura:bg-rose-50/50"
+                : "border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 light_sakura:text-indigo-600"
+              }
+            `}
           >
-            <FileDown size={15} />
+            {isExportLocked ? <Lock size={15} /> : <FileDown size={15} />}
             <span>{t("history.export_menu_label")}</span>
-            <ChevronDown size={13} className={`transition-transform ${isExportMenuOpen ? "rotate-180" : ""}`} />
+            {!isExportLocked && (
+              <ChevronDown size={13} className={`transition-transform ${isExportMenuOpen ? "rotate-180" : ""}`} />
+            )}
           </button>
 
           <AnimatePresence>
