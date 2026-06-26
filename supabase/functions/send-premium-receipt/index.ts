@@ -29,7 +29,7 @@ serve(async (req) => {
       pdfBase64,
     } = body;
 
-    const { error } = await resend.emails.send({
+    const result = await resend.emails.send({
       from: "E-Wallet Kita <onboarding@resend.dev>",
       to: email,
       subject: "Struk Pembelian Premium E-Wallet Kita",
@@ -86,9 +86,11 @@ serve(async (req) => {
       `,
     });
 
-    if (error) {
+    console.log("Resend API Result:", result);
+
+    if (result.error) {
       return new Response(
-        JSON.stringify(error),
+        JSON.stringify(result),
         {
           status: 500,
           headers: {
@@ -102,6 +104,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: true,
+        data: result.data,
       }),
       {
         headers: {
@@ -112,11 +115,13 @@ serve(async (req) => {
     );
 
   } catch (err) {
+    console.error("Function Error Encountered:", err);
 
     return new Response(
       JSON.stringify({
         success: false,
-        message: err.message,
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : null,
       }),
       {
         status: 500,

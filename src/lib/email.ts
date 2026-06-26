@@ -41,7 +41,18 @@ export async function sendPremiumReceiptEmail(
     }
   );
 
-  if (error) throw error;
+  if (error) {
+    console.error("Functions Error:", error);
+    if ("context" in error && (error as any).context) {
+      try {
+        const errorText = await (error as any).context.text();
+        console.error("Function Error Details:", errorText);
+      } catch (e) {
+        console.error("Could not parse function error context text", e);
+      }
+    }
+    throw error;
+  }
 
   return data;
 }
