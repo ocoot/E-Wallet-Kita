@@ -7,9 +7,9 @@ import { useCategories } from "../hooks/useCategories";
 import { useBudgets } from "../hooks/useBudgets";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
-import { PiggyBank, Trash2, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { PiggyBank, Trash2, AlertTriangle, CheckCircle2, Plus, X } from "lucide-react";
 
 export const Budget: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -20,12 +20,22 @@ export const Budget: React.FC = () => {
 
   // Hanya kategori expense/both yang relevan untuk budget pengeluaran
   const expenseCategories = categories.filter((c) => c.type === "expense" || c.type === "both");
+  // Kategori yang BELUM punya anggaran -> ini yang ditawarkan di modal "Tambah Anggaran"
+  const budgetedKeys = new Set(budgets.map((b) => b.category_key));
+  const availableCategories = expenseCategories.filter((c) => !budgetedKeys.has(c.key));
 
-  // Draft input state per category key (belum disimpan)
+  // Draft input state per category key (belum disimpan) — untuk edit anggaran yang sudah ada
   const [drafts, setDrafts] = useState<Record<string, { limit: string; threshold: string }>>({});
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // State untuk modal "Tambah Anggaran" — memilih kategori baru dari yang belum dianggarkan
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [addCategoryKey, setAddCategoryKey] = useState("");
+  const [addLimit, setAddLimit] = useState("");
+  const [addThreshold, setAddThreshold] = useState("80");
+  const [isAdding, setIsAdding] = useState(false);
 
   const formatIDR = (num: number) => "Rp" + Math.round(num).toLocaleString("id-ID");
 
@@ -88,6 +98,58 @@ export const Budget: React.FC = () => {
     }
   };
 
+  // ── Modal "Tambah Anggaran": pilih kategori dari yang belum dianggarkan ──
+  const openAddModal = () => {
+    if (availableCategories.length === 0) return;
+    setAddCategoryKey("");
+    setAddLimit("");
+    setAddThreshold("80");
+    audioFeedback.playClick();
+    setIsAddOpen(true);
+  };
+
+  const closeAddModal = () => {
+    if (isAdding) return;
+    setIsAddOpen(false);
+  };
+
+  const handleAddSave = async () => {
+    if (!user) return;
+
+    if (!addCategoryKey) {
+      audioFeedback.playDullPluck();
+      showToast(t("budget.invalid_category"), "error");
+      return;
+    }
+    const limitNum = Number(addLimit);
+    const thresholdNum = Number(addThreshold);
+
+    if (!limitNum || limitNum <= 0 || isNaN(limitNum)) {
+      audioFeedback.playDullPluck();
+      showToast(t("budget.invalid_limit"), "error");
+      return;
+    }
+    if (!thresholdNum || thresholdNum < 1 || thresholdNum > 100 || isNaN(thresholdNum)) {
+      audioFeedback.playDullPluck();
+      showToast(t("budget.invalid_threshold"), "error");
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      await dbService.upsertBudget(user.id, addCategoryKey, limitNum, thresholdNum);
+      audioFeedback.playClick();
+      showToast(t("budget.save_success"), "success");
+      await refresh();
+      setIsAddOpen(false);
+    } catch (err) {
+      console.error("Error adding budget:", err);
+      showToast(t("budget.save_error"), "error");
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
   const handleDeleteConfirmed = async () => {
     if (!user || !deleteTarget) return;
     setIsDeleting(true);
@@ -134,34 +196,68 @@ export const Budget: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Header Container */}
-      <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm flex items-center gap-4">
-        <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:text-rose-500 shrink-0">
-          <PiggyBank size={24} />
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3.5 flex-wrap">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:text-rose-500 shrink-0">
+            <PiggyBank size={22} />
+          </div>
+          <div>
+            <h1 className="font-sans font-bold text-lg text-white light_sakura:text-slate-900">
+              {t("budget.page_title")}
+            </h1>
+            <p className="text-xs text-slate-400 light_sakura:text-slate-600 mt-0.5 max-w-xl leading-relaxed">
+              {t("budget.page_subtitle")}
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-sans font-bold text-lg text-white light_sakura:text-slate-900">
-            {t("budget.page_title")}
-          </h1>
-          <p className="text-xs text-slate-400 light_sakura:text-slate-600 mt-1 max-w-xl leading-relaxed">
-            {t("budget.page_subtitle")}
-          </p>
-        </div>
+
+        {!loading && expenseCategories.length > 0 && (
+          <button
+            onClick={openAddModal}
+            disabled={availableCategories.length === 0}
+            title={availableCategories.length === 0 ? t("budget.all_categories_budgeted") : undefined}
+            className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 cursor-pointer shrink-0"
+          >
+            <Plus size={15} />
+            {t("budget.add_budget_cta")}
+          </button>
+        )}
       </div>
 
       {loading ? (
         <div className="text-sm text-slate-400 light_sakura:text-slate-500">…</div>
       ) : expenseCategories.length === 0 ? (
-        <EmptyState message={t("budget.empty_state_desc")} />
+        <EmptyState
+          icon={<PiggyBank size={40} className="text-slate-600 light_sakura:text-slate-400" />}
+          title={t("budget.empty_state_title")}
+          description={t("budget.empty_state_desc")}
+        />
+      ) : budgets.length === 0 ? (
+        <div className="space-y-4">
+          <EmptyState
+            icon={<PiggyBank size={40} className="text-slate-600 light_sakura:text-slate-400" />}
+            title={t("budget.no_budgets_yet_title")}
+            description={t("budget.no_budgets_yet_desc")}
+          />
+          <div className="flex justify-center">
+            <button
+              onClick={openAddModal}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 cursor-pointer"
+            >
+              <Plus size={15} />
+              {t("budget.add_budget_cta")}
+            </button>
+          </div>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {expenseCategories.map((cat) => {
-            const existing = budgets.find((b) => b.category_key === cat.key);
-            const draft = getDraft(cat.key);
-            const percent = existing ? Math.min(100, Math.round(existing.percent)) : 0;
-            const barColor = !existing
-              ? "bg-slate-700"
-              : existing.status === "danger"
+          {budgets.map((existing) => {
+            const catKey = existing.category_key;
+            const draft = getDraft(catKey);
+            const percent = Math.min(100, Math.round(existing.percent));
+            const barColor =
+              existing.status === "danger"
                 ? "bg-red-500"
                 : existing.status === "warning"
                   ? "bg-amber-500"
@@ -169,36 +265,30 @@ export const Budget: React.FC = () => {
 
             return (
               <motion.div
-                key={cat.key}
+                key={catKey}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="p-5 rounded-2xl border bg-slate-900/60 border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 space-y-4"
               >
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-sans font-semibold text-sm text-slate-100 light_sakura:text-slate-800 truncate">
-                    {getLabel(cat.key)}
+                    {getLabel(catKey)}
                   </h3>
-                  {existing ? statusBadge(existing.status) : (
-                    <span className="text-[11px] font-medium text-slate-500 light_sakura:text-slate-400">
-                      {t("budget.no_budget_set")}
-                    </span>
-                  )}
+                  {statusBadge(existing.status)}
                 </div>
 
-                {existing && (
-                  <div className="space-y-1.5">
-                    <div className="h-2 rounded-full bg-slate-800 light_sakura:bg-rose-100 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-300 ${barColor}`}
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-[11px] text-slate-400 light_sakura:text-slate-500">
-                      <span>{t("budget.spent_of_limit", { spent: formatIDR(existing.spent), limit: formatIDR(existing.monthly_limit) })}</span>
-                      <span>{t("budget.percent_used", { percent: Math.round(existing.percent) })}</span>
-                    </div>
+                <div className="space-y-1.5">
+                  <div className="h-2 rounded-full bg-slate-800 light_sakura:bg-rose-100 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${barColor}`}
+                      style={{ width: `${percent}%` }}
+                    />
                   </div>
-                )}
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 light_sakura:text-slate-500">
+                    <span>{t("budget.spent_of_limit", { spent: formatIDR(existing.spent), limit: formatIDR(existing.monthly_limit) })}</span>
+                    <span>{t("budget.percent_used", { percent: Math.round(existing.percent) })}</span>
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
@@ -209,7 +299,7 @@ export const Budget: React.FC = () => {
                       type="number"
                       min={1}
                       value={draft.limit}
-                      onChange={(e) => updateDraft(cat.key, "limit", e.target.value)}
+                      onChange={(e) => updateDraft(catKey, "limit", e.target.value)}
                       className="w-full px-3 py-2 rounded-xl text-sm bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-rose-50/50 light_sakura:border-rose-200 light_sakura:text-slate-800"
                       placeholder="500000"
                     />
@@ -223,7 +313,7 @@ export const Budget: React.FC = () => {
                       min={1}
                       max={100}
                       value={draft.threshold}
-                      onChange={(e) => updateDraft(cat.key, "threshold", e.target.value)}
+                      onChange={(e) => updateDraft(catKey, "threshold", e.target.value)}
                       className="w-full px-3 py-2 rounded-xl text-sm bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-rose-50/50 light_sakura:border-rose-200 light_sakura:text-slate-800"
                       placeholder="80"
                     />
@@ -232,27 +322,132 @@ export const Budget: React.FC = () => {
 
                 <div className="flex items-center gap-2.5">
                   <button
-                    onClick={() => handleSave(cat.key)}
-                    disabled={savingKey === cat.key}
+                    onClick={() => handleSave(catKey)}
+                    disabled={savingKey === catKey}
                     className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-50 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 cursor-pointer"
                   >
-                    {existing ? t("budget.edit_budget") : t("budget.set_budget")}
+                    {t("budget.edit_budget")}
                   </button>
-                  {existing && (
-                    <button
-                      onClick={() => setDeleteTarget(cat.key)}
-                      className="p-2.5 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer light_sakura:border-red-200 light_sakura:text-red-500"
-                      title={t("budget.delete")}
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  )}
+                  <button
+                    onClick={() => setDeleteTarget(catKey)}
+                    className="p-2.5 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer light_sakura:border-red-200 light_sakura:text-red-500"
+                    title={t("budget.delete")}
+                  >
+                    <Trash2 size={16} />
+                  </button>
                 </div>
               </motion.div>
             );
           })}
         </div>
       )}
+
+      {/* Modal: Tambah Anggaran — pilih kategori dari yang belum dianggarkan */}
+      <AnimatePresence>
+        {isAddOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={closeAddModal}
+              className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              transition={{ type: "spring", duration: 0.3 }}
+              className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-full p-2.5 bg-indigo-500/15 text-indigo-400 light_sakura:bg-indigo-50 light_sakura:text-indigo-600">
+                    <PiggyBank size={20} />
+                  </div>
+                  <h3 className="font-sans text-lg font-semibold tracking-tight">
+                    {t("budget.add_modal_title")}
+                  </h3>
+                </div>
+                <button
+                  onClick={closeAddModal}
+                  className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer light_sakura:hover:bg-rose-100"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[11px] font-medium text-slate-400 light_sakura:text-slate-500 block mb-1.5">
+                    {t("budget.select_category_label")}
+                  </label>
+                  <select
+                    value={addCategoryKey}
+                    onChange={(e) => setAddCategoryKey(e.target.value)}
+                    className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                  >
+                    <option value="" disabled>
+                      {t("budget.select_category_placeholder")}
+                    </option>
+                    {availableCategories.map((c) => (
+                      <option key={c.key} value={c.key}>
+                        {locale === "id" ? c.label_id || c.key : c.label_en || c.key}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
+                      {t("budget.monthly_limit_label")}
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={addLimit}
+                      onChange={(e) => setAddLimit(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl text-sm bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-rose-50/50 light_sakura:border-rose-200 light_sakura:text-slate-800"
+                      placeholder="500000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
+                      {t("budget.alert_threshold_label")}
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={addThreshold}
+                      onChange={(e) => setAddThreshold(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl text-sm bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-rose-50/50 light_sakura:border-rose-200 light_sakura:text-slate-800"
+                      placeholder="80"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-3 pt-2">
+                  <button
+                    onClick={closeAddModal}
+                    className="rounded-xl px-4 py-2 font-sans text-sm font-medium hover:bg-slate-800 hover:text-white cursor-pointer light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                  >
+                    {t("common.cancel")}
+                  </button>
+                  <button
+                    onClick={handleAddSave}
+                    disabled={isAdding}
+                    className="rounded-xl px-4.5 py-2 font-sans text-sm font-semibold text-white shadow-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                  >
+                    {t("budget.save")}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <Modal
         isOpen={!!deleteTarget}
