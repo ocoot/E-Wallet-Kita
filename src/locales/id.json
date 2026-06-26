@@ -819,6 +819,7 @@
   "bill_reminders": {
     "page_title": "Pengingat Tagihan",
     "page_subtitle": "Catat tagihan rutin dan dapatkan peringatan sebelum jatuh tempo.",
+    "connect_telegram_hint": "Hubungkan akun Telegram Anda di halaman Pengaturan untuk mengatur jam pengingat tagihan otomatis.",
     "add_button": "Tambah Tagihan",
     "add_title": "Tambah Tagihan Baru",
     "edit_title": "Ubah Detail Tagihan",

@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { dbService } from "../lib/db";
+import { supabase } from "../lib/supabase";
 import { useCategories } from "../hooks/useCategories";
 import { useBillReminders, BillReminderWithUrgency } from "../hooks/useBillReminders";
 import { Modal } from "../components/Modal";
@@ -18,10 +19,16 @@ import {
   AlertCircle,
   Clock,
   Edit2,
-  CalendarDays
+  CalendarDays,
+  Send,
+  Info
 } from "lucide-react";
 import { BillReminder } from "../types";
 import { useNavigate } from "react-router-dom";
+
+// Preferensi jam reminder tagihan Telegram (09/12/15/18/21), default 19
+// mengikuti fallback di RPC get_due_bill_reminders_for_notification.
+const REMINDER_HOUR_OPTIONS = [9, 12, 15, 18, 21] as const;
 
 // ──────────────────────────────────────────────
 // Tipe form state
@@ -78,6 +85,48 @@ export const BillReminders: React.FC = () => {
   // ── State mark paid ──
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [toggleConfirmTarget, setToggleConfirmTarget] = useState<BillReminderWithUrgency | null>(null);
+
+  // ── State jam pengingat tagihan (Telegram) ──
+  const [isTelegramLinked, setIsTelegramLinked] = useState(false);
+  const [billReminderHour, setBillReminderHour] = useState<number>(19);
+  const [isSavingReminderHour, setIsSavingReminderHour] = useState(false);
+
+  // Ambil status link Telegram & preferensi jam reminder milik user.
+  useEffect(() => {
+    if (!user) return;
+    const fetchReminderPref = async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('telegram_chat_id, bill_reminder_hour')
+        .eq('id', user.id)
+        .single();
+      if (!error && data) {
+        setIsTelegramLinked(!!data.telegram_chat_id);
+        if (data.bill_reminder_hour) setBillReminderHour(data.bill_reminder_hour);
+      }
+    };
+    fetchReminderPref();
+  }, [user]);
+
+  // Handler: simpan pilihan jam reminder tagihan ke kolom users.bill_reminder_hour.
+  const handleSelectReminderHour = async (hour: number) => {
+    if (!user || hour === billReminderHour || isSavingReminderHour) return;
+    setIsSavingReminderHour(true);
+    audioFeedback.playClick();
+    const prevHour = billReminderHour;
+    setBillReminderHour(hour); // optimistic
+    const { error } = await supabase
+      .from('users')
+      .update({ bill_reminder_hour: hour })
+      .eq('id', user.id);
+    if (error) {
+      setBillReminderHour(prevHour); // rollback
+      showToast(t("settings.toast_reminder_hour_failed"), "error");
+    } else {
+      showToast(t("settings.toast_reminder_hour_saved", { time: `${String(hour).padStart(2, "0")}:00` }), "success");
+    }
+    setIsSavingReminderHour(false);
+  };
 
   // Kategori yang relevan (expense & both)
   const expenseCategories = categories.filter(
@@ -324,6 +373,48 @@ export const BillReminders: React.FC = () => {
           {t("bill_reminders.add_button")}
         </button>
       </div>
+
+      {/* Preferensi Jam Pengingat Tagihan (Telegram) */}
+      {isTelegramLinked ? (
+        <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 space-y-3">
+          <h4 className="font-sans font-bold text-[10px] text-gray-400 light_sakura:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+            <Send size={12} className="text-indigo-400 -translate-x-0.5 rotate-45" />
+            <span>{t("settings.reminder_hour_title")}</span>
+          </h4>
+          <p className="font-sans text-[11px] text-gray-400 light_sakura:text-slate-600">
+            {t("settings.reminder_hour_desc")}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {REMINDER_HOUR_OPTIONS.map((hour) => {
+              const isActive = billReminderHour === hour;
+              return (
+                <motion.button
+                  key={hour}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  type="button"
+                  disabled={isSavingReminderHour}
+                  onClick={() => handleSelectReminderHour(hour)}
+                  className={`cursor-pointer px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                    isActive
+                      ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 light_sakura:bg-rose-500"
+                      : "bg-slate-800/60 text-gray-400 hover:bg-slate-700/60 light_sakura:bg-rose-50/60 light_sakura:text-slate-500 light_sakura:hover:bg-rose-100/60"
+                  }`}
+                >
+                  {String(hour).padStart(2, "0")}.00
+                </motion.button>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-start gap-2.5 p-4 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50">
+          <Info size={14} className="text-indigo-400 shrink-0 mt-0.5" />
+          <p className="font-sans text-[11px] text-gray-400 light_sakura:text-slate-600">
+            {t("bill_reminders.connect_telegram_hint")}
+          </p>
+        </div>
+      )}
 
       {/* Daftar tagihan */}
       {loading ? (

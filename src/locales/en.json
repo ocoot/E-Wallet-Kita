@@ -819,6 +819,7 @@
   "bill_reminders": {
     "page_title": "Bill Reminders",
     "page_subtitle": "Track recurring bills and get notified before they're due.",
+    "connect_telegram_hint": "Connect your Telegram account on the Settings page to set an automatic bill reminder time.",
     "add_button": "Add Bill",
     "add_title": "Add New Bill",
     "edit_title": "Edit Bill Details",
