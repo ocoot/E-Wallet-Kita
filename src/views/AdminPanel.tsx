@@ -471,12 +471,12 @@ export const AdminPanel: React.FC = () => {
       <div className="bg-slate-900 light_sakura:bg-white p-4 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
         <div className="flex gap-1 overflow-x-auto">
           {([
-            { key: "users",       label: locale === "id" ? "👥 Manajemen User" : "👥 Manage Users" },
-            { key: "premium",     label: locale === "id" ? "💳 Monitor Premium" : "💳 Premium Monitor" },
-            { key: "voucher",     label: locale === "id" ? "🎟️ Voucher" : "🎟️ Vouchers" },
-            { key: "categories",  label: locale === "id" ? "🏷️ Kategori" : "🏷️ Categories" },
-            { key: "broadcast",   label: locale === "id" ? "📢 Broadcast" : "📢 Broadcast Notice" },
-            { key: "ai_monitor",  label: locale === "id" ? "🤖 Monitor AI" : "🤖 AI Monitor" },
+            { key: "users",       label: t("admin.tab_users") },
+            { key: "premium",     label: t("admin.tab_premium") },
+            { key: "voucher",     label: t("admin.tab_voucher") },
+            { key: "categories",  label: t("admin.tab_categories") },
+            { key: "broadcast",   label: t("admin.tab_broadcast") },
+            { key: "ai_monitor",  label: t("admin.tab_ai_monitor") },
             { key: "maintenance", label: t("admin.tab_maintenance") },
           ] as { key: AdminTab; label: string }[]).map(tab => (
             <button
@@ -597,7 +597,7 @@ export const AdminPanel: React.FC = () => {
           {selectedIds.size > 0 && (
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-6 py-4 rounded-3xl border border-teal-500/20 bg-teal-500/5 light_sakura:bg-rose-50 light_sakura:border-rose-200">
               <span className="text-xs font-bold text-teal-400 light_sakura:text-rose-600">
-                {selectedIds.size} {locale === "id" ? "pengguna dipilih" : "users selected"}
+                {t("admin.users_selected").replace("{count}", selectedIds.size.toString())}
               </span>
               <div className="flex flex-wrap items-center gap-2">
                 {[
@@ -619,7 +619,7 @@ export const AdminPanel: React.FC = () => {
                   onClick={() => setSelectedIds(new Set())}
                   className="px-3 py-1.5 text-[10px] font-black uppercase rounded-xl border border-slate-800 text-slate-500 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200"
                 >
-                  {locale === "id" ? "Batal Pilih" : "Clear Selection"}
+                  {t("admin.clear_selection")}
                 </button>
               </div>
             </div>
@@ -812,7 +812,7 @@ export const AdminPanel: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">
             {/* Page Size Selector */}
             <div className="flex items-center gap-2">
-              <span>{locale === "id" ? "Baris per halaman:" : "Rows per page:"}</span>
+              <span>{t("admin.rows_per_page")}</span>
               <select
                 value={pageSize}
                 onChange={(e) => {
@@ -826,7 +826,7 @@ export const AdminPanel: React.FC = () => {
                 <option value={10}>10</option>
                 <option value={15}>15</option>
                 <option value={20}>20</option>
-                <option value="all">{locale === "id" ? "Semua" : "All"}</option>
+                <option value="all">{t("common.all")}</option>
               </select>
             </div>
 
@@ -868,7 +868,7 @@ export const AdminPanel: React.FC = () => {
               </div>
             ) : (
               <div className="text-slate-500">
-                {locale === "id" ? `Menampilkan semua ${totalUsers} pengguna` : `Showing all ${totalUsers} users`}
+                {t("admin.showing_all_users").replace("{count}", totalUsers.toString())}
               </div>
             )}
           </div>
@@ -899,8 +899,8 @@ export const AdminPanel: React.FC = () => {
         title={confirmModal.title}
         description={confirmModal.description}
         type={confirmModal.type}
-        confirmLabel={locale === "id" ? "Lanjutkan" : "Proceed"}
-        cancelLabel={locale === "id" ? "Batal" : "Cancel"}
+        confirmLabel={t("admin.proceed")}
+        cancelLabel={t("admin.cancel")}
         onConfirm={async () => {
           setConfirmModal(prev => ({ ...prev, isOpen: false }));
           await confirmModal.action();

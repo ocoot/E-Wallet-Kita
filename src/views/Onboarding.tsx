@@ -73,7 +73,7 @@ export const Onboarding: React.FC = () => {
 
   const handleComplete = () => {
     localStorage.setItem("ewallet_onboarding_completed", "true");
-    showToast(locale === "id" ? "Memulai perjalanan keuangan Anda! 🚀" : "Starting your financial journey! 🚀", "success");
+    showToast(t("onboarding.start_toast"), "success");
     navigate("/dashboard");
   };
 
@@ -118,7 +118,7 @@ export const Onboarding: React.FC = () => {
     },
     {
       id: "mock-4",
-      note: locale === "id" ? "Beli bensin motor" : "Motorcycle gasoline fuel",
+      note: t("onboarding.history_mock_note_4"),
       category: "transport",
       type: "expense" as const,
       amount: 20000,
@@ -265,7 +265,7 @@ export const Onboarding: React.FC = () => {
                       </label>
                       <input
                         type="text"
-                        placeholder={locale === "id" ? "Contoh: Beli makan malam" : "Example: Buy dinner"}
+                        placeholder={t("onboarding.practice_note_placeholder")}
                         value={practiceNote}
                         onChange={(e) => setPracticeNote(e.target.value)}
                         disabled={hasPracticedCatat}
@@ -339,7 +339,7 @@ export const Onboarding: React.FC = () => {
                       type="button"
                       onClick={() => {
                         playSuccess();
-                        showToast(locale === "id" ? "Laporan PDF simulasi berhasil diekspor!" : "Simulated PDF report exported successfully!", "success");
+                        showToast(t("onboarding.simulated_export_success"), "success");
                       }}
                       className="self-start sm:self-auto py-1 px-3 rounded-lg border border-slate-800 hover:border-slate-700 text-xs text-slate-300 flex items-center gap-1.5 light_sakura:border-rose-200 light_sakura:text-rose-600 light_sakura:hover:bg-rose-50 transition-colors"
                     >

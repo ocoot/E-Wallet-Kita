@@ -55,9 +55,7 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
                 if (isGuest) {
                   audioFeedback.playDullPluck();
                   showToast(
-                    locale === "id"
-                      ? "Fitur Ekspor PDF adalah fitur premium. Silakan masuk atau daftar akun terlebih dahulu untuk menggunakannya."
-                      : "PDF Export is a premium feature. Please sign in or register an account to use it.",
+                    t("history.locked_export_guest"),
                     "error"
                   );
                 } else {

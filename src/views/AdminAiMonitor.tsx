@@ -348,7 +348,7 @@ export const AdminAiMonitor: React.FC = () => {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-slate-800 light_sakura:border-slate-100 font-sans text-xs text-slate-400 bg-slate-900/50 light_sakura:bg-slate-50/50">
                 {/* Page Size Selector */}
                 <div className="flex items-center gap-2">
-                  <span>{locale === "id" ? "Baris per halaman:" : "Rows per page:"}</span>
+                  <span>{t("admin.rows_per_page")}</span>
                   <select
                     value={pageSize}
                     onChange={(e) => {
@@ -362,7 +362,7 @@ export const AdminAiMonitor: React.FC = () => {
                     <option value={10}>10</option>
                     <option value={15}>15</option>
                     <option value={20}>20</option>
-                    <option value="all">{locale === "id" ? "Semua" : "All"}</option>
+                    <option value="all">{t("common.all")}</option>
                   </select>
                 </div>
 
@@ -376,7 +376,7 @@ export const AdminAiMonitor: React.FC = () => {
                       <button
                         disabled={page === 0}
                         onClick={() => setPage(p => p - 1)}
-                        className="p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                        className="p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-665 hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
                       >
                         <ChevronLeft size={14} />
                       </button>
@@ -384,7 +384,7 @@ export const AdminAiMonitor: React.FC = () => {
                       <button
                         disabled={(page + 1) * pageSize >= byKey.length}
                         onClick={() => setPage(p => p + 1)}
-                        className="p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                        className="p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-665 hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
                       >
                         <ChevronRight size={14} />
                       </button>
@@ -392,7 +392,7 @@ export const AdminAiMonitor: React.FC = () => {
                   </div>
                 ) : (
                   <div className="text-slate-500 text-xs">
-                    {locale === "id" ? `Menampilkan semua ${byKey.length} kunci` : `Showing all ${byKey.length} keys`}
+                    {t("admin.showing_all_keys").replace("{count}", byKey.length.toString())}
                   </div>
                 )}
               </div>

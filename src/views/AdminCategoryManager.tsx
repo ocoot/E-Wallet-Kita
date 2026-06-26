@@ -335,7 +335,7 @@ export const AdminCategoryManager: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">
           {/* Page Size Selector */}
           <div className="flex items-center gap-2">
-            <span>{locale === "id" ? "Baris per halaman:" : "Rows per page:"}</span>
+            <span>{t("admin.rows_per_page")}</span>
             <select
               value={pageSize}
               onChange={(e) => {
@@ -349,7 +349,7 @@ export const AdminCategoryManager: React.FC = () => {
               <option value={10}>10</option>
               <option value={15}>15</option>
               <option value={20}>20</option>
-              <option value="all">{locale === "id" ? "Semua" : "All"}</option>
+              <option value="all">{t("common.all")}</option>
             </select>
           </div>
 
@@ -363,7 +363,7 @@ export const AdminCategoryManager: React.FC = () => {
                 <button
                   disabled={page === 0}
                   onClick={() => setPage(p => p - 1)}
-                  className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                  className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-665 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
                 >
                   <ChevronLeft size={14} />
                 </button>
@@ -371,7 +371,7 @@ export const AdminCategoryManager: React.FC = () => {
                 <button
                   disabled={(page + 1) * pageSize >= categories.length}
                   onClick={() => setPage(p => p + 1)}
-                  className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                  className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-665 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
                 >
                   <ChevronRight size={14} />
                 </button>
@@ -379,7 +379,7 @@ export const AdminCategoryManager: React.FC = () => {
             </div>
           ) : (
             <div className="text-slate-500 text-xs">
-              {locale === "id" ? `Menampilkan semua ${categories.length} kategori` : `Showing all ${categories.length} categories`}
+              {t("admin.showing_all_categories").replace("{count}", categories.length.toString())}
             </div>
           )}
         </div>

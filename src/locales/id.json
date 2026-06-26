@@ -12,7 +12,8 @@
     "logout": "Keluar Akun",
     "admin_panel": "Admin Panel",
     "budget": "Anggaran",
-    "bill_reminders": "Tagihan"
+    "bill_reminders": "Tagihan",
+    "onboarding": "Panduan"
   },
   "auth": {
     "login_title": "Masuk Akun",
@@ -155,7 +156,9 @@
     "export_menu_label": "Ekspor PDF",
     "search_placeholder": "Ketik kata kunci deskripsi transaksi...",
     "ledger_sync_title": "Sinkronisasi Buku Kas",
-    "ledger_sync_desc": "Menghapus catatan kas dan memperbarui saldo utama dompet..."
+    "ledger_sync_desc": "Menghapus catatan kas dan memperbarui saldo utama dompet...",
+    "locked_export_guest": "Fitur Ekspor PDF adalah fitur premium. Silakan masuk atau daftar akun terlebih dahulu untuk menggunakannya.",
+    "locked_export_user": "Fitur Ekspor PDF Lengkap adalah fitur premium. Hubungkan Telegram dan aktifkan Premium Lifetime untuk mencetak berkas multi-bulan secara bebas!"
   },
   "categories": {
     "salary": "Gaji Utama",
@@ -211,7 +214,16 @@
     "diagnostics_desc": "Verifikasi akurasi regulasi parser singkatan nominal secara lokal.",
     "btn_run_tests": "Jalankan Tes Parser",
     "test_input": "Input Teks",
-    "test_output": "Jumlah Dolar/Rupiah Terdeteksi"
+    "test_output": "Jumlah Dolar/Rupiah Terdeteksi",
+    "pwa_section": "Instalasi Aplikasi PWA",
+    "pwa_desc": "Instal E-Wallet Kita di layar utama HP atau komputer Anda untuk akses super cepat seperti aplikasi native.",
+    "pwa_installed": "Aplikasi telah terinstal",
+    "pwa_btn_install": "Instal Aplikasi Web (PWA)",
+    "pwa_not_supported": "PWA tidak didukung atau sudah terinstal.",
+    "toast_unlinking_telegram": "Memutuskan hubungan Telegram...",
+    "premium_locked_title": "Fitur Khusus Premium",
+    "premium_locked_guest_desc": "Silakan daftar atau masuk akun terlebih dahulu untuk menggunakan Telegram bot pencatatan instan.",
+    "premium_locked_user_desc": "Aktifkan Premium untuk menghubungkan Telegram Bot dan melakukan pencatatan instan lewat chat atau foto struk!"
   },
   "common": {
     "active": "Aktif",
@@ -548,10 +560,10 @@
     "telegram_chat_id_label": "Telegram Chat ID",
     "not_connected": "Belum terhubung",
     "loading_user_detail": "Memuat data pengguna...",
-    "tab_users": "Manajemen User",
-    "tab_premium": "Monitor Premium",
-    "tab_categories": "Kategori",
-    "tab_broadcast": "Broadcast",
+    "tab_users": "👥 Manajemen User",
+    "tab_premium": "💳 Monitor Premium",
+    "tab_categories": "🏷️ Kategori",
+    "tab_broadcast": "📢 Broadcast",
     "export_csv": "Export CSV",
     "bulk_grant_premium": "Grant Premium",
     "bulk_revoke_premium": "Revoke Premium",
@@ -617,7 +629,19 @@
       "receipt_scan": "Pindai Struk (AI)",
       "telegram_bot": "Bot Telegram",
       "budget": "Anggaran/Budget"
-    }
+    },
+    "tab_voucher": "🎟️ Voucher",
+    "tab_ai_monitor": "🤖 Monitor AI",
+    "users_selected": "{count} pengguna dipilih",
+    "clear_selection": "Batal Pilih",
+    "rows_per_page": "Baris per halaman:",
+    "showing_all_users": "Menampilkan semua {count} pengguna",
+    "showing_all_categories": "Menampilkan semua {count} kategori",
+    "showing_all_keys": "Menampilkan semua {count} kunci",
+    "showing_all_transactions": "Menampilkan semua {count} transaksi",
+    "showing_all_vouchers": "Menampilkan semua {count} voucher",
+    "proceed": "Lanjutkan",
+    "cancel": "Batal"
   },
   "ai_monitor": {
     "title": "Monitor Penggunaan AI",
@@ -745,7 +769,11 @@
     "dashboard_banner_title": "Baru di E-Wallet Kita? 👋",
     "dashboard_banner_desc": "Kami menyiapkan panduan interaktif cepat (1 menit) untuk mengenalkan fitur Catat Mandiri dan Riwayat Transaksi Anda.",
     "dashboard_banner_btn_start": "Mulai Panduan",
-    "dashboard_banner_btn_dismiss": "Jangan Tampilkan Lagi"
+    "dashboard_banner_btn_dismiss": "Jangan Tampilkan Lagi",
+    "start_toast": "Memulai perjalanan keuangan Anda! 🚀",
+    "history_mock_note_4": "Beli bensin motor",
+    "practice_note_placeholder": "Contoh: Beli makan malam",
+    "simulated_export_success": "Laporan PDF simulasi berhasil diekspor!"
   },
   "budget": {
     "page_title": "Anggaran per Kategori",

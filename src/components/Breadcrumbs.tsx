@@ -59,7 +59,7 @@ export const Breadcrumbs: React.FC = () => {
         });
       } else if (part === "onboarding") {
         list.push({
-          label: locale === "id" ? "Panduan" : "Guide",
+          label: t("nav.onboarding"),
           path: "/onboarding",
           icon: <BookOpen size={14} />
         });

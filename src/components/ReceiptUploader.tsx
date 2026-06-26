@@ -365,7 +365,6 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
         onClose={() => setIsPremiumOpen(false)}
         onPremiumActivated={() => {
           refreshPremium();
-          setIsPremiumOpen(false);
         }}
       />
       </>

@@ -541,16 +541,12 @@ export const Settings: React.FC<SettingsProps> = ({
                 </div>
                 <div className="space-y-1">
                   <h4 className="font-sans font-bold text-xs text-white light_sakura:text-slate-850">
-                    {locale === "id" ? "Fitur Khusus Premium" : "Premium Exclusive Feature"}
+                    {t("settings.premium_locked_title")}
                   </h4>
                   <p className="font-sans text-[11px] text-slate-400 light_sakura:text-slate-600 max-w-sm leading-relaxed">
                     {isGuest 
-                      ? (locale === "id" 
-                          ? "Silakan daftar atau masuk akun terlebih dahulu untuk menggunakan Telegram bot pencatatan instan." 
-                          : "Please register or sign in first to use the instant-logging Telegram bot.")
-                      : (locale === "id" 
-                          ? "Aktifkan Premium untuk menghubungkan Telegram Bot dan melakukan pencatatan instan lewat chat atau foto struk!" 
-                          : "Activate Premium to connect the Telegram Bot and log transactions instantly via chat or receipt photos!")
+                      ? t("settings.premium_locked_guest_desc")
+                      : t("settings.premium_locked_user_desc")
                     }
                   </p>
                 </div>
