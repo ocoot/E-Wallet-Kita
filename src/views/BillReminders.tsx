@@ -47,7 +47,7 @@ interface BillFormState {
 
 const emptyForm = (): BillFormState => ({
   name: "",
-  category_key: "other_expense",
+  category_key: "other",
   amount: "",
   recurrence_type: "monthly",
   due_day: "1",

@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS public.bill_reminders (
     id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id          UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     name             TEXT NOT NULL,
-    category_key     TEXT NOT NULL DEFAULT 'other_expense',
+    category_key     TEXT NOT NULL DEFAULT 'other',
     amount           NUMERIC CHECK (amount IS NULL OR amount > 0),
     recurrence_type  TEXT NOT NULL DEFAULT 'monthly'
                        CHECK (recurrence_type IN ('monthly', 'yearly', 'one_time')),
