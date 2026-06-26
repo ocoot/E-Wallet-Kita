@@ -586,11 +586,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     </div>
                   </div>
                   
-                  <div className="self-stretch sm:self-auto flex items-center justify-center sm:justify-start">
-                    <span className="px-3 py-1 bg-slate-950 light_sakura:bg-rose-50/50 rounded-xl font-mono text-xs font-semibold text-teal-400 light_sakura:text-rose-500 border border-slate-800 light_sakura:border-rose-100">
-                      ID: {telegramChatId}
-                    </span>
-                  </div>
+
                 </div>
 
                 {/* Features Highlight */}
@@ -600,7 +596,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     <span>{t("settings.telegram_features_title")}</span>
                   </h4>
                   <ul className="space-y-2">
-                    {[1, 2, 3].map(i => (
+                    {[1, 2, 3, 4].map(i => (
                       <li key={i} className="flex items-start gap-2 text-[11px] text-gray-400 light_sakura:text-slate-600">
                         <CheckCircle size={12} className="text-emerald-500 shrink-0 mt-0.5" />
                         <span>{t(`settings.telegram_feature_${i}`)}</span>

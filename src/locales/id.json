@@ -197,6 +197,7 @@
     "telegram_feature_1": "Catat transaksi instan via chat",
     "telegram_feature_2": "Cek saldo & ringkasan bulanan",
     "telegram_feature_3": "Lihat riwayat transaksi terakhir",
+    "telegram_feature_4": "Unduh laporan bulanan Anda",
     "telegram_instructions": "Ikuti langkah berikut untuk menghubungkan akun Anda:",
     "btn_generate_code": "Buat Kode Integrasi",
     "btn_copy_link": "Salin Perintah",

@@ -197,6 +197,7 @@
     "telegram_feature_1": "Instantly record transactions via chat",
     "telegram_feature_2": "Check balance & monthly summary",
     "telegram_feature_3": "View recent transaction history",
+    "telegram_feature_4": "Download your monthly report",
     "telegram_instructions": "Follow these steps to link your account:",
     "btn_generate_code": "Generate Linking Key",
     "btn_copy_link": "Copy Command",
