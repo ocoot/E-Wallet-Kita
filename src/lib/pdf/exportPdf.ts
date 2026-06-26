@@ -1,8 +1,8 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Transaction, Category } from "../../types";
-import idLocales from "../../locales/id.json";
-import enLocales from "../../locales/en.json";
+import idLocales from "../../locales/id.json" assert { type: "json" };
+import enLocales from "../../locales/en.json" assert { type: "json" };
 import {
   drawHeader,
   drawFooter,
