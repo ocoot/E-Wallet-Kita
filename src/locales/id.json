@@ -12,8 +12,7 @@
     "logout": "Keluar Akun",
     "admin_panel": "Admin Panel",
     "budget": "Anggaran",
-    "bill_reminders": "Tagihan",
-    "onboarding": "Panduan"
+    "bill_reminders": "Tagihan"
   },
   "auth": {
     "login_title": "Masuk Akun",
@@ -156,9 +155,7 @@
     "export_menu_label": "Ekspor PDF",
     "search_placeholder": "Ketik kata kunci deskripsi transaksi...",
     "ledger_sync_title": "Sinkronisasi Buku Kas",
-    "ledger_sync_desc": "Menghapus catatan kas dan memperbarui saldo utama dompet...",
-    "locked_export_guest": "Fitur Ekspor PDF adalah fitur premium. Silakan masuk atau daftar akun terlebih dahulu untuk menggunakannya.",
-    "locked_export_user": "Fitur Ekspor PDF Lengkap adalah fitur premium. Hubungkan Telegram dan aktifkan Premium Lifetime untuk mencetak berkas multi-bulan secara bebas!"
+    "ledger_sync_desc": "Menghapus catatan kas dan memperbarui saldo utama dompet..."
   },
   "categories": {
     "salary": "Gaji Utama",
@@ -214,16 +211,7 @@
     "diagnostics_desc": "Verifikasi akurasi regulasi parser singkatan nominal secara lokal.",
     "btn_run_tests": "Jalankan Tes Parser",
     "test_input": "Input Teks",
-    "test_output": "Jumlah Dolar/Rupiah Terdeteksi",
-    "pwa_section": "Instalasi Aplikasi PWA",
-    "pwa_desc": "Instal E-Wallet Kita di layar utama HP atau komputer Anda untuk akses super cepat seperti aplikasi native.",
-    "pwa_installed": "Aplikasi telah terinstal",
-    "pwa_btn_install": "Instal Aplikasi Web (PWA)",
-    "pwa_not_supported": "PWA tidak didukung atau sudah terinstal.",
-    "toast_unlinking_telegram": "Memutuskan hubungan Telegram...",
-    "premium_locked_title": "Fitur Khusus Premium",
-    "premium_locked_guest_desc": "Silakan daftar atau masuk akun terlebih dahulu untuk menggunakan Telegram bot pencatatan instan.",
-    "premium_locked_user_desc": "Aktifkan Premium untuk menghubungkan Telegram Bot dan melakukan pencatatan instan lewat chat atau foto struk!"
+    "test_output": "Jumlah Dolar/Rupiah Terdeteksi"
   },
   "common": {
     "active": "Aktif",
@@ -245,9 +233,7 @@
     "dark": "GELAP",
     "light": "TERANG",
     "save": "Simpan",
-    "edit": "Edit",
-    "sending": "Mengirim...",
-    "generating_pdf": "Menyiapkan PDF..."
+    "edit": "Edit"
   },
   "confirm": {
     "logout_title": "Keluar Sesi",
@@ -357,14 +343,10 @@
     "expires_in": "Berlaku selama {time}",
     "waiting_payment": "Menunggu pembayaran...",
     "sandbox_notice": "Mode sandbox (preview AI Studio): pembayaran disimulasikan otomatis.",
-    "dummy_qris_notice": "Mode uji coba (diaktifkan admin): pembayaran ini disimulasikan otomatis, tidak ada uang sungguhan yang berpindah.",
     "success_title": "Pembayaran Berhasil!",
     "success_desc": "Premium Lifetime kamu sudah aktif. Terima kasih!",
     "success_toast": "🎉 Premium berhasil diaktifkan!",
     "download_receipt": "Unduh Struk",
-    "email_receipt": "Kirim ke E-mail",
-    "receipt_email_success": "Struk berhasil dikirim ke email.",
-    "receipt_email_failed": "Gagal mengirim email.",
     "skip_receipt": "Tidak, Terima Kasih",
     "receipt_downloaded": "Struk pembelian berhasil diunduh",
     "expired_title": "Waktu Pembayaran Habis",
@@ -508,20 +490,6 @@
     "sandbox_badge": "Sandbox",
     "live_badge": "Live",
     "no_transactions_found": "Tidak ada catatan transaksi premium.",
-    "dummy_qris_title": "Mode Dummy QRIS",
-    "dummy_qris_desc": "Simulasikan pembayaran QRIS untuk menguji alur pembelian premium dari awal sampai sukses, tanpa memanggil gateway KlikQRIS asli atau memakai uang sungguhan.",
-    "dummy_qris_status_on": "Aktif — pembelian premium memakai QR palsu & otomatis sukses",
-    "dummy_qris_status_off": "Nonaktif — pembelian premium memakai KlikQRIS asli",
-    "dummy_qris_sandbox_count": "{count} transaksi dummy tercatat sepanjang waktu",
-    "dummy_qris_confirm_enable_title": "Aktifkan Mode Dummy QRIS?",
-    "dummy_qris_confirm_enable_desc": "Setelah diaktifkan, SEMUA pembelian premium baru (oleh siapa pun yang membuka aplikasi) akan memakai QR palsu dan otomatis ditandai sukses tanpa pembayaran nyata. Pastikan menonaktifkannya kembali sebelum fitur premium diperkenalkan ke publik.",
-    "dummy_qris_confirm_disable_title": "Nonaktifkan Mode Dummy QRIS?",
-    "dummy_qris_confirm_disable_desc": "Pembelian premium baru akan kembali memakai gateway KlikQRIS asli dan pembayaran sungguhan.",
-    "dummy_qris_enable_confirm_btn": "Ya, Aktifkan",
-    "dummy_qris_disable_confirm_btn": "Ya, Nonaktifkan",
-    "dummy_qris_active_warning": "⚠️ Mode Dummy QRIS sedang AKTIF. Semua pembelian premium saat ini disimulasikan dan tidak memproses uang sungguhan.",
-    "dummy_qris_saving": "Memperbarui pengaturan Dummy QRIS...",
-    "dummy_qris_update_success": "Pengaturan Dummy QRIS berhasil diperbarui.",
     "category_manager_title": "Manajemen Kategori",
     "category_manager_desc": "Kelola kategori keuangan secara reaktif. Menonaktifkan kategori tidak menghapus riwayat yang sudah ada.",
     "add_category": "Tambah Kategori",
@@ -565,10 +533,10 @@
     "telegram_chat_id_label": "Telegram Chat ID",
     "not_connected": "Belum terhubung",
     "loading_user_detail": "Memuat data pengguna...",
-    "tab_users": "👥 Manajemen User",
-    "tab_premium": "💳 Monitor Premium",
-    "tab_categories": "🏷️ Kategori",
-    "tab_broadcast": "📢 Broadcast",
+    "tab_users": "Manajemen User",
+    "tab_premium": "Monitor Premium",
+    "tab_categories": "Kategori",
+    "tab_broadcast": "Broadcast",
     "export_csv": "Export CSV",
     "bulk_grant_premium": "Grant Premium",
     "bulk_revoke_premium": "Revoke Premium",
@@ -634,19 +602,7 @@
       "receipt_scan": "Pindai Struk (AI)",
       "telegram_bot": "Bot Telegram",
       "budget": "Anggaran/Budget"
-    },
-    "tab_voucher": "🎟️ Voucher",
-    "tab_ai_monitor": "🤖 Monitor AI",
-    "users_selected": "{count} pengguna dipilih",
-    "clear_selection": "Batal Pilih",
-    "rows_per_page": "Baris per halaman:",
-    "showing_all_users": "Menampilkan semua {count} pengguna",
-    "showing_all_categories": "Menampilkan semua {count} kategori",
-    "showing_all_keys": "Menampilkan semua {count} kunci",
-    "showing_all_transactions": "Menampilkan semua {count} transaksi",
-    "showing_all_vouchers": "Menampilkan semua {count} voucher",
-    "proceed": "Lanjutkan",
-    "cancel": "Batal"
+    }
   },
   "ai_monitor": {
     "title": "Monitor Penggunaan AI",
@@ -774,11 +730,7 @@
     "dashboard_banner_title": "Baru di E-Wallet Kita? 👋",
     "dashboard_banner_desc": "Kami menyiapkan panduan interaktif cepat (1 menit) untuk mengenalkan fitur Catat Mandiri dan Riwayat Transaksi Anda.",
     "dashboard_banner_btn_start": "Mulai Panduan",
-    "dashboard_banner_btn_dismiss": "Jangan Tampilkan Lagi",
-    "start_toast": "Memulai perjalanan keuangan Anda! 🚀",
-    "history_mock_note_4": "Beli bensin motor",
-    "practice_note_placeholder": "Contoh: Beli makan malam",
-    "simulated_export_success": "Laporan PDF simulasi berhasil diekspor!"
+    "dashboard_banner_btn_dismiss": "Jangan Tampilkan Lagi"
   },
   "budget": {
     "page_title": "Anggaran per Kategori",
@@ -844,15 +796,8 @@
     "status_paid": "Lunas",
     "mark_paid": "Tandai Lunas",
     "mark_unpaid": "Batalkan Lunas",
-    "marked_paid": "Tagihan ditandai lunas, transaksi pengeluaran otomatis tercatat.",
-    "marked_paid_needs_amount": "Tagihan ditandai lunas. Silakan isi nominal transaksinya.",
-    "marked_unpaid": "Status lunas dibatalkan, transaksi terkait ikut dihapus.",
-    "mark_confirm_title": "Tandai Tagihan Lunas?",
-    "mark_confirm_desc_with_amount": "Tagihan '{name}' akan ditandai lunas. Saldo kamu akan berkurang {amount} dan tercatat otomatis di riwayat transaksi.",
-    "mark_confirm_desc_no_amount": "Tagihan '{name}' akan ditandai lunas. Karena nominalnya belum diisi, kamu akan diarahkan untuk mengisi transaksinya secara manual.",
-    "mark_confirm_button": "Ya, Tandai Lunas",
-    "unmark_confirm_title": "Batalkan Status Lunas?",
-    "unmark_confirm_desc": "Status lunas tagihan '{name}' akan dibatalkan. Jika ada transaksi yang otomatis tercatat sebelumnya, transaksi itu akan ikut dihapus dan saldo kamu akan kembali bertambah.",
+    "marked_paid": "Tagihan ditandai lunas.",
+    "marked_unpaid": "Status lunas dibatalkan.",
     "save_success": "Tagihan berhasil disimpan.",
     "save_error": "Gagal menyimpan tagihan. Silakan coba lagi.",
     "delete_success": "Tagihan berhasil dihapus.",
@@ -864,6 +809,7 @@
     "invalid_due_day": "Tanggal jatuh tempo harus antara 1-31.",
     "invalid_due_date": "Tanggal jatuh tempo harus diisi.",
     "dashboard_alert_title": "Tagihan Mendatang",
-    "dashboard_alert_cta": "Lihat Semua"
+    "dashboard_alert_cta": "Lihat Semua",
+    "amount_required_to_pay": "Isi nominal tagihan terlebih dahulu sebelum bisa ditandai lunas, karena ini akan otomatis tercatat sebagai transaksi."
   }
 }
