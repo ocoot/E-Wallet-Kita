@@ -1,6 +1,8 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Transaction, Category } from "../../types";
+import idLocales from "../../locales/id.json";
+import enLocales from "../../locales/en.json";
 import {
   drawHeader,
   drawFooter,
@@ -24,6 +26,7 @@ interface ExportContext {
   categories: Category[];
   periodLabel: string;
   reportTitle: string;
+  summaryOnly?: boolean;
 }
 
 /** Resolve category label from DB categories, fallback to key if not found. */
@@ -51,7 +54,7 @@ const computeTotals = (transactions: Transaction[]) => {
 
 /** Renders the full PDF document (header/footer/watermark on every page + summary + table). */
 const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
-  const { t, userName, transactions, categories, periodLabel, reportTitle } = ctx;
+  const { t, userName, transactions, categories, periodLabel, reportTitle, summaryOnly } = ctx;
   // Determine locale from i18n: if t("transaction.income") returns "Pemasukan" → "id", else "en"
   const locale: "id" | "en" = t("transaction.income") === "Pemasukan" ? "id" : "en";
   const doc = new jsPDF({ unit: "pt", format: "a4" });
@@ -67,6 +70,84 @@ const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
     generatedAtLabel,
     docNumber,
   };
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  if (summaryOnly) {
+    drawHeader(doc, headerOpts);
+    
+    let sy = HEADER_HEIGHT;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(30, 41, 59); // Slate-800
+    doc.text(t("export.summary_title"), 40, sy);
+    sy += 16;
+
+    const cardData = [
+      {
+        label: t("export.total_income"),
+        value: formatIDR(totals.income),
+        fillColor: [236, 253, 245], // Emerald-50
+        borderColor: [34, 197, 94], // Emerald-500
+        labelColor: [6, 95, 70], // Emerald-800
+        valueColor: [4, 120, 87] // Emerald-700
+      },
+      {
+        label: t("export.total_expense"),
+        value: formatIDR(totals.expense),
+        fillColor: [254, 242, 242], // Red-50
+        borderColor: [239, 68, 68], // Red-500
+        labelColor: [153, 27, 27], // Red-800
+        valueColor: [185, 28, 28] // Red-700
+      },
+      {
+        label: t("export.net_balance"),
+        value: formatIDR(totals.net),
+        fillColor: totals.net >= 0 ? [239, 246, 255] : [254, 242, 242], // Blue-50 or Red-50
+        borderColor: totals.net >= 0 ? [59, 130, 246] : [239, 68, 68], // Blue-500 or Red-500
+        labelColor: totals.net >= 0 ? [30, 64, 175] : [153, 27, 27], // Blue-800 or Red-800
+        valueColor: totals.net >= 0 ? [29, 78, 216] : [185, 28, 28] // Blue-700 or Red-700
+      },
+      {
+        label: t("export.transaction_count"),
+        value: String(totals.count),
+        fillColor: [250, 245, 255], // Purple-50
+        borderColor: [168, 85, 247], // Purple-500
+        labelColor: [107, 33, 168], // Purple-800
+        valueColor: [126, 34, 206] // Purple-700
+      }
+    ];
+
+    const colGap = 8;
+    const cardW = (pageWidth - 80 - 3 * colGap) / 4;
+    const cardH = 54;
+
+    cardData.forEach((card, idx) => {
+      const x = 40 + idx * (cardW + colGap);
+      
+      // Draw Rounded Card Container
+      doc.setFillColor(card.fillColor[0], card.fillColor[1], card.fillColor[2]);
+      doc.setDrawColor(card.borderColor[0], card.borderColor[1], card.borderColor[2]);
+      doc.setLineWidth(1);
+      doc.roundedRect(x, sy, cardW, cardH, 6, 6, "FD");
+
+      // Draw Card Label
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(card.labelColor[0], card.labelColor[1], card.labelColor[2]);
+      doc.text(card.label, x + 10, sy + 18);
+
+      // Draw Card Value
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(card.valueColor[0], card.valueColor[1], card.valueColor[2]);
+      doc.text(card.value, x + 10, sy + 38);
+    });
+
+    drawFooter(doc, { t, pageLabelPrefix: "" });
+    finalizePageNumbers(doc, t);
+    return doc;
+  }
 
   // Page 1 starts further down to make room for the manually-drawn summary card.
   const firstPageStartY = HEADER_HEIGHT + SUMMARY_BLOCK_HEIGHT;
@@ -139,7 +220,6 @@ const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
 
   // Summary cards with semantical visual grouping and premium styling, drawn on page 1
   doc.setPage(1);
-  const pageWidth = doc.internal.pageSize.getWidth();
   let sy = HEADER_HEIGHT;
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
@@ -297,3 +377,62 @@ export const exportFullPdf = (params: {
   doc.save(filename);
   return filename;
 };
+
+/**
+ * Creates a standard PDF translator function for backend use,
+ * pulling translations from locales id/en JSON files.
+ */
+export function createPdfTranslator(lang: "id" | "en"): TFunc {
+  const locales = lang === "en" ? enLocales : idLocales;
+  return (key: string, replacements?: Record<string, string | number>) => {
+    const parts = key.split(".");
+    let current: any = locales;
+    for (const part of parts) {
+      if (current && typeof current === "object" && part in current) {
+        current = current[part];
+      } else {
+        return key;
+      }
+    }
+    if (typeof current !== "string") {
+      return key;
+    }
+    let result = current;
+    if (replacements) {
+      for (const [k, v] of Object.entries(replacements)) {
+        result = result.replace(`{${k}}`, String(v));
+      }
+    }
+    return result;
+  };
+}
+
+/**
+ * High-performance backend PDF generator returning a Uint8Array representation.
+ */
+export function generatePdf(params: {
+  t: TFunc;
+  userName: string;
+  transactions: Transaction[];
+  categories: Category[];
+  periodLabel: string;
+  reportTitle: string;
+  summaryOnly?: boolean;
+}): Uint8Array {
+  const docNumber = generateDocNumber();
+  const doc = renderDocument(
+    {
+      t: params.t,
+      userName: params.userName,
+      transactions: params.transactions,
+      categories: params.categories,
+      periodLabel: params.periodLabel,
+      reportTitle: params.reportTitle,
+      summaryOnly: params.summaryOnly,
+    },
+    docNumber
+  );
+  const arrayBuffer = doc.output("arraybuffer");
+  return new Uint8Array(arrayBuffer);
+}
+

@@ -87,3 +87,33 @@ export async function answerTelegramCallback(callbackQueryId: string, text?: str
     console.error(`❌ answerTelegramCallback ${callbackQueryId} failed after retries:`, err);
   }
 }
+
+export async function sendTelegramDocument(chatId: number, fileBuffer: Uint8Array, filename: string, caption?: string) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  if (!token) {
+    throw new Error("TELEGRAM_BOT_TOKEN is not configured");
+  }
+  
+  const formData = new FormData();
+  formData.append("chat_id", String(chatId));
+  
+  const blob = new Blob([fileBuffer], { type: "application/pdf" });
+  formData.append("document", blob, filename);
+  
+  if (caption) {
+    formData.append("caption", caption);
+    formData.append("parse_mode", "Markdown");
+  }
+  
+  await withRetry(async () => {
+    const response = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, {
+      method: "POST",
+      body: formData,
+    });
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Telegram API sendDocument ${response.status}: ${body}`);
+    }
+  });
+}
+

@@ -2,12 +2,13 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Type } from '@google/genai';
 import { parseAmountFromString } from '../src/lib/parserUtils.js';
+import { generatePdf, createPdfTranslator } from '../src/lib/pdf/exportPdf.js';
 import { parseReceipt } from './_lib/receipt-parser.js';
 import { createReceiptDraft, approveReceiptDraft, cancelReceiptDraft, getReceiptDraft, updateReceiptCategory } from './_lib/receipt-service.js';
 import { getMaintenanceStatus, isFeatureLocked, getMaintenanceMessage, MaintenanceStatus } from './_lib/maintenance.js';
 import { tr } from './_lib/botText.js';
 import { inferCategoryKey } from './_lib/categoryInference.js';
-import { sendTelegramMessage, editTelegramMessage, answerTelegramCallback } from './_lib/telegram.js';
+import { sendTelegramMessage, editTelegramMessage, answerTelegramCallback, sendTelegramDocument } from './_lib/telegram.js';
 
 type Lang = "id" | "en";
 
@@ -1144,6 +1145,194 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           }
         } catch (err: any) {
           console.error("❌ /riwayat error:", err);
+          await sendTelegramMessage(chatId, tr("riwayatError", lang));
+        }
+        res.status(200).json({ ok: true }); return;
+      }
+
+      // COMMAND: /pdf
+      if (text.startsWith("/pdf")) {
+        try {
+          const userCtx = await resolveUserContext(chatId);
+          if (!userCtx) {
+            await sendTelegramMessage(chatId, tr("riwayatNotLinked", lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
+          // Extract arguments after /pdf
+          const argsText = text.substring(4).trim();
+          
+          let summaryOnly = false;
+          let remainingArgs = argsText;
+
+          // Check if "ringkasan" is in the arguments (case-insensitive)
+          if (/\bringkasan\b/i.test(argsText)) {
+            summaryOnly = true;
+            // Remove "ringkasan" from remaining arguments
+            remainingArgs = argsText.replace(/\bringkasan\b/i, "").trim();
+          }
+
+          // Now determine date range
+          let startDate: Date;
+          let endDate: Date;
+          let periodLabel = "";
+          let reportTitle = "";
+
+          if (remainingArgs === "") {
+            // Default to current month: from 1st of current month to today
+            const now = new Date();
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            endDate = now;
+            
+            const monthNamesId = [
+              "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+              "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+            ];
+            const monthNamesEn = [
+              "January", "February", "March", "April", "May", "June",
+              "July", "August", "September", "October", "November", "December"
+            ];
+            const monthLabel = lang === "en" ? monthNamesEn[now.getMonth()] : monthNamesId[now.getMonth()];
+            periodLabel = `${monthLabel} ${now.getFullYear()}`;
+          } else if (/^\d{4}$/.test(remainingArgs)) {
+            // Specific month MMYY (e.g. 0126)
+            const month = parseInt(remainingArgs.substring(0, 2), 10);
+            const yearShort = parseInt(remainingArgs.substring(2, 4), 10);
+            
+            if (month < 1 || month > 12) {
+              await sendTelegramMessage(chatId, tr("pdfInvalidMonth", lang));
+              res.status(200).json({ ok: true }); return;
+            }
+            
+            const year = 2000 + yearShort;
+            startDate = new Date(year, month - 1, 1);
+            endDate = new Date(year, month, 0, 23, 59, 59, 999);
+            
+            const monthNamesId = [
+              "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+              "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+            ];
+            const monthNamesEn = [
+              "January", "February", "March", "April", "May", "June",
+              "July", "August", "September", "October", "November", "December"
+            ];
+            const monthLabel = lang === "en" ? monthNamesEn[month - 1] : monthNamesId[month - 1];
+            periodLabel = `${monthLabel} ${year}`;
+          } else if (/^\d{8}\s*-\s*\d{8}$/.test(remainingArgs)) {
+            // Specific range DDMMYYYY - DDMMYYYY
+            const parts = remainingArgs.split("-").map(p => p.trim());
+            const startStr = parts[0];
+            const endStr = parts[1];
+            
+            // Validate and parse start date
+            const startDay = parseInt(startStr.substring(0, 2), 10);
+            const startMonth = parseInt(startStr.substring(2, 4), 10);
+            const startYear = parseInt(startStr.substring(4, 8), 10);
+            
+            if (startMonth < 1 || startMonth > 12 || startDay < 1 || startDay > 31) {
+              await sendTelegramMessage(chatId, tr("pdfInvalidDate", lang, startStr));
+              res.status(200).json({ ok: true }); return;
+            }
+            
+            startDate = new Date(startYear, startMonth - 1, startDay);
+            if (startDate.getFullYear() !== startYear || startDate.getMonth() !== startMonth - 1 || startDate.getDate() !== startDay) {
+              await sendTelegramMessage(chatId, tr("pdfInvalidDate", lang, startStr));
+              res.status(200).json({ ok: true }); return;
+            }
+            
+            // Validate and parse end date
+            const endDay = parseInt(endStr.substring(0, 2), 10);
+            const endMonth = parseInt(endStr.substring(2, 4), 10);
+            const endYear = parseInt(endStr.substring(4, 8), 10);
+            
+            if (endMonth < 1 || endMonth > 12 || endDay < 1 || endDay > 31) {
+              await sendTelegramMessage(chatId, tr("pdfInvalidDate", lang, endStr));
+              res.status(200).json({ ok: true }); return;
+            }
+            
+            endDate = new Date(endYear, endMonth - 1, endDay, 23, 59, 59, 999);
+            if (endDate.getFullYear() !== endYear || endDate.getMonth() !== endMonth - 1 || endDate.getDate() !== endDay) {
+              await sendTelegramMessage(chatId, tr("pdfInvalidDate", lang, endStr));
+              res.status(200).json({ ok: true }); return;
+            }
+            
+            if (startDate > endDate) {
+              await sendTelegramMessage(chatId, tr("pdfRangeInvalid", lang));
+              res.status(200).json({ ok: true }); return;
+            }
+            
+            const toISODateStrLocal = (d: Date) => d.toISOString().split("T")[0];
+            periodLabel = `${toISODateStrLocal(startDate)} - ${toISODateStrLocal(endDate)}`;
+          } else {
+            // Unrecognized argument format (e.g. /pdf abc or /pdf 99999999)
+            await sendTelegramMessage(chatId, tr("pdfInvalidFormat", lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
+          // Let the user know we are generating the PDF
+          await sendTelegramMessage(chatId, tr("pdfGenerating", lang));
+
+          // Fetch transactions in date range
+          const toISODateStr = (d: Date) => d.toISOString().split("T")[0];
+          const { data: txs, error: txsErr } = await supabaseBackend
+            .from("transactions")
+            .select("id, type, amount, category, note, transaction_date, created_at")
+            .eq("user_id", userCtx.id)
+            .gte("transaction_date", toISODateStr(startDate))
+            .lte("transaction_date", toISODateStr(endDate))
+            .order("transaction_date", { ascending: true });
+
+          if (txsErr) throw txsErr;
+
+          if (!txs || txs.length === 0) {
+            await sendTelegramMessage(chatId, tr("pdfNoTransactions", lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
+          // Fetch category definitions
+          const categories = await getActiveCategories();
+
+          // Create translator helper
+          const pdfT = createPdfTranslator(lang);
+
+          // Map db objects to Transaction interface
+          const mappedTxs = txs.map(tx => ({
+            id: tx.id,
+            user_id: userCtx.id,
+            type: tx.type,
+            amount: tx.amount,
+            category: tx.category,
+            note: tx.note,
+            transaction_date: tx.transaction_date,
+            created_at: tx.created_at
+          }));
+
+          // Set report title based on translation and type
+          reportTitle = summaryOnly ? pdfT("export.summary_report_title") : pdfT("export.full_report_title");
+
+          // Generate PDF Uint8Array
+          const pdfBytes = generatePdf({
+            t: pdfT,
+            userName: userCtx.displayName || userCtx.email,
+            transactions: mappedTxs,
+            categories,
+            periodLabel,
+            reportTitle,
+            summaryOnly
+          });
+
+          // Set filename
+          const filePrefix = summaryOnly ? "Laporan_Ringkasan" : "Laporan";
+          const formattedPeriod = periodLabel.replace(/\s+/g, "_").replace(/-/g, "_");
+          const filename = `${filePrefix}_${formattedPeriod}.pdf`;
+
+          const caption = tr("pdfCaption", lang, periodLabel);
+
+          // Send document via sendTelegramDocument helper
+          await sendTelegramDocument(chatId, pdfBytes, filename, caption);
+
+        } catch (err: any) {
+          console.error("❌ /pdf error:", err);
           await sendTelegramMessage(chatId, tr("riwayatError", lang));
         }
         res.status(200).json({ ok: true }); return;

@@ -39,6 +39,7 @@ export const botText = {
       `3️⃣ *Daftar Perintah (Commands)*:\n` +
       `     • \`/saldo\` - Ringkasan saldo & perbandingan bulan ini vs bulan lalu.\n` +
       `     • \`/riwayat\` - Tampilkan 5 transaksi terakhir.\n` +
+      `     • \`/pdf\` - Ekspor laporan PDF (contoh: \`/pdf\`, \`/pdf ringkasan\`, \`/pdf 0126\`, \`/pdf 01062026 - 15062026\`).\n` +
       `     • \`/hapus\` - Batalkan & hapus transaksi terakhir.\n` +
       `     • \`/unlink\` - Memutuskan koneksi akun Telegram dari sistem.\n` +
       `     • \`/help\` - Membuka pesan bantuan ini.`,
@@ -57,9 +58,38 @@ export const botText = {
       `3️⃣ *Command List*:\n` +
       `     • \`/saldo\` - Balance summary & comparison vs last month.\n` +
       `     • \`/riwayat\` - Show last 5 transactions.\n` +
+      `     • \`/pdf\` - Export PDF report (e.g.: \`/pdf\`, \`/pdf ringkasan\`, \`/pdf 0126\`, \`/pdf 01062026 - 15062026\`).\n` +
       `     • \`/hapus\` - Undo & delete the last transaction.\n` +
       `     • \`/unlink\` - Disconnect your Telegram account from the system.\n` +
       `     • \`/help\` - Show this help message.`,
+  },
+  pdfGenerating: {
+    id: () => "🔄 _Sedang menyiapkan laporan PDF Anda..._",
+    en: () => "🔄 _Generating your PDF report..._",
+  },
+  pdfNoTransactions: {
+    id: () => "📭 Tidak ada transaksi pada periode ini untuk diekspor.",
+    en: () => "📭 No transactions found in this period to export.",
+  },
+  pdfInvalidFormat: {
+    id: () => "⚠️ *Format perintah /pdf salah.*\n\nContoh penggunaan:\n• \`/pdf\` - Laporan penuh bulan ini\n• \`/pdf ringkasan\` - Ringkasan saja bulan ini\n• \`/pdf 0126\` - Laporan penuh bulan Januari 2026\n• \`/pdf 0126 ringkasan\` - Ringkasan bulan Januari 2026\n• \`/pdf 01062026 - 15062026\` - Laporan tanggal tertentu\n• \`/pdf 01062026 - 15062026 ringkasan\` - Ringkasan tanggal tertentu",
+    en: () => "⚠️ *Invalid /pdf command format.*\n\nExamples:\n• \`/pdf\` - Full report for this month\n• \`/pdf ringkasan\` - Summary only for this month\n• \`/pdf 0126\` - Full report for Jan 2026\n• \`/pdf 0126 ringkasan\` - Summary for Jan 2026\n• \`/pdf 01062026 - 15062026\` - Report for specific date range\n• \`/pdf 01062026 - 15062026 ringkasan\` - Summary for specific date range",
+  },
+  pdfInvalidMonth: {
+    id: () => "⚠️ *Bulan atau tahun tidak valid.*\nBulan harus antara 01 dan 12. Contoh: \`/pdf 0126\`",
+    en: () => "⚠️ *Invalid month or year.*\nMonth must be between 01 and 12. Example: \`/pdf 0126\`",
+  },
+  pdfInvalidDate: {
+    id: (val: string) => `⚠️ *Tanggal tidak valid*: "${val}" (misal 31022025 tidak ada).`,
+    en: (val: string) => `⚠️ *Invalid date*: "${val}" (e.g. 31022025 does not exist).`,
+  },
+  pdfRangeInvalid: {
+    id: () => "⚠️ Tanggal mulai tidak boleh setelah tanggal akhir!",
+    en: () => "⚠️ Start date cannot be after end date!",
+  },
+  pdfCaption: {
+    id: (period: string) => `Laporan transaksi PDF Anda untuk periode *${period}* berhasil dibuat. 🌸`,
+    en: (period: string) => `Your transaction report PDF for period *${period}* has been successfully generated. 🌸`,
   },
   // FIX #10: Language selection prompt on /start before /link
   langPrompt: {
