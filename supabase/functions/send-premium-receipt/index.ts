@@ -3,7 +3,19 @@ import { Resend } from "npm:resend";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
+
 serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", {
+      headers: corsHeaders,
+    });
+  }
+
   try {
     const body = await req.json();
 
@@ -80,6 +92,7 @@ serve(async (req) => {
         {
           status: 500,
           headers: {
+            ...corsHeaders,
             "Content-Type": "application/json",
           },
         }
@@ -92,6 +105,7 @@ serve(async (req) => {
       }),
       {
         headers: {
+          ...corsHeaders,
           "Content-Type": "application/json",
         },
       }
@@ -107,6 +121,7 @@ serve(async (req) => {
       {
         status: 500,
         headers: {
+          ...corsHeaders,
           "Content-Type": "application/json",
         },
       }
