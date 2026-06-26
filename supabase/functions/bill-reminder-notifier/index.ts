@@ -51,6 +51,21 @@ interface CategoryRow {
   label_en: string | null;
 }
 
+// Escape karakter spesial Telegram legacy Markdown (_ * ` [ ) supaya nilai
+// dinamis dari user (nama tagihan, label kategori) tidak pernah dianggap
+// sebagai pembuka entity Markdown yang tidak ditutup.
+//
+// Root cause bug "Can't find end of the entity starting at byte offset 45":
+// row.name (nama tagihan, bebas teks dari user, mis. "Cicilan_Motor" atau
+// "Internet * WiFi") disisipkan mentah-mentah ke dalam teks yang dikirim
+// dengan parse_mode: "Markdown". Telegram membaca `_` / `*` / `` ` `` / `[`
+// sebagai pembuka entity (italic/bold/code/link); kalau di nama itu jumlah
+// karakter tsb ganjil (entity tidak pernah ditutup), Telegram API menolak
+// SELURUH pesan dengan 400 Bad Request, dan reminder gagal terkirim total.
+function escapeMarkdown(text: string): string {
+  return text.replace(/[_*`\[]/g, (ch) => `\\${ch}`);
+}
+
 function formatIDR(amount: number): string {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",
@@ -74,10 +89,15 @@ function reminderText(lang: "id" | "en", row: DueBillRow, catLabel: string): str
     ? (lang === "id" ? `💰 Estimasi: *${formatIDR(row.amount)}*\n` : `💰 Estimated: *${formatIDR(row.amount)}*\n`)
     : "";
 
+  // row.name & catLabel adalah teks bebas (nama tagihan custom dari user,
+  // label kategori) -- WAJIB di-escape sebelum disisipkan ke teks Markdown.
+  const safeName = escapeMarkdown(row.name);
+  const safeCatLabel = escapeMarkdown(catLabel);
+
   if (lang === "id") {
     return (
       `🔔 *Pengingat Tagihan*\n\n` +
-      `📌 ${row.name} (${catLabel})\n` +
+      `📌 ${safeName} (${safeCatLabel})\n` +
       `📅 Jatuh tempo: ${dueLabel} (${row.next_due_date})\n` +
       amountLine +
       `\nSudah dibayar? Tandai lunas langsung di sini 👇`
@@ -85,7 +105,7 @@ function reminderText(lang: "id" | "en", row: DueBillRow, catLabel: string): str
   }
   return (
     `🔔 *Bill Reminder*\n\n` +
-    `📌 ${row.name} (${catLabel})\n` +
+    `📌 ${safeName} (${safeCatLabel})\n` +
     `📅 Due: ${dueLabel} (${row.next_due_date})\n` +
     amountLine +
     `\nAlready paid? Mark it as paid right here 👇`

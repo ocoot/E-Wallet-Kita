@@ -137,6 +137,12 @@ export const Settings: React.FC<SettingsProps> = ({
   const [telegramChatId, setTelegramChatId] = useState("");
   const [isUnlinkModalOpen, setIsUnlinkModalOpen] = useState(false);
 
+  // Preferensi jam reminder tagihan Telegram (09/12/15/18/21), default 19
+  // mengikuti fallback di RPC get_due_bill_reminders_for_notification.
+  const REMINDER_HOUR_OPTIONS = [9, 12, 15, 18, 21] as const;
+  const [billReminderHour, setBillReminderHour] = useState<number>(19);
+  const [isSavingReminderHour, setIsSavingReminderHour] = useState(false);
+
   // 10-minutes active timer tracking for linking codes
   useEffect(() => {
     if (!linkingCode) return;
@@ -162,13 +168,14 @@ export const Settings: React.FC<SettingsProps> = ({
     const interval = setInterval(async () => {
       const { data, error } = await supabase
         .from('users')
-        .select('telegram_chat_id')
+        .select('telegram_chat_id, bill_reminder_hour')
         .eq('id', user.id)
         .single();
         
       if (!error && data && data.telegram_chat_id) {
         setTelegramChatId(data.telegram_chat_id);
         setIsTelegramLinked(true);
+        if (data.bill_reminder_hour) setBillReminderHour(data.bill_reminder_hour);
         setLinkingCode(null); // Clear linking code on success
         audioFeedback.playChime();
         showToast(t("toast.success_link"), "success");
@@ -178,6 +185,26 @@ export const Settings: React.FC<SettingsProps> = ({
 
     return () => clearInterval(interval);
   }, [user, isTelegramLinked]);
+
+  // Handler: simpan pilihan jam reminder tagihan ke kolom users.bill_reminder_hour.
+  const handleSelectReminderHour = async (hour: number) => {
+    if (!user || hour === billReminderHour || isSavingReminderHour) return;
+    setIsSavingReminderHour(true);
+    audioFeedback.playClick();
+    const prevHour = billReminderHour;
+    setBillReminderHour(hour); // optimistic
+    const { error } = await supabase
+      .from('users')
+      .update({ bill_reminder_hour: hour })
+      .eq('id', user.id);
+    if (error) {
+      setBillReminderHour(prevHour); // rollback
+      showToast(t("settings.toast_reminder_hour_failed"), "error");
+    } else {
+      showToast(t("settings.toast_reminder_hour_saved", { time: `${String(hour).padStart(2, "0")}:00` }), "success");
+    }
+    setIsSavingReminderHour(false);
+  };
 
   const handleUpdateProfileName = () => {
     audioFeedback.playClick();
@@ -607,6 +634,39 @@ export const Settings: React.FC<SettingsProps> = ({
                       </li>
                     ))}
                   </ul>
+                </div>
+
+                {/* Bill Reminder Time Preference */}
+                <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 space-y-3">
+                  <h4 className="font-sans font-bold text-[10px] text-gray-400 light_sakura:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                    <Send size={12} className="text-indigo-400 -translate-x-0.5 rotate-45" />
+                    <span>{t("settings.reminder_hour_title")}</span>
+                  </h4>
+                  <p className="font-sans text-[11px] text-gray-400 light_sakura:text-slate-600">
+                    {t("settings.reminder_hour_desc")}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {REMINDER_HOUR_OPTIONS.map((hour) => {
+                      const isActive = billReminderHour === hour;
+                      return (
+                        <motion.button
+                          key={hour}
+                          whileHover={{ scale: 1.03 }}
+                          whileTap={{ scale: 0.97 }}
+                          type="button"
+                          disabled={isSavingReminderHour}
+                          onClick={() => handleSelectReminderHour(hour)}
+                          className={`cursor-pointer px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                            isActive
+                              ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 light_sakura:bg-rose-500"
+                              : "bg-slate-800/60 text-gray-400 hover:bg-slate-700/60 light_sakura:bg-rose-50/60 light_sakura:text-slate-500 light_sakura:hover:bg-rose-100/60"
+                          }`}
+                        >
+                          {String(hour).padStart(2, "0")}.00
+                        </motion.button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <motion.button
