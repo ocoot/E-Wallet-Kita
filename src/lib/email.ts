@@ -26,33 +26,32 @@ export async function sendPremiumReceiptEmail(
     t: params.t,
   });
 
-  const { data, error } = await supabase.functions.invoke(
-    "send-premium-receipt",
-    {
-      body: {
-        email: params.email,
-        customerName: params.customerName,
-        orderId: params.orderId,
-        amount: `Rp ${params.totalAmount.toLocaleString("id-ID")}`,
-        paymentMethod: params.sandbox ? "QRIS Sandbox" : "QRIS",
-        purchaseDate: new Date(params.paidAt).toLocaleString("id-ID"),
-        pdfBase64,
-      },
-    }
-  );
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
 
-  if (error) {
-    console.error("Functions Error:", error);
-    if ("context" in error && (error as any).context) {
-      try {
-        const errorText = await (error as any).context.text();
-        console.error("Function Error Details:", errorText);
-      } catch (e) {
-        console.error("Could not parse function error context text", e);
-      }
-    }
-    throw error;
+  const response = await fetch("/api/send-receipt", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify({
+      email: params.email,
+      customerName: params.customerName,
+      orderId: params.orderId,
+      amount: `Rp ${params.totalAmount.toLocaleString("id-ID")}`,
+      paymentMethod: params.sandbox ? "QRIS Sandbox" : "QRIS",
+      purchaseDate: new Date(params.paidAt).toLocaleString("id-ID"),
+      pdfBase64,
+    }),
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    console.error("Email API Error:", result);
+    throw new Error(result.error || "Gagal mengirim struk ke email");
   }
 
-  return data;
+  return result;
 }

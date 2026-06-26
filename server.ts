@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { parseAmountFromString } from "./src/lib/parserUtils";
 import broadcastTelegramHandler from "./api/admin/broadcast-telegram";
 import telegramWebhookHandler from "./api/telegram-webhook";
+import sendReceiptHandler from "./api/send-receipt";
 
 // Load environment variables
 dotenv.config();
@@ -272,6 +273,9 @@ async function startServer() {
   // truth in api/telegram-webhook.ts, no duplicated logic here)
   app.post("/api/telegram-webhook", telegramWebhookHandler as any);
   app.post("/api/telegram/webhook", telegramWebhookHandler as any);
+
+  // Send premium receipt email via SMTP (Gmail)
+  app.post("/api/send-receipt", sendReceiptHandler as any);
 
 
   // Vite development vs production static handler integration
