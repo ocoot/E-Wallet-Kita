@@ -18,9 +18,9 @@ interface ReceiptData {
 export function drawReceiptBrand(doc: jsPDF, w: number, yStart: number, t?: (key: string) => string): number {
   let y = yStart;
   try {
-    // Center logo horizontally (width 32, height 32)
-    doc.addImage(LOGO_BASE64, "PNG", w / 2 - 16, y, 32, 32);
-    y += 42;
+    const logoSize = 42;
+    doc.addImage(LOGO_BASE64, "PNG", w / 2 - logoSize / 2, y, logoSize, logoSize);
+    y += 52;
   } catch (e) {
     console.error("Error drawing logo on receipt:", e);
     y += 20;
@@ -29,7 +29,7 @@ export function drawReceiptBrand(doc: jsPDF, w: number, yStart: number, t?: (key
   doc.setTextColor(255, 255, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(16);
-  doc.text(t ? (t("title") || PDF_BRAND.appName) : PDF_BRAND.appName, w / 2, y, { align: "center" });
+  doc.text(PDF_BRAND.appName, w / 2, y, { align: "center" });
 
   return y;
 }
@@ -55,9 +55,12 @@ export function generatePremiumReceipt(data: ReceiptData): jsPDF {
   // Status checkmark circle
   doc.setFillColor(99, 102, 241);
   doc.circle(W / 2, 130, 22, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(16);
-  doc.text("✓", W / 2, 136, { align: "center" });
+  
+  // Draw an elegant vector checkmark instead of a font glyph
+  doc.setDrawColor(255, 255, 255);
+  doc.setLineWidth(3.5);
+  doc.line(152, 130, 157, 135);
+  doc.line(157, 135, 168, 124);
 
   let y = 175;
   doc.setTextColor(30, 41, 59);
