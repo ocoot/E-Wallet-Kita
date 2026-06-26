@@ -352,13 +352,13 @@ export const BillReminders: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Header Container */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-2xl bg-slate-900/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50">
         <div>
           <h1 className="font-sans font-bold text-2xl text-slate-100 light_sakura:text-slate-900">
             {t("bill_reminders.page_title")}
           </h1>
-          <p className="text-sm text-slate-400 mt-1 light_sakura:text-slate-500">
+          <p className="text-sm text-slate-400 mt-1.5 light_sakura:text-slate-500 leading-relaxed">
             {t("bill_reminders.page_subtitle")}
           </p>
         </div>
