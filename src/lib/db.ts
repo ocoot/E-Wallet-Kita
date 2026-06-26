@@ -344,6 +344,52 @@ export const dbService = {
     return true;
   },
 
+  /**
+   * Tandai bill reminder lunas. Pakai RPC mark_bill_paid_for_user supaya
+   * insert transaksi (kalau amount terisi) + update is_paid terjadi dalam
+   * satu operasi atomic (lihat migration 20260710000000).
+   * needsManualAmount = true artinya amount bill ini NULL, jadi tidak ada
+   * transaksi yang otomatis dibuat -- caller (UI) harus arahkan user ke
+   * form transaksi manual.
+   */
+  async markBillPaidWithTransaction(billId: string): Promise<{
+    linkedTransactionId: string | null;
+    needsManualAmount: boolean;
+  }> {
+    const { data, error } = await supabase.rpc('mark_bill_paid_for_user', { p_bill_id: billId });
+    if (error) {
+      console.error('Error marking bill paid:', error);
+      throw error;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) {
+      // Tidak ditemukan / sudah lunas duluan
+      throw new Error('BILL_NOT_FOUND_OR_ALREADY_PAID');
+    }
+    return {
+      linkedTransactionId: row.linked_transaction_id ?? null,
+      needsManualAmount: !!row.needs_manual_amount
+    };
+  },
+
+  /**
+   * Batalkan status lunas. RPC unmark_bill_paid_for_user akan ikut
+   * menghapus transaksi yang sebelumnya dibuat otomatis (linked_transaction_id),
+   * supaya saldo & riwayat konsisten lagi dengan status bill.
+   */
+  async unmarkBillPaid(billId: string): Promise<{ deletedTransactionId: string | null }> {
+    const { data, error } = await supabase.rpc('unmark_bill_paid_for_user', { p_bill_id: billId });
+    if (error) {
+      console.error('Error unmarking bill paid:', error);
+      throw error;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) {
+      throw new Error('BILL_NOT_FOUND_OR_NOT_PAID');
+    }
+    return { deletedTransactionId: row.deleted_transaction_id ?? null };
+  },
+
   async markBillPaid(userId: string, reminderId: string, paid: boolean): Promise<BillReminder> {
     return await dbService.updateBillReminder(userId, reminderId, {
       is_paid: paid,

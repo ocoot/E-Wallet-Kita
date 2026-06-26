@@ -10,7 +10,7 @@ import { Plus, ArrowLeftRight, Calendar, DollarSign, FileText, CheckCircle } fro
 import { motion, useAnimation } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ReceiptUploader } from "../components/ReceiptUploader";
 import { ReceiptPreview } from "../components/ReceiptPreview";
@@ -27,6 +27,16 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   userDisplayName
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Prefill dari Bill Reminders (lihat BillReminders.tsx executeTogglePaid):
+  // bill tanpa amount diarahkan ke sini supaya kategori & catatan sudah
+  // terisi, user cukup isi nominal lalu konfirmasi seperti transaksi biasa
+  // (tidak auto-save, tetap lewat flow konfirmasi di §8.1).
+  const prefill = (location.state as {
+    prefillCategoryKey?: string;
+    prefillNote?: string;
+    prefillType?: "income" | "expense";
+  } | null) || null;
   const { t, locale } = useLanguage();
   const { user } = useAuth();
 
@@ -95,13 +105,13 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     });
   };
 
-  const [type, setType] = useState<"income" | "expense">("expense");
-  const [category, setCategory] = useState("food_drink");
+  const [type, setType] = useState<"income" | "expense">(prefill?.prefillType || "expense");
+  const [category, setCategory] = useState(prefill?.prefillCategoryKey || "food_drink");
   const [amount, setAmount] = useState<number | "">("");
   const [date, setDate] = useState(() => {
     return new Date().toISOString().split("T")[0]; // default is today YYYY-MM-DD
   });
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(prefill?.prefillNote || "");
 
   const [receiptDraft, setReceiptDraft] = useState<any>(null);
 

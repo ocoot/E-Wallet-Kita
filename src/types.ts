@@ -87,6 +87,7 @@ export interface BillReminder {
   notes: string | null;
   is_paid: boolean;
   paid_at: string | null;
+  linked_transaction_id: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -21,6 +21,7 @@ import {
   CalendarDays
 } from "lucide-react";
 import { BillReminder } from "../types";
+import { useNavigate } from "react-router-dom";
 
 // ──────────────────────────────────────────────
 // Tipe form state
@@ -62,6 +63,7 @@ export const BillReminders: React.FC = () => {
   const { showToast } = useToast();
   const { categories } = useCategories();
   const { reminders, loading, refresh } = useBillReminders(user?.id);
+  const navigate = useNavigate();
 
   // ── State modal & form ──
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -75,6 +77,7 @@ export const BillReminders: React.FC = () => {
 
   // ── State mark paid ──
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [toggleConfirmTarget, setToggleConfirmTarget] = useState<BillReminderWithUrgency | null>(null);
 
   // Kategori yang relevan (expense & both)
   const expenseCategories = categories.filter(
@@ -194,25 +197,50 @@ export const BillReminders: React.FC = () => {
     }
   };
 
-  // ── Toggle paid ──
-  const handleTogglePaid = async (r: BillReminderWithUrgency) => {
-    if (!user) return;
+  // ── Toggle paid: minta konfirmasi dulu (saldo & riwayat transaksi akan berubah) ──
+  const requestTogglePaid = (r: BillReminderWithUrgency) => {
+    audioFeedback.playClick();
+    setToggleConfirmTarget(r);
+  };
+
+  // ── Toggle paid: eksekusi setelah dikonfirmasi ──
+  const executeTogglePaid = async () => {
+    if (!user || !toggleConfirmTarget) return;
+    const r = toggleConfirmTarget;
     setTogglingId(r.id);
     try {
-      await dbService.markBillPaid(user.id, r.id, !r.is_paid);
-      audioFeedback.playClick();
-      showToast(
-        !r.is_paid
-          ? t("bill_reminders.marked_paid")
-          : t("bill_reminders.marked_unpaid"),
-        "success"
-      );
+      if (!r.is_paid) {
+        // Tandai lunas: hybrid -- auto-insert transaksi kalau amount terisi,
+        // kalau NULL cukup tandai lunas lalu arahkan user ke form manual.
+        const result = await dbService.markBillPaidWithTransaction(r.id);
+        audioFeedback.playClick();
+        if (result.needsManualAmount) {
+          showToast(t("bill_reminders.marked_paid_needs_amount"), "success");
+          setToggleConfirmTarget(null);
+          await refresh();
+          navigate("/transactions/new", {
+            state: {
+              prefillCategoryKey: r.category_key,
+              prefillNote: r.name,
+              prefillType: "expense"
+            }
+          });
+          return;
+        }
+        showToast(t("bill_reminders.marked_paid"), "success");
+      } else {
+        // Batalkan lunas: transaksi yang ter-link otomatis ikut dihapus
+        await dbService.unmarkBillPaid(r.id);
+        audioFeedback.playClick();
+        showToast(t("bill_reminders.marked_unpaid"), "success");
+      }
       await refresh();
     } catch (err) {
       console.error("Error toggling bill paid:", err);
       showToast(t("bill_reminders.save_error"), "error");
     } finally {
       setTogglingId(null);
+      setToggleConfirmTarget(null);
     }
   };
 
@@ -371,7 +399,7 @@ export const BillReminders: React.FC = () => {
                 <div className="flex items-center gap-2">
                   {/* Tandai lunas/belum */}
                   <button
-                    onClick={() => handleTogglePaid(r)}
+                    onClick={() => requestTogglePaid(r)}
                     disabled={togglingId === r.id}
                     className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 ${
                       r.is_paid
@@ -583,6 +611,32 @@ export const BillReminders: React.FC = () => {
         cancelLabel={t("common.cancel")}
         onConfirm={handleDeleteConfirmed}
         onCancel={() => setDeleteTarget(null)}
+      />
+
+      {/* ── Modal Konfirmasi Tandai Lunas / Batalkan Lunas ── */}
+      <Modal
+        isOpen={!!toggleConfirmTarget}
+        title={
+          toggleConfirmTarget?.is_paid
+            ? t("bill_reminders.unmark_confirm_title")
+            : t("bill_reminders.mark_confirm_title")
+        }
+        description={
+          toggleConfirmTarget?.is_paid
+            ? t("bill_reminders.unmark_confirm_desc", { name: toggleConfirmTarget?.name ?? "" })
+            : toggleConfirmTarget?.amount != null
+            ? t("bill_reminders.mark_confirm_desc_with_amount", {
+                name: toggleConfirmTarget?.name ?? "",
+                amount: formatIDR(toggleConfirmTarget?.amount ?? null)
+              })
+            : t("bill_reminders.mark_confirm_desc_no_amount", { name: toggleConfirmTarget?.name ?? "" })
+        }
+        type="warning"
+        confirmLabel={t("bill_reminders.mark_confirm_button")}
+        cancelLabel={t("common.cancel")}
+        onConfirm={executeTogglePaid}
+        onCancel={() => setToggleConfirmTarget(null)}
+        confirmDisabled={togglingId === toggleConfirmTarget?.id}
       />
     </motion.div>
   );

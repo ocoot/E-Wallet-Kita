@@ -884,11 +884,42 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       // Tombol "Tandai Lunas" pada pesan reminder tagihan (lihat
       // supabase/functions/bill-reminder-notifier). Dipisah dari alur
       // tx_/rcpt_ karena sumbernya bukan draft AI tapi baris bill_reminders
-      // yang sudah ada -- tidak butuh tahap konfirmasi tambahan di bot
-      // karena tombolnya sendiri sudah berfungsi sebagai konfirmasi (sesuai
-      // permintaan: tombol tandai lunas langsung di Telegram tanpa user
-      // perlu buka app).
+      // yang sudah ada. Sejak fitur auto-insert transaksi ditambahkan
+      // (lihat migration 20260710000000), tombol ini sekarang menampilkan
+      // konfirmasi dulu (karena akan mengubah saldo & riwayat transaksi),
+      // bukan langsung eksekusi seperti sebelumnya.
       else if (actionData.startsWith("bill_paid:")) {
+        const billId = actionData.split(":")[1];
+        const { data: bill, error: fetchErr } = await supabaseBackend
+          .from("bill_reminders")
+          .select("id, name, amount, is_paid")
+          .eq("id", billId)
+          .maybeSingle();
+
+        if (fetchErr || !bill) {
+          await answerTelegramCallback(queryId, tr("billAlreadyPaidOrNotFound", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        if (bill.is_paid) {
+          await answerTelegramCallback(queryId, tr("billAlreadyPaidOrNotFound", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+
+        const confirmKeyboard = {
+          inline_keyboard: [[
+            { text: tr("billBtnConfirmPaid", lang), callback_data: `bill_confirm_paid:${billId}` },
+            { text: tr("billBtnCancelPaid", lang), callback_data: `bill_cancel_paid:${billId}` }
+          ]]
+        };
+
+        const confirmText = bill.amount != null
+          ? tr("billMarkPaidConfirmPrompt", lang, bill.name, formatIDR(bill.amount))
+          : tr("billMarkPaidConfirmPromptNoAmount", lang, bill.name);
+
+        await answerTelegramCallback(queryId);
+        await editTelegramMessage(chatId, msgId, confirmText, confirmKeyboard);
+      }
+      else if (actionData.startsWith("bill_confirm_paid:")) {
         const billId = actionData.split(":")[1];
         const { data: updated, error: markErr } = await supabaseBackend.rpc("mark_bill_paid_via_bot", {
           p_chat_id: chatId,
@@ -899,12 +930,24 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           // Bill sudah lunas lebih dulu (mis. ditandai dari web) atau tidak
           // ditemukan -- bukan error fatal, cukup beri tahu lewat callback toast.
           await answerTelegramCallback(queryId, tr("billAlreadyPaidOrNotFound", lang));
+          await editTelegramMessage(chatId, msgId, tr("billAlreadyPaidOrNotFound", lang));
           res.status(200).json({ ok: true }); return;
         }
 
         const row = updated[0];
         await answerTelegramCallback(queryId, tr("billMarkPaidSuccess", lang));
-        await editTelegramMessage(chatId, msgId, tr("billMarkPaidConfirmed", lang, row.name));
+        if (row.needs_manual_amount) {
+          // Amount NULL -> tidak ada transaksi otomatis. Arahkan user untuk
+          // mencatat transaksinya sendiri lewat chat (pola input transaksi
+          // teks bebas yang sudah ada), bukan lewat draft khusus baru.
+          await editTelegramMessage(chatId, msgId, tr("billMarkPaidConfirmedNoAmount", lang, row.name));
+        } else {
+          await editTelegramMessage(chatId, msgId, tr("billMarkPaidConfirmed", lang, row.name));
+        }
+      }
+      else if (actionData.startsWith("bill_cancel_paid:")) {
+        await answerTelegramCallback(queryId, tr("cbCancelled", lang));
+        await editTelegramMessage(chatId, msgId, tr("msgCancelled", lang));
       }
 
       res.status(200).json({ ok: true }); return;

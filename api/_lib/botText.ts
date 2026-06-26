@@ -379,12 +379,35 @@ export const botText = {
     en: () => "✅ Paid!",
   },
   billMarkPaidConfirmed: {
-    id: (name: string) => `✅ *Tagihan "${name}" ditandai lunas.*`,
-    en: (name: string) => `✅ *Bill "${name}" marked as paid.*`,
+    id: (name: string) => `✅ *Tagihan "${name}" ditandai lunas.*\n\nTransaksi pengeluaran sudah otomatis tercatat di riwayat & saldo kamu.`,
+    en: (name: string) => `✅ *Bill "${name}" marked as paid.*\n\nAn expense transaction has been recorded automatically in your history & balance.`,
+  },
+  billMarkPaidConfirmedNoAmount: {
+    id: (name: string) => `✅ *Tagihan "${name}" ditandai lunas.*\n\nNominalnya belum diisi, jadi belum ada transaksi otomatis. Catat pengeluarannya sendiri lewat chat atau web app ya.`,
+    en: (name: string) => `✅ *Bill "${name}" marked as paid.*\n\nNo amount was set, so no transaction was recorded automatically. Please log the expense yourself via chat or the web app.`,
   },
   billAlreadyPaidOrNotFound: {
     id: () => "ℹ️ Tagihan ini sudah ditandai lunas sebelumnya atau tidak ditemukan.",
     en: () => "ℹ️ This bill was already marked as paid or could not be found.",
+  },
+  // Prompt konfirmasi sebelum bill_paid: benar-benar dieksekusi -- karena
+  // aksi ini akan mengubah saldo & riwayat transaksi, user diberi tahu
+  // dulu dan harus menekan tombol konfirmasi terpisah.
+  billMarkPaidConfirmPrompt: {
+    id: (name: string, amount: string) => `❓ *Tandai "${name}" lunas?*\n\nSaldo kamu akan berkurang ${amount} dan tercatat otomatis di riwayat transaksi.`,
+    en: (name: string, amount: string) => `❓ *Mark "${name}" as paid?*\n\nYour balance will decrease by ${amount} and it will be recorded automatically in your transaction history.`,
+  },
+  billBtnConfirmPaid: {
+    id: () => "✅ Ya, Tandai Lunas",
+    en: () => "✅ Yes, Mark as Paid",
+  },
+  billBtnCancelPaid: {
+    id: () => "❌ Batalkan",
+    en: () => "❌ Cancel",
+  },
+  billMarkPaidConfirmPromptNoAmount: {
+    id: (name: string) => `❓ *Tandai "${name}" lunas?*\n\nNominalnya belum diisi, jadi tidak akan ada transaksi otomatis -- kamu perlu mencatatnya sendiri setelah ini.`,
+    en: (name: string) => `❓ *Mark "${name}" as paid?*\n\nNo amount was set, so no transaction will be recorded automatically -- you'll need to log it yourself afterwards.`,
   },
 };
 
