@@ -4,9 +4,10 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
+import { Modal } from "../components/Modal";
 import {
   CreditCard, CheckCircle, Clock, XCircle, AlertCircle,
-  TrendingUp, RefreshCw, ChevronLeft, ChevronRight
+  TrendingUp, RefreshCw, ChevronLeft, ChevronRight, FlaskConical, AlertTriangle
 } from "lucide-react";
 
 interface RevenueMetrics {
@@ -16,6 +17,7 @@ interface RevenueMetrics {
   pendingCount: number;
   expiredCount: number;
   failedCount: number;
+  sandboxCount: number;
 }
 
 interface PremiumTransaction {
@@ -47,6 +49,12 @@ export const AdminPremiumMonitor: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
 
+  // --- Dummy QRIS toggle (app_settings: dummy_qris_enabled) ---
+  const [dummyQrisEnabled, setDummyQrisEnabled] = useState(false);
+  const [dummyQrisLoaded, setDummyQrisLoaded] = useState(false);
+  const [savingDummyQris, setSavingDummyQris] = useState(false);
+  const [pendingDummyQrisValue, setPendingDummyQrisValue] = useState<boolean | null>(null);
+
   const statusConfig = {
     SUCCESS:  { color: "text-emerald-600", bg: "bg-emerald-50", icon: CheckCircle, label: t("admin.status_success") },
     PENDING:  { color: "text-amber-600",   bg: "bg-amber-50", icon: Clock, label: t("admin.status_pending") },
@@ -59,6 +67,48 @@ export const AdminPremiumMonitor: React.FC = () => {
     if (error) { console.error(error); return; }
     setMetrics(data);
   }, []);
+
+  const loadDummyQrisSetting = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from("app_settings")
+        .select("value")
+        .eq("key", "dummy_qris_enabled")
+        .single();
+      if (error) throw error;
+      setDummyQrisEnabled(data?.value === "true");
+    } catch (err: any) {
+      console.error("Gagal memuat status dummy_qris_enabled:", err.message || err);
+    } finally {
+      setDummyQrisLoaded(true);
+    }
+  }, []);
+
+  const requestToggleDummyQris = (nextValue: boolean) => {
+    setPendingDummyQrisValue(nextValue);
+  };
+
+  const confirmToggleDummyQris = async () => {
+    if (pendingDummyQrisValue === null) return;
+    const nextValue = pendingDummyQrisValue;
+    setSavingDummyQris(true);
+    try {
+      const { error } = await supabase
+        .from("app_settings")
+        .update({ value: nextValue ? "true" : "false" })
+        .eq("key", "dummy_qris_enabled");
+      if (error) throw error;
+      setDummyQrisEnabled(nextValue);
+      showToast(t("admin.dummy_qris_update_success"), "success");
+    } catch (err: any) {
+      showToast(err.message || t("toast.error_general"), "error");
+    } finally {
+      setSavingDummyQris(false);
+      setPendingDummyQrisValue(null);
+    }
+  };
+
+  const cancelToggleDummyQris = () => setPendingDummyQrisValue(null);
 
   const loadTransactions = useCallback(async () => {
     setLoading(true);
@@ -91,8 +141,9 @@ export const AdminPremiumMonitor: React.FC = () => {
   useEffect(() => {
     if (isAdmin) {
       loadMetrics();
+      loadDummyQrisSetting();
     }
-  }, [loadMetrics, isAdmin]);
+  }, [loadMetrics, loadDummyQrisSetting, isAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
@@ -135,7 +186,7 @@ export const AdminPremiumMonitor: React.FC = () => {
             onClick={async () => {
               setRefreshing(true);
               try {
-                await Promise.all([loadMetrics(), loadTransactions()]);
+                await Promise.all([loadMetrics(), loadTransactions(), loadDummyQrisSetting()]);
                 showToast(t("admin.refresh_success"), "success");
               } catch (err: any) {
                 showToast(err.message || t("toast.error_general"), "error");
@@ -151,7 +202,66 @@ export const AdminPremiumMonitor: React.FC = () => {
         </div>
       </div>
 
-      {/* Revenue Metrics */}
+      {/* Dummy QRIS active warning banner */}
+      {dummyQrisLoaded && dummyQrisEnabled && (
+        <div className="flex items-center gap-3 px-5 py-4 rounded-2xl border border-amber-500/40 bg-amber-500/10 text-amber-300 light_sakura:bg-amber-50 light_sakura:border-amber-200 light_sakura:text-amber-700 text-sm font-medium">
+          <AlertTriangle size={18} className="shrink-0" />
+          <span>{t("admin.dummy_qris_active_warning")}</span>
+        </div>
+      )}
+
+      {/* Dummy QRIS toggle card */}
+      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className={`p-3 rounded-2xl border ${dummyQrisEnabled ? "bg-purple-900/20 light_sakura:bg-purple-50 border-purple-800/50 light_sakura:border-purple-100 text-purple-400 light_sakura:text-purple-600" : "bg-slate-800 light_sakura:bg-slate-50 border-slate-700 light_sakura:border-slate-100 text-slate-500"}`}>
+              <FlaskConical size={20} />
+            </div>
+            <div>
+              <p className="font-semibold text-white light_sakura:text-slate-900">
+                {t("admin.dummy_qris_title")}
+              </p>
+              <p className="text-xs text-slate-400 light_sakura:text-slate-500 mt-0.5 max-w-md">
+                {t("admin.dummy_qris_desc")}
+              </p>
+              <p className="text-xs mt-1.5 font-medium text-purple-400 light_sakura:text-purple-600">
+                {dummyQrisEnabled ? t("admin.dummy_qris_status_on") : t("admin.dummy_qris_status_off")}
+              </p>
+              {metrics && metrics.sandboxCount > 0 && (
+                <p className="text-[11px] text-slate-500 mt-1">
+                  {t("admin.dummy_qris_sandbox_count", { count: metrics.sandboxCount })}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Switch */}
+          <button
+            disabled={!dummyQrisLoaded}
+            onClick={() => requestToggleDummyQris(!dummyQrisEnabled)}
+            className={`relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0 disabled:opacity-50
+              ${dummyQrisEnabled ? "bg-purple-600" : "bg-slate-700 light_sakura:bg-slate-200"}`}
+            aria-pressed={dummyQrisEnabled}
+          >
+            <span
+              className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform
+                ${dummyQrisEnabled ? "translate-x-7" : "translate-x-0"}`}
+            />
+          </button>
+        </div>
+
+        <Modal
+          isOpen={pendingDummyQrisValue !== null}
+          title={pendingDummyQrisValue ? t("admin.dummy_qris_confirm_enable_title") : t("admin.dummy_qris_confirm_disable_title")}
+          description={pendingDummyQrisValue ? t("admin.dummy_qris_confirm_enable_desc") : t("admin.dummy_qris_confirm_disable_desc")}
+          type={pendingDummyQrisValue ? "warning" : "info"}
+          confirmLabel={pendingDummyQrisValue ? t("admin.dummy_qris_enable_confirm_btn") : t("admin.dummy_qris_disable_confirm_btn")}
+          cancelLabel={t("common.cancel")}
+          onConfirm={confirmToggleDummyQris}
+          onCancel={cancelToggleDummyQris}
+        />
+      </div>
+
       {metrics && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           {[
@@ -308,7 +418,7 @@ export const AdminPremiumMonitor: React.FC = () => {
         )}
       </div>
       
-      <LoadingOverlay isOpen={refreshing || loading} message={t("admin.loading_data")} />
+      <LoadingOverlay isOpen={refreshing || loading || savingDummyQris} message={savingDummyQris ? t("admin.dummy_qris_saving") : t("admin.loading_data")} />
     </div>
   );
 };

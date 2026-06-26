@@ -247,6 +247,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                 <span>{t("premium.waiting_payment")}</span>
               </div>
               {isSandboxMode() && <p className="text-[10px] text-gray-500 mt-3">{t("premium.sandbox_notice")}</p>}
+              {!isSandboxMode() && tx.is_sandbox && <p className="text-[10px] text-gray-500 mt-3">{t("premium.dummy_qris_notice")}</p>}
               
               <button
                 onClick={() => setShowCancelConfirm(true)}

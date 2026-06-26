@@ -10,6 +10,10 @@ export interface PremiumTransaction {
   status: "PENDING" | "SUCCESS" | "EXPIRED" | "FAILED";
   voucher_id?: string;
   final_amount?: number;
+  // true kalau transaksi ini dibuat sebagai dummy oleh backend karena toggle
+  // "Dummy QRIS" di Admin Panel aktif (lihat api/premium/create-transaction.ts).
+  // Beda dengan isSandboxMode() di bawah, yang murni client-side & DEV-only.
+  is_sandbox?: boolean;
 }
 
 const PREMIUM_AMOUNT = 20000;

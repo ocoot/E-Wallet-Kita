@@ -38,6 +38,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(response);
   }
 
+  // --- Dummy QRIS mode ---
+  // Transaksi ini dibuat sebagai dummy oleh api/premium/create-transaction.ts
+  // (is_sandbox = true) ketika toggle "Dummy QRIS" aktif di Admin Panel.
+  // Jangan pernah panggil API KlikQRIS asli untuk transaksi semacam ini --
+  // selesaikan sendiri di sini dengan auto-resolve ke SUCCESS setelah
+  // beberapa detik, supaya alur polling di PremiumModal.tsx tetap teruji
+  // persis seperti transaksi nyata, tanpa pernah menyentuh gateway asli.
+  // Sengaja dicek dari flag pada baris transaksi itu sendiri (bukan
+  // membaca ulang setting dummy_qris_enabled), supaya tetap konsisten
+  // diselesaikan sebagai dummy walau admin sudah menonaktifkan togglenya
+  // setelah transaksi ini dibuat.
+  if (localTx.is_sandbox) {
+    const DUMMY_AUTO_SUCCESS_DELAY_MS = 8000;
+    const ageMs = Date.now() - new Date(localTx.created_at).getTime();
+
+    if (ageMs >= DUMMY_AUTO_SUCCESS_DELAY_MS) {
+      await supabase.from('premium_transactions').update({ status: 'SUCCESS', paid_at: new Date().toISOString() }).eq('order_id', orderId);
+      await supabase.from('users').update({ is_premium: true, premium_paid_at: new Date().toISOString() }).eq('id', user.id);
+      return res.status(200).json({ status: 'SUCCESS' });
+    }
+    return res.status(200).json({ status: 'PENDING' });
+  }
+
   try {
     const klikRes = await fetch(`https://klikqris.com/api/qrisv2/status/${process.env.KLIKQRIS_MERCHANT_ID}/${orderId}`, {
       headers: {

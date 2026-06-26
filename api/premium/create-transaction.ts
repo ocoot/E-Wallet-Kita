@@ -4,6 +4,33 @@ import { createClient } from '@supabase/supabase-js';
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 const EXPIRY_SECONDS = 90;
 
+// Angka unik kecil ditambahkan ke total_amount, mengikuti konvensi yang
+// sama dipakai KlikQRIS asli (total_amount selalu sedikit beda dari amount
+// dasar) supaya tampilan dummy konsisten dengan tampilan transaksi nyata.
+function randomUniqueCode(): number {
+  return Math.floor(Math.random() * 99) + 1; // 1-99
+}
+
+/**
+ * Cek pengaturan "Dummy QRIS" yang diatur admin lewat Admin Panel >
+ * Monitor Premium (tabel app_settings, key 'dummy_qris_enabled').
+ * Fail-safe: kalau gagal dibaca, anggap nonaktif (pakai gateway asli)
+ * supaya error pada pengaturan tidak diam-diam mematikan pembayaran nyata.
+ */
+async function isDummyQrisEnabled(): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'dummy_qris_enabled')
+      .single();
+    if (error || !data) return false;
+    return data.value === 'true';
+  } catch {
+    return false;
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -43,6 +70,54 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const discountAmount = Math.floor((baseAmount * discountPercent) / 100);
   const finalAmount = baseAmount - discountAmount;
   const orderId = `PREMIUM-${user.id.slice(0, 8)}-${Date.now()}`;
+  const expiredAt = new Date(Date.now() + EXPIRY_SECONDS * 1000).toISOString();
+
+  // --- Dummy QRIS mode (diatur admin lewat Admin Panel > Monitor Premium) ---
+  // Kalau aktif, JANGAN panggil KlikQRIS asli sama sekali. Buat QR palsu dan
+  // simpan transaksi dengan is_sandbox = true; penyelesaian ke status SUCCESS
+  // ditangani di api/premium/status.ts (auto-resolve setelah beberapa detik),
+  // bukan di sini, supaya tahap "tampil QR -> menunggu" tetap bisa diuji.
+  if (await isDummyQrisEnabled()) {
+    const totalAmount = finalAmount + randomUniqueCode();
+    const qrisUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(
+      `DUMMY-QRIS|${orderId}|${totalAmount}`
+    )}`;
+
+    const { error: insertError } = await supabase.from('premium_transactions').insert({
+      user_id: user.id,
+      order_id: orderId,
+      amount: baseAmount,
+      total_amount: totalAmount,
+      status: 'PENDING',
+      qris_url: qrisUrl,
+      direct_url: null,
+      signature: null,
+      is_sandbox: true,
+      expired_at: expiredAt,
+      voucher_id: voucherId || null,
+      discount_percent: discountPercent,
+      discount_amount: discountAmount,
+      final_amount: finalAmount,
+    });
+
+    if (insertError) {
+      console.error('dummy create-transaction insert error', insertError);
+      return res.status(500).json({ error: 'INTERNAL_ERROR' });
+    }
+
+    return res.status(200).json({
+      data: {
+        order_id: orderId,
+        amount: baseAmount,
+        total_amount: totalAmount,
+        qris_url: qrisUrl,
+        expired_at: expiredAt,
+        status: 'PENDING',
+        voucher_id: voucherId || null,
+        is_sandbox: true,
+      },
+    });
+  }
 
   try {
     const klikRes = await fetch('https://klikqris.com/api/qrisv2/create', {
@@ -65,7 +140,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const d = klikJson.data;
-    const expiredAt = new Date(Date.now() + EXPIRY_SECONDS * 1000).toISOString();
 
     await supabase.from('premium_transactions').insert({
       user_id: user.id,
@@ -93,6 +167,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         expired_at: expiredAt,
         status: 'PENDING',
         voucher_id: voucherId || null,
+        is_sandbox: false,
       },
     });
   } catch (e) {
