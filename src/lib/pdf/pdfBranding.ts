@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import { LOGO_BASE64 } from "./logoBase64";
+import { LOGO_BASE64 } from "./logoBase64.js";
 
 export const PDF_BRAND = {
   appName: "E-Wallet Kita",

@@ -1,5 +1,5 @@
 import { jsPDF } from "jspdf";
-import { drawPdfBrandHeader } from "./pdfBranding";
+import { drawPdfBrandHeader } from "./pdfBranding.js";
 
 export type TFunc = (key: string, replacements?: Record<string, string | number>) => string;
 

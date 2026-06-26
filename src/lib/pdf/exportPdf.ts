@@ -1,18 +1,18 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Transaction, Category } from "../../types";
+import { Transaction, Category } from "../../types.js";
 import {
   drawHeader,
   drawFooter,
   finalizePageNumbers,
   TFunc,
-} from "./pdfTemplate";
+} from "./pdfTemplate.js";
 import {
   getCurrentMonthToDateRange,
   getMonthRange,
   toISODate,
   generateDocNumber,
-} from "./dateRange";
+} from "./dateRange.js";
 
 const HEADER_HEIGHT = 155; // px reserved at top of every page for the header block
 const SUMMARY_BLOCK_HEIGHT = 100; // extra space reserved on page 1 only, for the summary card

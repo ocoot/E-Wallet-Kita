@@ -10,6 +10,7 @@ import { getMaintenanceStatus, isFeatureLocked, getMaintenanceMessage, Maintenan
 import { tr } from './_lib/botText.js';
 import { inferCategoryKey } from './_lib/categoryInference.js';
 import { sendTelegramMessage, editTelegramMessage, answerTelegramCallback, sendTelegramDocument } from './_lib/telegram.js';
+import { Transaction } from '../src/types.js';
 
 type Lang = "id" | "en";
 
@@ -1277,7 +1278,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           const toISODateStr = (d: Date) => d.toISOString().split("T")[0];
           const { data: txs, error: txsErr } = await supabaseBackend
             .from("transactions")
-            .select("id, type, amount, category, note, transaction_date, created_at")
+            .select("id, type, amount, category, note, source, transaction_date, created_at")
             .eq("user_id", userCtx.id)
             .gte("transaction_date", toISODateStr(startDate))
             .lte("transaction_date", toISODateStr(endDate))
@@ -1297,13 +1298,14 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           const pdfT = createPdfTranslator(lang);
 
           // Map db objects to Transaction interface
-          const mappedTxs = txs.map(tx => ({
+          const mappedTxs: Transaction[] = txs.map(tx => ({
             id: tx.id,
             user_id: userCtx.id,
-            type: tx.type,
+            type: tx.type as "income" | "expense",
             amount: tx.amount,
             category: tx.category,
             note: tx.note,
+            source: (tx.source || "manual") as "manual" | "ai_web" | "telegram",
             transaction_date: tx.transaction_date,
             created_at: tx.created_at
           }));
@@ -1314,7 +1316,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           // Generate PDF Uint8Array
           const pdfBytes = generatePdf({
             t: pdfT,
-            userName: userCtx.displayName || userCtx.email,
+            userName: userCtx.display_name,
             transactions: mappedTxs,
             categories,
             periodLabel,
