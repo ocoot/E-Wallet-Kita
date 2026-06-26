@@ -13,6 +13,7 @@ import { DashboardHeader } from "../components/DashboardHeader";
 import { DashboardStats } from "../components/DashboardStats";
 import { DashboardChart } from "../components/DashboardChart";
 import { DashboardRecentTransactions } from "../components/DashboardRecentTransactions";
+import { DashboardBudgetAlerts } from "../components/DashboardBudgetAlerts";
 import { useCategories } from "../hooks/useCategories";
 
 interface DashboardProps {
@@ -273,6 +274,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
         sparkPoints={sparkPoints} 
         formatIDR={formatIDR} 
       />
+
+      {/* 2b. Budget alert card (hanya tampil kalau ada kategori mendekati/melebihi limit) */}
+      <DashboardBudgetAlerts />
 
       {/* 3. Graphic Chart Trends */}
       <DashboardChart 

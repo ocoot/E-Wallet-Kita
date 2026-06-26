@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Transaction, Category } from "../types";
+import { Transaction, Category, Budget } from "../types";
 
 export const dbService = {
   async getCategories(): Promise<Category[]> {
@@ -172,6 +172,96 @@ export const dbService = {
       return false;
     }
     return true;
+  },
+
+  // ── Budget per kategori ──────────────────────────────────────────────
+
+  async getBudgets(userId: string): Promise<Budget[]> {
+    const { data, error } = await supabase
+      .from('budgets')
+      .select('*')
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error fetching budgets:', error);
+      throw error;
+    }
+
+    return data as Budget[];
+  },
+
+  async upsertBudget(
+    userId: string,
+    categoryKey: string,
+    monthlyLimit: number,
+    alertThresholdPercent: number
+  ): Promise<Budget> {
+    const { data, error } = await supabase
+      .from('budgets')
+      .upsert(
+        {
+          user_id: userId,
+          category_key: categoryKey,
+          monthly_limit: monthlyLimit,
+          alert_threshold_percent: alertThresholdPercent,
+          updated_at: new Date().toISOString()
+        },
+        { onConflict: 'user_id,category_key' }
+      )
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error saving budget:', error);
+      throw error;
+    }
+
+    return data as Budget;
+  },
+
+  async deleteBudget(userId: string, categoryKey: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('budgets')
+      .delete()
+      .eq('user_id', userId)
+      .eq('category_key', categoryKey);
+
+    if (error) {
+      console.error('Error deleting budget:', error);
+      return false;
+    }
+    return true;
+  },
+
+  /**
+   * Total pengeluaran (expense) untuk satu kategori dalam bulan tertentu.
+   * filterMonth harus "YYYY-MM". Dipakai untuk menghitung progres budget.
+   */
+  async getCategoryExpenseForMonth(
+    userId: string,
+    categoryKey: string,
+    filterMonth: string
+  ): Promise<number> {
+    const [year, month] = filterMonth.split('-').map(Number);
+    const lastDay = new Date(year, month, 0).getDate();
+    const startDate = `${filterMonth}-01`;
+    const endDate = `${filterMonth}-${String(lastDay).padStart(2, '0')}`;
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('amount')
+      .eq('user_id', userId)
+      .eq('type', 'expense')
+      .eq('category', categoryKey)
+      .gte('transaction_date', startDate)
+      .lte('transaction_date', endDate);
+
+    if (error) {
+      console.error('Error fetching category expense for month:', error);
+      throw error;
+    }
+
+    return (data || []).reduce((sum, row: any) => sum + Number(row.amount), 0);
   }
 };
 

@@ -115,6 +115,7 @@ function isDuplicateTelegramUpdate(updateId: number): boolean {
 }
 
 import { getActiveCategories, generateCategoryPrompt, validateCategoryKey, Category } from './_lib/categories.js';
+import { checkCategoryBudgetStatus } from './_lib/budget.js';
 
 // Resolve category label strictly from DB (categories table as master source).
 // Falls back to the raw key so the message is still readable if the category
@@ -130,6 +131,37 @@ function formatIDR(amount: number): string {
   return new Intl.NumberFormat("id-ID", {
     style: "currency", currency: "IDR", maximumFractionDigits: 0
   }).format(amount);
+}
+
+// Setelah transaksi expense berhasil disimpan via bot (chat text maupun
+// receipt OCR), cek apakah kategori tersebut sudah mendekati/melewati
+// alert_threshold_percent budget bulan ini, lalu kirim pesan terpisah kalau
+// perlu. Tidak melempar error -- kegagalan cek budget tidak boleh membuat
+// alur simpan transaksi utama gagal.
+async function sendBudgetWarningIfNeeded(
+  chatId: number,
+  userId: string,
+  categoryKey: string,
+  txType: "income" | "expense",
+  lang: Lang
+): Promise<void> {
+  if (txType !== "expense") return;
+  try {
+    const result = await checkCategoryBudgetStatus(userId, categoryKey);
+    if (!result || result.status === "safe") return;
+
+    const catLabel = await getCategoryLabel(categoryKey, lang);
+    const percentStr = String(Math.round(result.percent));
+
+    const message =
+      result.status === "danger"
+        ? tr("budgetWarningOver", lang, catLabel, percentStr)
+        : tr("budgetWarningThreshold", lang, catLabel, percentStr);
+
+    await sendTelegramMessage(chatId, message);
+  } catch (err) {
+    console.error("Error sending budget warning via Telegram:", err);
+  }
 }
 
 /**
@@ -621,6 +653,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
           await answerTelegramCallback(queryId, tr("cbSaveSuccess", lang));
           await editTelegramMessage(chatId, msgId, tr("msgSaveSuccess", lang, typeLabel, catLabel, amountStr, row.original_text));
+
+          const userCtx = await resolveUserContext(chatId);
+          if (userCtx) {
+            await sendBudgetWarningIfNeeded(chatId, userCtx.id, row.category_key, row.type, lang);
+          }
         }
       } 
       else if (actionData === "tx_cancel") {
@@ -664,6 +701,10 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           const catLabel = await getCategoryLabel(resApprove.draft.category || 'other', lang);
           const typeLabel = tr("txTypeExpense", lang);
           await editTelegramMessage(chatId, msgId, tr("msgSaveSuccess", lang, typeLabel, catLabel, formatIDR(resApprove.draft.total_amount), resApprove.draft.merchant_name || 'Receipt Scan'));
+
+          if (resApprove.transaction?.user_id) {
+            await sendBudgetWarningIfNeeded(chatId, resApprove.transaction.user_id, resApprove.draft.category || 'other', 'expense', lang);
+          }
         } catch (err: any) {
           await answerTelegramCallback(queryId, tr("cbSaveFailed", lang));
           await editTelegramMessage(chatId, msgId, tr("msgSaveFailed", lang, err.message));

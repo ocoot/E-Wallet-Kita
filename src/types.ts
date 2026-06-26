@@ -41,6 +41,16 @@ export interface Category {
   is_active: boolean;
 }
 
+export interface Budget {
+  id: string;
+  user_id: string;
+  category_key: string;
+  monthly_limit: number;
+  alert_threshold_percent: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface PremiumVoucher {
   id: string;
   code: string;

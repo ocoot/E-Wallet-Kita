@@ -10,7 +10,8 @@
     "history": "Transaction History",
     "settings": "Settings",
     "logout": "Log Out",
-    "admin_panel": "Admin Panel"
+    "admin_panel": "Admin Panel",
+    "budget": "Budget"
   },
   "auth": {
     "login_title": "Account Sign In",
@@ -209,12 +210,7 @@
     "diagnostics_desc": "Verify key local multiplier parser matches manually.",
     "btn_run_tests": "Run Parser Suite",
     "test_input": "Input String",
-    "test_output": "Detected Numerical Subtotal",
-    "pwa_section": "Progressive Web App (PWA)",
-    "pwa_desc": "Install E-Wallet Kita directly on your device for instant access and complete offline support.",
-    "pwa_btn_install": "Install E-Wallet Kita",
-    "pwa_installed": "Already Installed",
-    "pwa_not_supported": "Your browser does not support this auto-installation button. Please use the 'Add to Home Screen' option manually from your browser's menu."
+    "test_output": "Detected Numerical Subtotal"
   },
   "common": {
     "active": "Active",
@@ -262,7 +258,6 @@
     "success_delete": "Transaction deleted successfully.",
     "success_delete_all": "All history records successfully wiped permanently.",
     "success_profile": "Profile display name successfully updated!",
-    "success_pwa": "E-Wallet Kita installed successfully! 🎉",
     "success_link": "Telegram Bot successfully integrated!",
     "success_unlink": "Telegram Bot disconnected successfully.",
     "success_pref": "Preferences successfully saved to cloud database.",
@@ -604,7 +599,8 @@
       "history": "History Ledger",
       "settings": "Settings",
       "receipt_scan": "Receipt Scan (AI)",
-      "telegram_bot": "Telegram Bot"
+      "telegram_bot": "Telegram Bot",
+      "budget": "Budget"
     }
   },
   "ai_monitor": {
@@ -734,5 +730,37 @@
     "dashboard_banner_desc": "We have prepared a quick interactive guide (1 minute) to introduce the Manual Entry and Transaction History features.",
     "dashboard_banner_btn_start": "Start Guide",
     "dashboard_banner_btn_dismiss": "Don't Show Again"
+  },
+  "budget": {
+    "page_title": "Budget per Category",
+    "page_subtitle": "Set a monthly spending limit for each category and get warned before it breaks.",
+    "no_budget_set": "No budget set",
+    "set_budget": "Set Budget",
+    "edit_budget": "Edit Budget",
+    "monthly_limit_label": "Monthly Limit (Rp)",
+    "alert_threshold_label": "Warn at (%)",
+    "save": "Save Budget",
+    "delete": "Delete Budget",
+    "delete_confirm_title": "Delete This Budget?",
+    "delete_confirm_desc": "The budget for category '{category}' will be deleted. Already recorded spending will not be affected.",
+    "save_success": "Budget saved successfully.",
+    "save_error": "Failed to save budget. Please try again.",
+    "delete_success": "Budget deleted successfully.",
+    "delete_error": "Failed to delete budget.",
+    "invalid_limit": "Monthly limit must be greater than 0.",
+    "invalid_threshold": "Alert percentage must be between 1-100.",
+    "spent_of_limit": "{spent} of {limit}",
+    "status_safe": "Safe",
+    "status_warning": "Near Limit",
+    "status_danger": "Over Limit",
+    "percent_used": "{percent}% used",
+    "no_expense_categories": "There are no active expense categories right now.",
+    "toast_warning_threshold": "Warning: spending for category '{category}' has reached {percent}% of this month's budget.",
+    "toast_warning_over": "Budget for category '{category}' has been exceeded ({percent}% of this month's limit).",
+    "empty_state_title": "No expense categories yet",
+    "empty_state_desc": "Add an expense category first before setting a budget.",
+    "dashboard_alert_title": "Budget Alerts",
+    "dashboard_alert_cta": "Manage Budget",
+    "dashboard_alert_item": "{category}: {percent}% used"
   }
 }

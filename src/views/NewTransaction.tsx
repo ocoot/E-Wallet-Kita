@@ -15,6 +15,7 @@ import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ReceiptUploader } from "../components/ReceiptUploader";
 import { ReceiptPreview } from "../components/ReceiptPreview";
 import { useCategories } from "../hooks/useCategories";
+import { checkSingleCategoryBudget } from "../hooks/useBudgets";
 
 interface NewTransactionProps {
   onTransactionAdded: () => void;
@@ -61,6 +62,28 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     preferred_theme: "dark_obsidian"
   };
   const { showToast } = useToast();
+
+  // Setelah transaksi expense tersimpan, cek apakah kategori ini sudah
+  // melewati/mendekati alert_threshold_percent dari budget bulan ini.
+  const maybeWarnBudget = async (categoryKey: string, txType: "income" | "expense") => {
+    if (txType !== "expense" || !user?.id) return;
+    try {
+      const result = await checkSingleCategoryBudget(user.id, categoryKey);
+      if (!result || result.status === "safe") return;
+
+      const label = categories.find((c) => c.key === categoryKey);
+      const categoryLabel = label ? (locale === "id" ? label.label_id || label.key : label.label_en || label.key) : categoryKey;
+      const percentRounded = Math.round(result.percent);
+
+      if (result.status === "danger") {
+        showToast(t("budget.toast_warning_over", { category: categoryLabel, percent: percentRounded }), "warning");
+      } else {
+        showToast(t("budget.toast_warning_threshold", { category: categoryLabel, percent: percentRounded }), "warning");
+      }
+    } catch (err) {
+      console.error("Error checking budget after save:", err);
+    }
+  };
   const shakeControls = useAnimation();
   const { categories } = useCategories();
 
@@ -117,6 +140,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
       showToast(t("toast.success_save"), "success");
       setReceiptDraft(null);
       onTransactionAdded(); // Trigger global cache updates
+      await maybeWarnBudget(finalData.category, "expense");
       navigate("/dashboard"); // Go back to dashboard!
     } catch (err) {
       console.error("Error saving approved receipt transaction:", err);
@@ -190,6 +214,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
       setDate(new Date().toISOString().split("T")[0]);
       
       onTransactionAdded(); // Trigger global cache updates
+      await maybeWarnBudget(category, type);
       navigate("/dashboard"); // Go back to dashboard!
     } catch (err) {
       console.error(err);

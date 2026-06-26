@@ -10,7 +10,8 @@ import {
   PlusCircle, 
   Settings, 
   BookOpen, 
-  Shield 
+  Shield,
+  PiggyBank
 } from "lucide-react";
 
 export const Breadcrumbs: React.FC = () => {
@@ -49,6 +50,12 @@ export const Breadcrumbs: React.FC = () => {
           label: t("nav.settings"),
           path: "/settings",
           icon: <Settings size={14} />
+        });
+      } else if (part === "budget") {
+        list.push({
+          label: t("nav.budget"),
+          path: "/budget",
+          icon: <PiggyBank size={14} />
         });
       } else if (part === "onboarding") {
         list.push({

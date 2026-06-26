@@ -10,7 +10,8 @@
     "history": "Riwayat Transaksi",
     "settings": "Pengaturan",
     "logout": "Keluar Akun",
-    "admin_panel": "Admin Panel"
+    "admin_panel": "Admin Panel",
+    "budget": "Anggaran"
   },
   "auth": {
     "login_title": "Masuk Akun",
@@ -209,12 +210,7 @@
     "diagnostics_desc": "Verifikasi akurasi regulasi parser singkatan nominal secara lokal.",
     "btn_run_tests": "Jalankan Tes Parser",
     "test_input": "Input Teks",
-    "test_output": "Jumlah Dolar/Rupiah Terdeteksi",
-    "pwa_section": "Aplikasi Web Progresif (PWA)",
-    "pwa_desc": "Pasang E-Wallet Kita langsung di perangkat Anda untuk akses instan cepat dan dukungan offline penuh.",
-    "pwa_btn_install": "Instal E-Wallet Kita",
-    "pwa_installed": "Aplikasi Sudah Terpasang",
-    "pwa_not_supported": "Browser Anda tidak mendukung tombol instalasi otomatis ini. Silakan gunakan opsi 'Tambahkan ke Layar Utama' (Add to Home Screen) secara manual dari menu browser Anda."
+    "test_output": "Jumlah Dolar/Rupiah Terdeteksi"
   },
   "common": {
     "active": "Aktif",
@@ -262,7 +258,6 @@
     "success_delete": "Transaksi berhasil dihapus.",
     "success_delete_all": "Seluruh riwayat keuangan telah dikosongkan secara permanen.",
     "success_profile": "Nama profil berhasil diperbarui!",
-    "success_pwa": "E-Wallet Kita berhasil dipasang! 🎉",
     "success_link": "Bot Telegram sukses dihubungkan!",
     "success_unlink": "Hubungan bot Telegram berhasil diputuskan.",
     "success_pref": "Preferensi berhasil disimpan ke cloud database kita.",
@@ -604,7 +599,8 @@
       "history": "Riwayat Transaksi",
       "settings": "Pengaturan",
       "receipt_scan": "Pindai Struk (AI)",
-      "telegram_bot": "Bot Telegram"
+      "telegram_bot": "Bot Telegram",
+      "budget": "Anggaran/Budget"
     }
   },
   "ai_monitor": {
@@ -734,5 +730,37 @@
     "dashboard_banner_desc": "Kami menyiapkan panduan interaktif cepat (1 menit) untuk mengenalkan fitur Catat Mandiri dan Riwayat Transaksi Anda.",
     "dashboard_banner_btn_start": "Mulai Panduan",
     "dashboard_banner_btn_dismiss": "Jangan Tampilkan Lagi"
+  },
+  "budget": {
+    "page_title": "Anggaran per Kategori",
+    "page_subtitle": "Tetapkan batas pengeluaran bulanan untuk tiap kategori dan dapatkan peringatan sebelum jebol.",
+    "no_budget_set": "Belum ada anggaran",
+    "set_budget": "Atur Anggaran",
+    "edit_budget": "Ubah Anggaran",
+    "monthly_limit_label": "Batas Bulanan (Rp)",
+    "alert_threshold_label": "Peringatan saat tercapai (%)",
+    "save": "Simpan Anggaran",
+    "delete": "Hapus Anggaran",
+    "delete_confirm_title": "Hapus Anggaran Ini?",
+    "delete_confirm_desc": "Anggaran untuk kategori '{category}' akan dihapus. Pengeluaran yang sudah tercatat tidak akan terpengaruh.",
+    "save_success": "Anggaran berhasil disimpan.",
+    "save_error": "Gagal menyimpan anggaran. Silakan coba lagi.",
+    "delete_success": "Anggaran berhasil dihapus.",
+    "delete_error": "Gagal menghapus anggaran.",
+    "invalid_limit": "Batas bulanan harus lebih dari 0.",
+    "invalid_threshold": "Persentase peringatan harus antara 1-100.",
+    "spent_of_limit": "{spent} dari {limit}",
+    "status_safe": "Aman",
+    "status_warning": "Mendekati Batas",
+    "status_danger": "Melebihi Batas",
+    "percent_used": "{percent}% terpakai",
+    "no_expense_categories": "Tidak ada kategori pengeluaran aktif saat ini.",
+    "toast_warning_threshold": "Peringatan: pengeluaran kategori '{category}' sudah {percent}% dari anggaran bulan ini.",
+    "toast_warning_over": "Anggaran kategori '{category}' sudah terlampaui ({percent}% dari batas bulan ini).",
+    "empty_state_title": "Belum ada kategori pengeluaran",
+    "empty_state_desc": "Tambahkan kategori pengeluaran terlebih dahulu untuk bisa mengatur anggaran.",
+    "dashboard_alert_title": "Peringatan Anggaran",
+    "dashboard_alert_cta": "Kelola Anggaran",
+    "dashboard_alert_item": "{category}: {percent}% terpakai"
   }
 }

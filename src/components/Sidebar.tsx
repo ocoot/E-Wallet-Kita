@@ -24,7 +24,8 @@ import {
   Volume2,
   VolumeX,
   Shield,
-  Lock
+  Lock,
+  PiggyBank
 } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
 import { useAdmin } from "../hooks/useAdmin";
@@ -83,6 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const menuItems: { id: string; label: string; icon: any; path: string; featureKey?: string }[] = [
     { id: "dashboard", label: t("nav.dashboard"), icon: LayoutDashboard, path: "/dashboard" },
     { id: "new_transaction", label: t("nav.new_transaction"), icon: PlusCircle, path: "/transactions/new", featureKey: "new_transaction" },
+    { id: "budget", label: t("nav.budget"), icon: PiggyBank, path: "/budget", featureKey: "budget" },
     { id: "history", label: t("nav.history"), icon: HistoryIcon, path: "/transactions", featureKey: "history" },
     { id: "settings", label: t("nav.settings"), icon: SettingsIcon, path: "/settings", featureKey: "settings" },
   ];

@@ -353,6 +353,21 @@ export const botText = {
         ? `🛠️ *This feature is temporarily unavailable due to ongoing maintenance.*\n\n_${reason}_`
         : `🛠️ *This feature is temporarily unavailable due to ongoing maintenance.*`,
   },
+  // Budget per kategori: peringatan dikirim setelah transaksi tersimpan
+  // (baik via chat text maupun receipt OCR) kalau kategori sudah
+  // mendekati/melewati alert_threshold_percent budget bulan ini.
+  budgetWarningThreshold: {
+    id: (catLabel: string, percent: string) =>
+      `⚠️ *Peringatan Anggaran*\n_Pengeluaran kategori *${catLabel}* sudah mencapai *${percent}%* dari anggaran bulan ini._`,
+    en: (catLabel: string, percent: string) =>
+      `⚠️ *Budget Warning*\n_Spending for category *${catLabel}* has reached *${percent}%* of this month's budget._`,
+  },
+  budgetWarningOver: {
+    id: (catLabel: string, percent: string) =>
+      `🚨 *Anggaran Terlampaui*\n_Pengeluaran kategori *${catLabel}* sudah *${percent}%* dari batas anggaran bulan ini._`,
+    en: (catLabel: string, percent: string) =>
+      `🚨 *Budget Exceeded*\n_Spending for category *${catLabel}* is already at *${percent}%* of this month's budget limit._`,
+  },
 };
 
 export function tr<K extends keyof typeof botText>(key: K, lang: Lang, ...args: Parameters<(typeof botText)[K][Lang]>): string {

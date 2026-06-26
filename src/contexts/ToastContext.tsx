@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, AlertTriangle, Info, X } from "lucide-react";
 
-type ToastType = "success" | "error" | "info";
+type ToastType = "success" | "error" | "info" | "warning";
 
 interface Toast {
   id: string;
@@ -51,13 +51,16 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                   ? "bg-emerald-950/95 border-emerald-500/30 text-emerald-100 light_sakura:bg-emerald-50 light_sakura:border-emerald-200 light_sakura:text-emerald-800"
                   : t.type === "error"
                     ? "bg-red-950/95 border-red-500/30 text-red-100 light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:text-red-800"
-                    : "bg-slate-900/95 border-indigo-500/30 text-indigo-100 light_sakura:bg-indigo-50 light_sakura:border-indigo-200 light_sakura:text-indigo-800"
+                    : t.type === "warning"
+                      ? "bg-amber-950/95 border-amber-500/30 text-amber-100 light_sakura:bg-amber-50 light_sakura:border-amber-200 light_sakura:text-amber-800"
+                      : "bg-slate-900/95 border-indigo-500/30 text-indigo-100 light_sakura:bg-indigo-50 light_sakura:border-indigo-200 light_sakura:text-indigo-800"
                 }`}
             >
               {/* Type icon indicator */}
               <div className="mt-0.5">
                 {t.type === "success" && <CheckCircle2 size={18} className="text-emerald-400 light_sakura:text-emerald-600" />}
                 {t.type === "error" && <AlertTriangle size={18} className="text-red-400 light_sakura:text-red-600" />}
+                {t.type === "warning" && <AlertTriangle size={18} className="text-amber-400 light_sakura:text-amber-600" />}
                 {t.type === "info" && <Info size={18} className="text-indigo-400 light_sakura:text-indigo-600" />}
               </div>
 
