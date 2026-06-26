@@ -12,7 +12,8 @@ import {
   BookOpen, 
   Shield,
   PiggyBank,
-  ReceiptText
+  ReceiptText,
+  CreditCard
 } from "lucide-react";
 
 export const Breadcrumbs: React.FC = () => {
@@ -60,7 +61,7 @@ export const Breadcrumbs: React.FC = () => {
         });
       } else if (part === "bill-reminders") {
         list.push({
-          label: t("bill_reminders.page_title"),
+          label: t("nav.bill_reminders"),
           path: "/bill-reminders",
           icon: <ReceiptText size={14} />
         });

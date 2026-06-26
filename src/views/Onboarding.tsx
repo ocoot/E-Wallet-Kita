@@ -16,7 +16,9 @@ import {
   Plus,
   Search,
   Filter,
-  FileDown
+  FileDown,
+  PiggyBank,
+  ReceiptText
 } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
 
@@ -52,7 +54,7 @@ export const Onboarding: React.FC = () => {
 
   const handleNext = () => {
     playClick();
-    if (currentStep < 3) {
+    if (currentStep < stepsCount - 1) {
       setCurrentStep((prev) => prev + 1);
     } else {
       handleComplete();
@@ -435,7 +437,7 @@ export const Onboarding: React.FC = () => {
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
-                    <ListFilter size={20} />
+                    <PiggyBank size={20} />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
@@ -446,12 +448,48 @@ export const Onboarding: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
-                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100">
-                    {t("onboarding.budget_feature_1")}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.budget_feature_1")}</span>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100">
-                    {t("onboarding.budget_feature_2")}
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.budget_feature_2")}</span>
+                  </div>
+                </div>
+
+                {/* Simulated Budget Visual */}
+                <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-4 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
+                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                    {t("onboarding.catat_practice_title")} (Simulasi)
+                  </h3>
+
+                  <div className="space-y-4">
+                    <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="text-sm font-semibold text-white light_sakura:text-slate-800">{t("categories.food_drink")}</span>
+                        <span className="text-xs text-rose-400 font-mono">85%</span>
+                      </div>
+                      <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden light_sakura:bg-rose-50">
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: "85%" }}
+                          transition={{ duration: 1, delay: 0.5 }}
+                          className="h-full bg-gradient-to-r from-orange-500 to-rose-500" 
+                        />
+                      </div>
+                      <div className="flex justify-between items-center mt-2 text-[10px] text-slate-500">
+                        <span>Rp850.000</span>
+                        <span>Limit: Rp1.000.000</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center gap-3 text-xs light_sakura:bg-rose-50 light_sakura:text-rose-600">
+                      <Sparkles size={16} className="text-rose-500" />
+                      <span>{t("budget.toast_warning_threshold", { category: t("categories.food_drink"), percent: 85 })}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -462,7 +500,7 @@ export const Onboarding: React.FC = () => {
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
-                    <ListFilter size={20} />
+                    <ReceiptText size={20} />
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
@@ -473,12 +511,57 @@ export const Onboarding: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <div className="grid grid-cols-1 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
-                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100">
-                    {t("onboarding.bill_feature_1")}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.bill_feature_1")}</span>
                   </div>
-                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100">
-                    {t("onboarding.bill_feature_2")}
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.bill_feature_2")}</span>
+                  </div>
+                </div>
+
+                {/* Simulated Bill Card */}
+                <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-4 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
+                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                    {t("onboarding.catat_practice_title")} (Simulasi)
+                  </h3>
+
+                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-2">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 light_sakura:bg-rose-50 light_sakura:text-rose-600">
+                        {t("bill_reminders.status_due_soon")}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 light_sakura:bg-rose-50 light_sakura:text-rose-500">
+                        <ReceiptText size={18} />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-white light_sakura:text-slate-800">PLN Pasca Bayar</h4>
+                        <p className="text-[10px] text-slate-500">{t("bill_reminders.due_day_label", { day: 20 })}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">{t("bill_reminders.amount_label")}</p>
+                        <p className="text-sm font-mono font-bold text-white light_sakura:text-slate-800">Rp350.000</p>
+                      </div>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          playSuccess();
+                          showToast(t("bill_reminders.marked_paid"), "success");
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-[10px] font-bold transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                      >
+                        {t("bill_reminders.mark_paid")}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
