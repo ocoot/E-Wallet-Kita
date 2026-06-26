@@ -498,7 +498,13 @@ export const Settings: React.FC<SettingsProps> = ({
           <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-5 font-sans light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <ShieldCheck className={isPremium ? "text-emerald-400" : "text-gray-500"} size={20} />
+                {isPremium ? (
+                  <ShieldCheck className="text-emerald-400" size={20} />
+                ) : isGuest ? (
+                  <Lock className="text-gray-500" size={20} />
+                ) : (
+                  <ShieldCheck className="text-gray-500" size={20} />
+                )}
                 <span className="font-bold text-white text-sm light_sakura:text-slate-800">
                   {isPremium ? t("premium.badge_active") : t("premium.menu_label")}
                 </span>
