@@ -784,7 +784,15 @@
     "start_toast": "Starting your financial journey! 🚀",
     "history_mock_note_4": "Motorcycle gasoline fuel",
     "practice_note_placeholder": "Example: Buy dinner",
-    "simulated_export_success": "Simulated PDF report exported successfully!"
+    "simulated_export_success": "Simulated PDF report exported successfully!",
+    "budget_title": "3. Budgeting",
+    "budget_desc": "Set monthly spending limits for each category to keep your finances in check.",
+    "budget_feature_1": "⚠️ Auto-Alerts: Get notified if spending approaches your limit.",
+    "budget_feature_2": "📊 Realization Monitor: View the percentage of budget used for each category.",
+    "bill_title": "4. Bill Reminders",
+    "bill_desc": "Track your recurring bills so you never miss a payment.",
+    "bill_feature_1": "🔔 Timely Notifications: Get reminders via Telegram before they are due.",
+    "bill_feature_2": "💳 Mark as Paid: Record bill payments with a single click."
   },
   "budget": {
     "page_title": "Budget per Category",

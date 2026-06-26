@@ -88,7 +88,7 @@ export const Onboarding: React.FC = () => {
     showToast(t("onboarding.catat_practice_success"), "success");
   };
 
-  const stepsCount = 4;
+  const stepsCount = 6;
 
   // Mock data for Step 3 Riwayat Transaksi Filter Practice
   const mockTransactions = [
@@ -430,8 +430,62 @@ export const Onboarding: React.FC = () => {
               </div>
             )}
 
-            {/* STEP 3: WRAP UP / GET STARTED */}
+            {/* STEP 3: BUDGET */}
             {currentStep === 3 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                    <ListFilter size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                      {t("onboarding.budget_title")}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                      {t("onboarding.budget_desc")}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100">
+                    {t("onboarding.budget_feature_1")}
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100">
+                    {t("onboarding.budget_feature_2")}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: BILLS */}
+            {currentStep === 4 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                    <ListFilter size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                      {t("onboarding.bill_title")}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                      {t("onboarding.bill_desc")}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100">
+                    {t("onboarding.bill_feature_1")}
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100">
+                    {t("onboarding.bill_feature_2")}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 5: WRAP UP / GET STARTED */}
+            {currentStep === 5 && (
               <div className="text-center space-y-6 py-4">
                 <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500 animate-bounce">
                   <CheckCircle2 size={32} />
@@ -479,7 +533,7 @@ export const Onboarding: React.FC = () => {
               onClick={handleNext}
               className="py-2 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 shadow-lg shadow-emerald-500/20 light_sakura:shadow-rose-500/20"
             >
-              <span>{currentStep === 3 ? t("onboarding.btn_finish") : t("onboarding.btn_next")}</span>
+              <span>{currentStep === 5 ? t("onboarding.btn_finish") : t("onboarding.btn_next")}</span>
               <ArrowRight size={16} />
             </button>
           </div>

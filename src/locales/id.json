@@ -784,7 +784,15 @@
     "start_toast": "Memulai perjalanan keuangan Anda! 🚀",
     "history_mock_note_4": "Beli bensin motor",
     "practice_note_placeholder": "Contoh: Beli makan malam",
-    "simulated_export_success": "Laporan PDF simulasi berhasil diekspor!"
+    "simulated_export_success": "Laporan PDF simulasi berhasil diekspor!",
+    "budget_title": "3. Anggaran (Budgeting)",
+    "budget_desc": "Tetapkan batas pengeluaran bulanan untuk tiap kategori agar keuangan Anda tetap terkendali.",
+    "budget_feature_1": "⚠️ Peringatan Otomatis: Dapatkan notifikasi jika pengeluaran mendekati batas.",
+    "budget_feature_2": "📊 Pantau Realisasi: Lihat persentase penggunaan anggaran setiap kategori.",
+    "bill_title": "4. Pengingat Tagihan",
+    "bill_desc": "Catat tagihan rutin Anda agar tidak ada pembayaran yang terlewat.",
+    "bill_feature_1": "🔔 Notifikasi Tepat Waktu: Dapatkan pengingat melalui Telegram sebelum jatuh tempo.",
+    "bill_feature_2": "💳 Tandai Lunas: Catat pembayaran tagihan dengan satu kali klik."
   },
   "budget": {
     "page_title": "Anggaran per Kategori",
