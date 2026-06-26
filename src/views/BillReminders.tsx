@@ -353,7 +353,7 @@ export const BillReminders: React.FC = () => {
       className="space-y-6"
     >
       {/* Header Container */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-2xl bg-slate-900/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
         <div>
           <h1 className="font-sans font-bold text-2xl text-slate-100 light_sakura:text-slate-900">
             {t("bill_reminders.page_title")}

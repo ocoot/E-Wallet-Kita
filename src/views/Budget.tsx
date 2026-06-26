@@ -135,7 +135,7 @@ export const Budget: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Header Container */}
-      <div className="p-5 rounded-2xl bg-slate-900/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 flex items-center gap-4">
+      <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm flex items-center gap-4">
         <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:text-rose-500 shrink-0">
           <PiggyBank size={24} />
         </div>
