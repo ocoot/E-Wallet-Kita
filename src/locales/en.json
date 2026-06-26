@@ -245,7 +245,9 @@
     "dark": "DARK",
     "light": "LIGHT",
     "save": "Save",
-    "edit": "Edit"
+    "edit": "Edit",
+    "sending": "Sending...",
+    "generating_pdf": "Preparing PDF..."
   },
   "confirm": {
     "logout_title": "End Session",

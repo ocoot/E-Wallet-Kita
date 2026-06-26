@@ -49,6 +49,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
   const [secondsLeft, setSecondsLeft] = useState(QRIS_EXPIRY_SECONDS);
   const [paidAt, setPaidAt] = useState<string | null>(null);
   const [askDownload, setAskDownload] = useState(false);
+  const [actionLoading, setActionLoading] = useState<"download" | "email" | null>(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -65,6 +66,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
     setSecondsLeft(QRIS_EXPIRY_SECONDS);
     setPaidAt(null);
     setAskDownload(false);
+    setActionLoading(null);
     setShowCancelConfirm(false);
     setSelectedVoucher(null);
     if (pollRef.current) clearInterval(pollRef.current);
@@ -142,8 +144,31 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [step, tx]);
 
+  const handleDownloadReceipt = async () => {
+    if (!tx || !paidAt) return;
+    setActionLoading("download");
+    try {
+      const pdf = generatePremiumReceipt({
+        orderId: tx.order_id,
+        amount: tx.amount,
+        totalAmount: tx.total_amount,
+        paidAt,
+        buyerName: displayName || user?.user_metadata?.full_name || user?.email || t("admin.guest_user"),
+        sandbox: isSandboxMode(),
+        t,
+      });
+      pdf.save(`Struk-${tx.order_id}.pdf`);
+      showToast(t("premium.receipt_downloaded"), "success");
+    } catch (err) {
+      console.error("Error generating or saving PDF:", err);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   const handleSendReceipt = async () => {
     if (!tx || !paidAt || !user?.email) return;
+    setActionLoading("email");
     try {
       await sendPremiumReceiptEmail({
         email: user.email,
@@ -162,6 +187,8 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
     } catch (err) {
       console.error("Error sending receipt email:", err);
       showToast(t("premium.receipt_email_failed"), "error");
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -285,14 +312,58 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               <p className="text-sm text-gray-400 mt-2">{t("premium.success_desc")}</p>
 
               {askDownload ? (
-                <div className="flex gap-3 mt-6">
-                  <button onClick={() => { setAskDownload(false); onClose(); }} className="flex-1 py-3 rounded-xl bg-slate-800 text-gray-300 text-sm font-semibold">{t("premium.skip_receipt")}</button>
-                  <button onClick={handleSendReceipt} className="flex-1 py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold flex items-center justify-center gap-2">
-                    <Mail size={15} /> {t("premium.email_receipt")}
+                <div className="flex flex-col gap-3 mt-6">
+                  <button
+                    disabled={actionLoading !== null}
+                    onClick={() => {
+                      setAskDownload(false);
+                      onClose();
+                    }}
+                    className="w-full py-3 rounded-xl bg-slate-800 text-gray-300 text-sm font-semibold hover:bg-slate-700/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {t("premium.skip_receipt")}
                   </button>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      disabled={actionLoading !== null}
+                      onClick={handleDownloadReceipt}
+                      className="py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {actionLoading === "download" ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          <span>{t("common.generating_pdf")}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Download size={16} />
+                          <span>{t("premium.download_receipt")}</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      disabled={actionLoading !== null}
+                      onClick={handleSendReceipt}
+                      className="py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {actionLoading === "email" ? (
+                        <>
+                          <Loader2 size={16} className="animate-spin" />
+                          <span>{t("common.sending")}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Mail size={16} />
+                          <span>{t("premium.email_receipt")}</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <button onClick={onClose} className="mt-6 w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold">{t("common.close")}</button>
+                <button onClick={onClose} className="mt-6 w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-500 transition-colors">{t("common.close")}</button>
               )}
             </div>
           )}
