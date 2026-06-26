@@ -26,9 +26,15 @@ import { Breadcrumbs } from "./components/Breadcrumbs";
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut } from "lucide-react";
 import { supabase } from "./lib/supabase";
+import { User } from "@supabase/supabase-js";
 
-const MainLayout: React.FC = () => {
-  const { user, loading, signOut } = useAuth();
+interface MainLayoutProps {
+  user: User | null;
+  loading: boolean;
+  signOut: () => Promise<void>;
+}
+
+const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   const { isAdmin } = useAdmin();
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -240,7 +246,7 @@ const MainLayout: React.FC = () => {
 };
 
 export default function App() {
-  const { isRecoveringPassword, setIsRecoveringPassword } = useAuth();
+  const { user, loading, signOut, isRecoveringPassword, setIsRecoveringPassword } = useAuth();
 
   return (
     <ThemeProvider>
@@ -250,7 +256,7 @@ export default function App() {
             <Routes>
                <Route path="/login" element={<Login />} />
                <Route path="/auth/callback" element={<AuthCallback />} />
-               <Route path="/*" element={<MainLayout />} />
+               <Route path="/*" element={<MainLayout user={user} loading={loading} signOut={signOut} />} />
             </Routes>
             <ResetPasswordModal 
               isOpen={isRecoveringPassword} 

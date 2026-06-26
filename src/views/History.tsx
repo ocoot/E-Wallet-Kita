@@ -34,7 +34,7 @@ export const History: React.FC<HistoryProps> = ({
   onTransactionUpdated,
   userDisplayName
 }) => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { categories } = useCategories();
   const { user } = useAuth();
 
@@ -155,7 +155,7 @@ export const History: React.FC<HistoryProps> = ({
         const matchesNote = item.note && item.note.toLowerCase().includes(s);
         const cat = categories.find(c => c.key === item.category);
         const catLabel = cat 
-          ? (useLanguage().locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key))
+          ? (locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key))
           : item.category;
         const matchesCategory = catLabel.toLowerCase().includes(s);
         return matchesNote || matchesCategory;
