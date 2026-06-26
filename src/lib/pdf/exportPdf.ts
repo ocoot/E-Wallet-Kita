@@ -1,8 +1,6 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Transaction, Category } from "../../types";
-import idLocales from "../../locales/id.json" assert { type: "json" };
-import enLocales from "../../locales/en.json" assert { type: "json" };
 import {
   drawHeader,
   drawFooter,
@@ -377,35 +375,6 @@ export const exportFullPdf = (params: {
   doc.save(filename);
   return filename;
 };
-
-/**
- * Creates a standard PDF translator function for backend use,
- * pulling translations from locales id/en JSON files.
- */
-export function createPdfTranslator(lang: "id" | "en"): TFunc {
-  const locales = lang === "en" ? enLocales : idLocales;
-  return (key: string, replacements?: Record<string, string | number>) => {
-    const parts = key.split(".");
-    let current: any = locales;
-    for (const part of parts) {
-      if (current && typeof current === "object" && part in current) {
-        current = current[part];
-      } else {
-        return key;
-      }
-    }
-    if (typeof current !== "string") {
-      return key;
-    }
-    let result = current;
-    if (replacements) {
-      for (const [k, v] of Object.entries(replacements)) {
-        result = result.replace(`{${k}}`, String(v));
-      }
-    }
-    return result;
-  };
-}
 
 /**
  * High-performance backend PDF generator returning a Uint8Array representation.
