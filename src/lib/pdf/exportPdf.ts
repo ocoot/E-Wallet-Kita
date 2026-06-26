@@ -76,69 +76,129 @@ const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
 
   const noDataMessage = transactions.length === 0 ? t("export.no_transactions") : undefined;
 
-  const body = transactions.map((tx) => {
-    const sign = tx.type === "income" ? "+" : "-";
-    return [
-      tx.transaction_date,
-      tx.note ? tx.note : "-",
-      resolveCategoryLabel(tx.category, categories, locale),
-      tx.type === "income" ? t("transaction.income") : t("transaction.expense"),
-      `${sign}${formatIDR(tx.amount)}`,
-    ];
-  });
+  if (summaryOnly) {
+    // Group transactions by category key
+    const categoryTotals: Record<string, { income: number; expense: number; count: number }> = {};
+    for (const tx of transactions) {
+      if (!categoryTotals[tx.category]) {
+        categoryTotals[tx.category] = { income: 0, expense: 0, count: 0 };
+      }
+      if (tx.type === "income") {
+        categoryTotals[tx.category].income += tx.amount;
+      } else {
+        categoryTotals[tx.category].expense += tx.amount;
+      }
+      categoryTotals[tx.category].count += 1;
+    }
 
-  autoTable(doc, {
-    head: [[
-      t("export.col_date"),
-      t("export.col_description"),
-      t("export.col_category"),
-      t("export.col_type"),
-      t("export.col_amount"),
-    ]],
-    body: noDataMessage ? [] : body,
-    startY: firstPageStartY,
-    margin: { top: HEADER_HEIGHT, left: 40, right: 40, bottom: 50 },
-    styles: { fontSize: 9, cellPadding: 6 },
-    headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: "bold" },
-    alternateRowStyles: { fillColor: [248, 249, 251] }, // Ultra light clean slate grey-blue
-    columnStyles: {
-      0: { cellWidth: 65, halign: "center" },
-      1: { cellWidth: 185, halign: "left" },
-      2: { cellWidth: 95, halign: "left" },
-      3: { cellWidth: 80, halign: "center" },
-      4: { cellWidth: 90, halign: "right" },
-    },
-    didParseCell: (data) => {
-      // Color and bold nominals with premium dark palette
-      if (data.section === "body" && data.column.index === 4) {
-        const val = String(data.cell.raw || "");
-        if (val.startsWith("+")) {
-          data.cell.styles.textColor = [4, 120, 87]; // Emerald-700 (premium dark emerald)
-          data.cell.styles.fontStyle = "bold";
-        } else if (val.startsWith("-")) {
-          data.cell.styles.textColor = [185, 28, 28]; // Red-700 (premium dark crimson)
-          data.cell.styles.fontStyle = "bold";
+    const summaryBody = Object.entries(categoryTotals).map(([catKey, value]) => {
+      return [
+        resolveCategoryLabel(catKey, categories, locale),
+        value.income > 0 ? `+${formatIDR(value.income)}` : "-",
+        value.expense > 0 ? `-${formatIDR(value.expense)}` : "-",
+        String(value.count),
+      ];
+    });
+
+    autoTable(doc, {
+      head: [[
+        t("export.col_category"),
+        t("export.total_income"),
+        t("export.total_expense"),
+        t("export.transaction_count"),
+      ]],
+      body: noDataMessage ? [] : summaryBody,
+      startY: firstPageStartY,
+      margin: { top: HEADER_HEIGHT, left: 40, right: 40, bottom: 50 },
+      styles: { fontSize: 9, cellPadding: 6 },
+      headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [248, 249, 251] },
+      columnStyles: {
+        0: { cellWidth: 150, halign: "left" },
+        1: { cellWidth: 120, halign: "right" },
+        2: { cellWidth: 120, halign: "right" },
+        3: { cellWidth: 120, halign: "center" },
+      },
+      didParseCell: (data) => {
+        if (data.section === "body") {
+          if (data.column.index === 1 && String(data.cell.raw || "").startsWith("+")) {
+            data.cell.styles.textColor = [4, 120, 87]; // Emerald-700
+            data.cell.styles.fontStyle = "bold";
+          }
+          if (data.column.index === 2 && String(data.cell.raw || "").startsWith("-")) {
+            data.cell.styles.textColor = [185, 28, 28]; // Red-700
+            data.cell.styles.fontStyle = "bold";
+          }
         }
-      }
-      // Color and bullet style the type column
-      if (data.section === "body" && data.column.index === 3) {
-        const val = String(data.cell.raw || "");
-        if (val.includes(t("transaction.income"))) {
-          data.cell.styles.textColor = [4, 120, 87]; // Emerald-700
-          data.cell.styles.fontStyle = "bold";
-        } else {
-          data.cell.styles.textColor = [185, 28, 28]; // Red-700
-          data.cell.styles.fontStyle = "bold";
+      },
+      didDrawPage: () => {
+        drawHeader(doc, headerOpts);
+        drawFooter(doc, { t, pageLabelPrefix: "" });
+      },
+    });
+  } else {
+    const body = transactions.map((tx) => {
+      const sign = tx.type === "income" ? "+" : "-";
+      return [
+        tx.transaction_date,
+        tx.note ? tx.note : "-",
+        resolveCategoryLabel(tx.category, categories, locale),
+        tx.type === "income" ? t("transaction.income") : t("transaction.expense"),
+        `${sign}${formatIDR(tx.amount)}`,
+      ];
+    });
+
+    autoTable(doc, {
+      head: [[
+        t("export.col_date"),
+        t("export.col_description"),
+        t("export.col_category"),
+        t("export.col_type"),
+        t("export.col_amount"),
+      ]],
+      body: noDataMessage ? [] : body,
+      startY: firstPageStartY,
+      margin: { top: HEADER_HEIGHT, left: 40, right: 40, bottom: 50 },
+      styles: { fontSize: 9, cellPadding: 6 },
+      headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: "bold" },
+      alternateRowStyles: { fillColor: [248, 249, 251] }, // Ultra light clean slate grey-blue
+      columnStyles: {
+        0: { cellWidth: 65, halign: "center" },
+        1: { cellWidth: 185, halign: "left" },
+        2: { cellWidth: 95, halign: "left" },
+        3: { cellWidth: 80, halign: "center" },
+        4: { cellWidth: 90, halign: "right" },
+      },
+      didParseCell: (data) => {
+        // Color and bold nominals with premium dark palette
+        if (data.section === "body" && data.column.index === 4) {
+          const val = String(data.cell.raw || "");
+          if (val.startsWith("+")) {
+            data.cell.styles.textColor = [4, 120, 87]; // Emerald-700 (premium dark emerald)
+            data.cell.styles.fontStyle = "bold";
+          } else if (val.startsWith("-")) {
+            data.cell.styles.textColor = [185, 28, 28]; // Red-700 (premium dark crimson)
+            data.cell.styles.fontStyle = "bold";
+          }
         }
-      }
-    },
-    willDrawPage: () => {
-    },
-    didDrawPage: () => {
-      drawHeader(doc, headerOpts);
-      drawFooter(doc, { t, pageLabelPrefix: "" });
-    },
-  });
+        // Color and bullet style the type column
+        if (data.section === "body" && data.column.index === 3) {
+          const val = String(data.cell.raw || "");
+          if (val.includes(t("transaction.income"))) {
+            data.cell.styles.textColor = [4, 120, 87]; // Emerald-700
+            data.cell.styles.fontStyle = "bold";
+          } else {
+            data.cell.styles.textColor = [185, 28, 28]; // Red-700
+            data.cell.styles.fontStyle = "bold";
+          }
+        }
+      },
+      didDrawPage: () => {
+        drawHeader(doc, headerOpts);
+        drawFooter(doc, { t, pageLabelPrefix: "" });
+      },
+    });
+  }
 
   // Summary cards with semantical visual grouping and premium styling, drawn on page 1
   doc.setPage(1);
