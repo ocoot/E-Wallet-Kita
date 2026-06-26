@@ -11,7 +11,8 @@ import {
   Settings, 
   BookOpen, 
   Shield,
-  PiggyBank
+  PiggyBank,
+  ReceiptText
 } from "lucide-react";
 
 export const Breadcrumbs: React.FC = () => {
@@ -57,6 +58,12 @@ export const Breadcrumbs: React.FC = () => {
           path: "/budget",
           icon: <PiggyBank size={14} />
         });
+      } else if (part === "bill-reminders") {
+        list.push({
+          label: t("bill_reminders.page_title"),
+          path: "/bill-reminders",
+          icon: <ReceiptText size={14} />
+        });
       } else if (part === "onboarding") {
         list.push({
           label: t("nav.onboarding"),
@@ -101,7 +108,7 @@ export const Breadcrumbs: React.FC = () => {
     <nav 
       id="app-breadcrumbs-nav" 
       aria-label="breadcrumb"
-      className="mb-6 flex items-center overflow-x-auto whitespace-nowrap py-2.5 px-4 bg-slate-900/40 border border-slate-800/40 rounded-2xl text-xs text-slate-400 backdrop-blur-md max-w-fit light_sakura:bg-rose-50/60 light_sakura:border-rose-100/60 light_sakura:text-slate-600 transition-all duration-300 shadow-sm"
+      className="mb-6 flex items-center overflow-x-auto whitespace-nowrap py-3 px-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm text-xs text-slate-400 transition-all duration-300 max-w-fit"
     >
       <ol className="flex items-center gap-1.5 sm:gap-2">
         {breadcrumbs.map((item, index) => {
