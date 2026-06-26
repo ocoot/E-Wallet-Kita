@@ -74,3 +74,19 @@ export interface PremiumPricing {
   discountAmount: number;
   finalPrice: number;
 }
+
+export interface BillReminder {
+  id: string;
+  user_id: string;
+  name: string;
+  category_key: string;
+  amount: number | null;
+  recurrence_type: "monthly" | "yearly" | "one_time";
+  due_day: number | null;       // untuk monthly
+  due_date: string | null;      // untuk yearly/one_time (YYYY-MM-DD)
+  notes: string | null;
+  is_paid: boolean;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
+}

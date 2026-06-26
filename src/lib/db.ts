@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Transaction, Category, Budget } from "../types";
+import { Transaction, Category, Budget, BillReminder } from "../types";
 
 export const dbService = {
   async getCategories(): Promise<Category[]> {
@@ -262,6 +262,92 @@ export const dbService = {
     }
 
     return (data || []).reduce((sum, row: any) => sum + Number(row.amount), 0);
+  },
+
+  // ── Pengingat Tagihan (Bill Reminders) ──────────────────────────────
+
+  async getBillReminders(userId: string): Promise<BillReminder[]> {
+    const { data, error } = await supabase
+      .from('bill_reminders')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching bill reminders:', error);
+      throw error;
+    }
+
+    return data as BillReminder[];
+  },
+
+  async saveBillReminder(
+    userId: string,
+    payload: {
+      name: string;
+      category_key: string;
+      amount: number | null;
+      recurrence_type: "monthly" | "yearly" | "one_time";
+      due_day: number | null;
+      due_date: string | null;
+      notes: string | null;
+    }
+  ): Promise<BillReminder> {
+    const { data, error } = await supabase
+      .from('bill_reminders')
+      .insert({ user_id: userId, ...payload })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error saving bill reminder:', error);
+      throw error;
+    }
+
+    return data as BillReminder;
+  },
+
+  async updateBillReminder(
+    userId: string,
+    reminderId: string,
+    updates: Partial<Pick<BillReminder, 'name' | 'category_key' | 'amount' | 'recurrence_type' | 'due_day' | 'due_date' | 'notes' | 'is_paid' | 'paid_at'>>
+  ): Promise<BillReminder> {
+    const payload: Record<string, any> = { ...updates, updated_at: new Date().toISOString() };
+
+    const { data, error } = await supabase
+      .from('bill_reminders')
+      .update(payload)
+      .eq('id', reminderId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating bill reminder:', error);
+      throw error;
+    }
+
+    return data as BillReminder;
+  },
+
+  async deleteBillReminder(userId: string, reminderId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('bill_reminders')
+      .delete()
+      .eq('id', reminderId)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error deleting bill reminder:', error);
+      return false;
+    }
+    return true;
+  },
+
+  async markBillPaid(userId: string, reminderId: string, paid: boolean): Promise<BillReminder> {
+    return await dbService.updateBillReminder(userId, reminderId, {
+      is_paid: paid,
+      paid_at: paid ? new Date().toISOString() : null
+    });
   }
 };
-

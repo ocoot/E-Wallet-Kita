@@ -13,6 +13,7 @@ import { NewTransaction } from "./views/NewTransaction";
 import { History } from "./views/History";
 import { Settings } from "./views/Settings";
 import { Budget } from "./views/Budget";
+import { BillReminders } from "./views/BillReminders";
 import { AdminPanel } from "./views/AdminPanel";
 import { Onboarding } from "./views/Onboarding";
 import { useAdmin } from "./hooks/useAdmin";
@@ -175,6 +176,7 @@ const MainLayout: React.FC = () => {
                 <Route path="/transactions/new" element={<FeatureLockGate featureKey="new_transaction"><NewTransaction onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
                 <Route path="/transactions" element={<FeatureLockGate featureKey="history"><History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
                 <Route path="/budget" element={<FeatureLockGate featureKey="budget"><Budget /></FeatureLockGate>} />
+                <Route path="/bill-reminders" element={<FeatureLockGate featureKey="bill_reminders"><BillReminders /></FeatureLockGate>} />
                 <Route path="/settings" element={<FeatureLockGate featureKey="settings"><Settings onUserPrefUpdated={(updatedUser) => {
                   setUserProfile({ display_name: updatedUser.display_name });
                 }} /></FeatureLockGate>} />
