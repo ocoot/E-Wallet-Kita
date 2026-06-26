@@ -368,6 +368,24 @@ export const botText = {
     en: (catLabel: string, percent: string) =>
       `🚨 *Budget Exceeded*\n_Spending for category *${catLabel}* is already at *${percent}%* of this month's budget limit._`,
   },
+  // Respons untuk tombol "Tandai Lunas" pada pesan reminder tagihan
+  // (lihat supabase/functions/bill-reminder-notifier). Teks reminder itu
+  // sendiri (judul, baris jatuh tempo, dll) dibuat di dalam Edge Function
+  // tersebut, bukan di sini, karena Edge Function (Deno) tidak bisa
+  // import file ini (lingkungan Node/Vercel) -- lihat komentar di
+  // reminderText() pada Edge Function untuk detail kenapa terpisah.
+  billMarkPaidSuccess: {
+    id: () => "✅ Lunas!",
+    en: () => "✅ Paid!",
+  },
+  billMarkPaidConfirmed: {
+    id: (name: string) => `✅ *Tagihan "${name}" ditandai lunas.*`,
+    en: (name: string) => `✅ *Bill "${name}" marked as paid.*`,
+  },
+  billAlreadyPaidOrNotFound: {
+    id: () => "ℹ️ Tagihan ini sudah ditandai lunas sebelumnya atau tidak ditemukan.",
+    en: () => "ℹ️ This bill was already marked as paid or could not be found.",
+  },
 };
 
 export function tr<K extends keyof typeof botText>(key: K, lang: Lang, ...args: Parameters<(typeof botText)[K][Lang]>): string {

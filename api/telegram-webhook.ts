@@ -578,6 +578,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       // bisa mengganti bahasa meski sedang maintenance.
       const isTxAction = actionData.startsWith("tx_");
       const isReceiptAction = actionData.startsWith("rcpt_");
+      const isBillAction = actionData.startsWith("bill_");
 
       if (isTxAction && isFeatureLocked(maintenanceStatus, "new_transaction")) {
         await answerTelegramCallback(queryId);
@@ -586,6 +587,16 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       }
 
       if (isReceiptAction && isFeatureLocked(maintenanceStatus, "receipt_scan")) {
+        await answerTelegramCallback(queryId);
+        await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
+        res.status(200).json({ ok: true }); return;
+      }
+
+      // Tombol "Tandai Lunas" dari pesan reminder tagihan (dikirim oleh
+      // Edge Function bill-reminder-notifier) memetakan ke feature lock
+      // yang sama dengan halaman web-nya (<FeatureLockGate featureKey="bill_reminders">
+      // di App.tsx), supaya admin kunci satu tempat berlaku di web & bot.
+      if (isBillAction && isFeatureLocked(maintenanceStatus, "bill_reminders")) {
         await answerTelegramCallback(queryId);
         await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
         res.status(200).json({ ok: true }); return;
@@ -869,6 +880,31 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         await answerTelegramCallback(queryId, tr("cbLangSet", newLang));
         // Update the original message to show next steps in the chosen language
         await editTelegramMessage(chatId, msgId, tr("start", newLang));
+      }
+      // Tombol "Tandai Lunas" pada pesan reminder tagihan (lihat
+      // supabase/functions/bill-reminder-notifier). Dipisah dari alur
+      // tx_/rcpt_ karena sumbernya bukan draft AI tapi baris bill_reminders
+      // yang sudah ada -- tidak butuh tahap konfirmasi tambahan di bot
+      // karena tombolnya sendiri sudah berfungsi sebagai konfirmasi (sesuai
+      // permintaan: tombol tandai lunas langsung di Telegram tanpa user
+      // perlu buka app).
+      else if (actionData.startsWith("bill_paid:")) {
+        const billId = actionData.split(":")[1];
+        const { data: updated, error: markErr } = await supabaseBackend.rpc("mark_bill_paid_via_bot", {
+          p_chat_id: chatId,
+          p_bill_id: billId
+        });
+
+        if (markErr || !updated || updated.length === 0) {
+          // Bill sudah lunas lebih dulu (mis. ditandai dari web) atau tidak
+          // ditemukan -- bukan error fatal, cukup beri tahu lewat callback toast.
+          await answerTelegramCallback(queryId, tr("billAlreadyPaidOrNotFound", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+
+        const row = updated[0];
+        await answerTelegramCallback(queryId, tr("billMarkPaidSuccess", lang));
+        await editTelegramMessage(chatId, msgId, tr("billMarkPaidConfirmed", lang, row.name));
       }
 
       res.status(200).json({ ok: true }); return;
