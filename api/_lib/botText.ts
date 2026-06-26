@@ -39,7 +39,8 @@ export const botText = {
       `3️⃣ *Daftar Perintah (Commands)*:\n` +
       `     • \`/saldo\` - Ringkasan saldo & perbandingan bulan ini vs bulan lalu.\n` +
       `     • \`/riwayat\` - Tampilkan 5 transaksi terakhir.\n` +
-      `     • \`/pdf\` - Ekspor laporan PDF (contoh: \`/pdf\`, \`/pdf ringkasan\`, \`/pdf 0126\`, \`/pdf 01062026 - 15062026\`).\n` +
+      `     • \`/pdf\` - Ekspor laporan PDF Bulan Ini Berjalan\n` +
+      `     • \`/pdf DDMMYYYY-DDMMYYYY\` - Ekspor laporan PDF Penuh (Maks 3 Bulan)\n` +
       `     • \`/hapus\` - Batalkan & hapus transaksi terakhir.\n` +
       `     • \`/unlink\` - Memutuskan koneksi akun Telegram dari sistem.\n` +
       `     • \`/help\` - Membuka pesan bantuan ini.`,
@@ -58,7 +59,8 @@ export const botText = {
       `3️⃣ *Command List*:\n` +
       `     • \`/saldo\` - Balance summary & comparison vs last month.\n` +
       `     • \`/riwayat\` - Show last 5 transactions.\n` +
-      `     • \`/pdf\` - Export PDF report (e.g.: \`/pdf\`, \`/pdf ringkasan\`, \`/pdf 0126\`, \`/pdf 01062026 - 15062026\`).\n` +
+      `     • \`/pdf\` - Export current month's PDF report\n` +
+      `     • \`/pdf DDMMYYYY-DDMMYYYY\` - Export full PDF report (Maximum 3 months)\n` +
       `     • \`/hapus\` - Undo & delete the last transaction.\n` +
       `     • \`/unlink\` - Disconnect your Telegram account from the system.\n` +
       `     • \`/help\` - Show this help message.`,
@@ -86,6 +88,10 @@ export const botText = {
   pdfRangeInvalid: {
     id: () => "⚠️ Tanggal mulai tidak boleh setelah tanggal akhir!",
     en: () => "⚠️ Start date cannot be after end date!",
+  },
+  pdfRangeTooLong: {
+    id: () => "❌ Rentang laporan maksimal 3 bulan.\n\nContoh:\n/pdf 01012026-31032026",
+    en: () => "❌ Maximum report range is 3 months.\n\nExample:\n/pdf 01012026-31032026",
   },
   pdfCaption: {
     id: (period: string) => `Laporan transaksi PDF Anda untuk periode *${period}* berhasil dibuat. 🌸`,

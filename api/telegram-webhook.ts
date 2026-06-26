@@ -1262,6 +1262,15 @@ export default async (req: VercelRequest, res: VercelResponse) => {
               await sendTelegramMessage(chatId, tr("pdfRangeInvalid", lang));
               res.status(200).json({ ok: true }); return;
             }
+
+            // maksimal 3 bulan
+            const maxEnd = new Date(startDate);
+            maxEnd.setMonth(maxEnd.getMonth() + 3);
+
+            if (endDate > maxEnd) {
+              await sendTelegramMessage(chatId, tr("pdfRangeTooLong", lang));
+              res.status(200).json({ ok: true }); return;
+            }
             
             const toISODateStrLocal = (d: Date) => d.toISOString().split("T")[0];
             periodLabel = `${toISODateStrLocal(startDate)} - ${toISODateStrLocal(endDate)}`;
