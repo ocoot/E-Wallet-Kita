@@ -71,134 +71,150 @@ const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
 
   const pageWidth = doc.internal.pageSize.getWidth();
 
+  if (summaryOnly) {
+    drawHeader(doc, headerOpts);
+    
+    let sy = HEADER_HEIGHT;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.setTextColor(30, 41, 59); // Slate-800
+    doc.text(t("export.summary_title"), 40, sy);
+    sy += 16;
+
+    const cardData = [
+      {
+        label: t("export.total_income"),
+        value: formatIDR(totals.income),
+        fillColor: [236, 253, 245], // Emerald-50
+        borderColor: [34, 197, 94], // Emerald-500
+        labelColor: [6, 95, 70], // Emerald-800
+        valueColor: [4, 120, 87] // Emerald-700
+      },
+      {
+        label: t("export.total_expense"),
+        value: formatIDR(totals.expense),
+        fillColor: [254, 242, 242], // Red-50
+        borderColor: [239, 68, 68], // Red-500
+        labelColor: [153, 27, 27], // Red-800
+        valueColor: [185, 28, 28] // Red-700
+      },
+      {
+        label: t("export.net_balance"),
+        value: formatIDR(totals.net),
+        fillColor: totals.net >= 0 ? [239, 246, 255] : [254, 242, 242], // Blue-50 or Red-50
+        borderColor: totals.net >= 0 ? [59, 130, 246] : [239, 68, 68], // Blue-500 or Red-500
+        labelColor: totals.net >= 0 ? [30, 64, 175] : [153, 27, 27], // Blue-800 or Red-800
+        valueColor: totals.net >= 0 ? [29, 78, 216] : [185, 28, 28] // Blue-700 or Red-700
+      },
+      {
+        label: t("export.transaction_count"),
+        value: String(totals.count),
+        fillColor: [250, 245, 255], // Purple-50
+        borderColor: [168, 85, 247], // Purple-500
+        labelColor: [107, 33, 168], // Purple-800
+        valueColor: [126, 34, 206] // Purple-700
+      }
+    ];
+
+    const colGap = 8;
+    const cardW = (pageWidth - 80 - 3 * colGap) / 4;
+    const cardH = 54;
+
+    cardData.forEach((card, idx) => {
+      const x = 40 + idx * (cardW + colGap);
+      
+      // Draw Rounded Card Container
+      doc.setFillColor(card.fillColor[0], card.fillColor[1], card.fillColor[2]);
+      doc.setDrawColor(card.borderColor[0], card.borderColor[1], card.borderColor[2]);
+      doc.setLineWidth(1);
+      doc.roundedRect(x, sy, cardW, cardH, 6, 6, "FD");
+
+      // Draw Card Label
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.setTextColor(card.labelColor[0], card.labelColor[1], card.labelColor[2]);
+      doc.text(card.label, x + 10, sy + 18);
+
+      // Draw Card Value
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(card.valueColor[0], card.valueColor[1], card.valueColor[2]);
+      doc.text(card.value, x + 10, sy + 38);
+    });
+
+    drawFooter(doc, { t, pageLabelPrefix: "" });
+    finalizePageNumbers(doc, t);
+    return doc;
+  }
+
   // Page 1 starts further down to make room for the manually-drawn summary card.
   const firstPageStartY = HEADER_HEIGHT + SUMMARY_BLOCK_HEIGHT;
 
   const noDataMessage = transactions.length === 0 ? t("export.no_transactions") : undefined;
 
-  if (summaryOnly) {
-    // Group transactions by category key
-    const categoryTotals: Record<string, { income: number; expense: number; count: number }> = {};
-    for (const tx of transactions) {
-      if (!categoryTotals[tx.category]) {
-        categoryTotals[tx.category] = { income: 0, expense: 0, count: 0 };
+  const body = transactions.map((tx) => {
+    const sign = tx.type === "income" ? "+" : "-";
+    return [
+      tx.transaction_date,
+      tx.note ? tx.note : "-",
+      resolveCategoryLabel(tx.category, categories, locale),
+      tx.type === "income" ? t("transaction.income") : t("transaction.expense"),
+      `${sign}${formatIDR(tx.amount)}`,
+    ];
+  });
+
+  autoTable(doc, {
+    head: [[
+      t("export.col_date"),
+      t("export.col_description"),
+      t("export.col_category"),
+      t("export.col_type"),
+      t("export.col_amount"),
+    ]],
+    body: noDataMessage ? [] : body,
+    startY: firstPageStartY,
+    margin: { top: HEADER_HEIGHT, left: 40, right: 40, bottom: 50 },
+    styles: { fontSize: 9, cellPadding: 6 },
+    headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [248, 249, 251] }, // Ultra light clean slate grey-blue
+    columnStyles: {
+      0: { cellWidth: 65, halign: "center" },
+      1: { cellWidth: 185, halign: "left" },
+      2: { cellWidth: 95, halign: "left" },
+      3: { cellWidth: 80, halign: "center" },
+      4: { cellWidth: 90, halign: "right" },
+    },
+    didParseCell: (data) => {
+      // Color and bold nominals with premium dark palette
+      if (data.section === "body" && data.column.index === 4) {
+        const val = String(data.cell.raw || "");
+        if (val.startsWith("+")) {
+          data.cell.styles.textColor = [4, 120, 87]; // Emerald-700 (premium dark emerald)
+          data.cell.styles.fontStyle = "bold";
+        } else if (val.startsWith("-")) {
+          data.cell.styles.textColor = [185, 28, 28]; // Red-700 (premium dark crimson)
+          data.cell.styles.fontStyle = "bold";
+        }
       }
-      if (tx.type === "income") {
-        categoryTotals[tx.category].income += tx.amount;
-      } else {
-        categoryTotals[tx.category].expense += tx.amount;
+      // Color and bullet style the type column
+      if (data.section === "body" && data.column.index === 3) {
+        const val = String(data.cell.raw || "");
+        if (val.includes(t("transaction.income"))) {
+          data.cell.styles.textColor = [4, 120, 87]; // Emerald-700
+          data.cell.styles.fontStyle = "bold";
+        } else {
+          data.cell.styles.textColor = [185, 28, 28]; // Red-700
+          data.cell.styles.fontStyle = "bold";
+        }
       }
-      categoryTotals[tx.category].count += 1;
-    }
-
-    const summaryBody = Object.entries(categoryTotals).map(([catKey, value]) => {
-      return [
-        resolveCategoryLabel(catKey, categories, locale),
-        value.income > 0 ? `+${formatIDR(value.income)}` : "-",
-        value.expense > 0 ? `-${formatIDR(value.expense)}` : "-",
-        String(value.count),
-      ];
-    });
-
-    autoTable(doc, {
-      head: [[
-        t("export.col_category"),
-        t("export.total_income"),
-        t("export.total_expense"),
-        t("export.transaction_count"),
-      ]],
-      body: noDataMessage ? [] : summaryBody,
-      startY: firstPageStartY,
-      margin: { top: HEADER_HEIGHT, left: 40, right: 40, bottom: 50 },
-      styles: { fontSize: 9, cellPadding: 6 },
-      headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: "bold" },
-      alternateRowStyles: { fillColor: [248, 249, 251] },
-      columnStyles: {
-        0: { cellWidth: 150, halign: "left" },
-        1: { cellWidth: 120, halign: "right" },
-        2: { cellWidth: 120, halign: "right" },
-        3: { cellWidth: 120, halign: "center" },
-      },
-      didParseCell: (data) => {
-        if (data.section === "body") {
-          if (data.column.index === 1 && String(data.cell.raw || "").startsWith("+")) {
-            data.cell.styles.textColor = [4, 120, 87]; // Emerald-700
-            data.cell.styles.fontStyle = "bold";
-          }
-          if (data.column.index === 2 && String(data.cell.raw || "").startsWith("-")) {
-            data.cell.styles.textColor = [185, 28, 28]; // Red-700
-            data.cell.styles.fontStyle = "bold";
-          }
-        }
-      },
-      didDrawPage: () => {
-        drawHeader(doc, headerOpts);
-        drawFooter(doc, { t, pageLabelPrefix: "" });
-      },
-    });
-  } else {
-    const body = transactions.map((tx) => {
-      const sign = tx.type === "income" ? "+" : "-";
-      return [
-        tx.transaction_date,
-        tx.note ? tx.note : "-",
-        resolveCategoryLabel(tx.category, categories, locale),
-        tx.type === "income" ? t("transaction.income") : t("transaction.expense"),
-        `${sign}${formatIDR(tx.amount)}`,
-      ];
-    });
-
-    autoTable(doc, {
-      head: [[
-        t("export.col_date"),
-        t("export.col_description"),
-        t("export.col_category"),
-        t("export.col_type"),
-        t("export.col_amount"),
-      ]],
-      body: noDataMessage ? [] : body,
-      startY: firstPageStartY,
-      margin: { top: HEADER_HEIGHT, left: 40, right: 40, bottom: 50 },
-      styles: { fontSize: 9, cellPadding: 6 },
-      headStyles: { fillColor: [15, 23, 42], textColor: 255, fontStyle: "bold" },
-      alternateRowStyles: { fillColor: [248, 249, 251] }, // Ultra light clean slate grey-blue
-      columnStyles: {
-        0: { cellWidth: 65, halign: "center" },
-        1: { cellWidth: 185, halign: "left" },
-        2: { cellWidth: 95, halign: "left" },
-        3: { cellWidth: 80, halign: "center" },
-        4: { cellWidth: 90, halign: "right" },
-      },
-      didParseCell: (data) => {
-        // Color and bold nominals with premium dark palette
-        if (data.section === "body" && data.column.index === 4) {
-          const val = String(data.cell.raw || "");
-          if (val.startsWith("+")) {
-            data.cell.styles.textColor = [4, 120, 87]; // Emerald-700 (premium dark emerald)
-            data.cell.styles.fontStyle = "bold";
-          } else if (val.startsWith("-")) {
-            data.cell.styles.textColor = [185, 28, 28]; // Red-700 (premium dark crimson)
-            data.cell.styles.fontStyle = "bold";
-          }
-        }
-        // Color and bullet style the type column
-        if (data.section === "body" && data.column.index === 3) {
-          const val = String(data.cell.raw || "");
-          if (val.includes(t("transaction.income"))) {
-            data.cell.styles.textColor = [4, 120, 87]; // Emerald-700
-            data.cell.styles.fontStyle = "bold";
-          } else {
-            data.cell.styles.textColor = [185, 28, 28]; // Red-700
-            data.cell.styles.fontStyle = "bold";
-          }
-        }
-      },
-      didDrawPage: () => {
-        drawHeader(doc, headerOpts);
-        drawFooter(doc, { t, pageLabelPrefix: "" });
-      },
-    });
-  }
+    },
+    willDrawPage: () => {
+    },
+    didDrawPage: () => {
+      drawHeader(doc, headerOpts);
+      drawFooter(doc, { t, pageLabelPrefix: "" });
+    },
+  });
 
   // Summary cards with semantical visual grouping and premium styling, drawn on page 1
   doc.setPage(1);

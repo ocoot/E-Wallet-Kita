@@ -1167,8 +1167,8 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           let summaryOnly = false;
           let remainingArgs = argsText;
 
-          // If no arguments or just "ringkasan", it's summaryOnly
-          if (argsText === "" || /\bringkasan\b/i.test(argsText)) {
+          // Check if "ringkasan" is in the arguments (case-insensitive)
+          if (/\bringkasan\b/i.test(argsText)) {
             summaryOnly = true;
             // Remove "ringkasan" from remaining arguments
             remainingArgs = argsText.replace(/\bringkasan\b/i, "").trim();
@@ -1260,21 +1260,6 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             
             if (startDate > endDate) {
               await sendTelegramMessage(chatId, tr("pdfRangeInvalid", lang));
-              res.status(200).json({ ok: true }); return;
-            }
-
-            // Max 3 months limit check
-            const startYearNum = startDate.getFullYear();
-            const startMonthNum = startDate.getMonth();
-            const startDayNum = startDate.getDate();
-            const endYearNum = endDate.getFullYear();
-            const endMonthNum = endDate.getMonth();
-            const endDayNum = endDate.getDate();
-            const monthDiff = (endYearNum - startYearNum) * 12 + (endMonthNum - startMonthNum);
-            const isOver3Months = monthDiff > 3 || (monthDiff === 3 && endDayNum > startDayNum);
-
-            if (isOver3Months) {
-              await sendTelegramMessage(chatId, tr("pdfRangeTooLong", lang));
               res.status(200).json({ ok: true }); return;
             }
             
