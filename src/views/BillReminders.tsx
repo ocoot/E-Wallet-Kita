@@ -376,7 +376,7 @@ export const BillReminders: React.FC = () => {
 
       {/* Preferensi Jam Pengingat Tagihan (Telegram) */}
       {isTelegramLinked ? (
-        <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 space-y-3">
+        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm space-y-3">
           <h4 className="font-sans font-bold text-[10px] text-gray-400 light_sakura:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
             <Send size={12} className="text-indigo-400 -translate-x-0.5 rotate-45" />
             <span>{t("settings.reminder_hour_title")}</span>
@@ -408,7 +408,7 @@ export const BillReminders: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="flex items-start gap-2.5 p-4 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50">
+        <div className="flex items-start gap-2.5 p-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
           <Info size={14} className="text-indigo-400 shrink-0 mt-0.5" />
           <p className="font-sans text-[11px] text-gray-400 light_sakura:text-slate-600">
             {t("bill_reminders.connect_telegram_hint")}
@@ -436,15 +436,7 @@ export const BillReminders: React.FC = () => {
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.97 }}
-                className={`p-5 rounded-3xl border transition-colors ${
-                  r.urgency === "overdue" && !r.is_paid
-                    ? "bg-red-500/5 border-red-500/20 light_sakura:bg-red-50/40 light_sakura:border-red-200"
-                    : r.urgency === "due_soon" && !r.is_paid
-                    ? "bg-orange-500/5 border-orange-500/20 light_sakura:bg-orange-50/40 light_sakura:border-orange-200"
-                    : r.is_paid
-                    ? "bg-slate-800/30 border-slate-700/30 opacity-60 light_sakura:bg-slate-50/50 light_sakura:border-slate-200/60"
-                    : "bg-slate-800/50 border-slate-700/50 light_sakura:bg-white/60 light_sakura:border-slate-200"
-                }`}
+                className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm"
               >
                 {/* Baris atas: nama + badge */}
                 <div className="flex items-start justify-between gap-3 mb-3">

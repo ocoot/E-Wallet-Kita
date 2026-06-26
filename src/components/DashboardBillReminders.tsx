@@ -31,11 +31,7 @@ export const DashboardBillReminders: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className={`p-5 rounded-3xl border ${
-        hasOverdue
-          ? "bg-red-500/5 border-red-500/20 light_sakura:bg-red-50/40 light_sakura:border-red-200"
-          : "bg-orange-500/5 border-orange-500/20 light_sakura:bg-orange-50/40 light_sakura:border-orange-200"
-      }`}
+      className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm"
     >
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5">

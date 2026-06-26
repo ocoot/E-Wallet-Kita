@@ -34,7 +34,7 @@ export const DashboardBudgetAlerts: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-5 rounded-3xl border bg-amber-500/5 border-amber-500/20 light_sakura:bg-amber-50/40 light_sakura:border-amber-200"
+      className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm"
     >
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5">
