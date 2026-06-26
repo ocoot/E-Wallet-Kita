@@ -102,3 +102,15 @@ export function generatePremiumReceipt(data: ReceiptData): jsPDF {
 
   return doc;
 }
+
+export async function generatePremiumReceiptBase64(data: ReceiptData): Promise<string> {
+  const pdf = generatePremiumReceipt(data);
+  const arrayBuffer = pdf.output("arraybuffer");
+  const bytes = new Uint8Array(arrayBuffer);
+  let binary = "";
+  bytes.forEach((b) => {
+    binary += String.fromCharCode(b);
+  });
+  return btoa(binary);
+}
+

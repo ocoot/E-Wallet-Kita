@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { ShieldCheck, Loader2, CheckCircle2, XCircle, Clock, Download, Sparkles, X } from "lucide-react";
+import { ShieldCheck, Loader2, CheckCircle2, XCircle, Clock, Download, Sparkles, X, Mail } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
@@ -10,6 +10,7 @@ import { createPremiumTransaction, checkPremiumStatus, isSandboxMode, PREMIUM_AM
 import { useVoucher } from "../hooks/useVoucher";
 import { PremiumVoucher, PremiumPricing } from "../types";
 import { generatePremiumReceipt } from "../lib/receipt";
+import { sendPremiumReceiptEmail } from "../lib/email";
 import { Modal } from "./Modal";
 import { getPremiumBasePrice } from "../lib/settings";
 
@@ -141,19 +142,27 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [step, tx]);
 
-  const handleDownloadReceipt = () => {
-    if (!tx || !paidAt) return;
-    const doc = generatePremiumReceipt({
-      orderId: tx.order_id,
-      amount: tx.amount,
-      totalAmount: tx.total_amount,
-      paidAt,
-      buyerName: displayName || user?.user_metadata?.full_name || user?.email || t("admin.guest_user"),
-      sandbox: isSandboxMode(),
-      t,
-    });
-    doc.save(`struk-premium-${tx.order_id}.pdf`);
-    showToast(t("premium.receipt_downloaded"), "success");
+  const handleSendReceipt = async () => {
+    if (!tx || !paidAt || !user?.email) return;
+    try {
+      await sendPremiumReceiptEmail({
+        email: user.email,
+        customerName: displayName || user.user_metadata?.full_name || user.email,
+        orderId: tx.order_id,
+        amount: tx.amount,
+        totalAmount: tx.total_amount,
+        paidAt,
+        buyerName: displayName || user.user_metadata?.full_name || user.email,
+        sandbox: isSandboxMode(),
+        t,
+      });
+      showToast(t("premium.receipt_email_success"), "success");
+      setAskDownload(false);
+      onClose();
+    } catch (err) {
+      console.error("Error sending receipt email:", err);
+      showToast(t("premium.receipt_email_failed"), "error");
+    }
   };
 
   if (!isOpen) return null;
@@ -278,8 +287,8 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               {askDownload ? (
                 <div className="flex gap-3 mt-6">
                   <button onClick={() => { setAskDownload(false); onClose(); }} className="flex-1 py-3 rounded-xl bg-slate-800 text-gray-300 text-sm font-semibold">{t("premium.skip_receipt")}</button>
-                  <button onClick={() => { handleDownloadReceipt(); setAskDownload(false); onClose(); }} className="flex-1 py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold flex items-center justify-center gap-2">
-                    <Download size={15} /> {t("premium.download_receipt")}
+                  <button onClick={handleSendReceipt} className="flex-1 py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold flex items-center justify-center gap-2">
+                    <Mail size={15} /> {t("premium.email_receipt")}
                   </button>
                 </div>
               ) : (
