@@ -638,7 +638,8 @@
       "settings": "Pengaturan",
       "receipt_scan": "Pindai Struk (AI)",
       "telegram_bot": "Bot Telegram",
-      "budget": "Anggaran/Budget"
+      "budget": "Anggaran/Budget",
+      "bill_reminders": "Pengingat Tagihan"
     },
     "tab_voucher": "🎟️ Voucher",
     "tab_ai_monitor": "🤖 Monitor AI",

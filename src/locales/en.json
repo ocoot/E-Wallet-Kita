@@ -638,7 +638,8 @@
       "settings": "Settings",
       "receipt_scan": "Receipt Scan (AI)",
       "telegram_bot": "Telegram Bot",
-      "budget": "Budget"
+      "budget": "Budget",
+      "bill_reminders": "Bill Reminders"
     },
     "tab_voucher": "🎟️ Vouchers",
     "tab_ai_monitor": "🤖 AI Monitor",
