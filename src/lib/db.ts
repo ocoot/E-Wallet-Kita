@@ -344,48 +344,56 @@ export const dbService = {
     return true;
   },
 
-  // FIX #bill-tx: sebelumnya ini langsung UPDATE is_paid/paid_at tanpa
-  // menyentuh transactions. Sekarang lewat RPC toggle_bill_paid_web supaya
-  // Tandai Lunas/Batal Lunas juga otomatis insert/delete transaksi expense
-  // terkait (lihat set_bill_paid_status, migration 20260710000000) --
-  // logic itu SEKARANG SATU-SATUNYA SUMBER KEBENARAN di DB, jangan
-  // tambahkan lagi UPDATE bill_reminders.is_paid langsung dari tempat lain.
-  //
-  // userId tetap jadi parameter (walau RPC pakai auth.uid() sendiri) supaya
-  // signature & call site di BillReminders.tsx tidak perlu berubah.
-  //
-  // PENTING: RPC akan menolak (throw) kalau amount bill ini masih NULL saat
-  // p_mark_paid=true -- caller (BillReminders.tsx) harus menampilkan error
-  // ini ke user lewat toast, bukan diam-diam diabaikan.
-  async markBillPaid(_userId: string, reminderId: string, paid: boolean): Promise<BillReminder> {
-    const { data, error } = await supabase
-      .rpc('toggle_bill_paid_web', { p_bill_id: reminderId, p_mark_paid: paid });
-
+  /**
+   * Tandai bill reminder lunas. Pakai RPC mark_bill_paid_for_user supaya
+   * insert transaksi (kalau amount terisi) + update is_paid terjadi dalam
+   * satu operasi atomic (lihat migration 20260710000000).
+   * needsManualAmount = true artinya amount bill ini NULL, jadi tidak ada
+   * transaksi yang otomatis dibuat -- caller (UI) harus arahkan user ke
+   * form transaksi manual.
+   */
+  async markBillPaidWithTransaction(billId: string): Promise<{
+    linkedTransactionId: string | null;
+    needsManualAmount: boolean;
+  }> {
+    const { data, error } = await supabase.rpc('mark_bill_paid_for_user', { p_bill_id: billId });
     if (error) {
-      console.error('Error toggling bill paid status:', error);
+      console.error('Error marking bill paid:', error);
       throw error;
     }
-    if (!data || data.length === 0) {
-      throw new Error('Bill reminder not found or not owned by current user');
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) {
+      // Tidak ditemukan / sudah lunas duluan
+      throw new Error('BILL_NOT_FOUND_OR_ALREADY_PAID');
     }
+    return {
+      linkedTransactionId: row.linked_transaction_id ?? null,
+      needsManualAmount: !!row.needs_manual_amount
+    };
+  },
 
-    // RPC hanya mengembalikan kolom ringkas (id, name, is_paid, paid_at,
-    // linked_transaction_id), bukan seluruh baris bill_reminders. Re-fetch
-    // baris lengkap supaya tipe kembalian tetap BillReminder utuh seperti
-    // sebelumnya (caller di BillReminders.tsx mengandalkan field lengkap
-    // lewat refresh() sesudahnya, tapi fungsi ini tetap harus konsisten
-    // dengan signature lamanya).
-    const { data: full, error: fetchErr } = await supabase
-      .from('bill_reminders')
-      .select('*')
-      .eq('id', reminderId)
-      .single();
-
-    if (fetchErr) {
-      console.error('Error refetching bill reminder after toggle:', fetchErr);
-      throw fetchErr;
+  /**
+   * Batalkan status lunas. RPC unmark_bill_paid_for_user akan ikut
+   * menghapus transaksi yang sebelumnya dibuat otomatis (linked_transaction_id),
+   * supaya saldo & riwayat konsisten lagi dengan status bill.
+   */
+  async unmarkBillPaid(billId: string): Promise<{ deletedTransactionId: string | null }> {
+    const { data, error } = await supabase.rpc('unmark_bill_paid_for_user', { p_bill_id: billId });
+    if (error) {
+      console.error('Error unmarking bill paid:', error);
+      throw error;
     }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) {
+      throw new Error('BILL_NOT_FOUND_OR_NOT_PAID');
+    }
+    return { deletedTransactionId: row.deleted_transaction_id ?? null };
+  },
 
-    return full as BillReminder;
+  async markBillPaid(userId: string, reminderId: string, paid: boolean): Promise<BillReminder> {
+    return await dbService.updateBillReminder(userId, reminderId, {
+      is_paid: paid,
+      paid_at: paid ? new Date().toISOString() : null
+    });
   }
 };

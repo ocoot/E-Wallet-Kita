@@ -12,7 +12,8 @@
     "logout": "Log Out",
     "admin_panel": "Admin Panel",
     "budget": "Budget",
-    "bill_reminders": "Bills"
+    "bill_reminders": "Bills",
+    "onboarding": "Guide"
   },
   "auth": {
     "login_title": "Account Sign In",
@@ -155,7 +156,9 @@
     "export_menu_label": "Export PDF",
     "search_placeholder": "Search by note description...",
     "ledger_sync_title": "Synchronizing Ledger",
-    "ledger_sync_desc": "Erase history entries and sync wallet main balances..."
+    "ledger_sync_desc": "Erase history entries and sync wallet main balances...",
+    "locked_export_guest": "PDF Export is a premium feature. Please sign in or register an account to use it.",
+    "locked_export_user": "Full PDF Export is a premium feature. Unlock Premium Lifetime to export multi-month reports anytime!"
   },
   "categories": {
     "salary": "Salary Inflow",
@@ -211,7 +214,16 @@
     "diagnostics_desc": "Verify key local multiplier parser matches manually.",
     "btn_run_tests": "Run Parser Suite",
     "test_input": "Input String",
-    "test_output": "Detected Numerical Subtotal"
+    "test_output": "Detected Numerical Subtotal",
+    "pwa_section": "PWA Application Installation",
+    "pwa_desc": "Install E-Wallet Kita on your mobile home screen or computer for super fast, native-like app access.",
+    "pwa_installed": "App is installed",
+    "pwa_btn_install": "Install Web App (PWA)",
+    "pwa_not_supported": "PWA is not supported or already installed.",
+    "toast_unlinking_telegram": "Unlinking Telegram...",
+    "premium_locked_title": "Premium Exclusive Feature",
+    "premium_locked_guest_desc": "Please register or sign in first to use the instant-logging Telegram bot.",
+    "premium_locked_user_desc": "Activate Premium to connect the Telegram Bot and log transactions instantly via chat or receipt photos!"
   },
   "common": {
     "active": "Active",
@@ -233,7 +245,9 @@
     "dark": "DARK",
     "light": "LIGHT",
     "save": "Save",
-    "edit": "Edit"
+    "edit": "Edit",
+    "sending": "Sending...",
+    "generating_pdf": "Preparing PDF..."
   },
   "confirm": {
     "logout_title": "End Session",
@@ -343,10 +357,14 @@
     "expires_in": "Valid for {time}",
     "waiting_payment": "Waiting for payment...",
     "sandbox_notice": "Sandbox mode (AI Studio preview): payment will be auto-simulated.",
+    "dummy_qris_notice": "Test mode (enabled by admin): this payment is simulated automatically, no real money is exchanged.",
     "success_title": "Payment Successful!",
     "success_desc": "Your Premium Lifetime is now active. Thank you!",
     "success_toast": "🎉 Premium active successfully!",
     "download_receipt": "Download Receipt",
+    "email_receipt": "Send to Email",
+    "receipt_email_success": "Receipt successfully sent to your email.",
+    "receipt_email_failed": "Failed to send email.",
     "skip_receipt": "No, Thank You",
     "receipt_downloaded": "Receipt downloaded successfully",
     "expired_title": "Invoice Expired",
@@ -490,6 +508,20 @@
     "sandbox_badge": "Sandbox",
     "live_badge": "Live",
     "no_transactions_found": "No premium transactions recorded.",
+    "dummy_qris_title": "Dummy QRIS Mode",
+    "dummy_qris_desc": "Simulate QRIS payments to test the full premium purchase flow end-to-end without calling the real KlikQRIS gateway or using real money.",
+    "dummy_qris_status_on": "Active — premium purchases use a fake QR & auto-succeed",
+    "dummy_qris_status_off": "Inactive — premium purchases use the real KlikQRIS gateway",
+    "dummy_qris_sandbox_count": "{count} dummy transactions recorded all-time",
+    "dummy_qris_confirm_enable_title": "Enable Dummy QRIS Mode?",
+    "dummy_qris_confirm_enable_desc": "Once enabled, ALL new premium purchases (by anyone using the app) will use a fake QR and auto-succeed without real payment. Make sure to turn this off again before launching the premium feature to the public.",
+    "dummy_qris_confirm_disable_title": "Disable Dummy QRIS Mode?",
+    "dummy_qris_confirm_disable_desc": "New premium purchases will go back to using the real KlikQRIS gateway and real payments.",
+    "dummy_qris_enable_confirm_btn": "Yes, Enable",
+    "dummy_qris_disable_confirm_btn": "Yes, Disable",
+    "dummy_qris_active_warning": "⚠️ Dummy QRIS Mode is currently ACTIVE. All premium purchases right now are simulated and do not process real money.",
+    "dummy_qris_saving": "Updating Dummy QRIS setting...",
+    "dummy_qris_update_success": "Dummy QRIS setting updated successfully.",
     "category_manager_title": "Categories Management",
     "category_manager_desc": "Manage transaction categories dynamically. Deactivating a category does not delete past ledger history.",
     "add_category": "Add Category",
@@ -533,10 +565,10 @@
     "telegram_chat_id_label": "Telegram Chat ID",
     "not_connected": "Not integrated",
     "loading_user_detail": "Loading profile details...",
-    "tab_users": "Users List",
-    "tab_premium": "Revenue Monitor",
-    "tab_categories": "Categories",
-    "tab_broadcast": "Broadcast",
+    "tab_users": "👥 Manage Users",
+    "tab_premium": "💳 Premium Monitor",
+    "tab_categories": "🏷️ Categories",
+    "tab_broadcast": "📢 Broadcast Notice",
     "export_csv": "Export CSV",
     "bulk_grant_premium": "Grant Premium",
     "bulk_revoke_premium": "Revoke Premium",
@@ -602,7 +634,19 @@
       "receipt_scan": "Receipt Scan (AI)",
       "telegram_bot": "Telegram Bot",
       "budget": "Budget"
-    }
+    },
+    "tab_voucher": "🎟️ Vouchers",
+    "tab_ai_monitor": "🤖 AI Monitor",
+    "users_selected": "{count} users selected",
+    "clear_selection": "Clear Selection",
+    "rows_per_page": "Rows per page:",
+    "showing_all_users": "Showing all {count} users",
+    "showing_all_categories": "Showing all {count} categories",
+    "showing_all_keys": "Showing all {count} keys",
+    "showing_all_transactions": "Showing all {count} transactions",
+    "showing_all_vouchers": "Showing all {count} vouchers",
+    "proceed": "Proceed",
+    "cancel": "Cancel"
   },
   "ai_monitor": {
     "title": "AI Resource Monitor",
@@ -730,7 +774,11 @@
     "dashboard_banner_title": "New to E-Wallet Kita? 👋",
     "dashboard_banner_desc": "We have prepared a quick interactive guide (1 minute) to introduce the Manual Entry and Transaction History features.",
     "dashboard_banner_btn_start": "Start Guide",
-    "dashboard_banner_btn_dismiss": "Don't Show Again"
+    "dashboard_banner_btn_dismiss": "Don't Show Again",
+    "start_toast": "Starting your financial journey! 🚀",
+    "history_mock_note_4": "Motorcycle gasoline fuel",
+    "practice_note_placeholder": "Example: Buy dinner",
+    "simulated_export_success": "Simulated PDF report exported successfully!"
   },
   "budget": {
     "page_title": "Budget per Category",
@@ -796,8 +844,15 @@
     "status_paid": "Paid",
     "mark_paid": "Mark as Paid",
     "mark_unpaid": "Undo Paid",
-    "marked_paid": "Bill marked as paid.",
-    "marked_unpaid": "Paid status undone.",
+    "marked_paid": "Bill marked as paid, an expense transaction was recorded automatically.",
+    "marked_paid_needs_amount": "Bill marked as paid. Please fill in the transaction amount.",
+    "marked_unpaid": "Paid status undone, the related transaction was deleted.",
+    "mark_confirm_title": "Mark Bill as Paid?",
+    "mark_confirm_desc_with_amount": "Bill '{name}' will be marked as paid. Your balance will decrease by {amount} and it will be recorded automatically in your transaction history.",
+    "mark_confirm_desc_no_amount": "Bill '{name}' will be marked as paid. Since no amount was set, you'll be redirected to fill in the transaction manually.",
+    "mark_confirm_button": "Yes, Mark as Paid",
+    "unmark_confirm_title": "Undo Paid Status?",
+    "unmark_confirm_desc": "The paid status of bill '{name}' will be undone. If a transaction was automatically recorded earlier, it will also be deleted and your balance will increase again.",
     "save_success": "Bill saved successfully.",
     "save_error": "Failed to save bill. Please try again.",
     "delete_success": "Bill deleted successfully.",
@@ -809,7 +864,6 @@
     "invalid_due_day": "Due day must be between 1-31.",
     "invalid_due_date": "Due date is required.",
     "dashboard_alert_title": "Upcoming Bills",
-    "dashboard_alert_cta": "View All",
-    "amount_required_to_pay": "Please set the bill amount first before marking it as paid, since this will automatically be recorded as a transaction."
+    "dashboard_alert_cta": "View All"
   }
 }

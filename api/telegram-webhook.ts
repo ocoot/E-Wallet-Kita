@@ -2,12 +2,15 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { GoogleGenAI, Type } from '@google/genai';
 import { parseAmountFromString } from '../src/lib/parserUtils.js';
+import { generatePdf } from '../src/lib/pdf/exportPdf.js';
+import { createPdfTranslator } from './_lib/pdf-translator.js';
 import { parseReceipt } from './_lib/receipt-parser.js';
 import { createReceiptDraft, approveReceiptDraft, cancelReceiptDraft, getReceiptDraft, updateReceiptCategory } from './_lib/receipt-service.js';
 import { getMaintenanceStatus, isFeatureLocked, getMaintenanceMessage, MaintenanceStatus } from './_lib/maintenance.js';
 import { tr } from './_lib/botText.js';
 import { inferCategoryKey } from './_lib/categoryInference.js';
-import { sendTelegramMessage, editTelegramMessage, answerTelegramCallback } from './_lib/telegram.js';
+import { sendTelegramMessage, editTelegramMessage, answerTelegramCallback, sendTelegramDocument } from './_lib/telegram.js';
+import { Transaction } from '../src/types.js';
 
 type Lang = "id" | "en";
 
@@ -131,18 +134,6 @@ function formatIDR(amount: number): string {
   return new Intl.NumberFormat("id-ID", {
     style: "currency", currency: "IDR", maximumFractionDigits: 0
   }).format(amount);
-}
-
-// FIX #markdown-entity-bug: bill_reminders.name adalah TEXT bebas dari user
-// (lihat migration 20260708000000), disisipkan ke editTelegramMessage yang
-// pakai parse_mode "Markdown" (lihat api/_lib/telegram.ts). Kalau nama bill
-// mengandung _ * ` [ tanpa pasangan valid, Telegram menolak dengan error 400
-// "can't parse entities". Helper ini cuma dipakai di handler bill_paid: di
-// bawah -- TIDAK diterapkan ke alur lain (msgSaveSuccess/draftPrompt/dll)
-// yang punya potensi bug serupa, karena itu di luar scope perbaikan ini;
-// dilaporkan terpisah, bukan diam-diam direfactor di sini.
-function escapeMarkdown(text: string): string {
-  return text.replace(/([_*`\[])/g, "\\$1");
 }
 
 // Setelah transaksi expense berhasil disimpan via bot (chat text maupun
@@ -896,36 +887,70 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       // Tombol "Tandai Lunas" pada pesan reminder tagihan (lihat
       // supabase/functions/bill-reminder-notifier). Dipisah dari alur
       // tx_/rcpt_ karena sumbernya bukan draft AI tapi baris bill_reminders
-      // yang sudah ada -- tidak butuh tahap konfirmasi tambahan di bot
-      // karena tombolnya sendiri sudah berfungsi sebagai konfirmasi (sesuai
-      // permintaan: tombol tandai lunas langsung di Telegram tanpa user
-      // perlu buka app). FIX #bill-tx: sekarang juga otomatis mencatat
-      // transaksi expense (lihat set_bill_paid_status di migration
-      // 20260710000000) -- kalau bill.amount masih NULL, RPC menolak lewat
-      // exception BILL_AMOUNT_REQUIRED, ditangani khusus di bawah supaya
-      // pesannya jelas (bukan ikut tergeneralisasi sebagai "sudah lunas").
+      // yang sudah ada. Sejak fitur auto-insert transaksi ditambahkan
+      // (lihat migration 20260710000000), tombol ini sekarang menampilkan
+      // konfirmasi dulu (karena akan mengubah saldo & riwayat transaksi),
+      // bukan langsung eksekusi seperti sebelumnya.
       else if (actionData.startsWith("bill_paid:")) {
+        const billId = actionData.split(":")[1];
+        const { data: bill, error: fetchErr } = await supabaseBackend
+          .from("bill_reminders")
+          .select("id, name, amount, is_paid")
+          .eq("id", billId)
+          .maybeSingle();
+
+        if (fetchErr || !bill) {
+          await answerTelegramCallback(queryId, tr("billAlreadyPaidOrNotFound", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        if (bill.is_paid) {
+          await answerTelegramCallback(queryId, tr("billAlreadyPaidOrNotFound", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+
+        const confirmKeyboard = {
+          inline_keyboard: [[
+            { text: tr("billBtnConfirmPaid", lang), callback_data: `bill_confirm_paid:${billId}` },
+            { text: tr("billBtnCancelPaid", lang), callback_data: `bill_cancel_paid:${billId}` }
+          ]]
+        };
+
+        const confirmText = bill.amount != null
+          ? tr("billMarkPaidConfirmPrompt", lang, bill.name, formatIDR(bill.amount))
+          : tr("billMarkPaidConfirmPromptNoAmount", lang, bill.name);
+
+        await answerTelegramCallback(queryId);
+        await editTelegramMessage(chatId, msgId, confirmText, confirmKeyboard);
+      }
+      else if (actionData.startsWith("bill_confirm_paid:")) {
         const billId = actionData.split(":")[1];
         const { data: updated, error: markErr } = await supabaseBackend.rpc("mark_bill_paid_via_bot", {
           p_chat_id: chatId,
           p_bill_id: billId
         });
 
-        if (markErr?.message?.includes("BILL_AMOUNT_REQUIRED")) {
-          await answerTelegramCallback(queryId, tr("billAmountRequired", lang));
-          res.status(200).json({ ok: true }); return;
-        }
-
         if (markErr || !updated || updated.length === 0) {
-          // Bill tidak ditemukan untuk user ini -- bukan error fatal,
-          // cukup beri tahu lewat callback toast.
+          // Bill sudah lunas lebih dulu (mis. ditandai dari web) atau tidak
+          // ditemukan -- bukan error fatal, cukup beri tahu lewat callback toast.
           await answerTelegramCallback(queryId, tr("billAlreadyPaidOrNotFound", lang));
+          await editTelegramMessage(chatId, msgId, tr("billAlreadyPaidOrNotFound", lang));
           res.status(200).json({ ok: true }); return;
         }
 
         const row = updated[0];
         await answerTelegramCallback(queryId, tr("billMarkPaidSuccess", lang));
-        await editTelegramMessage(chatId, msgId, tr("billMarkPaidConfirmed", lang, escapeMarkdown(row.name), formatIDR(row.amount)));
+        if (row.needs_manual_amount) {
+          // Amount NULL -> tidak ada transaksi otomatis. Arahkan user untuk
+          // mencatat transaksinya sendiri lewat chat (pola input transaksi
+          // teks bebas yang sudah ada), bukan lewat draft khusus baru.
+          await editTelegramMessage(chatId, msgId, tr("billMarkPaidConfirmedNoAmount", lang, row.name));
+        } else {
+          await editTelegramMessage(chatId, msgId, tr("billMarkPaidConfirmed", lang, row.name));
+        }
+      }
+      else if (actionData.startsWith("bill_cancel_paid:")) {
+        await answerTelegramCallback(queryId, tr("cbCancelled", lang));
+        await editTelegramMessage(chatId, msgId, tr("msgCancelled", lang));
       }
 
       res.status(200).json({ ok: true }); return;
@@ -1122,6 +1147,210 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           }
         } catch (err: any) {
           console.error("❌ /riwayat error:", err);
+          await sendTelegramMessage(chatId, tr("riwayatError", lang));
+        }
+        res.status(200).json({ ok: true }); return;
+      }
+
+      // COMMAND: /pdf
+      if (text.startsWith("/pdf")) {
+        try {
+          const userCtx = await resolveUserContext(chatId);
+          if (!userCtx) {
+            await sendTelegramMessage(chatId, tr("riwayatNotLinked", lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
+          // Extract arguments after /pdf
+          const argsText = text.substring(4).trim();
+          
+          let summaryOnly = false;
+          let remainingArgs = argsText;
+
+          // If no arguments or just "ringkasan", it's summaryOnly
+          if (argsText === "" || /\bringkasan\b/i.test(argsText)) {
+            summaryOnly = true;
+            // Remove "ringkasan" from remaining arguments
+            remainingArgs = argsText.replace(/\bringkasan\b/i, "").trim();
+          }
+
+          // Now determine date range
+          let startDate: Date;
+          let endDate: Date;
+          let periodLabel = "";
+          let reportTitle = "";
+
+          if (remainingArgs === "") {
+            // Default to current month: from 1st of current month to today
+            const now = new Date();
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+            endDate = now;
+            
+            const monthNamesId = [
+              "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+              "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+            ];
+            const monthNamesEn = [
+              "January", "February", "March", "April", "May", "June",
+              "July", "August", "September", "October", "November", "December"
+            ];
+            const monthLabel = lang === "en" ? monthNamesEn[now.getMonth()] : monthNamesId[now.getMonth()];
+            periodLabel = `${monthLabel} ${now.getFullYear()}`;
+          } else if (/^\d{4}$/.test(remainingArgs)) {
+            // Specific month MMYY (e.g. 0126)
+            const month = parseInt(remainingArgs.substring(0, 2), 10);
+            const yearShort = parseInt(remainingArgs.substring(2, 4), 10);
+            
+            if (month < 1 || month > 12) {
+              await sendTelegramMessage(chatId, tr("pdfInvalidMonth", lang));
+              res.status(200).json({ ok: true }); return;
+            }
+            
+            const year = 2000 + yearShort;
+            startDate = new Date(year, month - 1, 1);
+            endDate = new Date(year, month, 0, 23, 59, 59, 999);
+            
+            const monthNamesId = [
+              "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+              "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+            ];
+            const monthNamesEn = [
+              "January", "February", "March", "April", "May", "June",
+              "July", "August", "September", "October", "November", "December"
+            ];
+            const monthLabel = lang === "en" ? monthNamesEn[month - 1] : monthNamesId[month - 1];
+            periodLabel = `${monthLabel} ${year}`;
+          } else if (/^\d{8}\s*-\s*\d{8}$/.test(remainingArgs)) {
+            // Specific range DDMMYYYY - DDMMYYYY
+            const parts = remainingArgs.split("-").map(p => p.trim());
+            const startStr = parts[0];
+            const endStr = parts[1];
+            
+            // Validate and parse start date
+            const startDay = parseInt(startStr.substring(0, 2), 10);
+            const startMonth = parseInt(startStr.substring(2, 4), 10);
+            const startYear = parseInt(startStr.substring(4, 8), 10);
+            
+            if (startMonth < 1 || startMonth > 12 || startDay < 1 || startDay > 31) {
+              await sendTelegramMessage(chatId, tr("pdfInvalidDate", lang, startStr));
+              res.status(200).json({ ok: true }); return;
+            }
+            
+            startDate = new Date(startYear, startMonth - 1, startDay);
+            if (startDate.getFullYear() !== startYear || startDate.getMonth() !== startMonth - 1 || startDate.getDate() !== startDay) {
+              await sendTelegramMessage(chatId, tr("pdfInvalidDate", lang, startStr));
+              res.status(200).json({ ok: true }); return;
+            }
+            
+            // Validate and parse end date
+            const endDay = parseInt(endStr.substring(0, 2), 10);
+            const endMonth = parseInt(endStr.substring(2, 4), 10);
+            const endYear = parseInt(endStr.substring(4, 8), 10);
+            
+            if (endMonth < 1 || endMonth > 12 || endDay < 1 || endDay > 31) {
+              await sendTelegramMessage(chatId, tr("pdfInvalidDate", lang, endStr));
+              res.status(200).json({ ok: true }); return;
+            }
+            
+            endDate = new Date(endYear, endMonth - 1, endDay, 23, 59, 59, 999);
+            if (endDate.getFullYear() !== endYear || endDate.getMonth() !== endMonth - 1 || endDate.getDate() !== endDay) {
+              await sendTelegramMessage(chatId, tr("pdfInvalidDate", lang, endStr));
+              res.status(200).json({ ok: true }); return;
+            }
+            
+            if (startDate > endDate) {
+              await sendTelegramMessage(chatId, tr("pdfRangeInvalid", lang));
+              res.status(200).json({ ok: true }); return;
+            }
+
+            // Max 3 months limit check
+            const startYearNum = startDate.getFullYear();
+            const startMonthNum = startDate.getMonth();
+            const startDayNum = startDate.getDate();
+            const endYearNum = endDate.getFullYear();
+            const endMonthNum = endDate.getMonth();
+            const endDayNum = endDate.getDate();
+            const monthDiff = (endYearNum - startYearNum) * 12 + (endMonthNum - startMonthNum);
+            const isOver3Months = monthDiff > 3 || (monthDiff === 3 && endDayNum > startDayNum);
+
+            if (isOver3Months) {
+              await sendTelegramMessage(chatId, tr("pdfRangeTooLong", lang));
+              res.status(200).json({ ok: true }); return;
+            }
+            
+            const toISODateStrLocal = (d: Date) => d.toISOString().split("T")[0];
+            periodLabel = `${toISODateStrLocal(startDate)} - ${toISODateStrLocal(endDate)}`;
+          } else {
+            // Unrecognized argument format (e.g. /pdf abc or /pdf 99999999)
+            await sendTelegramMessage(chatId, tr("pdfInvalidFormat", lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
+          // Let the user know we are generating the PDF
+          await sendTelegramMessage(chatId, tr("pdfGenerating", lang));
+
+          // Fetch transactions in date range
+          const toISODateStr = (d: Date) => d.toISOString().split("T")[0];
+          const { data: txs, error: txsErr } = await supabaseBackend
+            .from("transactions")
+            .select("id, type, amount, category, note, source, transaction_date, created_at")
+            .eq("user_id", userCtx.id)
+            .gte("transaction_date", toISODateStr(startDate))
+            .lte("transaction_date", toISODateStr(endDate))
+            .order("transaction_date", { ascending: true });
+
+          if (txsErr) throw txsErr;
+
+          if (!txs || txs.length === 0) {
+            await sendTelegramMessage(chatId, tr("pdfNoTransactions", lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
+          // Fetch category definitions
+          const categories = await getActiveCategories();
+
+          // Create translator helper
+          const pdfT = createPdfTranslator(lang);
+
+          // Map db objects to Transaction interface
+          const mappedTxs: Transaction[] = txs.map(tx => ({
+            id: tx.id,
+            user_id: userCtx.id,
+            type: tx.type as "income" | "expense",
+            amount: tx.amount,
+            category: tx.category,
+            note: tx.note,
+            source: (tx.source || "manual") as "manual" | "ai_web" | "telegram",
+            transaction_date: tx.transaction_date,
+            created_at: tx.created_at
+          }));
+
+          // Set report title based on translation and type
+          reportTitle = summaryOnly ? pdfT("export.summary_report_title") : pdfT("export.full_report_title");
+
+          // Generate PDF Uint8Array
+          const pdfBytes = generatePdf({
+            t: pdfT,
+            userName: userCtx.display_name,
+            transactions: mappedTxs,
+            categories,
+            periodLabel,
+            reportTitle,
+            summaryOnly
+          });
+
+          // Set filename
+          const filePrefix = summaryOnly ? "Laporan_Ringkasan" : "Laporan";
+          const formattedPeriod = periodLabel.replace(/\s+/g, "_").replace(/-/g, "_");
+          const filename = `${filePrefix}_${formattedPeriod}.pdf`;
+
+          const caption = tr("pdfCaption", lang, periodLabel);
+
+          // Send document via sendTelegramDocument helper
+          await sendTelegramDocument(chatId, pdfBytes, filename, caption);
+
+        } catch (err: any) {
+          console.error("❌ /pdf error:", err);
           await sendTelegramMessage(chatId, tr("riwayatError", lang));
         }
         res.status(200).json({ ok: true }); return;

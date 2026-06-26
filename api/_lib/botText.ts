@@ -39,6 +39,8 @@ export const botText = {
       `3️⃣ *Daftar Perintah (Commands)*:\n` +
       `     • \`/saldo\` - Ringkasan saldo & perbandingan bulan ini vs bulan lalu.\n` +
       `     • \`/riwayat\` - Tampilkan 5 transaksi terakhir.\n` +
+      `     • \`/pdf\` - Ekspor laporan PDF Ringkasan Bulan Ini Berjalan\n` +
+      `     • \`/pdf DDMMYYYY- DDMMYYYY\` - Ekspor laporan PDF Penuh (Maks 3 Bulan)\n` +
       `     • \`/hapus\` - Batalkan & hapus transaksi terakhir.\n` +
       `     • \`/unlink\` - Memutuskan koneksi akun Telegram dari sistem.\n` +
       `     • \`/help\` - Membuka pesan bantuan ini.`,
@@ -57,9 +59,43 @@ export const botText = {
       `3️⃣ *Command List*:\n` +
       `     • \`/saldo\` - Balance summary & comparison vs last month.\n` +
       `     • \`/riwayat\` - Show last 5 transactions.\n` +
+      `     • \`/pdf\` - Export PDF Summary report for the current month\n` +
+      `     • \`/pdf DDMMYYYY- DDMMYYYY\` - Export Full PDF report (Max 3 Months)\n` +
       `     • \`/hapus\` - Undo & delete the last transaction.\n` +
       `     • \`/unlink\` - Disconnect your Telegram account from the system.\n` +
       `     • \`/help\` - Show this help message.`,
+  },
+  pdfGenerating: {
+    id: () => "🔄 _Sedang menyiapkan laporan PDF Anda..._",
+    en: () => "🔄 _Generating your PDF report..._",
+  },
+  pdfNoTransactions: {
+    id: () => "📭 Tidak ada transaksi pada periode ini untuk diekspor.",
+    en: () => "📭 No transactions found in this period to export.",
+  },
+  pdfInvalidFormat: {
+    id: () => "⚠️ *Format perintah /pdf salah.*\n\nContoh penggunaan:\n• \`/pdf\` - Laporan penuh bulan ini\n• \`/pdf ringkasan\` - Ringkasan saja bulan ini\n• \`/pdf 0126\` - Laporan penuh bulan Januari 2026\n• \`/pdf 0126 ringkasan\` - Ringkasan bulan Januari 2026\n• \`/pdf 01062026 - 15062026\` - Laporan tanggal tertentu\n• \`/pdf 01062026 - 15062026 ringkasan\` - Ringkasan tanggal tertentu",
+    en: () => "⚠️ *Invalid /pdf command format.*\n\nExamples:\n• \`/pdf\` - Full report for this month\n• \`/pdf ringkasan\` - Summary only for this month\n• \`/pdf 0126\` - Full report for Jan 2026\n• \`/pdf 0126 ringkasan\` - Summary for Jan 2026\n• \`/pdf 01062026 - 15062026\` - Report for specific date range\n• \`/pdf 01062026 - 15062026 ringkasan\` - Summary for specific date range",
+  },
+  pdfInvalidMonth: {
+    id: () => "⚠️ *Bulan atau tahun tidak valid.*\nBulan harus antara 01 dan 12. Contoh: \`/pdf 0126\`",
+    en: () => "⚠️ *Invalid month or year.*\nMonth must be between 01 and 12. Example: \`/pdf 0126\`",
+  },
+  pdfInvalidDate: {
+    id: (val: string) => `⚠️ *Tanggal tidak valid*: "${val}" (misal 31022025 tidak ada).`,
+    en: (val: string) => `⚠️ *Invalid date*: "${val}" (e.g. 31022025 does not exist).`,
+  },
+  pdfRangeInvalid: {
+    id: () => "⚠️ Tanggal mulai tidak boleh setelah tanggal akhir!",
+    en: () => "⚠️ Start date cannot be after end date!",
+  },
+  pdfRangeTooLong: {
+    id: () => "⚠️ Rentang tanggal maksimal adalah 3 bulan. Silakan tentukan rentang yang lebih singkat.",
+    en: () => "⚠️ The maximum date range is 3 months. Please specify a shorter range.",
+  },
+  pdfCaption: {
+    id: (period: string) => `Laporan transaksi PDF Anda untuk periode *${period}* berhasil dibuat. 🌸`,
+    en: (period: string) => `Your transaction report PDF for period *${period}* has been successfully generated. 🌸`,
   },
   // FIX #10: Language selection prompt on /start before /link
   langPrompt: {
@@ -379,21 +415,35 @@ export const botText = {
     en: () => "✅ Paid!",
   },
   billMarkPaidConfirmed: {
-    id: (name: string, amountStr: string) =>
-      `✅ *Tagihan "${name}" ditandai lunas.*\n💸 Transaksi pengeluaran *${amountStr}* otomatis tercatat.`,
-    en: (name: string, amountStr: string) =>
-      `✅ *Bill "${name}" marked as paid.*\n💸 An expense transaction of *${amountStr}* was recorded automatically.`,
+    id: (name: string) => `✅ *Tagihan "${name}" ditandai lunas.*\n\nTransaksi pengeluaran sudah otomatis tercatat di riwayat & saldo kamu.`,
+    en: (name: string) => `✅ *Bill "${name}" marked as paid.*\n\nAn expense transaction has been recorded automatically in your history & balance.`,
+  },
+  billMarkPaidConfirmedNoAmount: {
+    id: (name: string) => `✅ *Tagihan "${name}" ditandai lunas.*\n\nNominalnya belum diisi, jadi belum ada transaksi otomatis. Catat pengeluarannya sendiri lewat chat atau web app ya.`,
+    en: (name: string) => `✅ *Bill "${name}" marked as paid.*\n\nNo amount was set, so no transaction was recorded automatically. Please log the expense yourself via chat or the web app.`,
   },
   billAlreadyPaidOrNotFound: {
     id: () => "ℹ️ Tagihan ini sudah ditandai lunas sebelumnya atau tidak ditemukan.",
     en: () => "ℹ️ This bill was already marked as paid or could not be found.",
   },
-  // FIX #bill-tx: set_bill_paid_status (migration 20260710000000) menolak
-  // menandai lunas kalau bill.amount masih NULL, karena "Tandai Lunas"
-  // sekarang otomatis bikin transaksi expense dan butuh nominal pasti.
-  billAmountRequired: {
-    id: () => "⚠️ Isi nominal tagihan ini dulu di halaman Pengingat Tagihan sebelum bisa ditandai lunas.",
-    en: () => "⚠️ Please set this bill's amount on the Bill Reminders page before marking it as paid.",
+  // Prompt konfirmasi sebelum bill_paid: benar-benar dieksekusi -- karena
+  // aksi ini akan mengubah saldo & riwayat transaksi, user diberi tahu
+  // dulu dan harus menekan tombol konfirmasi terpisah.
+  billMarkPaidConfirmPrompt: {
+    id: (name: string, amount: string) => `❓ *Tandai "${name}" lunas?*\n\nSaldo kamu akan berkurang ${amount} dan tercatat otomatis di riwayat transaksi.`,
+    en: (name: string, amount: string) => `❓ *Mark "${name}" as paid?*\n\nYour balance will decrease by ${amount} and it will be recorded automatically in your transaction history.`,
+  },
+  billBtnConfirmPaid: {
+    id: () => "✅ Ya, Tandai Lunas",
+    en: () => "✅ Yes, Mark as Paid",
+  },
+  billBtnCancelPaid: {
+    id: () => "❌ Batalkan",
+    en: () => "❌ Cancel",
+  },
+  billMarkPaidConfirmPromptNoAmount: {
+    id: (name: string) => `❓ *Tandai "${name}" lunas?*\n\nNominalnya belum diisi, jadi tidak akan ada transaksi otomatis -- kamu perlu mencatatnya sendiri setelah ini.`,
+    en: (name: string) => `❓ *Mark "${name}" as paid?*\n\nNo amount was set, so no transaction will be recorded automatically -- you'll need to log it yourself afterwards.`,
   },
 };
 

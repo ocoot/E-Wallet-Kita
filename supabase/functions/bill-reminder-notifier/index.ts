@@ -59,36 +59,12 @@ function formatIDR(amount: number): string {
   }).format(amount);
 }
 
-// FIX #markdown-entity-bug: row.name (nama bill) adalah TEXT bebas dari
-// input user (lihat bill_reminders.name di migration 20260708000000, tidak
-// ada validasi karakter), dan catLabel (label kategori) admin-editable.
-// Keduanya disisipkan mentah ke dalam template string yang dikirim dengan
-// parse_mode: "Markdown" (legacy Markdown Telegram, BUKAN MarkdownV2).
-// Kalau nilainya mengandung salah satu dari _ * ` [ tanpa pasangan yang
-// valid (mis. nama bill "Cicilan_Motor" atau "Token PLN [token]"), Telegram
-// gagal parse entity dan sendMessage ditolak dengan error 400 "can't parse
-// entities" -- inilah akar masalah dari log error yang dilaporkan.
-// Solusi: escape ke-4 karakter spesial Markdown legacy itu dengan backslash
-// SEBELUM disisipkan ke template, supaya selalu dianggap teks literal oleh
-// Telegram, bukan dicoba diparse sebagai entity formatting.
-function escapeMarkdown(text: string): string {
-  return text.replace(/([_*`\[])/g, "\\$1");
-}
-
 // Teks bot Telegram untuk reminder tagihan. Mengikuti pola botText.ts
 // (pasangan id/en di satu tempat) -- HARUS tetap sinkron secara konsep
 // dengan api/_lib/botText.ts kalau ada teks serupa ditambahkan di sana,
 // tapi disimpan terpisah di sini karena Edge Function (Deno) tidak bisa
 // import file dari api/_lib/*.ts (lingkungan Node/Vercel).
-//
-// FIX #bill-tx: tombol "Tandai Lunas" sekarang juga membuat transaksi
-// expense (lihat set_bill_paid_status, migration 20260710000000), yang
-// MEWAJIBKAN amount terisi. Kalau amount NULL, beri tahu di pesan reminder
-// itu sendiri (bukan baru ketahuan setelah tombol ditekan & ditolak).
 function reminderText(lang: "id" | "en", row: DueBillRow, catLabel: string): string {
-  const safeName = escapeMarkdown(row.name);
-  const safeCatLabel = escapeMarkdown(catLabel);
-
   const dueLabel =
     row.days_until_due === 0
       ? (lang === "id" ? "*HARI INI*" : "*TODAY*")
@@ -98,27 +74,21 @@ function reminderText(lang: "id" | "en", row: DueBillRow, catLabel: string): str
     ? (lang === "id" ? `💰 Estimasi: *${formatIDR(row.amount)}*\n` : `💰 Estimated: *${formatIDR(row.amount)}*\n`)
     : "";
 
-  const ctaLine = row.amount != null
-    ? (lang === "id" ? `\nSudah dibayar? Tandai lunas langsung di sini 👇` : `\nAlready paid? Mark it as paid right here 👇`)
-    : (lang === "id"
-        ? `\n⚠️ _Nominal belum diisi -- isi dulu di halaman Pengingat Tagihan sebelum bisa ditandai lunas dari sini._`
-        : `\n⚠️ _Amount not set yet -- fill it in on the Bill Reminders page before you can mark this as paid from here._`);
-
   if (lang === "id") {
     return (
       `🔔 *Pengingat Tagihan*\n\n` +
-      `📌 ${safeName} (${safeCatLabel})\n` +
+      `📌 ${row.name} (${catLabel})\n` +
       `📅 Jatuh tempo: ${dueLabel} (${row.next_due_date})\n` +
       amountLine +
-      ctaLine
+      `\nSudah dibayar? Tandai lunas langsung di sini 👇`
     );
   }
   return (
     `🔔 *Bill Reminder*\n\n` +
-    `📌 ${safeName} (${safeCatLabel})\n` +
+    `📌 ${row.name} (${catLabel})\n` +
     `📅 Due: ${dueLabel} (${row.next_due_date})\n` +
     amountLine +
-    ctaLine
+    `\nAlready paid? Mark it as paid right here 👇`
   );
 }
 
