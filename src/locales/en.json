@@ -652,7 +652,11 @@
     "showing_all_transactions": "Showing all {count} transactions",
     "showing_all_vouchers": "Showing all {count} vouchers",
     "proceed": "Proceed",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "maintenance_admin_bypass_note": "Admins and owners always have access to all features, even during maintenance mode. Feature locks only apply to regular users.",
+    "maintenance_col_lock": "Lock for users",
+    "maintenance_col_sandbox_bypass": "Bypass in dev/sandbox",
+    "maintenance_sandbox_bypass_tooltip": "When enabled, this feature remains accessible in the dev/sandbox environment (import.meta.env.DEV), even if locked. Has no effect in production."
   },
   "ai_monitor": {
     "title": "AI Resource Monitor",
@@ -795,8 +799,8 @@
     "bill_feature_2": "💳 Mark as Paid: Record bill payments with a single click."
   },
   "budget": {
-    "page_title": "Budget per Category",
-    "page_subtitle": "Set a monthly spending limit for each category and get warned before it breaks.",
+    "page_title": "Budget",
+    "page_subtitle": "Set monthly spending limits per category to control your finances.",
     "no_budget_set": "No budget set",
     "set_budget": "Set Budget",
     "edit_budget": "Edit Budget",
@@ -821,8 +825,6 @@
     "no_expense_categories": "There are no active expense categories right now.",
     "toast_warning_threshold": "Warning: spending for category '{category}' has reached {percent}% of this month's budget.",
     "toast_warning_over": "Budget for category '{category}' has been exceeded ({percent}% of this month's limit).",
-    "page_title": "Budget",
-    "page_subtitle": "Set monthly spending limits per category to control your finances.",
     "add_budget_cta": "Add Budget",
     "add_modal_title": "Add New Budget",
     "select_category_label": "Select Category",

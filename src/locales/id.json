@@ -652,7 +652,11 @@
     "showing_all_transactions": "Menampilkan semua {count} transaksi",
     "showing_all_vouchers": "Menampilkan semua {count} voucher",
     "proceed": "Lanjutkan",
-    "cancel": "Batal"
+    "cancel": "Batal",
+    "maintenance_admin_bypass_note": "Admin dan owner selalu dapat mengakses semua fitur meski mode maintenance aktif. Kunci fitur hanya berlaku untuk pengguna biasa.",
+    "maintenance_col_lock": "Kunci untuk user",
+    "maintenance_col_sandbox_bypass": "Bypass di dev/sandbox",
+    "maintenance_sandbox_bypass_tooltip": "Jika diaktifkan, fitur ini tetap bisa diakses di lingkungan dev/sandbox (import.meta.env.DEV) meski sedang dikunci. Tidak berpengaruh di production."
   },
   "ai_monitor": {
     "title": "Monitor Penggunaan AI",
@@ -795,8 +799,8 @@
     "bill_feature_2": "💳 Tandai Lunas: Catat pembayaran tagihan dengan satu kali klik."
   },
   "budget": {
-    "page_title": "Anggaran per Kategori",
-    "page_subtitle": "Tetapkan batas pengeluaran bulanan untuk tiap kategori dan dapatkan peringatan sebelum jebol.",
+    "page_title": "Anggaran",
+    "page_subtitle": "Atur batas pengeluaran bulanan per kategori untuk mengontrol keuangan Anda.",
     "no_budget_set": "Belum ada anggaran",
     "set_budget": "Atur Anggaran",
     "edit_budget": "Ubah Anggaran",
@@ -821,8 +825,6 @@
     "no_expense_categories": "Tidak ada kategori pengeluaran aktif saat ini.",
     "toast_warning_threshold": "Peringatan: pengeluaran kategori '{category}' sudah {percent}% dari anggaran bulan ini.",
     "toast_warning_over": "Anggaran kategori '{category}' sudah terlampaui ({percent}% dari batas bulan ini).",
-    "page_title": "Anggaran",
-    "page_subtitle": "Atur batas pengeluaran bulanan per kategori untuk mengontrol keuangan Anda.",
     "add_budget_cta": "Tambah Anggaran",
     "add_modal_title": "Tambah Anggaran Baru",
     "select_category_label": "Pilih Kategori",
