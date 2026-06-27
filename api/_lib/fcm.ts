@@ -109,3 +109,45 @@ export async function sendPushNotificationBatch(
     }
   }
 }
+
+/**
+ * Kirim notifikasi push ke SEMUA device terdaftar milik satu user.
+ *
+ * Sejak user_push_tokens mendukung multi-device (lihat migration
+ * 20260728000000_push_tokens_multi_device.sql), satu user bisa punya
+ * lebih dari satu baris fcm_token. Pemanggil tidak boleh lagi pakai
+ * `.maybeSingle()` + sendPushNotification(token) karena itu hanya
+ * akan menjangkau satu device (dan akan error kalau ada >1 baris).
+ *
+ * Fungsi ini menggantikan pola itu: ambil semua token milik user,
+ * lalu kirim ke semuanya sekaligus lewat multicast.
+ */
+export async function sendPushNotificationToUser(
+  supabaseBackend: any,
+  userId: string,
+  title: string,
+  body: string,
+  data?: Record<string, string>
+): Promise<void> {
+  const { data: rows, error } = await supabaseBackend
+    .from('user_push_tokens')
+    .select('fcm_token')
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('[FCM] Failed to fetch push tokens for user:', error.message);
+    return;
+  }
+
+  const tokens = (rows ?? [])
+    .map((r: { fcm_token: string }) => r.fcm_token)
+    .filter(Boolean);
+
+  if (tokens.length === 0) return;
+
+  if (tokens.length === 1) {
+    await sendPushNotification(tokens[0], title, body, data);
+  } else {
+    await sendPushNotificationBatch(tokens, title, body, data);
+  }
+}

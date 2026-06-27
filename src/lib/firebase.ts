@@ -58,6 +58,13 @@ export const requestFcmToken = async (): Promise<string | null> => {
 /**
  * Save the FCM token to Supabase so the backend can send push notifications.
  * Uses upsert so calling it multiple times is safe.
+ *
+ * IMPORTANT: conflict target is (user_id, fcm_token) — NOT just user_id.
+ * Each device/browser has its own FCM token, so this lets a single user
+ * register push notifications from multiple devices at once. Using
+ * "user_id" alone here would overwrite the previous device's row every
+ * time a new device registers, leaving only the most recently logged-in
+ * device able to receive push notifications.
  */
 export const saveFcmToken = async (
   supabaseClient: any,
@@ -71,7 +78,7 @@ export const saveFcmToken = async (
         fcm_token: token,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: "user_id" }
+      { onConflict: "user_id,fcm_token" }
     );
   } catch (err) {
     console.error("[FCM] Error saving token to DB:", err);

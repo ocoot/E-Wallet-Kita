@@ -10,7 +10,7 @@ import { getMaintenanceStatus, isFeatureLocked, getMaintenanceMessage, Maintenan
 import { tr } from './_lib/botText.js';
 import { inferCategoryKey } from './_lib/categoryInference.js';
 import { sendTelegramMessage, editTelegramMessage, answerTelegramCallback, sendTelegramDocument } from './_lib/telegram.js';
-import { sendPushNotification } from './_lib/fcm.js';
+import { sendPushNotificationToUser } from './_lib/fcm.js';
 import { Transaction } from '../src/types.js';
 
 type Lang = "id" | "en";
@@ -672,24 +672,17 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             await sendBudgetWarningIfNeeded(chatId, userCtx.id, row.category_key, row.type, lang);
           }
 
-          // Also send FCM push notification if user has a registered device.
-          // Non-blocking — a push failure must never prevent the transaction
-          // from saving.
+          // Also send FCM push notification to all of the user's registered
+          // devices. Non-blocking — a push failure must never prevent the
+          // transaction from saving.
           try {
-            const { data: pushToken } = await supabaseBackend
-              .from('user_push_tokens')
-              .select('fcm_token')
-              .eq('user_id', row.user_id)
-              .maybeSingle();
-
-            if (pushToken?.fcm_token) {
-              const typeLabelPush = row.type === 'income' ? 'Pemasukan' : 'Pengeluaran';
-              await sendPushNotification(
-                pushToken.fcm_token,
-                `Transaksi ${typeLabelPush}`,
-                `${amountStr} - ${row.original_text || row.category_key}`
-              );
-            }
+            const typeLabelPush = row.type === 'income' ? 'Pemasukan' : 'Pengeluaran';
+            await sendPushNotificationToUser(
+              supabaseBackend,
+              row.user_id,
+              `Transaksi ${typeLabelPush}`,
+              `${amountStr} - ${row.original_text || row.category_key}`
+            );
           } catch (err) {
             console.error('[FCM] Failed to send transaction push:', err);
           }
@@ -740,22 +733,16 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           if (resApprove.transaction?.user_id) {
             await sendBudgetWarningIfNeeded(chatId, resApprove.transaction.user_id, resApprove.draft.category || 'other', 'expense', lang);
 
-            // Send FCM push notification after receipt-based transaction saves.
-            // Non-blocking — push failure never blocks the transaction.
+            // Send FCM push notification to all registered devices after
+            // receipt-based transaction saves. Non-blocking — push failure
+            // never blocks the transaction.
             try {
-              const { data: pushToken } = await supabaseBackend
-                .from('user_push_tokens')
-                .select('fcm_token')
-                .eq('user_id', resApprove.transaction.user_id)
-                .maybeSingle();
-
-              if (pushToken?.fcm_token) {
-                await sendPushNotification(
-                  pushToken.fcm_token,
-                  'Struk Tercatat',
-                  `${formatIDR(resApprove.draft.total_amount)} - ${resApprove.draft.merchant_name || 'Receipt Scan'}`
-                );
-              }
+              await sendPushNotificationToUser(
+                supabaseBackend,
+                resApprove.transaction.user_id,
+                'Struk Tercatat',
+                `${formatIDR(resApprove.draft.total_amount)} - ${resApprove.draft.merchant_name || 'Receipt Scan'}`
+              );
             } catch (fcmErr) {
               console.error('[FCM] Failed to send receipt push:', fcmErr);
             }
