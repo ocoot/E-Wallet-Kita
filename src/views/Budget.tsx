@@ -206,10 +206,13 @@ export const Budget: React.FC = () => {
             <h1 className="font-sans font-bold text-lg text-white light_sakura:text-slate-900">
               {t("budget.page_title")}
             </h1>
-            <p className="text-xs text-slate-400 light_sakura:text-slate-600 mt-0.5 max-w-xl leading-relaxed">
-              {t("budget.page_subtitle")}
-            </p>
           </div>
+        </div>
+
+        <div className="p-4 rounded-2xl border bg-slate-900/60 border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 w-full max-w-xl">
+          <p className="text-xs text-slate-400 light_sakura:text-slate-600 leading-relaxed">
+            {t("budget.page_subtitle")}
+          </p>
         </div>
 
         {!loading && expenseCategories.length > 0 && (
