@@ -19,6 +19,16 @@ import { MaintenanceBanner } from "./components/MaintenanceBanner";
 import { FeatureLockGate } from "./components/FeatureLockGate";
 import { SupportChatWidget } from "./components/SupportChatWidget";
 import { Breadcrumbs } from "./components/Breadcrumbs";
+import {
+  DashboardSkeleton,
+  HistorySkeleton,
+  TransactionSkeleton,
+  BudgetSkeleton,
+  SettingsSkeleton,
+  BillRemindersSkeleton,
+  AdminSkeleton,
+  DefaultSkeleton,
+} from "./components/SkeletonLoader";
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut } from "lucide-react";
 import { supabase } from "./lib/supabase";
@@ -38,11 +48,25 @@ const Budget = lazy(() => import("./views/Budget").then(m => ({ default: m.Budge
 const BillReminders = lazy(() => import("./views/BillReminders").then(m => ({ default: m.BillReminders })));
 const AdminPanel = lazy(() => import("./views/AdminPanel").then(m => ({ default: m.AdminPanel })));
 
-const RouteFallback = () => (
-  <div className="flex items-center justify-center py-24 text-slate-400 light_sakura:text-slate-500">
-    Loading...
-  </div>
-);
+function RouteFallback() {
+  // We can't call useLocation() here since Suspense boundary may trigger
+  // before location is available. Use a simple shimmer instead.
+  return <DefaultSkeleton />;
+}
+
+/** Pick a skeleton by matching the current pathname. Must be used inside the Routes component. */
+function SkeletonByRoute() {
+  // This component must be inside the Suspense so useLocation works
+  const loc = typeof window !== "undefined" ? window.location.pathname : "/dashboard";
+  if (loc.startsWith("/transactions/new")) return <TransactionSkeleton />;
+  if (loc.startsWith("/transactions"))     return <HistorySkeleton />;
+  if (loc.startsWith("/budget"))           return <BudgetSkeleton />;
+  if (loc.startsWith("/bill-reminders"))   return <BillRemindersSkeleton />;
+  if (loc.startsWith("/settings"))         return <SettingsSkeleton />;
+  if (loc.startsWith("/admin"))            return <AdminSkeleton />;
+  if (loc === "/onboarding")               return <DefaultSkeleton />;
+  return <DashboardSkeleton />;
+}
 
 interface MainLayoutProps {
   user: User | null;
@@ -209,7 +233,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
           <div className="max-w-7xl mx-auto w-full">
             <Breadcrumbs />
             <AnimatePresence mode="wait">
-              <Suspense fallback={<RouteFallback />}>
+              <Suspense fallback={<SkeletonByRoute />}>
                 <Routes>
                   <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} />} />
                   <Route path="/transactions/new" element={<FeatureLockGate featureKey="new_transaction"><NewTransaction onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
@@ -222,7 +246,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/admin" element={
                     adminLoading
-                      ? <RouteFallback />
+                      ? <AdminSkeleton />
                       : isAdmin
                         ? <AdminPanel />
                         : <Navigate to="/dashboard" replace />

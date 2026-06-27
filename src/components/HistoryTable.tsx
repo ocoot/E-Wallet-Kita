@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef, useState, useCallback } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Transaction, Category } from "../types";
 import { Trash2, Send, Pencil } from "lucide-react";
@@ -25,13 +25,28 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
   categories,
 }) => {
   const { t, locale } = useLanguage();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scrollState, setScrollState] = useState<"at-start" | "middle" | "at-end">("at-start");
+
+  const onScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const isAtStart = el.scrollLeft <= 4;
+    const isAtEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+    if (isAtStart && !isAtEnd) setScrollState("at-start");
+    else if (isAtEnd)                setScrollState("at-end");
+    else                             setScrollState("middle");
+  }, []);
 
   return (
     <div id="history-data-table-container" className="border border-slate-800/80 rounded-2xl bg-slate-950/40 relative overflow-hidden light_sakura:border-rose-100/50 light_sakura:bg-rose-50/10">
       {paginatedTransactions.length === 0 ? (
         <EmptyState message={t("history.no_transactions")} />
       ) : (
-        <div className="overflow-x-auto">
+        <div
+          ref={scrollRef}
+          onScroll={onScroll}
+          className={`overflow-x-auto ${scrollState === "at-start" ? "" : "scroll-mask-x"} ${scrollState === "at-end" ? "scrolled-end" : ""}`}>
           <table className="w-full border-collapse font-sans text-left text-xs min-w-[700px]">
             {/* Header row desktop labels */}
             <thead>
@@ -122,16 +137,16 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                           <button
                             onClick={() => onEditItem(tx)}
                             aria-label={t("common.edit")}
-                            className="p-1.5 rounded-lg border border-transparent hover:border-indigo-500/20 text-gray-500 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
+                            className="btn-mobile-target p-2.5 rounded-lg border border-transparent hover:border-indigo-500/20 text-gray-500 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
                           >
-                            <Pencil size={13} />
+                            <Pencil size={15} />
                           </button>
                           <button
                             onClick={() => onDeleteItem(tx.id)}
                             aria-label={t("common.delete")}
-                            className="p-1.5 rounded-lg border border-transparent hover:border-red-500/20 text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
+                            className="btn-mobile-target p-2.5 rounded-lg border border-transparent hover:border-red-500/20 text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
                           >
-                            <Trash2 size={13} />
+                            <Trash2 size={15} />
                           </button>
                         </div>
                       </td>

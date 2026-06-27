@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap') layer(fonts);
 @import "tailwindcss";
 
 @theme {
@@ -17,6 +17,8 @@ html, body {
   padding: 0;
   overflow-x: hidden;
   transition: background-color 300ms ease;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 /* Scrollbar customizations */
@@ -77,4 +79,31 @@ html, body {
   display: inline-flex;
   white-space: nowrap;
   animation: maintenance-marquee linear infinite;
+}
+
+/* ── Mobile touch target sizing ──────────────────────────────────── */
+/* Ensure all interactive elements have ≥ 44px tap area on mobile */
+@media (max-width: 639px) {
+  button, a[role="button"], [role="button"], input, select, textarea,
+  .btn-mobile-target {
+    min-height: 44px;
+  }
+  button:not(.btn-exact), a[role="button"]:not(.btn-exact) {
+    min-height: 44px;
+  }
+}
+
+/* ── Horizontal scroll affordance (gradient mask) ──────────────── */
+.scroll-mask-x {
+  mask-image: linear-gradient(to right, black calc(100% - 32px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 32px), transparent 100%);
+  transition: mask-image 200ms ease, -webkit-mask-image 200ms ease;
+}
+.scroll-mask-x.scrolled-end {
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+.scroll-mask-x.scrolled-start {
+  mask-image: linear-gradient(to right, transparent 0%, black 32px, black calc(100% - 32px), transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 32px, black calc(100% - 32px), transparent 100%);
 }
