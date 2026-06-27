@@ -32,6 +32,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut } from "lucide-react";
 import { supabase } from "./lib/supabase";
+import { requestFcmToken, saveFcmToken } from "./lib/firebase";
 import { User } from "@supabase/supabase-js";
 
 // Code-split the heavier views instead of bundling them all into the main
@@ -103,6 +104,30 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   const handleTransactionChange = () => {
     setTransactionsUpdatedTrigger(prev => prev + 1);
   };
+
+  // ── FCM: Register push token after login ───────────────────────────
+  useEffect(() => {
+    if (!user) return;
+    const setupFcm = async () => {
+      const token = await requestFcmToken();
+      if (token) {
+        await saveFcmToken(supabase, user.id, token);
+      }
+    };
+    setupFcm();
+  }, [user]);
+
+  // ── FCM: Show foreground message as toast ──────────────────────────
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const { title, body } = (e as CustomEvent).detail;
+      if (title || body) {
+        showToast(`${title}: ${body}`, "info");
+      }
+    };
+    window.addEventListener("fcm-foreground-message", handler);
+    return () => window.removeEventListener("fcm-foreground-message", handler);
+  }, [showToast]);
 
   const { isPremium, loading: premiumLoading } = usePremium();
 
