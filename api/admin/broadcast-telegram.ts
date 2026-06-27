@@ -46,7 +46,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   });
 
-  const { data: { user }, error: authError } = await userSupabase.auth.getUser(token);
+  const { data: { user }, error: authError } = await userSupabase.auth.getUser();
   if (authError || !user) {
     res.status(401).json({ error: 'Invalid token or unauthorized session' });
     return;

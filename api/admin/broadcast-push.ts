@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { sendPushNotificationBatch } from '../_lib/fcm.js';
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 /**
@@ -29,14 +30,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  const token = authHeader.split(' ')[1];
+  if (!supabaseAnonKey) {
+    res.status(500).json({ error: 'SUPABASE_ANON_KEY tidak dikonfigurasi' });
+    return;
+  }
 
   // Client with user's JWT so RLS checks apply
-  const userSupabase = createClient(supabaseUrl, process.env.VITE_SUPABASE_ANON_KEY || '', {
+  // Authorization header di-set di createClient — getUser() tanpa arg
+  // sudah cukup untuk validasi token (tidak perlu pass token sebagai arg,
+  // yang sudah deprecated di Supabase JS v2+)
+  const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
     global: { headers: { Authorization: authHeader } }
   });
 
-  const { data: { user }, error: authError } = await userSupabase.auth.getUser(token);
+  const { data: { user }, error: authError } = await userSupabase.auth.getUser();
   if (authError || !user) {
     res.status(401).json({ error: 'Invalid token or unauthorized session' });
     return;
