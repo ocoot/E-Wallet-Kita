@@ -30,6 +30,7 @@ export default defineConfig(({ mode }) => {
     ],
     resolve: {
       alias: { '@': import.meta.dirname || __dirname || '.' },
+      dedupe: ['react', 'react-dom'],
     },
     server: {
       hmr: env.DISABLE_HMR !== 'true',

@@ -22,6 +22,7 @@ CREATE INDEX IF NOT EXISTS idx_audit_created_at      ON public.admin_audit_logs(
 ALTER TABLE public.admin_audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Hanya owner & admin yang bisa baca audit log
+DROP POLICY IF EXISTS "Admins can read audit logs" ON public.admin_audit_logs;
 CREATE POLICY "Admins can read audit logs"
   ON public.admin_audit_logs FOR SELECT
   USING (public.is_admin_or_owner());
