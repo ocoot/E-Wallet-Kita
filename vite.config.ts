@@ -2,6 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import path from 'path';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
@@ -29,8 +30,15 @@ export default defineConfig(({ mode }) => {
       }),
     ],
     resolve: {
-      alias: { '@': import.meta.dirname || __dirname || '.' },
-      dedupe: ['react', 'react-dom'],
+      alias: {
+        '@': import.meta.dirname || __dirname || '.',
+        // Paksa semua import "framer-motion" (termasuk dari sub-dep motion)
+        // ke package yang sama, mencegah duplikasi React instance
+        'framer-motion': path.resolve('./node_modules/framer-motion'),
+        'react': path.resolve('./node_modules/react'),
+        'react-dom': path.resolve('./node_modules/react-dom'),
+      },
+      dedupe: ['react', 'react-dom', 'framer-motion', 'motion'],
     },
     server: {
       hmr: env.DISABLE_HMR !== 'true',
