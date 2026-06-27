@@ -1,28 +1,7 @@
-import { useState, useEffect } from "react";
-import { dbService } from "../lib/db";
-import { Category } from "../types";
-
-export function useCategories() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let mounted = true;
-    async function load() {
-      try {
-        const data = await dbService.getCategories();
-        if (mounted) {
-          setCategories(data);
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error("useCategories error:", err);
-        if (mounted) setLoading(false);
-      }
-    }
-    load();
-    return () => { mounted = false; };
-  }, []);
-
-  return { categories, loading };
-}
+// This hook used to fetch categories independently every time it was
+// called (8 call sites — see CategoriesContext.tsx for details), causing
+// duplicate network requests for data that's shared and rarely changes.
+// It now simply re-exports the shared CategoriesProvider context so every
+// existing call site (`const { categories } = useCategories()`) keeps
+// working unchanged, but all of them now read from one cached fetch.
+export { useCategoriesContext as useCategories } from "../contexts/CategoriesContext";

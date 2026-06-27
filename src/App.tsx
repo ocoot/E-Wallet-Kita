@@ -1,20 +1,15 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense, lazy } from "react";
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { ToastProvider, useToast } from "./contexts/ToastContext";
 import { MaintenanceProvider } from "./contexts/MaintenanceContext";
+import { CategoriesProvider } from "./contexts/CategoriesContext";
 import { useAuth } from "./contexts/AuthContext";
+import { usePremium } from "./hooks/usePremium";
 import { Sidebar } from "./components/Sidebar";
 import { Login } from "./views/Login";
 import { AuthCallback } from "./components/AuthCallback";
-import { Dashboard } from "./views/Dashboard";
-import { NewTransaction } from "./views/NewTransaction";
-import { History } from "./views/History";
-import { Settings } from "./views/Settings";
-import { Budget } from "./views/Budget";
-import { BillReminders } from "./views/BillReminders";
-import { AdminPanel } from "./views/AdminPanel";
 import { Onboarding } from "./views/Onboarding";
 import { useAdmin } from "./hooks/useAdmin";
 import { Modal } from "./components/Modal";
@@ -27,6 +22,26 @@ import { motion, AnimatePresence } from "motion/react";
 import { LogOut } from "lucide-react";
 import { supabase } from "./lib/supabase";
 import { User } from "@supabase/supabase-js";
+
+// Code-split the heavier views instead of bundling them all into the main
+// chunk. AdminPanel in particular (broadcast tools, voucher manager, AI
+// monitor, category manager, etc.) used to ship to every single user on
+// first load even though only a handful of admins ever open it. Each view
+// below is now its own chunk, fetched on demand the first time its route
+// is visited, instead of every view loading eagerly for every user.
+const Dashboard = lazy(() => import("./views/Dashboard").then(m => ({ default: m.Dashboard })));
+const NewTransaction = lazy(() => import("./views/NewTransaction").then(m => ({ default: m.NewTransaction })));
+const History = lazy(() => import("./views/History").then(m => ({ default: m.History })));
+const Settings = lazy(() => import("./views/Settings").then(m => ({ default: m.Settings })));
+const Budget = lazy(() => import("./views/Budget").then(m => ({ default: m.Budget })));
+const BillReminders = lazy(() => import("./views/BillReminders").then(m => ({ default: m.BillReminders })));
+const AdminPanel = lazy(() => import("./views/AdminPanel").then(m => ({ default: m.AdminPanel })));
+
+const RouteFallback = () => (
+  <div className="flex items-center justify-center py-24 text-slate-400 light_sakura:text-slate-500">
+    Loading...
+  </div>
+);
 
 interface MainLayoutProps {
   user: User | null;
@@ -63,6 +78,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   const handleTransactionChange = () => {
     setTransactionsUpdatedTrigger(prev => prev + 1);
   };
+
+  const { isPremium, loading: premiumLoading } = usePremium();
 
   // Real-time listen to user's database change events on the transactions table
   useEffect(() => {
@@ -102,6 +119,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
       )
       .subscribe();
 
+    return () => {
+      supabase.removeChannel(transactionChannel);
+    };
+  }, [user, t, showToast]);
+
+  // Real-time "new voucher available" notification — only relevant to
+  // users who aren't premium yet, since premium users have nothing to
+  // claim a discount voucher for. Every user used to open this WebSocket
+  // channel regardless of premium status, which meant a permanently-open
+  // realtime connection that almost all premium users would never get any
+  // use out of. We wait for `premiumLoading` to resolve before deciding,
+  // so we don't briefly subscribe-then-unsubscribe on every page load.
+  useEffect(() => {
+    if (!user || premiumLoading || isPremium) return;
+
     const voucherChannel = supabase
       .channel("premium-voucher")
       .on(
@@ -116,10 +148,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(transactionChannel);
       supabase.removeChannel(voucherChannel);
     };
-  }, [user, t, showToast]);
+  }, [user, premiumLoading, isPremium, t, showToast]);
   
   // Signout prompt control triggers
   const [isSignoutModalOpen, setIsSignoutModalOpen] = useState(false);
@@ -177,19 +208,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
           <div className="max-w-7xl mx-auto w-full">
             <Breadcrumbs />
             <AnimatePresence mode="wait">
-              <Routes>
-                <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} />} />
-                <Route path="/transactions/new" element={<FeatureLockGate featureKey="new_transaction"><NewTransaction onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
-                <Route path="/transactions" element={<FeatureLockGate featureKey="history"><History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
-                <Route path="/budget" element={<FeatureLockGate featureKey="budget"><Budget /></FeatureLockGate>} />
-                <Route path="/bill-reminders" element={<FeatureLockGate featureKey="bill_reminders"><BillReminders /></FeatureLockGate>} />
-                <Route path="/settings" element={<FeatureLockGate featureKey="settings"><Settings onUserPrefUpdated={(updatedUser) => {
-                  setUserProfile({ display_name: updatedUser.display_name });
-                }} /></FeatureLockGate>} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/dashboard" replace />} />
-                <Route path="*" element={<Navigate to="/dashboard" replace />} />
-              </Routes>
+              <Suspense fallback={<RouteFallback />}>
+                <Routes>
+                  <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} />} />
+                  <Route path="/transactions/new" element={<FeatureLockGate featureKey="new_transaction"><NewTransaction onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
+                  <Route path="/transactions" element={<FeatureLockGate featureKey="history"><History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
+                  <Route path="/budget" element={<FeatureLockGate featureKey="budget"><Budget /></FeatureLockGate>} />
+                  <Route path="/bill-reminders" element={<FeatureLockGate featureKey="bill_reminders"><BillReminders /></FeatureLockGate>} />
+                  <Route path="/settings" element={<FeatureLockGate featureKey="settings"><Settings onUserPrefUpdated={(updatedUser) => {
+                    setUserProfile({ display_name: updatedUser.display_name });
+                  }} /></FeatureLockGate>} />
+                  <Route path="/onboarding" element={<Onboarding />} />
+                  <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/dashboard" replace />} />
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                </Routes>
+              </Suspense>
             </AnimatePresence>
 
             {/* Footer Copyright */}
@@ -253,15 +286,17 @@ export default function App() {
       <LanguageProvider>
         <ToastProvider>
           <MaintenanceProvider>
-            <Routes>
-               <Route path="/login" element={<Login />} />
-               <Route path="/auth/callback" element={<AuthCallback />} />
-               <Route path="/*" element={<MainLayout user={user} loading={loading} signOut={signOut} />} />
-            </Routes>
-            <ResetPasswordModal 
-              isOpen={isRecoveringPassword} 
-              onClose={() => setIsRecoveringPassword(false)} 
-            />
+            <CategoriesProvider>
+              <Routes>
+                 <Route path="/login" element={<Login />} />
+                 <Route path="/auth/callback" element={<AuthCallback />} />
+                 <Route path="/*" element={<MainLayout user={user} loading={loading} signOut={signOut} />} />
+              </Routes>
+              <ResetPasswordModal 
+                isOpen={isRecoveringPassword} 
+                onClose={() => setIsRecoveringPassword(false)} 
+              />
+            </CategoriesProvider>
           </MaintenanceProvider>
         </ToastProvider>
       </LanguageProvider>

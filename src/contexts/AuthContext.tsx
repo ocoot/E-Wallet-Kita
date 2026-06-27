@@ -36,7 +36,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setIsRecoveringPassword(true);
       }
       
-      if (session?.user) {
+      // Only sync the `users` row / check ban status on events where the
+      // session actually just became active (initial load or a fresh
+      // sign-in) — not on every auth state change. Supabase also fires
+      // this listener on `TOKEN_REFRESHED`, which happens automatically
+      // roughly every hour for as long as the user keeps the app open.
+      // Previously the sync block below ran on *every* one of those
+      // refreshes too, firing two extra DB round-trips (an upsert plus a
+      // ban check) each time, for data that essentially never changes
+      // between refreshes.
+      const shouldSyncUser = session?.user && (event === 'SIGNED_IN' || event === 'INITIAL_SESSION');
+
+      if (shouldSyncUser) {
         // Sync user record to 'users' table
         try {
           const { data: existingUser } = await supabase
