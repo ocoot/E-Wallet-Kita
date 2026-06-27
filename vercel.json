@@ -5,6 +5,11 @@
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/firebase-messaging-sw\\.js", "destination": "/sw.js" },
+    { "source": "/sw\\.js", "destination": "/sw.js" },
+    { "source": "/workbox-(.*)", "destination": "/workbox-$1" },
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/(.*)\\.(js|css|png|svg|jpg|ico|json|webmanifest)", "destination": "/$1.$2" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

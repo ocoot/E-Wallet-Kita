@@ -61,49 +61,60 @@ ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 -- 4. Create RLS policies
 
 -- Users Table Policies
+DROP POLICY IF EXISTS "Users can select their own profile" ON public.users;
 CREATE POLICY "Users can select their own profile"
     ON public.users FOR SELECT
     USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.users;
 CREATE POLICY "Users can update their own profile"
     ON public.users FOR UPDATE
     USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Users can insert their own profile" ON public.users;
 CREATE POLICY "Users can insert their own profile"
     ON public.users FOR INSERT
     WITH CHECK (auth.uid() = id);
 
 -- Transactions Table Policies
+DROP POLICY IF EXISTS "Users can select their own transactions" ON public.transactions;
 CREATE POLICY "Users can select their own transactions"
     ON public.transactions FOR SELECT
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own transactions" ON public.transactions;
 CREATE POLICY "Users can insert their own transactions"
     ON public.transactions FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own transactions" ON public.transactions;
 CREATE POLICY "Users can update their own transactions"
     ON public.transactions FOR UPDATE
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own transactions" ON public.transactions;
 CREATE POLICY "Users can delete their own transactions"
     ON public.transactions FOR DELETE
     USING (auth.uid() = user_id);
 
 -- Telegram Link Codes Table Policies (user_id specific)
+DROP POLICY IF EXISTS "Users can select their own active link codes" ON public.telegram_link_codes;
 CREATE POLICY "Users can select their own active link codes"
     ON public.telegram_link_codes FOR SELECT
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own link codes" ON public.telegram_link_codes;
 CREATE POLICY "Users can insert their own link codes"
     ON public.telegram_link_codes FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own link codes" ON public.telegram_link_codes;
 CREATE POLICY "Users can update their own link codes"
     ON public.telegram_link_codes FOR UPDATE
     USING (auth.uid() = user_id);
 
 -- Categories Table Policies (readable to everyone authenticated or anonymous)
+DROP POLICY IF EXISTS "Allow read access to all catalog categories" ON public.categories;
 CREATE POLICY "Allow read access to all catalog categories"
     ON public.categories FOR SELECT
     TO authenticated, anon

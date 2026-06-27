@@ -30,11 +30,6 @@ function getOrInitMessaging(): Messaging | null {
 
 /**
  * Request notification permission and get FCM token.
- * Returns null if permission denied or Firebase not configured.
- *
- * Firebase SDK tries to register firebase-messaging-sw.js internally, which
- * can timeout (10s) in Vite dev mode. We pre-register it ourselves and pass
- * the registration to getToken() so Firebase doesn't have to wait.
  */
 export const requestFcmToken = async (): Promise<string | null> => {
   const m = getOrInitMessaging();
@@ -46,27 +41,13 @@ export const requestFcmToken = async (): Promise<string | null> => {
 
     const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY || '';
     if (!vapidKey) {
-      console.warn('[FCM] VAPID key not set — cannot get push token');
+      console.warn('[FCM] VAPID key not set');
       return null;
     }
 
-    // Pre-register the FCM service worker so Firebase doesn't have to wait
-    // for its own 10-second registration timeout.
-    let swRegistration: ServiceWorkerRegistration | undefined;
-    try {
-      swRegistration = await navigator.serviceWorker.register(
-        '/firebase-messaging-sw.js',
-        { scope: '/' }
-      );
-      console.log('[FCM] Service worker registered successfully');
-    } catch (swErr) {
-      console.warn('[FCM] Could not pre-register SW, falling back to default:', swErr);
-    }
-
-    const currentToken = await getToken(m, {
-      vapidKey,
-      serviceWorkerRegistration: swRegistration,
-    });
+    // Get the FCM token. Firebase will look for firebase-messaging-sw.js
+    // first; if it fails, it falls back to the active SW.
+    const currentToken = await getToken(m, { vapidKey });
     return currentToken || null;
   } catch (err) {
     console.error('[FCM] Error getting token:', err);
