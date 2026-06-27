@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, AlertTriangle, Info, X } from "lucide-react";
 
@@ -19,17 +19,27 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const showToast = (message: string, type: ToastType = "success") => {
+  // `showToast` di-`useCallback` dengan dependency array kosong (functional
+  // setState, jadi tidak perlu depend ke `toasts`), supaya reference-nya
+  // STABIL selama hidup ToastProvider. Sebelumnya `showToast` dibuat ulang
+  // setiap render, sehingga semua `useCallback([..., showToast])` di seluruh
+  // app (AdminPanel.tsx, AdminMaintenance.tsx, dll) ikut berubah reference
+  // tiap saat -> men-trigger useEffect terkait fetch data berulang kali
+  // (fetch storm yang bikin Admin Panel terasa seperti reload).
+  const showToast = useCallback((message: string, type: ToastType = "success") => {
     const id = Math.random().toString(36).substr(2, 9);
     setToasts((prev) => [...prev, { id, message, type }]);
-  };
+  }, []);
 
-  const removeToast = (id: string) => {
+  const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+  }, []);
+
+  // Memo context value supaya object-nya juga stabil.
+  const value = useMemo(() => ({ showToast }), [showToast]);
 
   return (
-    <ToastContext.Provider value={{ showToast }}>
+    <ToastContext.Provider value={value}>
       {children}
 
       {/* Floating container */}

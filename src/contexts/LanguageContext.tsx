@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import idTranslations from "../locales/id.json";
 import enTranslations from "../locales/en.json";
 import { useAuth } from "./AuthContext";
@@ -29,7 +29,13 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return "id"; 
   });
 
-  // Sync with Supabase on mount/user change
+  // Sync with Supabase on mount/user change.
+  // PENTING: dependency-nya `user?.id` (string), BUKAN `user` (object).
+  // `user` dari AuthContext mendapat reference BARU setiap event auth apa pun
+  // (termasuk TOKEN_REFRESHED yang terjadi otomatis tiap sesi berjalan cukup
+  // lama, di production sekalipun) walau id-nya sama persis. Kalau dependency-
+  // nya `user` (object), efek ini akan re-fetch preferred_language ke DB
+  // setiap kali itu terjadi, padahal tidak ada yang berubah.
   useEffect(() => {
     const fetchPref = async () => {
       if (!user) return;
@@ -48,9 +54,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     };
     fetchPref();
-  }, [user]);
+  }, [user?.id]);
 
-  const setLocale = async (newLocale: Locale) => {
+  const setLocale = useCallback(async (newLocale: Locale) => {
     setLocaleState(newLocale);
     localStorage.setItem("ewallet_language", newLocale);
     
@@ -64,12 +70,20 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         console.error("Error syncing language preference:", err);
       }
     }
-  };
+  }, [user]);
 
   /**
-   * Safe translate function with nested key traversal and interpolation replacements
+   * Safe translate function with nested key traversal and interpolation replacements.
+   *
+   * Di-`useCallback` dengan dependency `[locale]` saja, supaya reference `t`
+   * TIDAK berubah kecuali locale benar-benar berganti. Sebelumnya `t` dibuat
+   * ulang setiap render LanguageProvider (termasuk render yang dipicu oleh hal
+   * yang tidak terkait bahasa sama sekali), yang membuat SEMUA komponen di
+   * seluruh app yang punya `useCallback([...,  t])` ikut membuat fungsi baru
+   * setiap saat -> memicu useEffect terkait fetch data re-fire terus-menerus
+   * (inilah penyebab "fetch storm"/terasa seperti reload di Admin Panel).
    */
-  const t = (key: string, replacements?: Record<string, string | number>): string => {
+  const t = useCallback((key: string, replacements?: Record<string, string | number>): string => {
     const activeDictionary = translations[locale];
     const keys = key.split(".");
     let value = activeDictionary;
@@ -97,10 +111,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
 
     return parsedString;
-  };
+  }, [locale]);
+
+  // Memo context value supaya object-nya juga stabil (tidak berubah reference)
+  // selama locale/setLocale/t sendiri tidak berubah.
+  const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
 
   return (
-    <LanguageContext.Provider value={{ locale, setLocale, t }}>
+    <LanguageContext.Provider value={value}>
       {children}
     </LanguageContext.Provider>
   );
