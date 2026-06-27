@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { dbService } from "../lib/db";
 import { supabase } from "../lib/supabase";
@@ -72,7 +72,6 @@ export const History: React.FC<HistoryProps> = ({
   const { showToast } = useToast();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [filteredTransactions, setFilteredTransactions] = useState<Transaction[]>([]);
   
   // Search and Filter states
   const [search, setSearch] = useState("");
@@ -144,17 +143,25 @@ export const History: React.FC<HistoryProps> = ({
     setCurrentPage(1); // reset page on filter change
   }, [filterMonth, currentUser.id, transactionsUpdatedTrigger]);
 
-  // Apply filters locally
-  useEffect(() => {
+  // Apply filters locally.
+  //
+  // This used to be computed in a `useEffect` that called `setState` with
+  // the result — but `filteredTransactions` is pure derived data (it only
+  // depends on `transactions`, `search`, `filterCategory`, `categories`,
+  // `locale`), so storing it in its own state caused an extra render every
+  // time any of those changed: render → effect runs → setState → render
+  // again. `useMemo` computes the same value during the render itself, no
+  // second pass needed.
+  const filteredTransactions = useMemo(() => {
     let result = transactions;
-    
+
     // Search filter
     if (search.trim()) {
       const s = search.toLowerCase();
       result = result.filter(item => {
         const matchesNote = item.note && item.note.toLowerCase().includes(s);
         const cat = categories.find(c => c.key === item.category);
-        const catLabel = cat 
+        const catLabel = cat
           ? (locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key))
           : item.category;
         const matchesCategory = catLabel.toLowerCase().includes(s);
@@ -167,9 +174,16 @@ export const History: React.FC<HistoryProps> = ({
       result = result.filter(item => item.category === filterCategory);
     }
 
-    setFilteredTransactions(result);
-    setCurrentPage(1); // Reset page on query search
-  }, [search, filterCategory, transactions, categories]);
+    return result;
+  }, [search, filterCategory, transactions, categories, locale]);
+
+  // Reset to page 1 whenever the search term or category filter changes
+  // (kept as its own small effect, separate from the derived-data
+  // computation above, since resetting the page is a side effect rather
+  // than something `useMemo` should be doing).
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterCategory]);
 
   // Page index math calculations
   const totalItems = filteredTransactions.length;
