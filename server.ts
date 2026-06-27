@@ -2,14 +2,12 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
-import broadcastTelegramHandler from "./api/admin/broadcast-telegram";
-import broadcastPushHandler from "./api/admin/broadcast-push";
-import telegramWebhookHandler from "./api/telegram-webhook";
-import sendReceiptHandler from "./api/send-receipt";
-import parseTransactionHandler from "./api/parse-transaction";
 
-// Load environment variables
+// Load environment variables FIRST — before any module that reads process.env
 dotenv.config();
+
+// Imports that create Supabase clients at module-level are done dynamically
+// after dotenv.config() so env vars are available.
 
 console.log("=== Available Env Variable Keys ===");
 console.log(Object.keys(process.env).filter(k => k.includes("SUPABASE") || k.includes("TELEGRAM") || k.includes("PORT") || k.includes("APP")));
@@ -52,6 +50,14 @@ async function startServer() {
     });
   });
 
+  // Dynamic imports — these modules create Supabase clients at import time,
+  // so env vars must already be loaded before they're required.
+  const parseTransactionHandler = (await import("./api/parse-transaction")).default;
+  const telegramWebhookHandler = (await import("./api/telegram-webhook")).default;
+  const sendReceiptHandler = (await import("./api/send-receipt")).default;
+  const broadcastTelegramHandler = (await import("./api/admin/broadcast-telegram")).default;
+  const broadcastPushHandler = (await import("./api/admin/broadcast-push")).default;
+
   // AI transaction parser (Delegated to serverless module — single source
   // of truth in api/parse-transaction.ts: auth check, per-user rate
   // limiting, 500-char query limit, the 7-model Gemini fallback chain, and
@@ -68,7 +74,6 @@ async function startServer() {
 
   // Send premium receipt email via SMTP (Gmail)
   app.post("/api/send-receipt", sendReceiptHandler as any);
-
 
   // Push Notification Broadcast for Admin
   app.post("/api/admin/broadcast-push", broadcastPushHandler as any);

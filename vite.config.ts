@@ -2,10 +2,14 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import fs from 'fs';
 import path from 'path';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
-export default defineConfig(() => {
+export default defineConfig(({ mode }) => {
+  // Vite only exposes env to import.meta.env in client code, not to
+  // process.env in plugins. Load them explicitly so closeBundle can read them.
+  const env = loadEnv(mode, process.cwd(), '');
+
   return {
     plugins: [
       react(),
@@ -13,7 +17,14 @@ export default defineConfig(() => {
       VitePWA({
         registerType: 'autoUpdate',
         manifestFilename: 'manifest.json',
-        includeAssets: ['logo.png', 'icon-192.png', 'icon-512.png', 'firebase-messaging-sw.js'],
+        includeAssets: ['logo.png', 'icon-192.png', 'icon-512.png'],
+        workbox: {
+          // firebase-messaging-sw.js is loaded at runtime by Firebase SDK via
+          // importScripts, NOT by the PWA shell — precaching it causes
+          // Workbox revision conflicts when inject-fcm-sw replaces its
+          // placeholders after the precache manifest is built.
+          globIgnores: ['**/firebase-messaging-sw.js*'],
+        },
         manifest: {
           name: 'E-Wallet Kita',
           short_name: 'EWK',
@@ -53,11 +64,11 @@ export default defineConfig(() => {
           if (!fs.existsSync(swPath)) return;
           let content = fs.readFileSync(swPath, 'utf-8');
           content = content
-            .replace('__FIREBASE_API_KEY__', process.env.VITE_FIREBASE_API_KEY || '')
-            .replace('__FIREBASE_AUTH_DOMAIN__', process.env.VITE_FIREBASE_AUTH_DOMAIN || '')
-            .replace('__FIREBASE_PROJECT_ID__', process.env.VITE_FIREBASE_PROJECT_ID || '')
-            .replace('__FIREBASE_MESSAGING_SENDER_ID__', process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '')
-            .replace('__FIREBASE_APP_ID__', process.env.VITE_FIREBASE_APP_ID || '');
+            .replace('__FIREBASE_API_KEY__', env.VITE_FIREBASE_API_KEY || '')
+            .replace('__FIREBASE_AUTH_DOMAIN__', env.VITE_FIREBASE_AUTH_DOMAIN || '')
+            .replace('__FIREBASE_PROJECT_ID__', env.VITE_FIREBASE_PROJECT_ID || '')
+            .replace('__FIREBASE_MESSAGING_SENDER_ID__', env.VITE_FIREBASE_MESSAGING_SENDER_ID || '')
+            .replace('__FIREBASE_APP_ID__', env.VITE_FIREBASE_APP_ID || '');
           fs.writeFileSync(swPath, content);
         }
       }
@@ -70,9 +81,9 @@ export default defineConfig(() => {
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
       // Do not modify—file watching is disabled to prevent flickering during agent edits.
-      hmr: process.env.DISABLE_HMR !== 'true',
+      hmr: env.DISABLE_HMR !== 'true',
       // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
-      watch: process.env.DISABLE_HMR === 'true' ? null : {},
+      watch: env.DISABLE_HMR === 'true' ? null : {},
     },
   };
 });
