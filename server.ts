@@ -1,12 +1,11 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
-import { parseAmountFromString } from "./src/lib/parserUtils";
 import broadcastTelegramHandler from "./api/admin/broadcast-telegram";
 import telegramWebhookHandler from "./api/telegram-webhook";
 import sendReceiptHandler from "./api/send-receipt";
+import parseTransactionHandler from "./api/parse-transaction";
 
 // Load environment variables
 dotenv.config();
@@ -15,28 +14,16 @@ console.log("=== Available Env Variable Keys ===");
 console.log(Object.keys(process.env).filter(k => k.includes("SUPABASE") || k.includes("TELEGRAM") || k.includes("PORT") || k.includes("APP")));
 console.log("====================================");
 
-// Initialize Gemini Client safely
-const apiKey = process.env.GEMINI_API_KEY;
-let ai: GoogleGenAI | null = null;
-if (apiKey) {
-  ai = new GoogleGenAI({
-    apiKey: apiKey,
-    httpOptions: {
-      headers: {
-        'User-Agent': 'aistudio-build',
-      }
-    }
-  });
-} else {
-  console.warn("⚠️ GEMINI_API_KEY is not defined in environment variables. AI parsing features will fail gracefully.");
-}
-
 /**
- * Safe fallback category mapping helper.
- * Single source of truth now lives in api/_lib/categoryInference.ts —
- * this used to be its own (much shorter, out of date) copy.
+ * NOTE: this file used to keep its own GoogleGenAI client + a full copy of
+ * the transaction-parsing logic (model call, fallback chain, category
+ * inference) for the /api/parse-transaction route below. That copy had
+ * drifted badly from the real production handler in
+ * api/parse-transaction.ts — missing auth, rate limiting, the multi-model
+ * Gemini fallback chain, and DB-driven categories. The route now delegates
+ * to that handler directly (see startServer() below), the same pattern
+ * already used for broadcast-telegram, telegram-webhook, and send-receipt.
  */
-import { inferCategoryKey } from "./api/_lib/categoryInference";
 
 import { createClient } from "@supabase/supabase-js";
 
@@ -49,112 +36,6 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 const supabaseBackend = createClient(supabaseUrl, supabaseAnonKey);
-
-/**
- * Shared Core Utility to Parse Transactions using Gemini API or Regex Fallback
- */
-async function parseFinancialQuery(query: string): Promise<{
-  source: string;
-  type: "income" | "expense";
-  category_key: string;
-  amount: number;
-  original_text: string;
-}> {
-  if (!ai) {
-    // Fail-safe regex parser when Gemini is unavailable
-    const inferredAmount = parseAmountFromString(query);
-    const inferredCategory = inferCategoryKey(query);
-    const inferredType = ["gaji", "bonus", "salary", "upah"].some(k => query.toLowerCase().includes(k)) ? "income" : "expense";
-    return {
-      source: "fallback_server_regex",
-      type: inferredType,
-      category_key: inferredCategory,
-      amount: inferredAmount,
-      original_text: query
-    };
-  }
-
-  const systemInstruction = `You are a financial parsing expert for 'E-Wallet Kita'. 
-Analyze natural language transactions in Indonesian or English and output structured JSON.
-Mapping keys for categories are exactly:
-- 'salary' (income)
-- 'bonus' (income)
-- 'food_drink' (expense)
-- 'monthly_groceries' (expense)
-- 'vegetables' (expense)
-- 'bills' (expense)
-- 'other' (expense or fallback if unsure)
-
-Translate Indonesian abbreviations for quantities:
-- 'rb' or 'ribu' means thousands (e.g. '25rb' -> amount should be 25000)
-- 'k' means thousands (e.g. '1k' -> amount should be 1000)
-- 'jt' or 'juta' means millions (e.g. '1.5jt' -> amount should be 1500000)
-Return the numerical value in 'amount' property.
-If categories do not match any, default category_key to 'other'.`;
-
-  try {
-    let timeoutId: NodeJS.Timeout | undefined;
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      timeoutId = setTimeout(() => reject(new Error("Gemini AI request timed out")), 6000);
-    });
-
-    const responsePromise = ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: `Parse this input text: "${query}"`,
-      config: {
-        systemInstruction,
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            type: { type: Type.STRING, description: "Type of transaction (income or expense)" },
-            category_key: { type: Type.STRING, description: "Category string key" },
-            amount: { type: Type.NUMBER, description: "Numeric Indonesian Rupiah conversion" },
-            original_text: { type: Type.STRING, description: "The raw input string parsed" }
-          },
-          required: ["type", "category_key", "amount", "original_text"]
-        }
-      }
-    });
-
-    const response = await Promise.race([responsePromise, timeoutPromise]);
-    if (timeoutId) clearTimeout(timeoutId);
-
-    const responseText = response.text;
-    if (!responseText) {
-      throw new Error("Empty response from Gemini API");
-    }
-
-    const parsedJSON = JSON.parse(responseText.trim());
-    const codeParsedAmount = parseAmountFromString(query);
-    
-    // High fidelity override check
-    if (codeParsedAmount > 0 && (!parsedJSON.amount || parsedJSON.amount <= 10)) {
-      parsedJSON.amount = codeParsedAmount;
-    }
-
-    return {
-      source: "gemini-3.5-flash",
-      type: parsedJSON.type || "expense",
-      category_key: parsedJSON.category_key || inferCategoryKey(query),
-      amount: parsedJSON.amount || codeParsedAmount || 0,
-      original_text: query
-    };
-  } catch (err: any) {
-    console.error("❌ Gemini parseFinancialQuery error in server:", err?.message ?? err);
-    // Graceful fallback to local inference on Gemini failure
-    const codeParsedAmount = parseAmountFromString(query);
-    const inferredCategory = inferCategoryKey(query);
-    const inferredType = ["gaji", "bonus", "salary", "upah"].some(k => query.toLowerCase().includes(k)) ? "income" : "expense";
-    return {
-      source: "fallback_gemini_error",
-      type: inferredType,
-      category_key: inferredCategory,
-      amount: codeParsedAmount,
-      original_text: query
-    };
-  }
-}
 
 // In-Memory map to cache pending Telegram transaction confirmations
 // Map categories to localization labels for bot replies
@@ -238,33 +119,11 @@ async function startServer() {
     });
   });
 
-  // API Safe AI transaction parser
-  app.post("/api/parse-transaction", async (req, res) => {
-    try {
-      const { query } = req.body;
-      if (!query || typeof query !== "string" || query.trim() === "") {
-        res.status(400).json({ error: "Missing string query to parse" });
-        return;
-      }
-      const parsed = await parseFinancialQuery(query);
-      res.json(parsed);
-    } catch (err: any) {
-      console.error("Gemini Parse API Error:", err);
-      const query = req.body?.query || "";
-      const inferredAmount = parseAmountFromString(query);
-      const inferredCategory = inferCategoryKey(query);
-      const inferredType = ["gaji", "bonus", "salary", "upah"].some(k => query.toLowerCase().includes(k)) ? "income" : "expense";
-      
-      res.json({
-        source: "fallback_server_error_regex",
-        type: inferredType,
-        category_key: inferredCategory,
-        amount: inferredAmount,
-        original_text: query,
-        error_context: err.message
-      });
-    }
-  });
+  // AI transaction parser (Delegated to serverless module — single source
+  // of truth in api/parse-transaction.ts: auth check, per-user rate
+  // limiting, 500-char query limit, the 7-model Gemini fallback chain, and
+  // DB-driven categories all now apply in dev too, not just in production)
+  app.post("/api/parse-transaction", parseTransactionHandler as any);
 
   // Telegram Broadcast for Admin (Delegated to serverless module)
   app.post("/api/admin/broadcast-telegram", broadcastTelegramHandler as any);

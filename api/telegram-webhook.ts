@@ -481,9 +481,10 @@ async function handleReceiptPhoto(message: any, maintenanceStatus: MaintenanceSt
 // MAIN WEBHOOK HANDLER
 // ─────────────────────────────────────────────────────────────
 export default async (req: VercelRequest, res: VercelResponse) => {
-  // Auto-cleanup expired pending transactions
-  await supabaseBackend.rpc("cleanup_expired_pending_transactions");
-
+  // Method + auth MUST be validated before any DB call. Previously the
+  // cleanup RPC below fired unconditionally here — before the method check
+  // and before the secret-token check — so any unauthenticated request
+  // (wrong method, missing/invalid secret) still triggered a DB write.
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -505,6 +506,10 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       return;
     }
 
+    // Auto-cleanup expired pending transactions — only once, only after the
+    // request is confirmed to be a real, authenticated Telegram update
+    // (this used to also run a second time before the checks above, which
+    // was both wasteful and an unauthenticated DB-write surface).
     await supabaseBackend.rpc("cleanup_expired_pending_transactions");
 
     const update = req.body;
