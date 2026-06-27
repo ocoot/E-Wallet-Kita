@@ -155,9 +155,14 @@ export const Settings: React.FC<SettingsProps> = ({
     return () => clearInterval(interval);
   }, [linkingCode]);
 
-  // Real-time polling for Telegram activation status
+  // Real-time polling for Telegram activation status.
+  // Guard now also checks `linkingCode` — previously this polled Supabase
+  // every 3s for as long as the Settings page stayed open and Telegram
+  // wasn't linked yet, even if the user never clicked "Generate Linking
+  // Code" at all. It should only run while a linking code is actually
+  // active, same as the 10-minute countdown effect above it.
   useEffect(() => {
-    if (!user || isTelegramLinked) return;
+    if (!user || isTelegramLinked || !linkingCode) return;
 
     const interval = setInterval(async () => {
       const { data, error } = await supabase
@@ -177,7 +182,7 @@ export const Settings: React.FC<SettingsProps> = ({
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [user, isTelegramLinked]);
+  }, [user, isTelegramLinked, linkingCode]);
 
   const handleUpdateProfileName = () => {
     audioFeedback.playClick();
