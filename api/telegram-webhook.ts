@@ -84,38 +84,22 @@ if (apiKey) {
 
 
 // ─────────────────────────────────────────────────────────────
-// FIX #8: Rate limiting & lockout for /link command (brute force protection)
+// /link brute-force lockout & Telegram update dedup
+//
+// Both used to be plain in-memory `Map`s here. On Vercel, each serverless
+// invocation can land on a different (or freshly cold-started) container
+// with empty memory, so neither was reliable: a duplicate Telegram retry
+// could slip through and get processed twice, and the /link lockout could
+// be bypassed just by the next request landing on a different instance.
+// Both now live in Postgres (see migration
+// 20260712000000_db_backed_rate_limiting_and_dedup.sql) via
+// get_telegram_link_lockout / record_telegram_link_attempt and
+// check_and_mark_telegram_update, which use row-level locking / unique
+// constraints so the check-and-update is atomic no matter which instance
+// handles the request.
 // ─────────────────────────────────────────────────────────────
-interface LinkAttempt {
-  attempts: number;
-  lastAttempt: number;
-  lockedUntil: number | null;
-}
-
-const linkRateLimiter = new Map<number, LinkAttempt>();
 const LINK_MAX_ATTEMPTS = 5;        // 5 attempts
-const LINK_WINDOW = 60 * 1000;      // per 60 seconds
-const LINK_LOCKOUT = 15 * 60 * 1000; // 15-minute lockout after 5 failed attempts
-
-// ─────────────────────────────────────────────────────────────
-// PROCESSED UPDATES DEDUPLICATION CACHE (Telegram retry mitigation)
-// ─────────────────────────────────────────────────────────────
-const processedTelegramUpdates = new Map<number, number>(); // update_id -> timestamp
-
-function isDuplicateTelegramUpdate(updateId: number): boolean {
-  const now = Date.now();
-  // Clear old entries (> 20 minutes)
-  for (const [id, ts] of processedTelegramUpdates.entries()) {
-    if (now - ts > 20 * 60 * 1000) {
-      processedTelegramUpdates.delete(id);
-    }
-  }
-  if (processedTelegramUpdates.has(updateId)) {
-    return true;
-  }
-  processedTelegramUpdates.set(updateId, now);
-  return false;
-}
+const LINK_LOCKOUT_SECONDS = 15 * 60; // 15-minute lockout after 5 failed attempts
 
 import { getActiveCategories, generateCategoryPrompt, validateCategoryKey, Category } from './_lib/categories.js';
 import { checkCategoryBudgetStatus } from './_lib/budget.js';
@@ -524,7 +508,16 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
     // Check for duplicate updates to prevent processing retries sent by Telegram
     if (update && update.update_id) {
-      if (isDuplicateTelegramUpdate(update.update_id)) {
+      const { data: isNewUpdate, error: dedupError } = await supabaseBackend.rpc(
+        "check_and_mark_telegram_update",
+        { p_update_id: update.update_id }
+      );
+      if (dedupError) {
+        // Fail-open: a dedup-table hiccup shouldn't take the whole bot down.
+        // Worst case on failure is an occasional double-processed retry,
+        // which is far better than the bot going silent.
+        console.error("⚠️ Telegram dedup check failed, proceeding anyway:", dedupError);
+      } else if (isNewUpdate === false) {
         console.warn(`⚠️ Ignored duplicate Telegram retry update_id: ${update.update_id}`);
         res.status(200).json({ ok: true });
         return;
@@ -1016,12 +1009,16 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
         const code = parts[1];
 
-        // Brute force protection
-        const now = Date.now();
-        const state = linkRateLimiter.get(chatId) || { attempts: 0, lastAttempt: 0, lockedUntil: null };
+        // Brute force protection — lockout state now lives in Postgres
+        // (telegram_link_attempts), not in this process's memory, so it
+        // survives across serverless instances/cold starts.
+        const { data: lockedUntil, error: lockoutCheckError } = await supabaseBackend.rpc(
+          "get_telegram_link_lockout",
+          { p_chat_id: chatId }
+        );
 
-        if (state.lockedUntil && now < state.lockedUntil) {
-          const remaining = Math.ceil((state.lockedUntil - now) / 60000);
+        if (!lockoutCheckError && lockedUntil) {
+          const remaining = Math.ceil((new Date(lockedUntil).getTime() - Date.now()) / 60000);
           await sendTelegramMessage(chatId, tr("linkLockedOut", lang, remaining));
           res.status(200).json({ ok: true }); return;
         }
@@ -1032,19 +1029,21 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             p_link_code: code
           });
 
-          if (error) {
-            // Update rate limit state
-            state.attempts++;
-            state.lastAttempt = now;
-            if (state.attempts >= LINK_MAX_ATTEMPTS) {
-              state.lockedUntil = now + LINK_LOCKOUT;
-            }
-            linkRateLimiter.set(chatId, state);
+          // Record the outcome atomically: increments + (re-)applies the
+          // lockout on failure, clears all state on success.
+          const { error: recordError } = await supabaseBackend.rpc("record_telegram_link_attempt", {
+            p_chat_id: chatId,
+            p_success: !error,
+            p_max_attempts: LINK_MAX_ATTEMPTS,
+            p_lockout_seconds: LINK_LOCKOUT_SECONDS
+          });
+          if (recordError) {
+            console.error("⚠️ Failed to record /link attempt outcome:", recordError);
+          }
 
+          if (error) {
             await sendTelegramMessage(chatId, tr("linkFailed", lang, error.message || tr("linkInvalidCodeFallback", lang)));
           } else {
-            // Success
-            linkRateLimiter.delete(chatId);
             const userDisplay = data?.[0]?.display_name || "User";
             await sendTelegramMessage(chatId, tr("linkSuccess", lang, userDisplay));
           }

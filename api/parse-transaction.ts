@@ -40,16 +40,20 @@ async function logAiUsage(
 }
 
 // ─────────────────────────────────────────────────────────────
-// FIX #9: Separate rate limiting for regular vs AI parsing
+// Separate rate limiting for regular vs AI parsing.
+//
+// This used to be an in-memory `Map<userId, RateLimitEntry>`. On Vercel,
+// each serverless invocation can land on a different (or freshly
+// cold-started) container with empty memory, so a user's actual request
+// rate could exceed these limits by a multiple of however many warm
+// instances happened to be alive — the limit was real on any single
+// instance, but not globally. The counters now live in Postgres
+// (api_rate_limits table, see migration
+// 20260712000000_db_backed_rate_limiting_and_dedup.sql), checked and
+// incremented atomically in one round trip via
+// check_and_increment_parse_rate_limit, so the limit holds regardless of
+// which instance handles each request.
 // ─────────────────────────────────────────────────────────────
-interface RateLimitEntry {
-  count: number;
-  aiCount: number;
-  lastReset: number;
-  lastAiReset: number;
-}
-
-const rateLimiter = new Map<string, RateLimitEntry>();
 const RATE_LIMIT = 10;              // Regular requests per minute
 const RATE_LIMIT_WINDOW = 60000;    // 1 minute
 const AI_RATE_LIMIT = 5;            // AI requests per minute (stricter)
@@ -110,46 +114,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  // 2. Rate limiting (per user) - FIX #9: Separate AI rate limit
-  const now = Date.now();
-  const userRateLimit = rateLimiter.get(user.id) || { 
-    count: 0, 
-    aiCount: 0, 
-    lastReset: now,
-    lastAiReset: now
-  };
-
-  // Check regular rate limit
-  if (now - userRateLimit.lastReset > RATE_LIMIT_WINDOW) {
-    userRateLimit.count = 0;
-    userRateLimit.lastReset = now;
-  }
-  if (userRateLimit.count >= RATE_LIMIT) {
-    res.status(429).json({ error: 'Too many requests' });
-    return;
-  }
-
-  // Check if will use AI (fallback check)
+  // 2. Rate limiting (per user, DB-backed — see comment above)
   const willUseAI = !!ai; // AI will be used if apiKey is set
-  if (willUseAI) {
-    if (now - userRateLimit.lastAiReset > AI_RATE_LIMIT_WINDOW) {
-      userRateLimit.aiCount = 0;
-      userRateLimit.lastAiReset = now;
+  const { data: rateLimitRows, error: rateLimitError } = await supabase.rpc(
+    'check_and_increment_parse_rate_limit',
+    {
+      p_user_id: user.id,
+      p_will_use_ai: willUseAI,
+      p_limit: RATE_LIMIT,
+      p_window_seconds: RATE_LIMIT_WINDOW / 1000,
+      p_ai_limit: AI_RATE_LIMIT,
+      p_ai_window_seconds: AI_RATE_LIMIT_WINDOW / 1000,
     }
-    if (userRateLimit.aiCount >= AI_RATE_LIMIT) {
-      res.status(429).json({ 
-        error: 'Too many AI requests. Please try again in a moment.',
-        retryAfter: Math.ceil((userRateLimit.lastAiReset + AI_RATE_LIMIT_WINDOW - now) / 1000)
-      });
+  );
+
+  if (rateLimitError) {
+    // Fail-open on a DB hiccup — we'd rather risk an occasional burst than
+    // block every legitimate user from parsing transactions because the
+    // rate-limit table had a transient issue.
+    console.error('[parse-transaction] rate limit check failed, failing open:', rateLimitError);
+  } else {
+    const limitResult = rateLimitRows?.[0];
+    if (limitResult && !limitResult.allowed) {
+      if (limitResult.reason === 'ai_rate_limit') {
+        res.status(429).json({
+          error: 'Too many AI requests. Please try again in a moment.',
+          retryAfter: limitResult.retry_after_seconds,
+        });
+      } else {
+        res.status(429).json({ error: 'Too many requests' });
+      }
       return;
     }
   }
-
-  userRateLimit.count++;
-  if (willUseAI) {
-    userRateLimit.aiCount++;
-  }
-  rateLimiter.set(user.id, userRateLimit);
 
   try {
     const { query } = req.body;
