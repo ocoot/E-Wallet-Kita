@@ -1,48 +1,21 @@
-import { useEffect, useState, useCallback } from "react";
-import { supabase } from "../lib/supabase";
-import { useAuth } from "../contexts/AuthContext";
+// Hook ini sekarang hanya re-export tipis ke AdminContext.
+//
+// Sebelumnya, setiap komponen yang memanggil useAdmin() (App.tsx,
+// AdminPanel.tsx, AdminMaintenance.tsx, dll) punya state isAdmin/isOwner-nya
+// SENDIRI-SENDIRI dan masing-masing melakukan fetch role ke DB secara
+// independen. Ini menyebabkan:
+//   1. Query duplikat ke DB setiap ada perubahan auth state.
+//   2. Race condition: salah satu instance bisa gagal fetch (network blip,
+//      transisi token refresh, dst) sementara yang lain berhasil, sehingga
+//      isAdmin di route guard (App.tsx) bisa sempat jadi `false` walau
+//      role user sebenarnya tidak berubah -> route /admin auto-redirect ke
+//      /dashboard -> terasa seperti "reload tiba-tiba" di Admin Panel.
+//
+// Sekarang semua komponen membaca dari SATU sumber state yang sama
+// (AdminProvider), jadi tidak ada lagi duplikasi fetch maupun race
+// condition antar komponen.
+import { useAdminContext } from "../contexts/AdminContext";
 
 export function useAdmin() {
-  const { user } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isOwner, setIsOwner] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const refreshAdmin = useCallback(async () => {
-    if (!user) {
-      setIsAdmin(false);
-      setIsOwner(false);
-      setLoading(false);
-      return;
-    }
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("role")
-        .eq("id", user.id)
-        .single();
-
-      if (error) {
-        console.error("Gagal memuat role admin:", error.message);
-      }
-
-      setIsAdmin(data?.role === "admin" || data?.role === "owner");
-      setIsOwner(data?.role === "owner");
-    } catch (err) {
-      console.error("Gagal memuat status admin:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    refreshAdmin();
-  }, [refreshAdmin]);
-
-  return {
-    isAdmin,
-    isOwner,
-    loading,
-    refreshAdmin,
-  };
+  return useAdminContext();
 }

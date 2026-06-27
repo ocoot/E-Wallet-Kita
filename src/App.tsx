@@ -5,6 +5,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { ToastProvider, useToast } from "./contexts/ToastContext";
 import { MaintenanceProvider } from "./contexts/MaintenanceContext";
 import { CategoriesProvider } from "./contexts/CategoriesContext";
+import { AdminProvider } from "./contexts/AdminContext";
 import { useAuth } from "./contexts/AuthContext";
 import { usePremium } from "./hooks/usePremium";
 import { Sidebar } from "./components/Sidebar";
@@ -50,7 +51,7 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
-  const { isAdmin } = useAdmin();
+  const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { t } = useLanguage();
@@ -219,7 +220,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                     setUserProfile({ display_name: updatedUser.display_name });
                   }} /></FeatureLockGate>} />
                   <Route path="/onboarding" element={<Onboarding />} />
-                  <Route path="/admin" element={isAdmin ? <AdminPanel /> : <Navigate to="/dashboard" replace />} />
+                  <Route path="/admin" element={
+                    adminLoading
+                      ? <RouteFallback />
+                      : isAdmin
+                        ? <AdminPanel />
+                        : <Navigate to="/dashboard" replace />
+                  } />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </Suspense>
@@ -287,6 +294,7 @@ export default function App() {
         <ToastProvider>
           <MaintenanceProvider>
             <CategoriesProvider>
+            <AdminProvider>
               <Routes>
                  <Route path="/login" element={<Login />} />
                  <Route path="/auth/callback" element={<AuthCallback />} />
@@ -296,6 +304,7 @@ export default function App() {
                 isOpen={isRecoveringPassword} 
                 onClose={() => setIsRecoveringPassword(false)} 
               />
+            </AdminProvider>
             </CategoriesProvider>
           </MaintenanceProvider>
         </ToastProvider>
