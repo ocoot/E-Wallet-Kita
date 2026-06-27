@@ -901,5 +901,10 @@
     "invalid_due_date": "Due date is required.",
     "dashboard_alert_title": "Upcoming Bills",
     "dashboard_alert_cta": "View All"
+  },
+  "pwa": {
+    "update_title": "Update Available",
+    "update_desc": "A new version of E-Wallet Kita is ready.",
+    "update_btn": "Update Now"
   }
 }

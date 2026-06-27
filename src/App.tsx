@@ -18,6 +18,7 @@ import { ResetPasswordModal } from "./components/ResetPasswordModal";
 import { MaintenanceBanner } from "./components/MaintenanceBanner";
 import { FeatureLockGate } from "./components/FeatureLockGate";
 import { SupportChatWidget } from "./components/SupportChatWidget";
+import { UpdatePrompt } from "./components/UpdatePrompt";
 import { Breadcrumbs } from "./components/Breadcrumbs";
 import {
   DashboardSkeleton,
@@ -329,6 +330,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
 
       {/* Floating support chat widget (FAQ rule-based + live chat admin) -- tampil di semua halaman dashboard */}
       <SupportChatWidget />
+
+      {/* Banner update versi baru — muncul otomatis saat build baru terdeteksi oleh SW */}
+      <UpdatePrompt />
 
     </div>
   );

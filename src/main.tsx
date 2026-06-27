@@ -6,11 +6,23 @@ import './index.css';
 import {AuthProvider} from './contexts/AuthContext';
 import { registerSW } from "virtual:pwa-register";
 import { onForegroundFcmMessage } from "./lib/firebase";
-import { supabase } from "./lib/supabase";
 
-// Register Service Worker via Vite PWA plugin
-registerSW({
+// Register Service Worker via Vite PWA plugin.
+// onNeedRefresh dipanggil saat SW mendeteksi build baru sudah tersedia
+// (file precache berubah setelah deploy ke Vercel). Kita simpan fungsi
+// updateSW ke window agar bisa dipanggil dari komponen UpdatePrompt,
+// lalu dispatch custom event supaya komponen tersebut muncul.
+const updateSW = registerSW({
   immediate: true,
+  onNeedRefresh() {
+    // Simpan fungsi update agar bisa dipanggil dari UpdatePrompt
+    (window as any).__pwaUpdateSW = updateSW;
+    // Beritahu React tree bahwa ada versi baru
+    window.dispatchEvent(new CustomEvent("pwa-update-available"));
+  },
+  onOfflineReady() {
+    console.log("[PWA] App siap digunakan secara offline.");
+  },
 });
 
 // ── FCM foreground notification handler ──────────────────────
@@ -42,6 +54,7 @@ createRoot(document.getElementById('root')!).render(
 declare global {
   interface Window {
     deferredPrompt?: any;
+    __pwaUpdateSW?: (reloadPage?: boolean) => Promise<void>;
   }
 }
 

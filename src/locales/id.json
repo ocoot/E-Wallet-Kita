@@ -901,5 +901,10 @@
     "invalid_due_date": "Tanggal jatuh tempo harus diisi.",
     "dashboard_alert_title": "Tagihan Mendatang",
     "dashboard_alert_cta": "Lihat Semua"
+  },
+  "pwa": {
+    "update_title": "Pembaruan Tersedia",
+    "update_desc": "Versi terbaru E-Wallet Kita sudah siap.",
+    "update_btn": "Perbarui Sekarang"
   }
 }
