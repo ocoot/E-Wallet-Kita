@@ -292,9 +292,9 @@ export default function App() {
     <ThemeProvider>
       <LanguageProvider>
         <ToastProvider>
+          <AdminProvider>
           <MaintenanceProvider>
             <CategoriesProvider>
-            <AdminProvider>
               <Routes>
                  <Route path="/login" element={<Login />} />
                  <Route path="/auth/callback" element={<AuthCallback />} />
@@ -304,9 +304,9 @@ export default function App() {
                 isOpen={isRecoveringPassword} 
                 onClose={() => setIsRecoveringPassword(false)} 
               />
-            </AdminProvider>
             </CategoriesProvider>
           </MaintenanceProvider>
+          </AdminProvider>
         </ToastProvider>
       </LanguageProvider>
     </ThemeProvider>
