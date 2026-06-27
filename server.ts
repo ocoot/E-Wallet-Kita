@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 import broadcastTelegramHandler from "./api/admin/broadcast-telegram";
+import broadcastPushHandler from "./api/admin/broadcast-push";
 import telegramWebhookHandler from "./api/telegram-webhook";
 import sendReceiptHandler from "./api/send-receipt";
 import parseTransactionHandler from "./api/parse-transaction";
@@ -68,6 +69,9 @@ async function startServer() {
   // Send premium receipt email via SMTP (Gmail)
   app.post("/api/send-receipt", sendReceiptHandler as any);
 
+
+  // Push Notification Broadcast for Admin
+  app.post("/api/admin/broadcast-push", broadcastPushHandler as any);
 
   // Vite development vs production static handler integration
   if (process.env.NODE_ENV !== "production") {

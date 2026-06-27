@@ -1,6 +1,7 @@
 {
   "functions": {
-    "api/admin/broadcast-telegram.ts": { "maxDuration": 60 }
+    "api/admin/broadcast-telegram.ts": { "maxDuration": 60 },
+    "api/admin/broadcast-push.ts": { "maxDuration": 60 }
   },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
