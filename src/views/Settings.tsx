@@ -137,6 +137,25 @@ export const Settings: React.FC<SettingsProps> = ({
   const [telegramChatId, setTelegramChatId] = useState("");
   const [isUnlinkModalOpen, setIsUnlinkModalOpen] = useState(false);
 
+  // Baca status koneksi Telegram dari DB saat halaman pertama dibuka.
+  // Tanpa ini, isTelegramLinked selalu mulai false dan hanya berubah lewat
+  // polling — yang tidak jalan kecuali linkingCode sedang aktif.
+  useEffect(() => {
+    if (!user) return;
+    const fetchTelegramStatus = async () => {
+      const { data, error } = await supabase
+        .from('users')
+        .select('telegram_chat_id')
+        .eq('id', user.id)
+        .single();
+      if (!error && data?.telegram_chat_id) {
+        setTelegramChatId(data.telegram_chat_id);
+        setIsTelegramLinked(true);
+      }
+    };
+    fetchTelegramStatus();
+  }, [user]);
+
   // 10-minutes active timer tracking for linking codes
   useEffect(() => {
     if (!linkingCode) return;
