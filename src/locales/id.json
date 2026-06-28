@@ -71,6 +71,10 @@
   },
   "dashboard": {
     "welcome": "Selamat datang kembali, {name} 👋",
+    "greeting_morning": "Selamat pagi, {name} 🌅",
+    "greeting_afternoon": "Selamat siang, {name} ☀️",
+    "greeting_evening": "Selamat sore, {name} 🌤️",
+    "greeting_night": "Selamat malam, {name} 🌙",
     "balance_summary": "Ikhtisar Keuangan Bulan Ini",
     "income": "Pemasukan",
     "expense": "Pengeluaran",

@@ -2,7 +2,7 @@ import React from "react";
 import logoUrl from "../assets/images/user_logo_transparent.png";
 import { useLanguage } from "../contexts/LanguageContext";
 import { UserSession } from "../types";
-import { Send, Info } from "lucide-react";
+import { Send, Info, Calendar } from "lucide-react";
 
 interface DashboardHeaderProps {
   currentUser: UserSession;
@@ -13,7 +13,27 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   currentUser,
   telegramStatus,
 }) => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
+
+  const getGreetingKey = (): string => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 11) {
+      return "dashboard.greeting_morning";
+    } else if (hour >= 11 && hour < 15) {
+      return "dashboard.greeting_afternoon";
+    } else if (hour >= 15 && hour < 19) {
+      return "dashboard.greeting_evening";
+    } else {
+      return "dashboard.greeting_night";
+    }
+  };
+
+  const formattedDate = new Intl.DateTimeFormat(locale === "id" ? "id-ID" : "en-US", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
 
   return (
     <div id="dashboard-welcome-banner" className="p-6 rounded-3xl border bg-slate-900 border-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-sm">
@@ -29,8 +49,14 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         </div>
 
         <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-slate-300 light_sakura:bg-rose-50 light_sakura:border-rose-100/50 light_sakura:text-rose-600 transition-colors duration-300">
+              <Calendar size={12} className="shrink-0" />
+              <span>{formattedDate}</span>
+            </div>
+          </div>
           <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
-            {t("dashboard.welcome", { name: currentUser.display_name })}
+            {t(getGreetingKey(), { name: currentUser.display_name })}
           </h1>
           <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500">
             {t("app.tagline_sub")}

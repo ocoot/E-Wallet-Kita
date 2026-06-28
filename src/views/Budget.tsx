@@ -9,7 +9,8 @@ import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
-import { PiggyBank, Trash2, AlertTriangle, CheckCircle2, Plus, X } from "lucide-react";
+import { PiggyBank, Plus, X } from "lucide-react";
+import { BudgetProgressCard } from "../components/BudgetProgressCard";
 
 export const Budget: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -258,44 +259,12 @@ export const Budget: React.FC = () => {
           {budgets.map((existing) => {
             const catKey = existing.category_key;
             const draft = getDraft(catKey);
-            const percent = Math.min(100, Math.round(existing.percent));
-            const barColor =
-              existing.status === "danger"
-                ? "bg-red-500"
-                : existing.status === "warning"
-                  ? "bg-amber-500"
-                  : "bg-emerald-500";
 
-            return (
-              <motion.div
-                key={catKey}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30 space-y-4"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-sans font-semibold text-sm text-slate-100 light_sakura:text-slate-800 truncate">
-                    {getLabel(catKey)}
-                  </h3>
-                  {statusBadge(existing.status)}
-                </div>
-
-                <div className="space-y-1.5">
-                  <div className="h-2 rounded-full bg-slate-800 light_sakura:bg-rose-100 overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-300 ${barColor}`}
-                      style={{ width: `${percent}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 light_sakura:text-slate-500">
-                    <span>{t("budget.spent_of_limit", { spent: formatIDR(existing.spent), limit: formatIDR(existing.monthly_limit) })}</span>
-                    <span>{t("budget.percent_used", { percent: Math.round(existing.percent) })}</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5">
+            const editSlot = (
+              <div className="space-y-2">
+                <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
+                    <label className="block text-[10px] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
                       {t("budget.monthly_limit_label")}
                     </label>
                     <input
@@ -308,7 +277,7 @@ export const Budget: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
+                    <label className="block text-[10px] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
                       {t("budget.alert_threshold_label")}
                     </label>
                     <input
@@ -322,24 +291,25 @@ export const Budget: React.FC = () => {
                     />
                   </div>
                 </div>
+                <button
+                  onClick={() => handleSave(catKey)}
+                  disabled={savingKey === catKey}
+                  className="w-full py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-50 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 cursor-pointer"
+                >
+                  {savingKey === catKey ? "…" : t("budget.edit_budget")}
+                </button>
+              </div>
+            );
 
-                <div className="flex items-center gap-2.5">
-                  <button
-                    onClick={() => handleSave(catKey)}
-                    disabled={savingKey === catKey}
-                    className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-50 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 cursor-pointer"
-                  >
-                    {t("budget.edit_budget")}
-                  </button>
-                  <button
-                    onClick={() => setDeleteTarget(catKey)}
-                    className="p-2.5 rounded-xl border border-red-500/20 text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer light_sakura:border-red-200 light_sakura:text-red-500"
-                    title={t("budget.delete")}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-              </motion.div>
+            return (
+              <BudgetProgressCard
+                key={catKey}
+                budget={existing}
+                label={getLabel(catKey)}
+                onEdit={() => {}}
+                onDelete={() => setDeleteTarget(catKey)}
+                editSlot={editSlot}
+              />
             );
           })}
         </div>

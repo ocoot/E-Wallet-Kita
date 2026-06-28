@@ -71,6 +71,10 @@
   },
   "dashboard": {
     "welcome": "Welcome back, {name} 👋",
+    "greeting_morning": "Good morning, {name} 🌅",
+    "greeting_afternoon": "Good afternoon, {name} ☀️",
+    "greeting_evening": "Good evening, {name} 🌤️",
+    "greeting_night": "Good night, {name} 🌙",
     "balance_summary": "Financial Overview This Month",
     "income": "Income",
     "expense": "Expense",
