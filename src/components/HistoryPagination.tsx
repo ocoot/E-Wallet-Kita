@@ -23,7 +23,7 @@ export const HistoryPagination: React.FC<HistoryPaginationProps> = ({
   if (totalPages <= 1) return null;
 
   return (
-    <div id="history-pagination-footer" className="p-4 bg-slate-950/20 border-t border-slate-800/50 flex items-center justify-between font-sans text-xs text-gray-400 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
+    <div id="history-pagination-footer" className="p-4 bg-slate-950/20 border-t border-slate-800/50 flex items-center justify-between font-sans text-xs text-slate-400 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
       <span>
         {t("history.pagination_info", { current: paginatedCount, total: totalItems })}
       </span>

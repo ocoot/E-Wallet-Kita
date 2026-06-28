@@ -60,7 +60,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
 
               return (
                 <div key={p.name} className="flex items-center justify-between gap-6">
-                  <span className="text-gray-400 light_sakura:text-slate-500">{p.name}:</span>
+                  <span className="text-slate-400 light_sakura:text-slate-500">{p.name}:</span>
                   <span className={`font-bold ${colorCls}`}>{formatIDR(p.value)}</span>
                 </div>
               );
@@ -80,7 +80,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
           <h3 className="font-sans font-bold text-base text-white tracking-tight light_sakura:text-slate-800">
             {t("dashboard.chart_title")}
           </h3>
-          <p className="font-sans text-xs text-gray-400 mt-1 light_sakura:text-slate-500">
+          <p className="font-sans text-xs text-slate-400 mt-1 light_sakura:text-slate-500">
             {chartType === "cumulative" 
               ? t("dashboard.chart_desc_cumulative")
               : t("dashboard.chart_desc_daily")}
@@ -98,7 +98,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
               className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
                 chartType === "cumulative"
                   ? "bg-slate-900 text-indigo-400 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
-                  : "text-gray-400 hover:text-slate-200 light_sakura:text-slate-500"
+                  : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500"
               }`}
             >
               {t("dashboard.chart_cumulative")}
@@ -111,7 +111,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
               className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
                 chartType === "daily"
                   ? "bg-slate-900 text-indigo-400 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
-                  : "text-gray-400 hover:text-slate-200 light_sakura:text-slate-500"
+                  : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500"
               }`}
             >
               {t("dashboard.chart_daily")}
@@ -128,7 +128,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
               className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
                 chartMode === "area"
                   ? "bg-slate-900 text-indigo-300 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
-                  : "text-gray-400 hover:text-slate-200 light_sakura:text-slate-500"
+                  : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500"
               }`}
             >
               {t("dashboard.chart_area")}
@@ -141,7 +141,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
               className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
                 chartMode === "line"
                   ? "bg-slate-900 text-indigo-300 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
-                  : "text-gray-400 hover:text-slate-200 light_sakura:text-slate-500"
+                  : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500"
               }`}
             >
               {t("dashboard.chart_line")}
@@ -299,7 +299,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
 
       {/* Small Elegant Secondary Panel explaining Category analysis context */}
       {transactions.length > 0 && (
-        <div className="flex flex-wrap gap-4 items-center justify-between text-[11px] text-gray-500 border-t border-slate-800/40 pt-4 progress-legend light_sakura:border-rose-100/30 light_sakura:text-slate-400">
+        <div className="flex flex-wrap gap-4 items-center justify-between text-[11px] text-slate-500 border-t border-slate-800/40 pt-4 progress-legend light_sakura:border-rose-100/30 light_sakura:text-slate-400">
           <span className="flex items-center gap-1.5 font-sans font-medium">
             <Activity size={12} className="text-zinc-400" />
             {t("dashboard.chart_instruction")}

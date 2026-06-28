@@ -29,7 +29,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         className="p-6 rounded-3xl border bg-slate-900 border-slate-900 relative overflow-hidden transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 text-white light_sakura:text-slate-800 shadow-xs cursor-pointer group"
       >
         <div className="flex items-center justify-between mb-4">
-          <span className="font-sans text-xs font-semibold uppercase tracking-wider text-gray-400 light_sakura:text-slate-500">
+          <span className="font-sans text-xs font-semibold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
             {t("dashboard.income")}
           </span>
           <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-600 transition-transform group-hover:scale-110">
@@ -39,7 +39,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         <p className="font-mono text-2xl font-bold tracking-tight text-emerald-400 light_sakura:text-emerald-600">
           {formatIDR(summary.income)}
         </p>
-        <p className="font-sans text-[11px] text-gray-400 mt-1 light_sakura:text-slate-500">
+        <p className="font-sans text-[11px] text-slate-400 mt-1 light_sakura:text-slate-500">
           {t("dashboard.this_month")}
         </p>
       </motion.div>
@@ -53,7 +53,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         className="p-6 rounded-3xl border bg-slate-900 border-slate-900 relative overflow-hidden transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 text-white light_sakura:text-slate-800 shadow-xs cursor-pointer group"
       >
         <div className="flex items-center justify-between mb-4">
-          <span className="font-sans text-xs font-semibold uppercase tracking-wider text-gray-400 light_sakura:text-slate-500">
+          <span className="font-sans text-xs font-semibold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
             {t("dashboard.expense")}
           </span>
           <div className="p-2 rounded-xl bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-600 transition-transform group-hover:scale-110">
@@ -63,7 +63,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         <p className="font-mono text-2xl font-bold tracking-tight text-red-500 light_sakura:text-rose-600">
           {formatIDR(summary.expense)}
         </p>
-        <p className="font-sans text-[11px] text-gray-400 mt-1 light_sakura:text-slate-500">
+        <p className="font-sans text-[11px] text-slate-400 mt-1 light_sakura:text-slate-500">
           {t("dashboard.this_month")}
         </p>
       </motion.div>
@@ -77,7 +77,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         className="p-6 rounded-3xl border bg-slate-900 border-slate-900 relative overflow-hidden transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 text-white light_sakura:text-slate-800 shadow-xs group cursor-pointer"
       >
         <div className="flex items-center justify-between mb-4 relative z-10">
-          <span className="font-sans text-xs font-semibold uppercase tracking-wider text-gray-400 light_sakura:text-slate-500">
+          <span className="font-sans text-xs font-semibold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
             {t("dashboard.balance")}
           </span>
           <div className="shrink-0 transition-transform group-hover:scale-110 duration-300">
@@ -91,7 +91,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         <p className={`font-mono text-2xl font-bold tracking-tight relative z-10 ${summary.balance >= 0 ? "text-teal-400 light_sakura:text-rose-500" : "text-red-500"}`}>
           {formatIDR(summary.balance)}
         </p>
-        <p className="font-sans text-[11px] text-gray-400 mt-1 light_sakura:text-slate-500 relative z-10">
+        <p className="font-sans text-[11px] text-slate-400 mt-1 light_sakura:text-slate-500 relative z-10">
           {t("dashboard.net_balance_desc")}
         </p>
 

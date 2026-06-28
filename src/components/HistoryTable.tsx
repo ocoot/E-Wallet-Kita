@@ -50,7 +50,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
           <table className="w-full border-collapse font-sans text-left text-xs min-w-[700px]">
             {/* Header row desktop labels */}
             <thead>
-              <tr className="border-b border-slate-800/60 bg-slate-950/20 text-gray-400 uppercase tracking-wider select-none font-bold light_sakura:border-rose-100/60 light_sakura:bg-rose-50/20 light_sakura:text-slate-600">
+              <tr className="border-b border-slate-800/60 bg-slate-950/20 text-slate-400 uppercase tracking-wider select-none font-bold light_sakura:border-rose-100/60 light_sakura:bg-rose-50/20 light_sakura:text-slate-600">
                 <th className="p-4 pl-6 w-36">{t("history.col_date")}</th>
                 <th className="p-4 w-24">{t("history.col_type")}</th>
                 <th className="p-4 w-36">{t("history.col_category")}</th>
@@ -107,7 +107,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                       </td>
 
                       {/* Description / source details */}
-                      <td className="p-4 max-w-sm truncate text-gray-400 light_sakura:text-slate-600 font-medium">
+                      <td className="p-4 max-w-sm truncate text-slate-400 light_sakura:text-slate-600 font-medium">
                         {tx.note || <span className="opacity-40 italic">-</span>}
                       </td>
 
@@ -137,14 +137,14 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
                           <button
                             onClick={() => onEditItem(tx)}
                             aria-label={t("common.edit")}
-                            className="btn-mobile-target p-2.5 rounded-lg border border-transparent hover:border-indigo-500/20 text-gray-500 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
+                            className="btn-mobile-target p-2.5 rounded-lg border border-transparent hover:border-indigo-500/20 text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
                           >
                             <Pencil size={15} />
                           </button>
                           <button
                             onClick={() => onDeleteItem(tx.id)}
                             aria-label={t("common.delete")}
-                            className="btn-mobile-target p-2.5 rounded-lg border border-transparent hover:border-red-500/20 text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
+                            className="btn-mobile-target p-2.5 rounded-lg border border-transparent hover:border-red-500/20 text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer hover:scale-115 active:scale-90"
                           >
                             <Trash2 size={15} />
                           </button>

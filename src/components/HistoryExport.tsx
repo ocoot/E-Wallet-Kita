@@ -40,7 +40,7 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
         <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
           {t("history.title")}
         </h2>
-        <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
+        <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500">
           {t("history.desc")}
         </p>
       </div>

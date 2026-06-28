@@ -4,6 +4,7 @@ import { Transaction, Category } from "../types";
 import { ArrowUpRight, ArrowDownLeft, ArrowRight, Send, Sparkles, User } from "lucide-react";
 import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
+import { EmptyState } from "./EmptyState";
 
 interface DashboardRecentTransactionsProps {
   transactions: Transaction[];
@@ -56,7 +57,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
           <h3 className="font-sans font-bold text-base text-white tracking-tight light_sakura:text-slate-800">
             {t("history.title")}
           </h3>
-          <p className="font-sans text-xs text-gray-400 mt-1 light_sakura:text-slate-500">
+          <p className="font-sans text-xs text-slate-400 mt-1 light_sakura:text-slate-500">
             {t("history.pagination_info", { current: latestTransactions.length, total: transactions.length })}
           </p>
         </div>
@@ -74,9 +75,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
       </div>
 
       {latestTransactions.length === 0 ? (
-        <div className="py-8 text-center text-xs text-gray-500 light_sakura:text-slate-400 font-sans">
-          {t("history.no_transactions")}
-        </div>
+        <EmptyState message={t("history.no_transactions")} />
       ) : (
         <div className="space-y-4">
           {latestTransactions.map((tx, index) => {
@@ -100,7 +99,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
                         return locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key);
                       })()}
                     </div>
-                    <div className="font-sans text-[10px] text-gray-400 light_sakura:text-slate-500 mt-0.5 flex items-center gap-1.5">
+                    <div className="font-sans text-[10px] text-slate-400 light_sakura:text-slate-500 mt-0.5 flex items-center gap-1.5">
                       <span>{formatDateLabel(tx.transaction_date)}</span>
                       <span className="w-1 h-1 rounded-full bg-slate-700 light_sakura:bg-rose-100" />
                       <span className="font-semibold text-slate-300 light_sakura:text-slate-600">
@@ -119,7 +118,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
                     <span>{isExpense ? "-" : "+"}</span>
                     <span>{formatIDR(tx.amount)}</span>
                   </div>
-                  <div className="text-[9px] text-gray-500 light_sakura:text-slate-400 font-sans mt-0.5">
+                  <div className="text-[9px] text-slate-500 light_sakura:text-slate-400 font-sans mt-0.5">
                     {isExpense ? t("transaction.expense") : t("transaction.income")}
                   </div>
                 </div>

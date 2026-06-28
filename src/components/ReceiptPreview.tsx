@@ -142,7 +142,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
             <h3 className="font-sans font-bold text-lg text-white light_sakura:text-slate-800">
               {t("transaction.review_title")}
             </h3>
-            <p className="font-sans text-xs text-gray-400 light_sakura:text-slate-500">
+            <p className="font-sans text-xs text-slate-400 light_sakura:text-slate-500">
               {t("transaction.review_subtitle")}
             </p>
           </div>
@@ -152,7 +152,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
             audioFeedback.playDullPluck();
             onCancel();
           }}
-          className="p-2 text-gray-500 hover:text-white rounded-xl hover:bg-slate-800/50 cursor-pointer transition-all light_sakura:hover:bg-slate-100"
+          className="p-2 text-slate-500 hover:text-white rounded-xl hover:bg-slate-800/50 cursor-pointer transition-all light_sakura:hover:bg-slate-100"
         >
           <X size={18} />
         </button>
@@ -165,7 +165,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Merchant Name */}
             <div className="space-y-1">
-              <label className="text-[10px] text-gray-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+              <label className="text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
                 <Store size={10} />
                 <span>{t("transaction.merchant_label")}</span>
               </label>
@@ -179,7 +179,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
 
             {/* Date */}
             <div className="space-y-1">
-              <label className="text-[10px] text-gray-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+              <label className="text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
                 <Calendar size={10} />
                 <span>{t("transaction.date_label")}</span>
               </label>
@@ -195,7 +195,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Category selection */}
             <div className="space-y-1">
-              <label className="text-[10px] text-gray-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+              <label className="text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
                 <Tag size={10} />
                 <span>{t("transaction.category_label")}</span>
               </label>
@@ -214,7 +214,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
 
             {/* Dynamic Total Amount */}
             <div className="space-y-1">
-              <label className="text-[10px] text-gray-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+              <label className="text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
                 <CreditCard size={10} />
                 <span>{t("transaction.amount_label")}</span>
               </label>
@@ -229,7 +229,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
 
           {/* Custom Note description */}
           <div className="space-y-1">
-            <label className="text-[10px] text-gray-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+            <label className="text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
               <span>{t("transaction.note_label")}</span>
             </label>
             <input
@@ -246,7 +246,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
         <div className="border-t border-dashed border-slate-800 my-4 light_sakura:border-rose-200/70" />
 
         {/* Item Roster heading */}
-        <div className="flex items-center justify-between text-gray-400 light_sakura:text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-2">
+        <div className="flex items-center justify-between text-slate-400 light_sakura:text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-2">
           <span>{t("transaction.items_heading")}</span>
           <button
             onClick={() => {
@@ -263,7 +263,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
         {/* Items List */}
         <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
           {items.length === 0 ? (
-            <p className="text-gray-500 italic text-[11px] text-center py-2">
+            <p className="text-slate-500 italic text-[11px] text-center py-2">
               {t("transaction.no_items")}
             </p>
           ) : (
@@ -300,7 +300,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                       </div>
                       <button
                         onClick={() => handleDeleteItem(idx)}
-                        className="p-1 hover:text-red-400 text-gray-500 transition-colors cursor-pointer"
+                        className="p-1 hover:text-red-400 text-slate-500 transition-colors cursor-pointer"
                         title="Delete Item"
                       >
                         <Trash size={12} />
@@ -310,14 +310,14 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                 ) : (
                   <div className="flex items-start justify-between text-[11px]">
                     <div className="space-y-0.5 max-w-[70%]">
-                      <p className="text-gray-200 light_sakura:text-slate-800 font-bold truncate">
+                      <p className="text-slate-200 light_sakura:text-slate-800 font-bold truncate">
                         {item.name}
                       </p>
-                      <p className="text-gray-500 light_sakura:text-slate-400 text-[10px]">
+                      <p className="text-slate-500 light_sakura:text-slate-400 text-[10px]">
                         {item.qty} pcs x {formatIDR(item.unit_price)}
                       </p>
                     </div>
-                    <span className="text-gray-300 light_sakura:text-slate-700 font-semibold self-center">
+                    <span className="text-slate-300 light_sakura:text-slate-700 font-semibold self-center">
                       {formatIDR(item.subtotal)}
                     </span>
                   </div>
@@ -341,7 +341,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
             audioFeedback.playDullPluck();
             onCancel();
           }}
-          className="flex-1 cursor-pointer py-3.5 px-4 bg-slate-800 hover:bg-slate-700/80 text-gray-300 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border border-slate-800 light_sakura:bg-slate-100 light_sakura:text-slate-700 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent"
+          className="flex-1 cursor-pointer py-3.5 px-4 bg-slate-800 hover:bg-slate-700/80 text-slate-300 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border border-slate-800 light_sakura:bg-slate-100 light_sakura:text-slate-700 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent"
         >
           <X size={14} />
           <span>{t("transaction.discard")}</span>

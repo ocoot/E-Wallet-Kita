@@ -104,7 +104,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
             audioFeedback.playClick();
             onClose();
           }}
-          className="absolute top-5 right-5 p-1.5 text-gray-400 hover:text-white rounded-full bg-slate-950/20 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:text-slate-500 light_sakura:hover:text-slate-800 light_sakura:hover:bg-rose-50"
+          className="absolute top-5 right-5 p-1.5 text-slate-400 hover:text-white rounded-full bg-slate-950/20 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:text-slate-500 light_sakura:hover:text-slate-800 light_sakura:hover:bg-rose-50"
         >
           <X size={16} />
         </button>
@@ -117,7 +117,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
           <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
             {t("auth.reset_password_title")}
           </h2>
-          <p className="font-sans text-xs mt-2 px-2 text-gray-400 leading-relaxed light_sakura:text-slate-600">
+          <p className="font-sans text-xs mt-2 px-2 text-slate-400 leading-relaxed light_sakura:text-slate-600">
             {t("auth.reset_password_desc")}
           </p>
         </div>
@@ -126,11 +126,11 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
         <form onSubmit={handleUpdatePassword} className="space-y-4">
           {/* New Password input */}
           <div className="space-y-1.5">
-            <label className="font-sans text-xs font-semibold tracking-wider text-gray-400 light_sakura:text-slate-600 uppercase">
+            <label className="font-sans text-xs font-semibold tracking-wider text-slate-400 light_sakura:text-slate-600 uppercase">
               {t("auth.new_password_label")}
             </label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                 <Lock size={16} />
               </span>
               <input
@@ -150,7 +150,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
                   audioFeedback.playClick();
                   setShowPassword(!showPassword);
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer"
               >
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
@@ -159,11 +159,11 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
 
           {/* Confirm Password input */}
           <div className="space-y-1.5">
-            <label className="font-sans text-xs font-semibold tracking-wider text-gray-400 light_sakura:text-slate-600 uppercase">
+            <label className="font-sans text-xs font-semibold tracking-wider text-slate-400 light_sakura:text-slate-600 uppercase">
               {t("auth.confirm_password_label")}
             </label>
             <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                 <Lock size={16} />
               </span>
               <input
@@ -183,7 +183,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
                   audioFeedback.playClick();
                   setShowConfirmPassword(!showConfirmPassword);
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 cursor-pointer"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer"
               >
                 {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>

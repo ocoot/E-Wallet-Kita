@@ -6,6 +6,7 @@ import { supabase } from "../lib/supabase";
 import { useAdmin } from "../hooks/useAdmin";
 import { UserProfile } from "../types";
 import { audioFeedback } from "../lib/audio";
+import { EmptyState } from "../components/EmptyState";
 import { 
   Shield, 
   User, 
@@ -618,7 +619,7 @@ export const AdminPanel: React.FC = () => {
                 ))}
                 <button
                   onClick={() => setSelectedIds(new Set())}
-                  className="px-3 py-1.5 text-[10px] font-black uppercase rounded-xl border border-slate-800 text-slate-500 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200"
+                  className="px-3 py-1.5 text-[10px] font-black uppercase rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200"
                 >
                   {t("admin.clear_selection")}
                 </button>
@@ -636,15 +637,11 @@ export const AdminPanel: React.FC = () => {
                 </p>
               </div>
             ) : users.length === 0 ? (
-              <div className="py-20 flex flex-col items-center justify-center text-center p-6">
-                <User className="text-slate-600 mb-3" size={36} />
-                <p className="font-sans text-sm font-bold text-slate-300">
-                  {t("admin.no_users")}
-                </p>
-                <p className="font-sans text-xs text-slate-500 mt-1">
-                  {t("admin.no_users_desc")}
-                </p>
-              </div>
+              <EmptyState
+                icon={<User size={40} className="text-slate-600 light_sakura:text-slate-400" />}
+                title={t("admin.no_users")}
+                description={t("admin.no_users_desc")}
+              />
             ) : (
                 <ScrollableTableWrapper>
                 <table className="w-full text-left border-collapse table-auto min-w-[900px]">

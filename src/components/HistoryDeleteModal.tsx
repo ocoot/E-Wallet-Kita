@@ -91,7 +91,7 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
                 <h3 className="font-sans font-bold text-lg">{t("confirm.delete_all_title")}</h3>
               </div>
               
-              <p className="font-sans text-xs text-gray-300 leading-relaxed mb-4 block light_sakura:text-slate-600">
+              <p className="font-sans text-xs text-slate-300 leading-relaxed mb-4 block light_sakura:text-slate-600">
                 {t("confirm.delete_all_desc")}
               </p>
 
@@ -110,7 +110,7 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
                     audioFeedback.playClick();
                     setIsDeleteAllOpen(false);
                   }}
-                  className="cursor-pointer text-xs font-semibold hover:bg-slate-800 px-4 py-2 rounded-xl text-gray-400 light_sakura:hover:bg-slate-100"
+                  className="cursor-pointer text-xs font-semibold hover:bg-slate-800 px-4 py-2 rounded-xl text-slate-400 light_sakura:hover:bg-slate-100"
                 >
                   {t("common.cancel")}
                 </button>

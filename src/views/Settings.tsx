@@ -344,7 +344,7 @@ export const Settings: React.FC<SettingsProps> = ({
           <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
             {t("settings.title")}
           </h1>
-          <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500 font-medium">
+          <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500 font-medium">
             {t("settings.desc")}
           </p>
         </div>
@@ -362,7 +362,7 @@ export const Settings: React.FC<SettingsProps> = ({
             </h3>
 
             <div className="space-y-1.5">
-              <label className="font-sans text-[10px] font-bold text-gray-400 light_sakura:text-slate-500 uppercase tracking-wider block">
+              <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider block">
                 {t("settings.display_name")}
               </label>
               
@@ -394,7 +394,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
             {/* Language selector row */}
             <div className="space-y-1.5">
-              <label className="font-sans text-[10px] font-bold text-gray-400 light_sakura:text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider flex items-center gap-2">
                 <Globe size={12} className="text-teal-400 light_sakura:text-rose-500" />
                 <span>{t("settings.language")}</span>
               </label>
@@ -410,7 +410,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   className={`py-3 rounded-xl font-sans text-xs font-bold border transition-all cursor-pointer
                     ${locale === "id" 
                       ? "bg-indigo-600/10 border-indigo-500 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:border-rose-550 light_sakura:text-rose-600" 
-                      : "bg-slate-950 border-slate-800 text-gray-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
+                      : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
                     }`}
                 >
                   Bahasa Indonesia (ID)
@@ -425,7 +425,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   className={`py-3 rounded-xl font-sans text-xs font-bold border transition-all cursor-pointer
                     ${locale === "en" 
                       ? "bg-indigo-600/10 border-indigo-500 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:border-rose-550 light_sakura:text-rose-600" 
-                      : "bg-slate-950 border-slate-800 text-gray-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
+                      : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
                     }`}
                 >
                   English (EN)
@@ -435,7 +435,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
             {/* Theme selector row */}
             <div className="space-y-1.5">
-              <label className="font-sans text-[10px] font-bold text-gray-400 light_sakura:text-slate-500 uppercase tracking-wider flex items-center gap-2">
+              <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider flex items-center gap-2">
                 <SunMoon size={12} className="text-teal-400 light_sakura:text-rose-500" />
                 <span>{t("settings.theme")}</span>
               </label>
@@ -451,7 +451,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   className={`py-3 rounded-xl font-sans text-[10px] sm:text-xs font-bold border transition-all cursor-pointer
                     ${theme === "dark_obsidian" 
                       ? "bg-indigo-600/10 border-indigo-500 text-indigo-400" 
-                      : "bg-slate-950 border-slate-800 text-gray-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
+                      : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
                     }`}
                 >
                   {t("settings.theme_dark_obsidian")}
@@ -466,7 +466,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   className={`py-3 rounded-xl font-sans text-[10px] sm:text-xs font-bold border transition-all cursor-pointer
                     ${theme === "light_sakura" 
                       ? "bg-rose-500/10 border-rose-500 text-rose-600" 
-                      : "bg-slate-950 border-slate-800 text-gray-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
+                      : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
                     }`}
                 >
                   {t("settings.theme_light_sakura")}
@@ -525,9 +525,9 @@ export const Settings: React.FC<SettingsProps> = ({
                 {isPremium ? (
                   <ShieldCheck className="text-emerald-400" size={20} />
                 ) : isGuest ? (
-                  <Lock className="text-gray-500" size={20} />
+                  <Lock className="text-slate-500" size={20} />
                 ) : (
-                  <ShieldCheck className="text-gray-500" size={20} />
+                  <ShieldCheck className="text-slate-500" size={20} />
                 )}
                 <span className="font-bold text-white text-sm light_sakura:text-slate-800">
                   {isPremium ? t("premium.badge_active") : t("premium.menu_label")}
@@ -610,7 +610,7 @@ export const Settings: React.FC<SettingsProps> = ({
                       <h4 className="font-sans font-bold text-xs text-white light_sakura:text-slate-800">
                         {t("settings.telegram_sync_status")}
                       </h4>
-                      <div className="font-sans text-[11px] text-gray-400 mt-0.5 light_sakura:text-slate-500">
+                      <div className="font-sans text-[11px] text-slate-400 mt-0.5 light_sakura:text-slate-500">
                         {t("settings.telegram_linked", { id: telegramChatId })}
                       </div>
                     </div>
@@ -621,13 +621,13 @@ export const Settings: React.FC<SettingsProps> = ({
 
                 {/* Features Highlight */}
                 <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 space-y-3">
-                  <h4 className="font-sans font-bold text-[10px] text-gray-400 light_sakura:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <h4 className="font-sans font-bold text-[10px] text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
                     <Sparkles size={12} className="text-amber-400" />
                     <span>{t("settings.telegram_features_title")}</span>
                   </h4>
                   <ul className="space-y-2">
                     {[1, 2, 3, 4].map(i => (
-                      <li key={i} className="flex items-start gap-2 text-[11px] text-gray-400 light_sakura:text-slate-600">
+                      <li key={i} className="flex items-start gap-2 text-[11px] text-slate-400 light_sakura:text-slate-600">
                         <CheckCircle size={12} className="text-emerald-500 shrink-0 mt-0.5" />
                         <span>{t(`settings.telegram_feature_${i}`)}</span>
                       </li>
@@ -664,7 +664,7 @@ export const Settings: React.FC<SettingsProps> = ({
                         <div className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[10px] font-bold text-indigo-400 shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
                           {step}
                         </div>
-                        <p className="font-sans text-[11px] text-gray-400 light_sakura:text-slate-600 leading-normal pt-0.5">
+                        <p className="font-sans text-[11px] text-slate-400 light_sakura:text-slate-600 leading-normal pt-0.5">
                           {t(`settings.telegram_step_${step}`)}
                         </p>
                       </div>
@@ -685,7 +685,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 ) : (
                   <div className="p-5 rounded-2xl border-2 border-dashed border-indigo-500/30 bg-indigo-500/5 light_sakura:border-rose-200 light_sakura:bg-rose-50/40 space-y-4 flex flex-col items-center w-full">
                     <div className="text-center space-y-1">
-                      <span className="font-sans text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                      <span className="font-sans text-[10px] font-bold text-slate-500 uppercase tracking-widest">
                         {t("settings.btn_copy_link")}
                       </span>
                       <div className="px-8 py-4 rounded-2xl bg-slate-950 shadow-xl font-mono font-bold text-3xl tracking-[0.2em] text-teal-400 light_sakura:bg-white light_sakura:text-rose-500 border border-slate-800 light_sakura:border-rose-150 flex items-center justify-center gap-4">
@@ -705,11 +705,11 @@ export const Settings: React.FC<SettingsProps> = ({
                     <div className="w-full h-px bg-slate-800/50 light_sakura:bg-rose-100" />
 
                     <div className="flex flex-col items-center gap-2">
-                       <div className="flex items-center gap-2 font-sans text-[11px] text-gray-400 light_sakura:text-slate-500 font-semibold uppercase tracking-wider">
+                       <div className="flex items-center gap-2 font-sans text-[11px] text-slate-400 light_sakura:text-slate-500 font-semibold uppercase tracking-wider">
                         <RefreshCw size={13} className="animate-spin text-indigo-400" />
                         <span>{t("settings.code_expires")}: {formatTimerStr(timerSeconds)}</span>
                       </div>
-                      <p className="font-sans text-[10px] text-gray-500 text-center italic">
+                      <p className="font-sans text-[10px] text-slate-500 text-center italic">
                         {t("settings.waiting_for_connection", "Menunggu koneksi dari bot...")}
                       </p>
                     </div>

@@ -6,6 +6,7 @@ import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { Modal } from "../components/Modal";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
+import { EmptyState } from "../components/EmptyState";
 import {
   CreditCard, CheckCircle, Clock, XCircle, AlertCircle,
   TrendingUp, RefreshCw, ChevronLeft, ChevronRight, FlaskConical, AlertTriangle
@@ -306,9 +307,7 @@ export const AdminPremiumMonitor: React.FC = () => {
             <Clock className="animate-spin text-indigo-500" size={28} />
           </div>
         ) : transactions.length === 0 ? (
-          <div className="py-16 text-center text-slate-500 text-sm">
-            {t("admin.no_transactions_found")}
-          </div>
+          <EmptyState message={t("admin.no_transactions_found")} />
         ) : (
           <ScrollableTableWrapper>
             <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[900px]">

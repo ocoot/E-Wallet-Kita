@@ -192,7 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               {/* Profile widget summary */}
               <div className="p-4 rounded-xl border bg-slate-950/40 border-slate-800 light_sakura:bg-rose-100/50 light_sakura:border-rose-200">
-                <p className="font-mono text-[10px] text-gray-400 light_sakura:text-rose-600 uppercase tracking-widest">
+                <p className="font-mono text-[10px] text-slate-400 light_sakura:text-rose-600 uppercase tracking-widest">
                   {isGuest ? t("history.status_guest") : t("history.status_verified")}
                 </p>
                 <div className="flex items-center gap-2.5 mt-1">
@@ -223,7 +223,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 light_sakura:bg-rose-500 light_sakura:text-white" 
                           : locked
                             ? "text-slate-500 light_sakura:text-slate-400"
-                            : "text-gray-300 hover:bg-slate-800 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                            : "text-slate-300 hover:bg-slate-800 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
                         }`}
                     >
                       <IconComp size={18} />
@@ -335,7 +335,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             
             <div className={`transition-all duration-300 flex flex-col min-w-0 overflow-hidden ${isCollapsed ? "w-0 opacity-0 -translate-x-4" : "w-full opacity-100 translate-x-0"}`}>
-              <p className="font-mono text-[9px] text-gray-400 light_sakura:text-rose-500 uppercase tracking-widest leading-none whitespace-nowrap">
+              <p className="font-mono text-[9px] text-slate-400 light_sakura:text-rose-500 uppercase tracking-widest leading-none whitespace-nowrap">
                 {isGuest ? t("history.status_guest") : t("history.status_verified")}
               </p>
               <div className="flex items-center gap-1.5 mt-1">

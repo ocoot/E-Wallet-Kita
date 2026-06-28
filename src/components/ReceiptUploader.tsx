@@ -241,7 +241,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
 
   return (
     <div className="w-full space-y-3">
-      <label className="font-sans text-xs font-bold text-gray-400 light_sakura:text-slate-600 uppercase tracking-wider block">
+      <label className="font-sans text-xs font-bold text-slate-400 light_sakura:text-slate-600 uppercase tracking-wider block">
         {t("dashboard.ocr_title")}
       </label>
 
@@ -302,7 +302,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
                 <p className="font-sans text-xs font-bold text-white light_sakura:text-slate-800">
                   {t("dashboard.ocr_loading")}
                 </p>
-                <p className="font-sans text-[11px] text-gray-400 max-w-sm px-4 leading-relaxed">
+                <p className="font-sans text-[11px] text-slate-400 max-w-sm px-4 leading-relaxed">
                   {t("dashboard.ocr_processing")}
                 </p>
               </div>
@@ -324,11 +324,11 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
                 </div>
               )}
               <div className="space-y-1">
-                <p className="font-sans text-xs font-bold text-gray-200 light_sakura:text-slate-700 flex items-center justify-center gap-1.5">
+                <p className="font-sans text-xs font-bold text-slate-200 light_sakura:text-slate-700 flex items-center justify-center gap-1.5">
                   {isOcrLocked && <Lock size={12} className="text-amber-400 light_sakura:text-rose-500" />}
                   <span>{t("dashboard.ocr_drag_drop")}</span>
                 </p>
-                <p className="font-sans text-[11px] text-gray-500 light_sakura:text-slate-400">
+                <p className="font-sans text-[11px] text-slate-500 light_sakura:text-slate-400">
                   {isOcrLocked
                     ? (locale === "id" ? "Fitur khusus Pengguna Premium" : "Exclusive Premium Feature")
                     : t("dashboard.ocr_supported")

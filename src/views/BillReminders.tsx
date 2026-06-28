@@ -380,11 +380,11 @@ export const BillReminders: React.FC = () => {
       {/* Preferensi Jam Pengingat Tagihan (Telegram) */}
       {isTelegramLinked ? (
         <div className="p-5 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30 space-y-3">
-          <h4 className="font-sans font-bold text-[10px] text-gray-400 light_sakura:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+          <h4 className="font-sans font-bold text-[10px] text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
             <Send size={12} className="text-indigo-400 -translate-x-0.5 rotate-45" />
             <span>{t("settings.reminder_hour_title")}</span>
           </h4>
-          <p className="font-sans text-[11px] text-gray-400 light_sakura:text-slate-600">
+          <p className="font-sans text-[11px] text-slate-400 light_sakura:text-slate-600">
             {t("settings.reminder_hour_desc")}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -401,7 +401,7 @@ export const BillReminders: React.FC = () => {
                   className={`cursor-pointer px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
                     isActive
                       ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 light_sakura:bg-rose-500"
-                      : "bg-slate-800/60 text-gray-400 hover:bg-slate-700/60 light_sakura:bg-rose-50/60 light_sakura:text-slate-500 light_sakura:hover:bg-rose-100/60"
+                      : "bg-slate-800/60 text-slate-400 hover:bg-slate-700/60 light_sakura:bg-rose-50/60 light_sakura:text-slate-500 light_sakura:hover:bg-rose-100/60"
                   }`}
                 >
                   {String(hour).padStart(2, "0")}.00
@@ -413,7 +413,7 @@ export const BillReminders: React.FC = () => {
       ) : (
         <div className="flex items-start gap-2.5 p-5 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30">
           <Info size={14} className="text-indigo-400 shrink-0 mt-0.5" />
-          <p className="font-sans text-[11px] text-gray-400 light_sakura:text-slate-600">
+          <p className="font-sans text-[11px] text-slate-400 light_sakura:text-slate-600">
             {t("bill_reminders.connect_telegram_hint")}
           </p>
         </div>
@@ -560,7 +560,7 @@ export const BillReminders: React.FC = () => {
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   placeholder={t("bill_reminders.form_name_placeholder")}
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 placeholder:text-slate-600 light_sakura:placeholder:text-slate-400 transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 placeholder:text-slate-400 light_sakura:placeholder:text-slate-400 transition-colors"
                 />
               </div>
 
@@ -593,7 +593,7 @@ export const BillReminders: React.FC = () => {
                   onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
                   placeholder={t("bill_reminders.form_amount_placeholder")}
                   min={0}
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 placeholder:text-slate-600 light_sakura:placeholder:text-slate-400 transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 placeholder:text-slate-400 light_sakura:placeholder:text-slate-400 transition-colors"
                 />
               </div>
 
@@ -662,7 +662,7 @@ export const BillReminders: React.FC = () => {
                   value={form.notes}
                   onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                   placeholder={t("bill_reminders.form_notes_placeholder")}
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 placeholder:text-slate-600 light_sakura:placeholder:text-slate-400 transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 placeholder:text-slate-400 light_sakura:placeholder:text-slate-400 transition-colors"
                 />
               </div>
 

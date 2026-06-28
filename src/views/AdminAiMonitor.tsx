@@ -4,6 +4,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
+import { EmptyState } from "../components/EmptyState";
 import {
   Brain,
   RefreshCw,
@@ -185,8 +186,8 @@ export const AdminAiMonitor: React.FC = () => {
           {/* Provider Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {byProvider.length === 0 ? (
-              <div className="col-span-3 py-16 text-center text-slate-500 light_sakura:text-slate-500 text-sm border border-dashed border-slate-700 light_sakura:border-slate-200 rounded-3xl">
-                {t("ai_monitor.no_data")}
+              <div className="col-span-1 sm:col-span-3">
+                <EmptyState message={t("ai_monitor.no_data")} />
               </div>
             ) : (
               byProvider.map((p) => {

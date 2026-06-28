@@ -190,7 +190,7 @@ export const AdminBroadcast: React.FC = () => {
         </div>
 
         {/* Recipient count indicators */}
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1 flex items-center gap-3 px-6 py-4 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-100">
             <Users className="text-indigo-500 shrink-0" size={24} />
             <div>

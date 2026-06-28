@@ -214,11 +214,11 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
             <div className="text-center">
               <Sparkles className="mx-auto text-amber-400 mb-3" size={36} />
               <h3 className="text-lg font-bold text-white">{t("premium.terms_title")}</h3>
-              <p className="text-sm text-gray-400 mt-2">{t("premium.terms_desc", { amount: pricing.basePrice.toLocaleString("id-ID") })}</p>
+              <p className="text-sm text-slate-400 mt-2">{t("premium.terms_desc", { amount: pricing.basePrice.toLocaleString("id-ID") })}</p>
               
               {activeVouchers.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-xs text-gray-400 mb-2">{t("voucher.title")}</p>
+                  <p className="text-xs text-slate-400 mb-2">{t("voucher.title")}</p>
                   <select 
                     className="w-full h-12 px-4 bg-slate-800/80 border border-slate-700 rounded-xl text-white font-medium focus:ring-2 focus:ring-indigo-500"
                     onChange={(e) => setSelectedVoucher(activeVouchers.find(v => v.id === e.target.value) || null)}
@@ -246,14 +246,14 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                 </p>
               </div>
 
-              <ul className="text-left text-xs text-gray-400 mt-4 space-y-1.5 bg-slate-800/50 rounded-xl p-4">
+              <ul className="text-left text-xs text-slate-400 mt-4 space-y-1.5 bg-slate-800/50 rounded-xl p-4">
                 <li>• {t("premium.terms_point_1")}</li>
                 <li>• {t("premium.terms_point_2")}</li>
                 <li>• {t("premium.terms_point_3")}</li>
                 <li>• {t("premium.terms_point_4")}</li>
               </ul>
               <div className="flex gap-3 mt-6">
-                <button onClick={onClose} className="flex-1 py-3 rounded-xl bg-slate-800 text-gray-300 text-sm font-semibold">{t("common.cancel")}</button>
+                <button onClick={onClose} className="flex-1 py-3 rounded-xl bg-slate-800 text-slate-300 text-sm font-semibold">{t("common.cancel")}</button>
                 <button onClick={startPayment} className="flex-1 py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold">{t("premium.terms_agree")}</button>
               </div>
             </div>
@@ -262,7 +262,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
           {step === "checking" && (
             <div className="text-center py-10">
               <Loader2 className="mx-auto animate-spin text-indigo-400 mb-3" size={36} />
-              <p className="text-sm text-gray-300">{t("premium.creating_transaction")}</p>
+              <p className="text-sm text-slate-300">{t("premium.creating_transaction")}</p>
             </div>
           )}
 
@@ -274,7 +274,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               </div>
               <p className="text-2xl font-bold text-white mt-4">Rp {tx.total_amount.toLocaleString("id-ID")}</p>
               <p className="text-[11px] text-amber-400 mt-1">{t("premium.unique_code_note")}</p>
-              <div className="flex items-center justify-center gap-2 mt-3 text-sm text-gray-400">
+              <div className="flex items-center justify-center gap-2 mt-3 text-sm text-slate-400">
                 <Clock size={14} />
                 <span>{t("premium.expires_in", { time: `${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, "0")}` })}</span>
               </div>
@@ -282,8 +282,8 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                 <Loader2 size={13} className="animate-spin" />
                 <span>{t("premium.waiting_payment")}</span>
               </div>
-              {isSandboxMode() && <p className="text-[10px] text-gray-500 mt-3">{t("premium.sandbox_notice")}</p>}
-              {!isSandboxMode() && tx.is_sandbox && <p className="text-[10px] text-gray-500 mt-3">{t("premium.dummy_qris_notice")}</p>}
+              {isSandboxMode() && <p className="text-[10px] text-slate-500 mt-3">{t("premium.sandbox_notice")}</p>}
+              {!isSandboxMode() && tx.is_sandbox && <p className="text-[10px] text-slate-500 mt-3">{t("premium.dummy_qris_notice")}</p>}
               
               <button
                 onClick={() => setShowCancelConfirm(true)}
@@ -309,7 +309,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
             <div className="text-center py-4">
               <CheckCircle2 className="mx-auto text-emerald-400 mb-3" size={48} />
               <h3 className="text-lg font-bold text-white">{t("premium.success_title")}</h3>
-              <p className="text-sm text-gray-400 mt-2">{t("premium.success_desc")}</p>
+              <p className="text-sm text-slate-400 mt-2">{t("premium.success_desc")}</p>
 
               {askDownload ? (
                 <div className="flex flex-col gap-3 mt-6">
@@ -319,7 +319,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                       setAskDownload(false);
                       onClose();
                     }}
-                    className="w-full py-3 rounded-xl bg-slate-800 text-gray-300 text-sm font-semibold hover:bg-slate-700/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-3 rounded-xl bg-slate-800 text-slate-300 text-sm font-semibold hover:bg-slate-700/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t("premium.skip_receipt")}
                   </button>
@@ -372,7 +372,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
             <div className="text-center py-4">
               <Clock className="mx-auto text-amber-400 mb-3" size={40} />
               <h3 className="text-lg font-bold text-white">{t("premium.expired_title")}</h3>
-              <p className="text-sm text-gray-400 mt-2">{t("premium.expired_desc")}</p>
+              <p className="text-sm text-slate-400 mt-2">{t("premium.expired_desc")}</p>
               <button onClick={() => setStep("terms")} className="mt-6 w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold">{t("premium.retry")}</button>
             </div>
           )}
@@ -381,7 +381,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
             <div className="text-center py-4">
               <XCircle className="mx-auto text-red-400 mb-3" size={40} />
               <h3 className="text-lg font-bold text-white">{t("premium.failed_title")}</h3>
-              <p className="text-sm text-gray-400 mt-2">{t("premium.failed_desc")}</p>
+              <p className="text-sm text-slate-400 mt-2">{t("premium.failed_desc")}</p>
               <button onClick={() => setStep("terms")} className="mt-6 w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold">{t("premium.retry")}</button>
             </div>
           )}

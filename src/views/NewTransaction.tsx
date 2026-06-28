@@ -263,7 +263,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
             <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
               {t("transaction.add_title")}
             </h1>
-            <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
+            <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500">
               {t("transaction.add_desc")}
             </p>
           </div>
@@ -274,7 +274,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
           {/* Divider */}
           <div className="relative flex py-2 items-center">
             <div className="flex-grow border-t border-slate-800/70 light_sakura:border-rose-100/50"></div>
-            <span className="flex-shrink mx-4 text-gray-500 font-mono text-[9px] tracking-widest uppercase">
+            <span className="flex-shrink mx-4 text-slate-500 font-mono text-[9px] tracking-widest uppercase">
               {t("dashboard.or_manual")}
             </span>
             <div className="flex-grow border-t border-slate-800/70 light_sakura:border-rose-100/50"></div>
@@ -287,7 +287,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
             
             {/* 1. Transaction Type selector */}
             <div className="space-y-1.5">
-              <label className="font-sans text-xs font-bold text-gray-400 light_sakura:text-slate-600 uppercase tracking-wider flex items-center gap-2">
+              <label className="font-sans text-xs font-bold text-slate-400 light_sakura:text-slate-600 uppercase tracking-wider flex items-center gap-2">
                 <ArrowLeftRight size={14} />
                 <span>{t("transaction.label_type")}</span>
               </label>
@@ -301,7 +301,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                   className={`py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer border
                     ${type === "expense" 
                       ? "bg-red-500/10 border-red-500 text-red-400" 
-                      : "bg-slate-950 border-slate-800 text-gray-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
+                      : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
                     }`}
                 >
                   {t("transaction.expense")}
@@ -315,7 +315,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                   className={`py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer border
                     ${type === "income" 
                       ? "bg-emerald-500/10 border-emerald-500 text-emerald-400" 
-                      : "bg-slate-950 border-slate-800 text-gray-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
+                      : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
                     }`}
                 >
                   {t("transaction.income")}
@@ -325,7 +325,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
             {/* 2. Classification categories selector */}
             <div className="space-y-2">
-              <label className="font-sans text-xs font-bold text-gray-400 light_sakura:text-slate-600 uppercase tracking-wider block">
+              <label className="font-sans text-xs font-bold text-slate-400 light_sakura:text-slate-600 uppercase tracking-wider block">
                 {t("transaction.label_category")}
               </label>
               <select
@@ -350,7 +350,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
             
             {/* 3. Number value amount input */}
             <div className="space-y-1.5">
-              <label className="font-sans text-xs font-bold text-gray-400 light_sakura:text-slate-600 uppercase tracking-wider flex items-center gap-2">
+              <label className="font-sans text-xs font-bold text-slate-400 light_sakura:text-slate-600 uppercase tracking-wider flex items-center gap-2">
                 <DollarSign size={14} />
                 <span>{t("transaction.label_amount")}</span>
               </label>
@@ -368,7 +368,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
             {/* 4. Transaction date Calendar input */}
             <div className="space-y-1.5">
-              <label className="font-sans text-xs font-bold text-gray-400 light_sakura:text-slate-600 uppercase tracking-wider flex items-center gap-2">
+              <label className="font-sans text-xs font-bold text-slate-400 light_sakura:text-slate-600 uppercase tracking-wider flex items-center gap-2">
                 <Calendar size={14} />
                 <span>{t("transaction.label_date")}</span>
               </label>
@@ -386,7 +386,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
           {/* 5. Optional Note text description input */}
           <div className="space-y-1.5">
-            <label className="font-sans text-xs font-bold text-gray-400 light_sakura:text-slate-600 uppercase tracking-wider flex items-center gap-2">
+            <label className="font-sans text-xs font-bold text-slate-400 light_sakura:text-slate-600 uppercase tracking-wider flex items-center gap-2">
               <FileText size={14} />
               <span>{t("transaction.label_note")}</span>
             </label>
@@ -396,7 +396,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
               disabled={isLoading}
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors placeholder:text-gray-600 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors placeholder:text-slate-600 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
             />
           </div>
 

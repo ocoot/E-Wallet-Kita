@@ -57,7 +57,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
           >
             <button
               onClick={onCancel}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white light_sakura:hover:text-slate-900 cursor-pointer"
+              className="absolute top-4 right-4 text-slate-400 hover:text-white light_sakura:hover:text-slate-900 cursor-pointer"
             >
               <X size={18} />
             </button>
@@ -77,7 +77,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
 
             <div className="grid grid-cols-2 gap-3 mb-2">
               <div className="space-y-1.5">
-                <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
+                <label className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
                   {t("export.from_month")}
                 </label>
                 <select
@@ -94,7 +94,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">
+                <label className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
                   {t("export.to_month")}
                 </label>
                 <select
@@ -117,7 +117,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
               </p>
             )}
             {valid && (
-              <p className="text-xs text-gray-400 light_sakura:text-slate-500 mb-3">
+              <p className="text-xs text-slate-400 light_sakura:text-slate-500 mb-3">
                 {monthsSelected} / {MAX_RANGE_MONTHS} {t("export.from_month").toLowerCase()}
               </p>
             )}

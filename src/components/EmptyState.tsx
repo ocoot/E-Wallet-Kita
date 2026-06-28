@@ -23,7 +23,7 @@ export const EmptyState = ({ message, icon, title, description }: EmptyStateProp
           {title}
         </h3>
       )}
-      <p className="font-sans text-xs text-gray-500 light_sakura:text-slate-400 max-w-[200px]">
+      <p className="font-sans text-xs text-slate-500 light_sakura:text-slate-400 max-w-[200px]">
         {description || message}
       </p>
     </div>
