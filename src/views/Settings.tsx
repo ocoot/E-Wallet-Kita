@@ -722,6 +722,8 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
 
       {/* Confirmation - Modify Profiles Name */}
+      </div>{/* panel-right */}
+
       <Modal
         isOpen={isProfileModalOpen}
         title={t("confirm.profile_update_title")}
@@ -758,9 +760,9 @@ export const Settings: React.FC<SettingsProps> = ({
           refreshPremium();
         }}
       />
-      </div>
-      </div>
-      </div>
+      </div>{/* grid */}
+        </div>{/* card-body */}
+      </div>{/* card */}
     </div>
   );
 };
