@@ -94,6 +94,26 @@ html, body {
   animation: maintenance-marquee linear infinite;
 }
 
+/* Progress bar tipis di toast notifikasi — mengecil dari penuh ke kosong
+   selama durasi tampil toast tersebut. Di-pause murni lewat CSS
+   (animation-play-state) saat user hover, supaya tidak perlu re-mount
+   atau hitung ulang titik animasi secara manual. */
+@keyframes toast-progress-shrink {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+.toast-progress-bar {
+  transform-origin: left;
+  animation-name: toast-progress-shrink;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+.toast-progress-bar.toast-progress-paused {
+  animation-play-state: paused;
+}
+
 /* ── Mobile touch target sizing ──────────────────────────────────── */
 /* Ensure all interactive elements have ≥ 44px tap area on mobile */
 @media (max-width: 639px) {

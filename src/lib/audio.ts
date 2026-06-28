@@ -132,6 +132,42 @@ class AudioFeedbackService {
       // Ignores block
     }
   }
+
+  /**
+   * Dua nada pendek menurun (interval minor) untuk toast error — tegas
+   * tapi tetap sopan, tidak mengagetkan (cocok untuk app finansial).
+   */
+  playAlert() {
+    if (this.isMuted) return;
+    try {
+      this.initCtx();
+      if (!this.ctx) return;
+
+      const now = this.ctx.currentTime;
+      const osc1 = this.ctx.createOscillator();
+      const osc2 = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+
+      osc1.type = "triangle";
+      osc1.frequency.setValueAtTime(392.00, now); // G4
+      osc2.type = "triangle";
+      osc2.frequency.setValueAtTime(311.13, now + 0.09); // Eb4
+
+      gain.gain.setValueAtTime(0.05, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      osc1.start(now);
+      osc1.stop(now + 0.09);
+      osc2.start(now + 0.09);
+      osc2.stop(now + 0.26);
+    } catch {
+      // Ignores block
+    }
+  }
 }
 
 export const audioFeedback = new AudioFeedbackService();
