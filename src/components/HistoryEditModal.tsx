@@ -8,7 +8,7 @@ import { useCategories } from "../hooks/useCategories";
 interface HistoryEditModalProps {
   transaction: Transaction | null;
   onClose: () => void;
-  onSave: (id: string, category: string, amount: number) => Promise<void>;
+  onSave: (id: string, category: string, amount: number, transactionDate: string) => Promise<void>;
   isSaving: boolean;
 }
 
@@ -22,11 +22,13 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
   const { categories } = useCategories();
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState<number | "">("");
+  const [transactionDate, setTransactionDate] = useState("");
 
   useEffect(() => {
     if (transaction) {
       setCategory(transaction.category);
       setAmount(transaction.amount);
+      setTransactionDate(transaction.transaction_date);
     }
   }, [transaction]);
 
@@ -37,7 +39,8 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || Number(amount) <= 0) return;
-    await onSave(transaction.id, category, Number(amount));
+    if (!transactionDate) return;
+    await onSave(transaction.id, category, Number(amount), transactionDate);
   };
 
   return (
@@ -91,6 +94,19 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
+                {t("transaction.label_date")}
+              </label>
+              <input
+                type="date"
+                value={transactionDate}
+                onChange={e => setTransactionDate(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
+                className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+              />
             </div>
 
             <div>

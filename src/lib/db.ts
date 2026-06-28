@@ -127,11 +127,12 @@ export const dbService = {
   async updateTransaction(
     userId: string,
     transactionId: string,
-    updates: { category?: string; amount?: number }
+    updates: { category?: string; amount?: number; transaction_date?: string }
   ): Promise<Transaction> {
     const payload: Record<string, any> = {};
     if (updates.category !== undefined) payload.category = updates.category;
     if (updates.amount !== undefined) payload.amount = Math.max(0, updates.amount);
+    if (updates.transaction_date !== undefined) payload.transaction_date = updates.transaction_date;
 
     const { data, error } = await supabase
       .from('transactions')

@@ -206,10 +206,10 @@ export const History: React.FC<HistoryProps> = ({
     setEditTarget(tx);
   };
 
-  const executeEditSave = async (id: string, category: string, amount: number) => {
+  const executeEditSave = async (id: string, category: string, amount: number, transactionDate: string) => {
     setIsEditSaving(true);
     try {
-      await dbService.updateTransaction(currentUser.id, id, { category, amount });
+      await dbService.updateTransaction(currentUser.id, id, { category, amount, transaction_date: transactionDate });
       audioFeedback.playChime();
       showToast(t("toast.success_update"), "success");
       setEditTarget(null);
