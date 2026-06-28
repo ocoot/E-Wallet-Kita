@@ -7,7 +7,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
 import { ExportFullModal } from "../components/ExportFullModal";
-import { Trash2 } from "lucide-react";
+import { Trash2, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { exportSummaryPdf, exportFullPdf } from "../lib/pdf/exportPdf";
@@ -41,25 +41,15 @@ export const History: React.FC<HistoryProps> = ({
   const [displayName, setDisplayName] = useState<string>(userDisplayName || "");
 
   useEffect(() => {
-    if (userDisplayName) {
-      setDisplayName(userDisplayName);
-    }
+    if (userDisplayName) setDisplayName(userDisplayName);
   }, [userDisplayName]);
 
   useEffect(() => {
-    if (userDisplayName) return;
-    if (!user) return;
-    const fetchProfile = async () => {
-      const { data, error } = await supabase
-        .from("users")
-        .select("display_name")
-        .eq("id", user.id)
-        .single();
-      if (!error && data?.display_name) {
-        setDisplayName(data.display_name);
-      }
-    };
-    fetchProfile();
+    if (userDisplayName || !user) return;
+    supabase.from("users").select("display_name").eq("id", user.id).single()
+      .then(({ data, error }) => {
+        if (!error && data?.display_name) setDisplayName(data.display_name);
+      });
   }, [user, userDisplayName]);
 
   const currentUser: UserSession = {
@@ -72,139 +62,88 @@ export const History: React.FC<HistoryProps> = ({
   const { showToast } = useToast();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  
-  // Search and Filter states
   const [search, setSearch] = useState("");
   const [filterMonth, setFilterMonth] = useState(() => {
     const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; // current YearMonth YYYY-MM
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   });
+  const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
-
-  // Pagination states
   const [pageSize, setPageSize] = useState<number | "all">(10);
   const [currentPage, setCurrentPage] = useState(1);
-
-  // Destruction state parameters
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);
   const [deleteAllConfirmText, setDeleteAllConfirmText] = useState("");
-  
-  // Edit states
   const [editTarget, setEditTarget] = useState<Transaction | null>(null);
   const [isEditSaving, setIsEditSaving] = useState(false);
-  
-  // Loading indicators
   const [isLoading, setIsLoading] = useState(false);
-
-  // Premium status & modal state
   const { isPremium, refresh: refreshPremium } = usePremium();
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
-
-  // Export PDF states
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isSummaryConfirmOpen, setIsSummaryConfirmOpen] = useState(false);
   const [isFullExportOpen, setIsFullExportOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
-  // Available Month-Year options (generate for current year & previous year for dynamic dropdown)
   const monthOptions = (() => {
     const list = [];
     const d = new Date();
-    const currentYear = d.getFullYear(); // 2026 as per local time
-    
-    // Generate previous 18 months select options
     for (let i = 0; i < 18; i++) {
-      const monthDate = new Date(currentYear, d.getMonth() - i, 1);
+      const monthDate = new Date(d.getFullYear(), d.getMonth() - i, 1);
       const valStr = `${monthDate.getFullYear()}-${String(monthDate.getMonth() + 1).padStart(2, "0")}`;
-      
-      // Localized name
       const locMonth = t(`months.m${monthDate.getMonth() + 1}`);
-      const labelStr = `${locMonth} ${monthDate.getFullYear()}`;
-      list.push({ value: valStr, label: labelStr });
+      list.push({ value: valStr, label: `${locMonth} ${monthDate.getFullYear()}` });
     }
     return list;
   })();
 
-  // Fetch transactions based on Month filter
   const loadTransactions = async () => {
     try {
       const data = await dbService.getTransactions(currentUser.id, filterMonth);
       setTransactions(data);
     } catch (err) {
-      console.error('History load error:', err);
+      console.error("History load error:", err);
     }
   };
 
   useEffect(() => {
-    if (currentUser.id) {
-      loadTransactions();
-    }
-    setCurrentPage(1); // reset page on filter change
+    if (currentUser.id) loadTransactions();
+    setCurrentPage(1);
   }, [filterMonth, currentUser.id, transactionsUpdatedTrigger]);
 
-  // Apply filters locally.
-  //
-  // This used to be computed in a `useEffect` that called `setState` with
-  // the result — but `filteredTransactions` is pure derived data (it only
-  // depends on `transactions`, `search`, `filterCategory`, `categories`,
-  // `locale`), so storing it in its own state caused an extra render every
-  // time any of those changed: render → effect runs → setState → render
-  // again. `useMemo` computes the same value during the render itself, no
-  // second pass needed.
+  // ── Derived stats ────────────────────────────────────────────────────
+  const stats = useMemo(() => {
+    const income = transactions.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
+    const expense = transactions.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+    return { income, expense, net: income - expense };
+  }, [transactions]);
+
   const filteredTransactions = useMemo(() => {
     let result = transactions;
-
-    // Search filter
+    if (filterType !== "all") result = result.filter(tx => tx.type === filterType);
     if (search.trim()) {
       const s = search.toLowerCase();
-      result = result.filter(item => {
-        const matchesNote = item.note && item.note.toLowerCase().includes(s);
-        const cat = categories.find(c => c.key === item.category);
-        const catLabel = cat
-          ? (locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key))
-          : item.category;
-        const matchesCategory = catLabel.toLowerCase().includes(s);
-        return matchesNote || matchesCategory;
+      result = result.filter(tx => {
+        const matchesNote = tx.note && tx.note.toLowerCase().includes(s);
+        const cat = categories.find(c => c.key === tx.category);
+        const catLabel = cat ? (locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key)) : tx.category;
+        return matchesNote || catLabel.toLowerCase().includes(s);
       });
     }
-
-    // Category filter
-    if (filterCategory !== "all") {
-      result = result.filter(item => item.category === filterCategory);
-    }
-
+    if (filterCategory !== "all") result = result.filter(tx => tx.category === filterCategory);
     return result;
-  }, [search, filterCategory, transactions, categories, locale]);
+  }, [search, filterCategory, filterType, transactions, categories, locale]);
 
-  // Reset to page 1 whenever the search term or category filter changes
-  // (kept as its own small effect, separate from the derived-data
-  // computation above, since resetting the page is a side effect rather
-  // than something `useMemo` should be doing).
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [search, filterCategory]);
+  useEffect(() => { setCurrentPage(1); }, [search, filterCategory, filterType]);
 
-  // Page index math calculations
   const totalItems = filteredTransactions.length;
   const computedPageSize = pageSize === "all" ? totalItems || 1 : pageSize;
   const totalPages = Math.max(1, Math.ceil(totalItems / computedPageSize));
-  
-  const paginatedTransactions = (() => {
-    if (pageSize === "all") return filteredTransactions;
-    const offset = (currentPage - 1) * computedPageSize;
-    return filteredTransactions.slice(offset, offset + computedPageSize);
-  })();
+  const paginatedTransactions = pageSize === "all"
+    ? filteredTransactions
+    : filteredTransactions.slice((currentPage - 1) * computedPageSize, currentPage * computedPageSize);
 
-  const handleDeleteItem = (id: string) => {
-    audioFeedback.playDullPluck();
-    setDeleteTargetId(id);
-  };
-
-  const handleEditItem = (tx: Transaction) => {
-    audioFeedback.playClick();
-    setEditTarget(tx);
-  };
+  const handleDeleteItem = (id: string) => { audioFeedback.playDullPluck(); setDeleteTargetId(id); };
+  const handleEditItem = (tx: Transaction) => { audioFeedback.playClick(); setEditTarget(tx); };
 
   const executeEditSave = async (id: string, category: string, amount: number, transactionDate: string) => {
     setIsEditSaving(true);
@@ -215,7 +154,6 @@ export const History: React.FC<HistoryProps> = ({
       setEditTarget(null);
       onTransactionUpdated();
     } catch (err) {
-      console.error(err);
       audioFeedback.playDullPluck();
       showToast(t("toast.error_general"), "error");
     } finally {
@@ -226,24 +164,13 @@ export const History: React.FC<HistoryProps> = ({
   const executeDeleteItem = async () => {
     if (!deleteTargetId) return;
     setIsLoading(true);
-
     try {
       const res = await dbService.deleteTransaction(currentUser.id, deleteTargetId);
-      if (res) {
-        audioFeedback.playChime();
-        showToast(t("toast.success_delete"), "success");
-        onTransactionUpdated();
-      } else {
-        audioFeedback.playDullPluck();
-        showToast(t("toast.error_general"), "error");
-      }
+      if (res) { audioFeedback.playChime(); showToast(t("toast.success_delete"), "success"); onTransactionUpdated(); }
+      else { audioFeedback.playDullPluck(); showToast(t("toast.error_general"), "error"); }
       setDeleteTargetId(null);
-    } catch (err) {
-      console.error(err);
-      showToast(t("toast.error_general"), "error");
-    } finally {
-      setIsLoading(false);
-    }
+    } catch { showToast(t("toast.error_general"), "error"); }
+    finally { setIsLoading(false); }
   };
 
   const executeDeleteAll = async () => {
@@ -252,49 +179,31 @@ export const History: React.FC<HistoryProps> = ({
       showToast(t("toast.invalid_delete_word"), "error");
       return;
     }
-
     setIsDeleteAllOpen(false);
     setIsLoading(true);
-
     try {
       await dbService.purgeAllTransactions(currentUser.id);
       audioFeedback.playChime();
       showToast(t("toast.success_delete_all"), "success");
       setDeleteAllConfirmText("");
       onTransactionUpdated();
-    } catch (err) {
-      console.error(err);
-      showToast(t("toast.error_general"), "error");
-    } finally {
-      setIsLoading(false);
-    }
+    } catch { showToast(t("toast.error_general"), "error"); }
+    finally { setIsLoading(false); }
   };
 
-  const formatIDR = (num: number) => {
-    return "Rp" + Math.round(num).toLocaleString("id-ID");
-  };
-
+  const formatIDR = (num: number) => "Rp" + Math.round(num).toLocaleString("id-ID");
   const formatDateLabel = (dateStr: string) => {
-    // Convert YYYY-MM-DD cleanly
     try {
       const parts = dateStr.split("-");
-      if (parts.length === 3) {
-        const mIdx = parseInt(parts[1]);
-        return `${parts[2]} ${t(`months.m${mIdx}`)} ${parts[0]}`;
-      }
+      if (parts.length === 3) return `${parts[2]} ${t(`months.m${parseInt(parts[1])}`)} ${parts[0]}`;
       return dateStr;
-    } catch {
-      return dateStr;
-    }
+    } catch { return dateStr; }
   };
-
   const getSourceIconLabel = (source: "manual" | "ai_web" | "telegram") => {
     if (source === "manual") return t("transaction.source_manual");
     if (source === "ai_web") return t("transaction.source_ai_web");
     return t("transaction.source_telegram");
   };
-
-  // ---- PDF Export handlers ----
 
   const handleExportSummary = async () => {
     setIsSummaryConfirmOpen(false);
@@ -302,21 +211,12 @@ export const History: React.FC<HistoryProps> = ({
     audioFeedback.playClick();
     try {
       const { start, end } = getCurrentMonthToDateRange();
-      const data = await dbService.getTransactionsBetween(
-        currentUser.id,
-        toISODate(start),
-        toISODate(end)
-      );
+      const data = await dbService.getTransactionsBetween(currentUser.id, toISODate(start), toISODate(end));
       const filename = exportSummaryPdf({ t, userName: currentUser.display_name, transactions: data, categories });
       audioFeedback.playChime();
       showToast(t("export.success_export", { filename }), "success");
-    } catch (err) {
-      console.error("Export summary PDF error:", err);
-      audioFeedback.playDullPluck();
-      showToast(t("export.error_export"), "error");
-    } finally {
-      setIsExporting(false);
-    }
+    } catch { audioFeedback.playDullPluck(); showToast(t("export.error_export"), "error"); }
+    finally { setIsExporting(false); }
   };
 
   const handleExportFull = async (fromMonth: string, toMonth: string) => {
@@ -325,28 +225,13 @@ export const History: React.FC<HistoryProps> = ({
     try {
       const [ty, tm] = toMonth.split("-").map(Number);
       const lastDay = new Date(ty, tm, 0).getDate();
-      const startDate = `${fromMonth}-01`;
-      const endDate = `${toMonth}-${String(lastDay).padStart(2, "0")}`;
-
-      const data = await dbService.getTransactionsBetween(currentUser.id, startDate, endDate);
-      const filename = exportFullPdf({
-        t,
-        userName: currentUser.display_name,
-        transactions: data,
-        categories,
-        fromMonth,
-        toMonth,
-      });
+      const data = await dbService.getTransactionsBetween(currentUser.id, `${fromMonth}-01`, `${toMonth}-${String(lastDay).padStart(2, "0")}`);
+      const filename = exportFullPdf({ t, userName: currentUser.display_name, transactions: data, categories, fromMonth, toMonth });
       audioFeedback.playChime();
       showToast(t("export.success_export", { filename }), "success");
       setIsFullExportOpen(false);
-    } catch (err) {
-      console.error("Export full PDF error:", err);
-      audioFeedback.playDullPluck();
-      showToast(t("export.error_export"), "error");
-    } finally {
-      setIsExporting(false);
-    }
+    } catch { audioFeedback.playDullPluck(); showToast(t("export.error_export"), "error"); }
+    finally { setIsExporting(false); }
   };
 
   const currentMonthRangeLabel = (() => {
@@ -355,60 +240,126 @@ export const History: React.FC<HistoryProps> = ({
   })();
 
   return (
-    <div className="space-y-6">
-      
-      {/* Massive Cohesive Card Container */}
-      <div className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6">
-        
-        {/* 1. Header Banner & reports menu exports */}
-        <HistoryExport 
-          isExportMenuOpen={isExportMenuOpen}
-          setIsExportMenuOpen={setIsExportMenuOpen}
-          setIsSummaryConfirmOpen={setIsSummaryConfirmOpen}
-          setIsFullExportOpen={setIsFullExportOpen}
-          setIsDeleteAllOpen={setIsDeleteAllOpen}
-          hasTransactions={transactions.length > 0}
-          onRequirePremium={() => setIsPremiumOpen(true)}
-        />
+    <div className="space-y-5">
 
-        {/* 2. Month selector search & filters controls */}
-        <HistoryFilter 
-          filterMonth={filterMonth}
-          setFilterMonth={setFilterMonth}
-          monthOptions={monthOptions}
-          search={search}
-          setSearch={setSearch}
-          pageSize={pageSize}
-          setPageSize={setPageSize}
-          filterCategory={filterCategory}
-          setFilterCategory={setFilterCategory}
-          categories={categories}
-        />
+      {/* ── Header card ─────────────────────────────────────────────── */}
+      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
+        {/* Accent stripe */}
+        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
+        <div className="p-6 md:p-8 space-y-6">
 
-        {/* 3. Transaction Data Table/Cards */}
-        <HistoryTable 
-          paginatedTransactions={paginatedTransactions}
-          formatDateLabel={formatDateLabel}
-          formatIDR={formatIDR}
-          getSourceIconLabel={getSourceIconLabel}
-          onDeleteItem={handleDeleteItem}
-          onEditItem={handleEditItem}
-          categories={categories}
-        />
+          <HistoryExport
+            isExportMenuOpen={isExportMenuOpen}
+            setIsExportMenuOpen={setIsExportMenuOpen}
+            setIsSummaryConfirmOpen={setIsSummaryConfirmOpen}
+            setIsFullExportOpen={setIsFullExportOpen}
+            setIsDeleteAllOpen={setIsDeleteAllOpen}
+            hasTransactions={transactions.length > 0}
+            onRequirePremium={() => setIsPremiumOpen(true)}
+          />
 
-        {/* 4. Footer Pagination bars */}
-        <HistoryPagination 
-          totalPages={totalPages}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          paginatedCount={paginatedTransactions.length}
-          totalItems={totalItems}
-        />
+          {/* ── Stat bar ────────────────────────────────────────────── */}
+          {transactions.length > 0 && (
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-2xl bg-red-500/8 border border-red-500/15 px-4 py-3 light_sakura:bg-red-50/60 light_sakura:border-red-100">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <TrendingDown size={12} className="text-red-400" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 light_sakura:text-slate-400">
+                    {t("dashboard.expense")}
+                  </span>
+                </div>
+                <p className="font-mono font-bold text-sm text-red-400 light_sakura:text-red-600 truncate">
+                  −{formatIDR(stats.expense)}
+                </p>
+              </div>
+              <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-4 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
+                <div className="flex items-center gap-1.5 mb-1">
+                  <TrendingUp size={12} className="text-emerald-400" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 light_sakura:text-slate-400">
+                    {t("dashboard.income")}
+                  </span>
+                </div>
+                <p className="font-mono font-bold text-sm text-emerald-400 light_sakura:text-emerald-600 truncate">
+                  +{formatIDR(stats.income)}
+                </p>
+              </div>
+              <div className={`rounded-2xl px-4 py-3 border ${
+                stats.net >= 0
+                  ? "bg-indigo-500/8 border-indigo-500/15 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100"
+                  : "bg-orange-500/8 border-orange-500/15 light_sakura:bg-orange-50/60 light_sakura:border-orange-100"
+              }`}>
+                <div className="flex items-center gap-1.5 mb-1">
+                  <Wallet size={12} className={stats.net >= 0 ? "text-indigo-400" : "text-orange-400"} />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 light_sakura:text-slate-400">
+                    {t("dashboard.balance")}
+                  </span>
+                </div>
+                <p className={`font-mono font-bold text-sm truncate ${
+                  stats.net >= 0 ? "text-indigo-400 light_sakura:text-indigo-600" : "text-orange-400 light_sakura:text-orange-600"
+                }`}>
+                  {stats.net >= 0 ? "+" : ""}{formatIDR(stats.net)}
+                </p>
+              </div>
+            </div>
+          )}
 
-      </div> {/* massive cohesive card container */}
+          {/* ── Filters ─────────────────────────────────────────────── */}
+          {/* Type quick-filter pills */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {(["all", "expense", "income"] as const).map((ft) => (
+              <button
+                key={ft}
+                onClick={() => setFilterType(ft)}
+                className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                  filterType === ft
+                    ? ft === "expense"
+                      ? "bg-red-500/15 border-red-500/50 text-red-400 light_sakura:bg-red-50 light_sakura:border-red-300 light_sakura:text-red-600"
+                      : ft === "income"
+                      ? "bg-emerald-500/15 border-emerald-500/50 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:border-emerald-300 light_sakura:text-emerald-600"
+                      : "bg-indigo-500/15 border-indigo-500/50 text-indigo-400 light_sakura:bg-indigo-50 light_sakura:border-indigo-300 light_sakura:text-indigo-600"
+                    : "bg-slate-800/40 border-slate-700/40 text-slate-500 hover:text-slate-300 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-400 light_sakura:hover:text-slate-600"
+                }`}
+              >
+                {ft === "all" ? t("history.filter_all") ?? "Semua" : ft === "expense" ? t("transaction.expense") : t("transaction.income")}
+              </button>
+            ))}
+          </div>
 
-      {/* 5. Modals and prompt verifications */}
-      <HistoryDeleteModal 
+          <HistoryFilter
+            filterMonth={filterMonth}
+            setFilterMonth={setFilterMonth}
+            monthOptions={monthOptions}
+            search={search}
+            setSearch={setSearch}
+            pageSize={pageSize}
+            setPageSize={setPageSize}
+            filterCategory={filterCategory}
+            setFilterCategory={setFilterCategory}
+            categories={categories}
+          />
+
+          <HistoryTable
+            paginatedTransactions={paginatedTransactions}
+            formatDateLabel={formatDateLabel}
+            formatIDR={formatIDR}
+            getSourceIconLabel={getSourceIconLabel}
+            onDeleteItem={handleDeleteItem}
+            onEditItem={handleEditItem}
+            categories={categories}
+          />
+
+          <HistoryPagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+            paginatedCount={paginatedTransactions.length}
+            totalItems={totalItems}
+          />
+        </div>
+      </div>
+
+      {/* ── Modals ──────────────────────────────────────────────────── */}
+      <HistoryDeleteModal
         deleteTargetId={deleteTargetId}
         setDeleteTargetId={setDeleteTargetId}
         transactions={transactions}
@@ -429,26 +380,18 @@ export const History: React.FC<HistoryProps> = ({
         isSaving={isEditSaving}
       />
 
-      {/* Confirmation Modal - Export Summary PDF */}
       <Modal
         isOpen={isSummaryConfirmOpen}
         title={t("export.summary_confirm_title")}
-        description={t("export.summary_confirm_desc", {
-          start: currentMonthRangeLabel.start,
-          end: currentMonthRangeLabel.end,
-        })}
+        description={t("export.summary_confirm_desc", { start: currentMonthRangeLabel.start, end: currentMonthRangeLabel.end })}
         type="info"
         confirmLabel={t("export.confirm_export")}
         cancelLabel={t("common.cancel")}
         onConfirm={handleExportSummary}
-        onCancel={() => {
-          audioFeedback.playClick();
-          setIsSummaryConfirmOpen(false);
-        }}
+        onCancel={() => { audioFeedback.playClick(); setIsSummaryConfirmOpen(false); }}
         confirmDisabled={isExporting}
       />
 
-      {/* Export Full PDF range-picker modal */}
       <ExportFullModal
         isOpen={isFullExportOpen}
         monthOptions={monthOptions}
@@ -457,57 +400,29 @@ export const History: React.FC<HistoryProps> = ({
         isGenerating={isExporting}
       />
 
-      {/* Premium Full-Screen Loading Screen */}
       <AnimatePresence>
         {isLoading && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[60] flex flex-col items-center justify-center p-6"
           >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col items-center max-w-xs w-full text-center shadow-2xl relative overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col items-center max-w-xs w-full text-center shadow-2xl light_sakura:bg-white light_sakura:border-rose-100"
             >
-              {/* Double nested spiral spirals */}
               <div className="relative w-20 h-20 mb-6 flex items-center justify-center">
-                <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-                  className="absolute inset-0 border-4 border-t-indigo-500 border-r-teal-400 border-b-transparent border-l-transparent rounded-full"
-                />
-                <motion.div
-                  animate={{ rotate: -360 }}
-                  transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
-                  className="absolute w-12 h-12 border-4 border-t-rose-500 border-r-transparent border-b-amber-400 border-l-transparent rounded-full"
-                />
-                <div className="flex items-center justify-center">
-                  <Trash2 className="text-red-400 light_sakura:text-rose-500" size={20} />
-                </div>
+                <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                  className="absolute inset-0 border-4 border-t-indigo-500 border-r-teal-400 border-b-transparent border-l-transparent rounded-full" />
+                <motion.div animate={{ rotate: -360 }} transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+                  className="absolute w-12 h-12 border-4 border-t-rose-500 border-r-transparent border-b-amber-400 border-l-transparent rounded-full" />
+                <Trash2 className="text-red-400" size={20} />
               </div>
-
-              <h3 className="font-sans font-bold text-base text-white mb-2 light_sakura:text-slate-900">
-                {t("history.ledger_sync_title")}
-              </h3>
-              <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-600">
-                {t("history.ledger_sync_desc")}
-              </p>
+              <h3 className="font-sans font-bold text-base text-white mb-2 light_sakura:text-slate-900">{t("history.ledger_sync_title")}</h3>
+              <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-600">{t("history.ledger_sync_desc")}</p>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <PremiumModal 
-        isOpen={isPremiumOpen}
-        onClose={() => setIsPremiumOpen(false)}
-        onPremiumActivated={() => {
-          refreshPremium();
-        }}
-      />
-
+      <PremiumModal isOpen={isPremiumOpen} onClose={() => setIsPremiumOpen(false)} onPremiumActivated={() => { refreshPremium(); }} />
     </div>
   );
 };

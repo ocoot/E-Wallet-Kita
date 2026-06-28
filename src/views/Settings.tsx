@@ -334,12 +334,14 @@ export const Settings: React.FC<SettingsProps> = ({
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6">
+    <div className="max-w-3xl mx-auto space-y-5">
       
-      {/* Massive Cohesive Card Container */}
-      <div className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6">
+      {/* Main Card */}
+      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
+        <div className="h-1.5 w-full bg-gradient-to-r from-violet-500 via-indigo-500 to-teal-400" />
+        <div className="p-6 md:p-8 space-y-6">
         
-        {/* View Header inside massive card */}
+        {/* View Header */}
         <div className="flex flex-col border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
           <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
             {t("settings.title")}

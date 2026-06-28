@@ -435,8 +435,10 @@ export const AdminPanel: React.FC = () => {
   return (
     <div className="space-y-6">
       
-      {/* Upper header section - Wrapped in one card container */}
-      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+      {/* Upper header section */}
+      <div className="rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm overflow-hidden bg-slate-900 light_sakura:bg-white">
+        <div className="h-1.5 w-full bg-gradient-to-r from-teal-400 via-indigo-500 to-violet-500" />
+        <div className="p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
@@ -469,8 +471,11 @@ export const AdminPanel: React.FC = () => {
         </div>
       </div>
 
-      {/* Tab Navigation links - Wrapped in one card container */}
-      <div className="bg-slate-900 light_sakura:bg-white p-4 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+        </div>
+      </div>
+
+      {/* Tab Navigation links */}
+      <div className="bg-slate-900 light_sakura:bg-white px-4 py-3 rounded-2xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
         <div className="flex gap-1 overflow-x-auto">
           {([
             { key: "users",       label: t("admin.tab_users") },
@@ -487,7 +492,7 @@ export const AdminPanel: React.FC = () => {
                 audioFeedback.playClick();
                 setActiveTab(tab.key);
               }}
-              className={`px-4 py-2.5 text-xs font-black whitespace-nowrap rounded-xl transition-all cursor-pointer border border-transparent
+              className={`px-4 py-2.5 text-xs font-black whitespace-nowrap rounded-xl transition-all cursor-pointer border
                 ${activeTab === tab.key
                   ? "bg-teal-500/10 text-teal-400 border-teal-500/20 light_sakura:bg-rose-100 light_sakura:text-rose-600 light_sakura:border-rose-200"
                   : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500 light_sakura:hover:text-slate-800"}`}
@@ -504,40 +509,58 @@ export const AdminPanel: React.FC = () => {
           {/* Metrics Cards Grid - Wrapped in One Card Container */}
           <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 shadow-sm light_sakura:bg-rose-100/10 light_sakura:border-rose-200">
+              <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 shadow-sm light_sakura:bg-rose-100/10 light_sakura:border-rose-200 space-y-2">
                 <p className="font-sans text-[10px] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600">
                   {t("admin.metrics.total")}
                 </p>
-                <h2 className="font-sans font-black text-2xl text-slate-100 light_sakura:text-slate-900 mt-1">
+                <h2 className="font-sans font-black text-2xl text-slate-100 light_sakura:text-slate-900">
                   {metrics.totalUsers}
                 </h2>
+                <div className="h-1 rounded-full bg-slate-800 overflow-hidden light_sakura:bg-rose-100">
+                  <div className="h-full rounded-full bg-indigo-500" style={{ width: "100%" }} />
+                </div>
               </div>
 
-              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm light_sakura:bg-amber-100/30 light_sakura:border-amber-200">
+              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm light_sakura:bg-amber-100/30 light_sakura:border-amber-200 space-y-2">
                 <p className="font-sans text-[10px] uppercase font-black tracking-wider text-amber-400/80 light_sakura:text-amber-600">
                   {t("admin.metrics.premium")}
                 </p>
-                <h2 className="font-sans font-black text-2xl text-amber-400 light_sakura:text-amber-600 mt-1">
+                <h2 className="font-sans font-black text-2xl text-amber-400 light_sakura:text-amber-600">
                   {metrics.premiumUsers}
                 </h2>
+                <div className="h-1 rounded-full bg-amber-900/30 overflow-hidden light_sakura:bg-amber-100">
+                  <div className="h-full rounded-full bg-amber-500 transition-all duration-700"
+                    style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.premiumUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
+                </div>
+                <p className="text-[10px] text-amber-400/60">
+                  {metrics.totalUsers > 0 ? `${Math.round((metrics.premiumUsers / metrics.totalUsers) * 100)}% dari total` : "—"}
+                </p>
               </div>
 
-              <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-4 shadow-sm light_sakura:bg-teal-100/30 light_sakura:border-teal-200">
+              <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-4 shadow-sm light_sakura:bg-teal-100/30 light_sakura:border-teal-200 space-y-2">
                 <p className="font-sans text-[10px] uppercase font-black tracking-wider text-teal-400/80 light_sakura:text-teal-600">
                   {t("admin.metrics.admin")}
                 </p>
-                <h2 className="font-sans font-black text-2xl text-teal-400 light_sakura:text-teal-600 mt-1">
+                <h2 className="font-sans font-black text-2xl text-teal-400 light_sakura:text-teal-600">
                   {metrics.adminUsers}
                 </h2>
+                <div className="h-1 rounded-full bg-teal-900/30 overflow-hidden light_sakura:bg-teal-100">
+                  <div className="h-full rounded-full bg-teal-500 transition-all duration-700"
+                    style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.adminUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
+                </div>
               </div>
 
-              <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 shadow-sm light_sakura:bg-red-100/30 light_sakura:border-red-200">
+              <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 shadow-sm light_sakura:bg-red-100/30 light_sakura:border-red-200 space-y-2">
                 <p className="font-sans text-[10px] uppercase font-black tracking-wider text-red-400/80 light_sakura:text-red-600">
                   {t("admin.metrics.suspended")}
                 </p>
-                <h2 className="font-sans font-black text-2xl text-red-400/80 light_sakura:text-red-600 mt-1">
+                <h2 className="font-sans font-black text-2xl text-red-400/80 light_sakura:text-red-600">
                   {metrics.bannedUsers}
                 </h2>
+                <div className="h-1 rounded-full bg-red-900/30 overflow-hidden light_sakura:bg-red-100">
+                  <div className="h-full rounded-full bg-red-500 transition-all duration-700"
+                    style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.bannedUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
+                </div>
               </div>
             </div>
           </div>

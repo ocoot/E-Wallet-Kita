@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { dbService } from "../lib/db";
 import { supabase } from "../lib/supabase";
-import { UserSession, Category } from "../types";
+import { UserSession } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
-import { Plus, ArrowLeftRight, Calendar, DollarSign, FileText, CheckCircle } from "lucide-react";
-import { motion, useAnimation } from "motion/react";
+import { motion, useAnimation, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -17,6 +16,33 @@ import { ReceiptPreview } from "../components/ReceiptPreview";
 import { useCategories } from "../hooks/useCategories";
 import { checkSingleCategoryBudget } from "../hooks/useBudgets";
 
+// Emoji map for category keys — fallback to 💰 if key not found
+const CATEGORY_EMOJI: Record<string, string> = {
+  food_drink: "🍜",
+  transport: "🚗",
+  shopping: "🛒",
+  health: "💊",
+  entertainment: "🎮",
+  education: "📚",
+  bills: "🧾",
+  household: "🏠",
+  beauty: "💄",
+  electronics: "📱",
+  travel: "✈️",
+  sport: "🏋️",
+  charity: "🤝",
+  other_expense: "📦",
+  salary: "💼",
+  freelance: "💻",
+  investment: "📈",
+  bonus: "🎁",
+  other_income: "💰",
+};
+
+function getCategoryEmoji(key: string): string {
+  return CATEGORY_EMOJI[key] ?? "💰";
+}
+
 interface NewTransactionProps {
   onTransactionAdded: () => void;
   userDisplayName?: string;
@@ -24,44 +50,38 @@ interface NewTransactionProps {
 
 export const NewTransaction: React.FC<NewTransactionProps> = ({
   onTransactionAdded,
-  userDisplayName
+  userDisplayName,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Prefill dari Bill Reminders (lihat BillReminders.tsx executeTogglePaid):
-  // bill tanpa amount diarahkan ke sini supaya kategori & catatan sudah
-  // terisi, user cukup isi nominal lalu konfirmasi seperti transaksi biasa
-  // (tidak auto-save, tetap lewat flow konfirmasi di §8.1).
   const prefill = (location.state as {
     prefillCategoryKey?: string;
     prefillNote?: string;
     prefillType?: "income" | "expense";
   } | null) || null;
+
   const { t, locale } = useLanguage();
   const { user } = useAuth();
+  const { showToast } = useToast();
+  const { categories } = useCategories();
+  const shakeControls = useAnimation();
 
   const [displayName, setDisplayName] = useState<string>(userDisplayName || "");
 
   useEffect(() => {
-    if (userDisplayName) {
-      setDisplayName(userDisplayName);
-    }
+    if (userDisplayName) setDisplayName(userDisplayName);
   }, [userDisplayName]);
 
   useEffect(() => {
-    if (userDisplayName) return;
-    if (!user) return;
-    const fetchProfile = async () => {
-      const { data, error } = await supabase
-        .from("users")
-        .select("display_name")
-        .eq("id", user.id)
-        .single();
-      if (!error && data?.display_name) {
-        setDisplayName(data.display_name);
-      }
-    };
-    fetchProfile();
+    if (userDisplayName || !user) return;
+    supabase
+      .from("users")
+      .select("display_name")
+      .eq("id", user.id)
+      .single()
+      .then(({ data, error }) => {
+        if (!error && data?.display_name) setDisplayName(data.display_name);
+      });
   }, [user, userDisplayName]);
 
   const currentUser: UserSession = {
@@ -69,352 +89,387 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     display_name: displayName || user?.user_metadata?.full_name || t("admin.guest_user"),
     is_guest: user?.is_anonymous || false,
     preferred_language: "id",
-    preferred_theme: "dark_obsidian"
+    preferred_theme: "dark_obsidian",
   };
-  const { showToast } = useToast();
 
-  // Setelah transaksi expense tersimpan, cek apakah kategori ini sudah
-  // melewati/mendekati alert_threshold_percent dari budget bulan ini.
+  // ── Form state ──────────────────────────────────────────────────────
+  const [type, setType] = useState<"income" | "expense">(prefill?.prefillType || "expense");
+  const [category, setCategory] = useState(prefill?.prefillCategoryKey || "food_drink");
+  const [amount, setAmount] = useState<number | "">("");
+  const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [note, setNote] = useState(prefill?.prefillNote || "");
+  const [receiptDraft, setReceiptDraft] = useState<any>(null);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // ── Today summary ────────────────────────────────────────────────────
+  const [todaySummary, setTodaySummary] = useState<{ income: number; expense: number } | null>(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const today = new Date().toISOString().split("T")[0];
+    const monthPrefix = today.slice(0, 7);
+    dbService.getTransactions(user.id, monthPrefix).then((txs) => {
+      const todayTxs = txs.filter((tx) => tx.transaction_date === today);
+      const income = todayTxs.filter((tx) => tx.type === "income").reduce((s, tx) => s + tx.amount, 0);
+      const expense = todayTxs.filter((tx) => tx.type === "expense").reduce((s, tx) => s + tx.amount, 0);
+      setTodaySummary({ income, expense });
+    }).catch(() => {});
+  }, [user?.id]);
+
+  // ── Category list filtered by type ──────────────────────────────────
+  const activeCategories = useMemo(
+    () => categories.filter((c) => c.type === type || c.type === "both"),
+    [categories, type]
+  );
+
+  // Reset category when type changes if current key no longer valid
+  useEffect(() => {
+    if (activeCategories.length > 0 && !activeCategories.some((c) => c.key === category)) {
+      setCategory(activeCategories[0].key);
+    }
+  }, [type, activeCategories]);
+
+  const getCategoryLabel = (key: string) => {
+    const cat = categories.find((c) => c.key === key);
+    if (!cat) return key;
+    return locale === "id" ? cat.label_id || cat.key : cat.label_en || cat.key;
+  };
+
+  // ── Helpers ──────────────────────────────────────────────────────────
+  const formatIDR = (num: number) => "Rp" + Math.round(num).toLocaleString("id-ID");
+
+  const triggerShake = async () => {
+    await shakeControls.start({ x: [-5, 5, -5, 5, 0], transition: { duration: 0.4 } });
+  };
+
   const maybeWarnBudget = async (categoryKey: string, txType: "income" | "expense") => {
     if (txType !== "expense" || !user?.id) return;
     try {
       const result = await checkSingleCategoryBudget(user.id, categoryKey);
       if (!result || result.status === "safe") return;
-
-      const label = categories.find((c) => c.key === categoryKey);
-      const categoryLabel = label ? (locale === "id" ? label.label_id || label.key : label.label_en || label.key) : categoryKey;
-      const percentRounded = Math.round(result.percent);
-
+      const categoryLabel = getCategoryLabel(categoryKey);
+      const pct = Math.round(result.percent);
       if (result.status === "danger") {
-        showToast(t("budget.toast_warning_over", { category: categoryLabel, percent: percentRounded }), "warning");
+        showToast(t("budget.toast_warning_over", { category: categoryLabel, percent: pct }), "warning");
       } else {
-        showToast(t("budget.toast_warning_threshold", { category: categoryLabel, percent: percentRounded }), "warning");
+        showToast(t("budget.toast_warning_threshold", { category: categoryLabel, percent: pct }), "warning");
       }
-    } catch (err) {
-      console.error("Error checking budget after save:", err);
-    }
-  };
-  const shakeControls = useAnimation();
-  const { categories } = useCategories();
-
-  // Trigger shake animation
-  const triggerShake = async () => {
-    await shakeControls.start({
-      x: [-5, 5, -5, 5, 0],
-      transition: { duration: 0.4 }
-    });
+    } catch {}
   };
 
-  const [type, setType] = useState<"income" | "expense">(prefill?.prefillType || "expense");
-  const [category, setCategory] = useState(prefill?.prefillCategoryKey || "food_drink");
-  const [amount, setAmount] = useState<number | "">("");
-  const [date, setDate] = useState(() => {
-    return new Date().toISOString().split("T")[0]; // default is today YYYY-MM-DD
-  });
-  const [note, setNote] = useState(prefill?.prefillNote || "");
-
-  const [receiptDraft, setReceiptDraft] = useState<any>(null);
-
-  // Confirmation Modals State
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-
+  // ── Handlers ─────────────────────────────────────────────────────────
   const handleReceiptApprove = async (finalData: {
-    amount: number;
-    merchant_name: string;
-    category: string;
-    date: string;
-    note: string;
+    amount: number; merchant_name: string; category: string; date: string; note: string;
   }) => {
     setIsLoading(true);
     try {
       const savedTx = await dbService.saveTransaction(
-        currentUser.id,
-        "expense",
-        finalData.category,
-        finalData.amount,
-        finalData.note,
-        "ai_web",
-        finalData.date
+        currentUser.id, "expense", finalData.category,
+        finalData.amount, finalData.note, "ai_web", finalData.date
       );
-
-      if (savedTx && savedTx.id) {
-        (window as any).lastSavedTransactionId = savedTx.id;
-      }
-
-      // Mark the draft receipt as approved in DB
-      if (receiptDraft && receiptDraft.id) {
-        await dbService.approveReceiptDraft(receiptDraft.id);
-      }
-
+      if (savedTx?.id) (window as any).lastSavedTransactionId = savedTx.id;
+      if (receiptDraft?.id) await dbService.approveReceiptDraft(receiptDraft.id);
       showToast(t("toast.success_save"), "success");
       setReceiptDraft(null);
-      onTransactionAdded(); // Trigger global cache updates
+      onTransactionAdded();
       await maybeWarnBudget(finalData.category, "expense");
-      navigate("/dashboard"); // Go back to dashboard!
-    } catch (err) {
-      console.error("Error saving approved receipt transaction:", err);
+      navigate("/dashboard");
+    } catch {
       showToast(t("toast.error_general"), "error");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Re-adjust categories on type switch
-  useEffect(() => {
-    const filtered = categories.filter(c => c.type === type || c.type === "both");
-    if (filtered.length > 0) {
-      // Check if current category is still in the new list
-      const stillValid = filtered.some(c => c.key === category);
-      if (!stillValid) {
-        setCategory(filtered[0].key);
-      }
-    }
-  }, [type, categories]);
-
-  const activeCategories = categories.filter(c => c.type === type || c.type === "both");
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Validations
     if (!amount || amount <= 0 || isNaN(amount)) {
       audioFeedback.playDullPluck();
       triggerShake();
       showToast(t("toast.invalid_amount"), "error");
       return;
     }
-
     const enteredDate = new Date(date);
     const today = new Date();
-    today.setHours(23, 59, 59, 999); // allow today
+    today.setHours(23, 59, 59, 999);
     if (enteredDate > today) {
       audioFeedback.playDullPluck();
       triggerShake();
       showToast(t("toast.invalid_date"), "error");
       return;
     }
-
     setIsConfirmOpen(true);
   };
 
   const handleExecuteSave = async () => {
     setIsConfirmOpen(false);
     setIsLoading(true);
-
     try {
       const savedTx = await dbService.saveTransaction(
-        currentUser.id,
-        type,
-        category,
-        Number(amount),
-        note.trim() || null,
-        "manual",
-        date
+        currentUser.id, type, category,
+        Number(amount), note.trim() || null, "manual", date
       );
-      if (savedTx && savedTx.id) {
-        (window as any).lastSavedTransactionId = savedTx.id;
-      }
-
+      if (savedTx?.id) (window as any).lastSavedTransactionId = savedTx.id;
       showToast(t("toast.success_save"), "success");
-      
-      // Reset inputs
       setAmount("");
       setNote("");
       setDate(new Date().toISOString().split("T")[0]);
-      
-      onTransactionAdded(); // Trigger global cache updates
+      onTransactionAdded();
       await maybeWarnBudget(category, type);
-      navigate("/dashboard"); // Go back to dashboard!
-    } catch (err) {
-      console.error(err);
+      navigate("/dashboard");
+    } catch {
       showToast(t("toast.error_general"), "error");
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Helper currency formatter
-  const formatIDR = (num: number) => {
-    return "Rp" + Math.round(num).toLocaleString("id-ID");
-  };
+  // ── Amount display formatting ─────────────────────────────────────────
+  const amountDisplay = amount !== "" && amount > 0
+    ? "Rp\u00A0" + Number(amount).toLocaleString("id-ID")
+    : null;
 
+  const isExpense = type === "expense";
+
+  // ── Render ────────────────────────────────────────────────────────────
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      
+    <div className="max-w-2xl mx-auto space-y-4">
       {receiptDraft ? (
         <ReceiptPreview
           draft={receiptDraft}
           onApprove={handleReceiptApprove}
-          onCancel={() => {
-            audioFeedback.playDullPluck();
-            setReceiptDraft(null);
-          }}
+          onCancel={() => { audioFeedback.playDullPluck(); setReceiptDraft(null); }}
         />
       ) : (
-        /* Main card box containing Header and Form */
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6"
+          className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden"
         >
-          {/* Header Info */}
-          <div className="flex flex-col border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
-            <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
-              {t("transaction.add_title")}
-            </h1>
-            <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500">
-              {t("transaction.add_desc")}
-            </p>
-          </div>
+          {/* ── Colour stripe header ─────────────────────────────────── */}
+          <div
+            className={`h-1.5 w-full transition-colors duration-300 ${
+              isExpense
+                ? "bg-red-500 light_sakura:bg-rose-400"
+                : "bg-emerald-500"
+            }`}
+          />
 
-          {/* Receipt Uploader */}
-          <ReceiptUploader onParsed={(draft) => setReceiptDraft(draft)} />
-
-          {/* Divider */}
-          <div className="relative flex py-2 items-center">
-            <div className="flex-grow border-t border-slate-800/70 light_sakura:border-rose-100/50"></div>
-            <span className="flex-shrink mx-4 text-slate-500 font-mono text-[9px] tracking-widest uppercase">
-              {t("dashboard.or_manual")}
-            </span>
-            <div className="flex-grow border-t border-slate-800/70 light_sakura:border-rose-100/50"></div>
-          </div>
-
-          <motion.div animate={shakeControls}>
-            <form onSubmit={handleSubmit} className="space-y-6">
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* 1. Transaction Type selector */}
-            <div className="space-y-1.5">
-              <label className="font-sans text-xs font-bold text-slate-400 light_sakura:text-slate-600 uppercase tracking-wider flex items-center gap-2">
-                <ArrowLeftRight size={14} />
-                <span>{t("transaction.label_type")}</span>
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    audioFeedback.playClick();
-                    setType("expense");
-                  }}
-                  className={`py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer border
-                    ${type === "expense" 
-                      ? "bg-red-500/10 border-red-500 text-red-400" 
-                      : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
-                    }`}
-                >
-                  {t("transaction.expense")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    audioFeedback.playClick();
-                    setType("income");
-                  }}
-                  className={`py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer border
-                    ${type === "income" 
-                      ? "bg-emerald-500/10 border-emerald-500 text-emerald-400" 
-                      : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
-                    }`}
-                >
-                  {t("transaction.income")}
-                </button>
+          <div className="p-6 md:p-8 space-y-7">
+            {/* ── Page header ──────────────────────────────────────────── */}
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+                  {t("transaction.add_title")}
+                </h1>
+                <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500">
+                  {t("transaction.add_desc")}
+                </p>
               </div>
+              {/* Today mini-summary pill */}
+              {todaySummary && (
+                <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/60 border border-slate-700/50 light_sakura:bg-slate-50 light_sakura:border-rose-100">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Hari ini</span>
+                  <span className="text-[11px] font-bold text-red-400">−{formatIDR(todaySummary.expense)}</span>
+                  {todaySummary.income > 0 && (
+                    <span className="text-[11px] font-bold text-emerald-400">+{formatIDR(todaySummary.income)}</span>
+                  )}
+                </div>
+              )}
             </div>
 
-            {/* 2. Classification categories selector */}
-            <div className="space-y-2">
-              <label className="font-sans text-xs font-bold text-slate-400 light_sakura:text-slate-600 uppercase tracking-wider block">
-                {t("transaction.label_category")}
-              </label>
-              <select
-                value={category}
-                onChange={(e) => {
-                  audioFeedback.playClick();
-                  setCategory(e.target.value);
-                }}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 font-sans text-xs text-white outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-              >
-                {activeCategories.map((cat) => (
-                  <option key={cat.key} value={cat.key}>
-                    {locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key)}
-                  </option>
-                ))}
-              </select>
+            {/* ── AI Receipt uploader ──────────────────────────────────── */}
+            <ReceiptUploader onParsed={(draft) => setReceiptDraft(draft)} />
+
+            {/* ── Divider ──────────────────────────────────────────────── */}
+            <div className="relative flex items-center">
+              <div className="flex-grow border-t border-slate-800/70 light_sakura:border-rose-100/50" />
+              <span className="flex-shrink mx-4 text-slate-500 font-mono text-[9px] tracking-widest uppercase">
+                {t("dashboard.or_manual")}
+              </span>
+              <div className="flex-grow border-t border-slate-800/70 light_sakura:border-rose-100/50" />
             </div>
 
+            {/* ── Form ─────────────────────────────────────────────────── */}
+            <motion.div animate={shakeControls}>
+              <form onSubmit={handleSubmit} className="space-y-6">
+
+                {/* 1 ── Type toggle ─────────────────────────────────────── */}
+                <div className="space-y-2">
+                  <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                    {t("transaction.label_type")}
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-slate-950/60 border border-slate-800/50 light_sakura:bg-rose-50/30 light_sakura:border-rose-100">
+                    <button
+                      type="button"
+                      onClick={() => { audioFeedback.playClick(); setType("expense"); }}
+                      className={`py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2
+                        ${isExpense
+                          ? "bg-red-500/15 border border-red-500/60 text-red-400 shadow-sm light_sakura:bg-red-50 light_sakura:border-red-300 light_sakura:text-red-600"
+                          : "text-slate-500 hover:text-slate-300 light_sakura:text-slate-400 light_sakura:hover:text-slate-600"
+                        }`}
+                    >
+                      <span className="text-base leading-none">📤</span>
+                      {t("transaction.expense")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => { audioFeedback.playClick(); setType("income"); }}
+                      className={`py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2
+                        ${!isExpense
+                          ? "bg-emerald-500/15 border border-emerald-500/60 text-emerald-400 shadow-sm light_sakura:bg-emerald-50 light_sakura:border-emerald-300 light_sakura:text-emerald-600"
+                          : "text-slate-500 hover:text-slate-300 light_sakura:text-slate-400 light_sakura:hover:text-slate-600"
+                        }`}
+                    >
+                      <span className="text-base leading-none">📥</span>
+                      {t("transaction.income")}
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2 ── Nominal big display ─────────────────────────────── */}
+                <div className="space-y-2">
+                  <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                    {t("transaction.label_amount")}
+                  </label>
+                  <div className={`rounded-2xl border transition-colors duration-200 px-5 py-4 space-y-2 ${
+                    isExpense
+                      ? "bg-red-500/5 border-red-500/20 light_sakura:bg-red-50/40 light_sakura:border-red-200"
+                      : "bg-emerald-500/5 border-emerald-500/20 light_sakura:bg-emerald-50/40 light_sakura:border-emerald-200"
+                  }`}>
+                    {/* Live formatted preview */}
+                    <AnimatePresence mode="wait">
+                      {amountDisplay ? (
+                        <motion.div
+                          key="amount-val"
+                          initial={{ opacity: 0, y: -6 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 6 }}
+                          className={`font-sans font-black text-3xl tracking-tight tabular-nums leading-none ${
+                            isExpense ? "text-red-400 light_sakura:text-red-500" : "text-emerald-400 light_sakura:text-emerald-600"
+                          }`}
+                        >
+                          {isExpense ? "−" : "+"}{amountDisplay}
+                        </motion.div>
+                      ) : (
+                        <motion.div
+                          key="amount-placeholder"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="font-sans font-black text-3xl tracking-tight text-slate-700 light_sakura:text-slate-300 leading-none"
+                        >
+                          Rp 0
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                    <input
+                      type="number"
+                      required
+                      min={1}
+                      placeholder="Ketik nominal..."
+                      disabled={isLoading}
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value !== "" ? parseInt(e.target.value) || 0 : "")}
+                      className="w-full bg-transparent border-none outline-none font-sans text-sm text-slate-300 placeholder:text-slate-600 light_sakura:text-slate-600 light_sakura:placeholder:text-slate-400"
+                    />
+                  </div>
+                </div>
+
+                {/* 3 ── Category pills ──────────────────────────────────── */}
+                <div className="space-y-2">
+                  <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                    {t("transaction.label_category")}
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {activeCategories.map((cat) => {
+                      const isSelected = category === cat.key;
+                      return (
+                        <motion.button
+                          key={cat.key}
+                          type="button"
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => {
+                            audioFeedback.playClick();
+                            setCategory(cat.key);
+                          }}
+                          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                            isSelected
+                              ? isExpense
+                                ? "bg-red-500/15 border-red-500/50 text-red-300 light_sakura:bg-rose-100 light_sakura:border-rose-400 light_sakura:text-rose-700"
+                                : "bg-emerald-500/15 border-emerald-500/50 text-emerald-300 light_sakura:bg-emerald-100 light_sakura:border-emerald-400 light_sakura:text-emerald-700"
+                              : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:text-slate-300 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-500 light_sakura:hover:bg-rose-50"
+                          }`}
+                        >
+                          <span className="text-sm leading-none">{getCategoryEmoji(cat.key)}</span>
+                          <span>{locale === "id" ? cat.label_id || cat.key : cat.label_en || cat.key}</span>
+                        </motion.button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 4 ── Date + Note ─────────────────────────────────────── */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                      {t("transaction.label_date")}
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      disabled={isLoading}
+                      value={date}
+                      max={new Date().toISOString().split("T")[0]}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                      {t("transaction.label_note")}
+                    </label>
+                    <input
+                      type="text"
+                      placeholder={t("transaction.placeholder_note")}
+                      disabled={isLoading}
+                      value={note}
+                      onChange={(e) => setNote(e.target.value)}
+                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors placeholder:text-slate-600 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+                    />
+                  </div>
+                </div>
+
+                {/* 5 ── Submit preview + button ─────────────────────────── */}
+                <div className="flex items-center justify-between gap-4 pt-1">
+                  {/* Confirmation preview */}
+                  {amountDisplay && (
+                    <div className="flex items-center gap-2 text-xs text-slate-400 light_sakura:text-slate-500 min-w-0">
+                      <span className="text-base leading-none">{getCategoryEmoji(category)}</span>
+                      <span className="truncate">
+                        {getCategoryLabel(category)} · {date}
+                      </span>
+                    </div>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={isLoading || amount === "" || amount === 0}
+                    className={`ml-auto cursor-pointer py-3 px-6 text-white rounded-xl font-sans text-xs font-bold flex items-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none active:scale-[0.98] ${
+                      isExpense
+                        ? "bg-red-600 hover:bg-red-500 shadow-lg shadow-red-900/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                        : "bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-900/20"
+                    }`}
+                  >
+                    <span className="text-sm leading-none">✓</span>
+                    <span>{t("transaction.btn_submit")}</span>
+                  </button>
+                </div>
+
+              </form>
+            </motion.div>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            
-            {/* 3. Number value amount input */}
-            <div className="space-y-1.5">
-              <label className="font-sans text-xs font-bold text-slate-400 light_sakura:text-slate-600 uppercase tracking-wider flex items-center gap-2">
-                <DollarSign size={14} />
-                <span>{t("transaction.label_amount")}</span>
-              </label>
-              <input
-                type="number"
-                required
-                min={1}
-                placeholder="0"
-                disabled={isLoading}
-                value={amount}
-                onChange={(e) => setAmount(e.target.value !== "" ? parseInt(e.target.value) || 0 : "")}
-                className="w-full pl-4 pr-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-              />
-            </div>
-
-            {/* 4. Transaction date Calendar input */}
-            <div className="space-y-1.5">
-              <label className="font-sans text-xs font-bold text-slate-400 light_sakura:text-slate-600 uppercase tracking-wider flex items-center gap-2">
-                <Calendar size={14} />
-                <span>{t("transaction.label_date")}</span>
-              </label>
-              <input
-                type="date"
-                required
-                disabled={isLoading}
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full pl-4 pr-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-              />
-            </div>
-
-          </div>
-
-          {/* 5. Optional Note text description input */}
-          <div className="space-y-1.5">
-            <label className="font-sans text-xs font-bold text-slate-400 light_sakura:text-slate-600 uppercase tracking-wider flex items-center gap-2">
-              <FileText size={14} />
-              <span>{t("transaction.label_note")}</span>
-            </label>
-            <textarea
-              rows={3}
-              placeholder={t("transaction.placeholder_note")}
-              disabled={isLoading}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              className="w-full px-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors placeholder:text-slate-600 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-            />
-          </div>
-
-          {/* Submit action button */}
-          <div className="flex justify-start pt-2">
-            <button
-              type="submit"
-              disabled={isLoading || amount === "" || amount === 0}
-              className="cursor-pointer py-3.5 px-6 bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
-            >
-              <Plus size={16} />
-              <span>{t("transaction.btn_submit")}</span>
-            </button>
-          </div>
-
-        </form>
         </motion.div>
-      </motion.div>
       )}
 
       {/* Confirmation Modal */}
@@ -422,24 +477,16 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         isOpen={isConfirmOpen}
         title={t("confirm.save_transaction_title")}
         description={t("confirm.save_transaction_desc", {
-          amount: amount !== "" ? formatIDR(amount) : "Rp0",
-          category: (() => {
-            const cat = categories.find(c => c.key === category);
-            if (!cat) return category;
-            return locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key);
-          })()
+          amount: amount !== "" ? formatIDR(amount as number) : "Rp0",
+          category: getCategoryLabel(category),
         })}
         type="info"
         confirmLabel={t("common.confirm")}
         cancelLabel={t("common.cancel")}
         onConfirm={handleExecuteSave}
-        onCancel={() => {
-          audioFeedback.playClick();
-          setIsConfirmOpen(false);
-        }}
+        onCancel={() => { audioFeedback.playClick(); setIsConfirmOpen(false); }}
       />
 
-      {/* Loading state indicator */}
       <LoadingOverlay isOpen={isLoading} message={t("common.loading")} />
     </div>
   );
