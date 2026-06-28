@@ -11,6 +11,7 @@ const firebaseConfig = {
 
 let app: FirebaseApp | null = null;
 let messaging: Messaging | null = null;
+let swRegistrationPromise: Promise<ServiceWorkerRegistration | null> | null = null;
 
 function isConfigured(): boolean {
   return !!firebaseConfig.apiKey && !!firebaseConfig.projectId;
@@ -26,6 +27,47 @@ function getOrInitMessaging(): Messaging | null {
   } catch {
     return null;
   }
+}
+
+/**
+ * Explicitly register firebase-messaging-sw.js, and reuse the SAME
+ * registration object on every call instead of letting Firebase's
+ * getToken() auto-discover it.
+ *
+ * ROOT CAUSE this fixes: this app also runs a Workbox-generated `sw.js`
+ * (vite-plugin-pwa, registerType: 'autoUpdate') registered at the same
+ * root scope ('/'). Auto-update means Workbox re-registers/activates a
+ * new sw.js on every deploy (and sometimes every reload, depending on
+ * browser SW update checks). When Firebase's getToken() was left to
+ * auto-discover firebase-messaging-sw.js (no explicit registration
+ * passed in), it could resolve a registration that Workbox had just
+ * superseded at that scope, which made the browser's underlying push
+ * subscription unstable — producing a NEW FCM token on practically
+ * every page reload instead of returning the cached one. That showed up
+ * as multiple rows piling up in user_push_tokens for the same browser.
+ *
+ * Explicitly registering this service worker ourselves (idempotent —
+ * calling register() with the same script URL/scope again just returns
+ * the existing registration if nothing changed) and passing it directly
+ * to getToken()/deleteToken() via { serviceWorkerRegistration } removes
+ * the ambiguity: Firebase always operates on the exact registration we
+ * resolved, regardless of what Workbox is doing at the same scope.
+ */
+function getFcmServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | null> {
+  if (swRegistrationPromise) return swRegistrationPromise;
+
+  if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
+    return Promise.resolve(null);
+  }
+
+  swRegistrationPromise = navigator.serviceWorker
+    .register('/firebase-messaging-sw.js', { scope: '/firebase-cloud-messaging-push-scope/' })
+    .catch((err) => {
+      console.error('[FCM] Failed to register firebase-messaging-sw.js:', err);
+      return null;
+    });
+
+  return swRegistrationPromise;
 }
 
 // In-memory cache for the current session — avoids calling getToken()
@@ -67,9 +109,11 @@ export const requestFcmToken = async (): Promise<string | null> => {
       return null;
     }
 
-    // Get the FCM token. Firebase will look for firebase-messaging-sw.js
-    // first; if it fails, it falls back to the active SW.
-    const currentToken = await getToken(m, { vapidKey });
+    const swRegistration = await getFcmServiceWorkerRegistration();
+    const currentToken = await getToken(m, {
+      vapidKey,
+      ...(swRegistration ? { serviceWorkerRegistration: swRegistration } : {}),
+    });
     cachedToken = currentToken || null;
     return cachedToken;
   } catch (err) {
@@ -170,23 +214,51 @@ export const clearFcmToken = async (
   userId: string | null | undefined
 ): Promise<void> => {
   const m = getOrInitMessaging();
-  if (!m) return;
 
   try {
-    const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY || '';
-    // Fetch the current token (without prompting permission again) so we
-    // know exactly which row to delete from Supabase.
-    const currentToken = vapidKey ? await getToken(m, { vapidKey }).catch(() => null) : null;
+    let currentToken: string | null = null;
 
-    await deleteToken(m);
+    if (m) {
+      const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY || '';
+      const swRegistration = await getFcmServiceWorkerRegistration();
+      // Resolve the exact token tied to THIS device's registration before
+      // revoking it, so we delete only this device's row — not every
+      // device this user is logged into. This is now reliable because
+      // getFcmServiceWorkerRegistration() always resolves the same SW
+      // registration (see its comment above), so getToken() returns the
+      // same cached token that was originally saved to the DB, instead of
+      // potentially churning to a new one.
+      currentToken = cachedToken ?? (vapidKey
+        ? await getToken(m, {
+            vapidKey,
+            ...(swRegistration ? { serviceWorkerRegistration: swRegistration } : {}),
+          }).catch(() => null)
+        : null);
+
+      await deleteToken(m).catch((err) => {
+        // Non-fatal: even if the SDK-side revoke fails (e.g. no active
+        // registration), we still want to remove the DB row below.
+        console.warn('[FCM] deleteToken() failed, continuing with DB cleanup:', err);
+      });
+    }
     cachedToken = null;
 
-    if (currentToken && userId) {
+    if (userId && currentToken) {
+      // Scoped to this device's exact token — leaves other devices'
+      // rows (and therefore their push notifications) untouched.
       await supabaseClient
         .from('user_push_tokens')
         .delete()
         .eq('user_id', userId)
         .eq('fcm_token', currentToken);
+    } else if (userId) {
+      // Fallback: we couldn't resolve which token belonged to this
+      // device (e.g. permission was never granted this session, or SW
+      // registration failed). Nothing to safely target — do NOT wipe
+      // every device for this user, since that would log other devices
+      // out of push too. Just log it; the row, if any, will eventually
+      // be purged as an invalid token next time a push is attempted.
+      console.warn('[FCM] Could not resolve this device\'s token on logout; skipping DB cleanup for it.');
     }
   } catch (err) {
     // Non-fatal: logout must still proceed even if token cleanup fails.
