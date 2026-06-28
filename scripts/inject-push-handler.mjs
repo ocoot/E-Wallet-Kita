@@ -18,6 +18,23 @@ const FIREBASE_PROJECT_ID = process.env.VITE_FIREBASE_PROJECT_ID || 'ewallet-kit
 const FIREBASE_MESSAGING_SENDER_ID = process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '591031508771';
 const FIREBASE_APP_ID = process.env.VITE_FIREBASE_APP_ID || '1:591031508771:web:b7ef6f4dbb8a75948d7696';
 
+// Make it obvious at build time whether each value came from the env var
+// or silently fell back to the hardcoded default — so a missing/misnamed
+// Vercel env var doesn't go unnoticed after a future Firebase project change.
+const usedFallback = [
+  ['VITE_FIREBASE_API_KEY', !process.env.VITE_FIREBASE_API_KEY],
+  ['VITE_FIREBASE_AUTH_DOMAIN', !process.env.VITE_FIREBASE_AUTH_DOMAIN],
+  ['VITE_FIREBASE_PROJECT_ID', !process.env.VITE_FIREBASE_PROJECT_ID],
+  ['VITE_FIREBASE_MESSAGING_SENDER_ID', !process.env.VITE_FIREBASE_MESSAGING_SENDER_ID],
+  ['VITE_FIREBASE_APP_ID', !process.env.VITE_FIREBASE_APP_ID],
+].filter(([, missing]) => missing).map(([name]) => name);
+
+if (usedFallback.length > 0) {
+  console.warn(`[inject] ⚠️  Env var(s) not set, using hardcoded fallback for: ${usedFallback.join(', ')}`);
+} else {
+  console.log('[inject] ✅ All Firebase config read from VITE_FIREBASE_* env vars');
+}
+
 // ── Inject push handler into Workbox-generated sw.js ──
 const swPath = path.resolve(distDir, 'sw.js');
 if (fs.existsSync(swPath)) {
