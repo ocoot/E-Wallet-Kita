@@ -163,10 +163,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="relative flex flex-col w-72 max-w-[80vw] h-full p-6 bg-slate-900 border-r border-slate-800 text-white dark_obsidian:bg-slate-900 dark_obsidian:border-slate-800 light_sakura:bg-rose-50 light_sakura:text-slate-800 light_sakura:border-rose-100"
+              className="relative flex flex-col w-72 max-w-[80vw] h-full bg-slate-900 border-r border-slate-800 text-white dark_obsidian:bg-slate-900 dark_obsidian:border-slate-800 light_sakura:bg-rose-50 light_sakura:text-slate-800 light_sakura:border-rose-100"
             >
-              {/* Header Close triggers */}
-              <div className="flex items-center justify-between mb-8">
+              {/* Header — sticky, tidak ikut scroll */}
+              <div className="flex items-center justify-between px-6 py-5 shrink-0 border-b border-slate-800/60 light_sakura:border-rose-100">
                 <div className="flex items-center gap-2">
                   <div className="shrink-0">
                     <img 
@@ -187,8 +187,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
               </div>
 
+              {/* Scrollable area — profile + nav */}
+              <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-5 space-y-5">
+
               {/* Profile widget summary */}
-              <div className="p-4 mb-6 rounded-xl border bg-slate-950/40 border-slate-800 light_sakura:bg-rose-100/50 light_sakura:border-rose-200">
+              <div className="p-4 rounded-xl border bg-slate-950/40 border-slate-800 light_sakura:bg-rose-100/50 light_sakura:border-rose-200">
                 <p className="font-mono text-[10px] text-gray-400 light_sakura:text-rose-600 uppercase tracking-widest">
                   {isGuest ? t("history.status_guest") : t("history.status_verified")}
                 </p>
@@ -205,7 +208,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
 
               {/* Menu Items */}
-              <nav className="flex-1 space-y-1.5">
+              <nav className="space-y-1.5">
                 {menuItems.map((item) => {
                   const IconComp = item.icon;
                   const isActive = activeTab === item.id;
@@ -230,9 +233,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   );
                 })}
               </nav>
+              </div>{/* end scrollable area */}
 
-              {/* Bottom Controls / Language / Theme switchers */}
-              <div className="space-y-4 pt-4 border-t border-slate-800 light_sakura:border-rose-100">
+              {/* Footer controls — sticky, tidak ikut scroll */}
+              <div className="shrink-0 px-6 py-4 space-y-4 border-t border-slate-800 light_sakura:border-rose-100">
                 {/* Theme, Language, and Audio inline controller */}
                 <div className="grid grid-cols-3 gap-1.5">
                   <button
@@ -349,7 +353,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Menu Items listings */}
-        <nav className="flex-1 px-3 space-y-1">
+        <nav className="flex-1 px-3 space-y-1 overflow-y-auto overscroll-contain">
           {menuItems.map((item) => {
             const IconComp = item.icon;
             const isActive = activeTab === item.id;
