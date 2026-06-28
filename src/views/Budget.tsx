@@ -9,7 +9,7 @@ import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
-import { PiggyBank, Plus, X, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { PiggyBank, Plus, X } from "lucide-react";
 import { BudgetProgressCard } from "../components/BudgetProgressCard";
 
 export const Budget: React.FC = () => {
