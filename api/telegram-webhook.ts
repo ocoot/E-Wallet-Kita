@@ -675,16 +675,23 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           // Also send FCM push notification to all of the user's registered
           // devices. Non-blocking — a push failure must never prevent the
           // transaction from saving.
-          try {
-            const typeLabelPush = row.type === 'income' ? 'Pemasukan' : 'Pengeluaran';
-            await sendPushNotificationToUser(
-              supabaseBackend,
-              row.user_id,
-              `Transaksi ${typeLabelPush}`,
-              `${amountStr} - ${row.original_text || row.category_key}`
-            );
-          } catch (err) {
-            console.error('[FCM] Failed to send transaction push:', err);
+          // NOTE: telegram_pending_transactions / get_pending_telegram_tx has
+          // NO user_id column (it's keyed only by chat_id), so `row.user_id`
+          // is always undefined here. Use the already-resolved userCtx
+          // (from resolveUserContext(chatId) above) instead, same as
+          // sendBudgetWarningIfNeeded does.
+          if (userCtx) {
+            try {
+              const typeLabelPush = row.type === 'income' ? 'Pemasukan' : 'Pengeluaran';
+              await sendPushNotificationToUser(
+                supabaseBackend,
+                userCtx.id,
+                `Transaksi ${typeLabelPush}`,
+                `${amountStr} - ${row.original_text || row.category_key}`
+              );
+            } catch (err) {
+              console.error('[FCM] Failed to send transaction push:', err);
+            }
           }
         }
       } 
