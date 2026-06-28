@@ -32,7 +32,7 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
   const { t, locale } = useLanguage();
 
   return (
-    <div id="history-controls-row" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 pb-2">
+    <div id="history-controls-row" className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30">
       {/* 1. Month Selector dropdown */}
       <div className="space-y-1.5">
         <label className="font-sans text-[10px] font-bold text-gray-400 uppercase tracking-wider block light_sakura:text-slate-500">

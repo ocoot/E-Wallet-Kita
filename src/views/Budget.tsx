@@ -196,8 +196,11 @@ export const Budget: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-12">
+      {/* Massive Cohesive Card Container */}
+      <div className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6">
+
       {/* Header */}
-      <div className="flex items-start justify-between gap-3.5 flex-wrap">
+      <div className="flex items-start justify-between gap-3.5 flex-wrap border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:text-rose-500 shrink-0">
             <PiggyBank size={22} />
@@ -268,7 +271,7 @@ export const Budget: React.FC = () => {
                 key={catKey}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="p-5 rounded-2xl border bg-slate-900/60 border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 space-y-4"
+                className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30 space-y-4"
               >
                 <div className="flex items-center justify-between gap-2">
                   <h3 className="font-sans font-semibold text-sm text-slate-100 light_sakura:text-slate-800 truncate">
@@ -460,6 +463,7 @@ export const Budget: React.FC = () => {
         onCancel={() => setDeleteTarget(null)}
         confirmDisabled={isDeleting}
       />
+      </div>{/* end card container */}
     </div>
   );
 };

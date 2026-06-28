@@ -352,8 +352,11 @@ export const BillReminders: React.FC = () => {
       animate={{ opacity: 1, y: 0 }}
       className="space-y-6"
     >
+      {/* Massive Cohesive Card Container */}
+      <div className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6">
+
       {/* Header Container */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-800/50 light_sakura:border-rose-100/30">
         <div>
           <h1 className="font-sans font-bold text-2xl text-slate-100 light_sakura:text-slate-900">
             {t("bill_reminders.page_title")}
@@ -376,7 +379,7 @@ export const BillReminders: React.FC = () => {
 
       {/* Preferensi Jam Pengingat Tagihan (Telegram) */}
       {isTelegramLinked ? (
-        <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm space-y-3">
+        <div className="p-5 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30 space-y-3">
           <h4 className="font-sans font-bold text-[10px] text-gray-400 light_sakura:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
             <Send size={12} className="text-indigo-400 -translate-x-0.5 rotate-45" />
             <span>{t("settings.reminder_hour_title")}</span>
@@ -408,7 +411,7 @@ export const BillReminders: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="flex items-start gap-2.5 p-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
+        <div className="flex items-start gap-2.5 p-5 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30">
           <Info size={14} className="text-indigo-400 shrink-0 mt-0.5" />
           <p className="font-sans text-[11px] text-gray-400 light_sakura:text-slate-600">
             {t("bill_reminders.connect_telegram_hint")}
@@ -436,7 +439,7 @@ export const BillReminders: React.FC = () => {
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.97 }}
-                className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm"
+                className="p-5 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30"
               >
                 {/* Baris atas: nama + badge */}
                 <div className="flex items-start justify-between gap-3 mb-3">
@@ -721,6 +724,7 @@ export const BillReminders: React.FC = () => {
         onCancel={() => setToggleConfirmTarget(null)}
         confirmDisabled={togglingId === toggleConfirmTarget?.id}
       />
+      </div>{/* end card container */}
     </motion.div>
   );
 };

@@ -109,7 +109,7 @@ export const Breadcrumbs: React.FC = () => {
     <nav 
       id="app-breadcrumbs-nav" 
       aria-label="breadcrumb"
-      className="mb-6 flex items-center overflow-x-auto whitespace-nowrap py-3 px-5 rounded-2xl bg-slate-900/60 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm text-xs text-slate-400 transition-all duration-300 max-w-fit"
+      className="mb-6 flex items-center overflow-x-auto whitespace-nowrap py-3 px-5 rounded-3xl bg-slate-900 border border-slate-900 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-sm text-xs text-slate-400 transition-all duration-300 max-w-fit"
     >
       <ol className="flex items-center gap-1.5 sm:gap-2">
         {breadcrumbs.map((item, index) => {
