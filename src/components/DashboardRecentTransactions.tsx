@@ -87,7 +87,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/40 hover:bg-slate-950/60 border border-slate-800/40 hover:border-slate-850 transition-all duration-200 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/10"
+                className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/40 hover:bg-slate-950/60 border border-slate-800/40 hover:border-slate-700 transition-all duration-200 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/10"
               >
                 <div className="flex items-center gap-3">
                   {getSourceIcon(tx.source)}

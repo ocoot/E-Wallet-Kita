@@ -175,10 +175,10 @@ export const AdminPremiumMonitor: React.FC = () => {
       <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="font-bold text-xl text-white light_sakura:text-slate-800 flex items-center gap-2">
+            <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
               <CreditCard className="text-amber-500" size={24} />
               {t("admin.premium_monitor_title")}
-            </h2>
+            </h1>
             <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1">
               {t("admin.premium_monitor_desc")}
             </p>
@@ -195,7 +195,7 @@ export const AdminPremiumMonitor: React.FC = () => {
                 setRefreshing(false);
               }
             }}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-750 light_sakura:hover:bg-slate-50 transition-colors cursor-pointer shrink-0"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-700 light_sakura:hover:bg-slate-50 transition-colors cursor-pointer shrink-0"
           >
             <RefreshCw size={16} />
             {t("admin.refresh_data")}
@@ -378,7 +378,7 @@ export const AdminPremiumMonitor: React.FC = () => {
               setPageSize(val === "all" ? "all" : Number(val));
               setPage(0);
             }}
-            className="bg-slate-800 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-850 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+            className="bg-slate-800 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
           >
             <option value={5}>5</option>
             <option value={10}>10</option>
@@ -398,7 +398,7 @@ export const AdminPremiumMonitor: React.FC = () => {
               <button
                 disabled={page === 0}
                 onClick={() => setPage(p => p - 1)}
-                className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-665 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                className="p-2 rounded-xl bg-slate-900 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
               >
                 <ChevronLeft size={14} />
               </button>
@@ -406,7 +406,7 @@ export const AdminPremiumMonitor: React.FC = () => {
               <button
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage(p => p + 1)}
-                className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-665 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                className="p-2 rounded-xl bg-slate-900 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
               >
                 <ChevronRight size={14} />
               </button>

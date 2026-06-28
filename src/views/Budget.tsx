@@ -206,7 +206,7 @@ export const Budget: React.FC = () => {
             <PiggyBank size={22} />
           </div>
           <div>
-            <h1 className="font-sans font-bold text-lg text-white light_sakura:text-slate-900">
+            <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
               {t("budget.page_title")}
             </h1>
             <p className="text-xs text-slate-400 light_sakura:text-slate-600 mt-0.5 max-w-xl leading-relaxed">

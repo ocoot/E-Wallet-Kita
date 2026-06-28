@@ -8,6 +8,26 @@
 
 @variant light_sakura (.light_sakura &);
 
+/*
+ * ── Skema z-index global ──────────────────────────────────────────
+ * Tailwind v4 tidak mendukung custom named z-index utility lewat
+ * @theme (core utility `z-*` tidak pakai namespace lookup), jadi
+ * skala ini didokumentasikan di sini dan dipakai sebagai angka biasa
+ * (z-30, z-50, z-[60], dst) secara konsisten di seluruh komponen.
+ * Saat menambah modal/overlay baru, gunakan salah satu level berikut
+ * alih-alih menebak angka baru:
+ *
+ *   z-30      -> dropdown / context menu lokal (HistoryExport, dll)
+ *   z-40      -> elemen sticky/floating non-modal (header mobile, FAB)
+ *   z-50      -> SEMUA modal/dialog overlay (Modal, ExportFullModal,
+ *                HistoryEditModal, HistoryDeleteModal, PremiumModal,
+ *                ResetPasswordModal, AdminUserDetailModal, dll)
+ *   z-[60]    -> overlay loading yang blocking (spinner proses async)
+ *   z-[70]    -> toast notification (selalu di atas modal manapun)
+ *   z-[90]    -> banner persisten (mis. prompt update PWA)
+ *   z-[100]   -> overlay sistem kritikal (mis. transisi logout)
+ */
+
 /* Base custom resets */
 html, body {
   font-family: var(--font-sans);

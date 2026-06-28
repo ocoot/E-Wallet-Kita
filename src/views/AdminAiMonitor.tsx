@@ -137,10 +137,10 @@ export const AdminAiMonitor: React.FC = () => {
       <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="font-bold text-xl text-white light_sakura:text-slate-800 flex items-center gap-2">
+            <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
               <Brain size={24} className="text-indigo-500" />
               {t("ai_monitor.title")}
-            </h2>
+            </h1>
             <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1">
               {t("ai_monitor.desc")}
             </p>
@@ -156,7 +156,7 @@ export const AdminAiMonitor: React.FC = () => {
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer transition-colors
                     ${period === d
                       ? "bg-slate-700 light_sakura:bg-white shadow-sm text-teal-400 light_sakura:text-indigo-600"
-                      : "text-slate-400 light_sakura:text-slate-500 hover:text-slate-200 light_sakura:hover:text-slate-750"
+                      : "text-slate-400 light_sakura:text-slate-500 hover:text-slate-200 light_sakura:hover:text-slate-700"
                     }`}
                 >
                   {d}{t("ai_monitor.days_suffix")}
@@ -167,7 +167,7 @@ export const AdminAiMonitor: React.FC = () => {
             <button
               onClick={() => load(true)}
               disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-slate-800 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-white hover:bg-slate-750 light_sakura:hover:bg-slate-50 text-slate-300 light_sakura:text-slate-600 cursor-pointer transition-colors disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-slate-800 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-white hover:bg-slate-700 light_sakura:hover:bg-slate-50 text-slate-300 light_sakura:text-slate-600 cursor-pointer transition-colors disabled:opacity-50"
             >
               <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
               {t("ai_monitor.refresh")}
@@ -357,7 +357,7 @@ export const AdminAiMonitor: React.FC = () => {
                       setPageSize(val === "all" ? "all" : Number(val));
                       setPage(0);
                     }}
-                    className="bg-slate-850 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-850 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+                    className="bg-slate-900 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
                   >
                     <option value={5}>5</option>
                     <option value={10}>10</option>
@@ -377,7 +377,7 @@ export const AdminAiMonitor: React.FC = () => {
                       <button
                         disabled={page === 0}
                         onClick={() => setPage(p => p - 1)}
-                        className="p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-665 hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                        className="p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
                       >
                         <ChevronLeft size={14} />
                       </button>
@@ -385,7 +385,7 @@ export const AdminAiMonitor: React.FC = () => {
                       <button
                         disabled={(page + 1) * pageSize >= byKey.length}
                         onClick={() => setPage(p => p + 1)}
-                        className="p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-665 hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                        className="p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
                       >
                         <ChevronRight size={14} />
                       </button>

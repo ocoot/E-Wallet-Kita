@@ -29,9 +29,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         </div>
 
         <div>
-          <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+          <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
             {t("dashboard.welcome", { name: currentUser.display_name })}
-          </h2>
+          </h1>
           <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
             {t("app.tagline_sub")}
           </p>

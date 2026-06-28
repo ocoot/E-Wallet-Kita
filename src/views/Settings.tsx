@@ -341,9 +341,9 @@ export const Settings: React.FC<SettingsProps> = ({
         
         {/* View Header inside massive card */}
         <div className="flex flex-col border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
-          <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+          <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
             {t("settings.title")}
-          </h2>
+          </h1>
           <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500 font-medium">
             {t("settings.desc")}
           </p>
@@ -356,7 +356,7 @@ export const Settings: React.FC<SettingsProps> = ({
           <div className="space-y-6">
             
             {/* Section 1: Profiles Name edit */}
-            <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-850/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
+            <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
             <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100">
               {t("settings.profile_section")}
             </h3>
@@ -387,7 +387,7 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
 
           {/* Section 2: Quick instant Switcher controls */}
-          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-850/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
+          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
             <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100">
               {t("settings.preferences")}
             </h3>
@@ -477,7 +477,7 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
 
           {/* Section 3: PWA Installation Block */}
-          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-850/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
+          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
             <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
               <Smartphone size={14} className="text-teal-400 light_sakura:text-rose-500" />
               <span>{t("settings.pwa_section")}</span>
@@ -504,7 +504,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 <span>{t("settings.pwa_btn_install")}</span>
               </motion.button>
             ) : (
-              <div className="p-3 bg-slate-950 rounded-xl border border-slate-850 text-slate-400 text-xs leading-relaxed light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 light_sakura:text-slate-650">
+              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-slate-400 text-xs leading-relaxed light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 light_sakura:text-slate-600">
                 <p className="font-sans text-[11px]">
                   {t("settings.pwa_not_supported")}
                 </p>
@@ -545,7 +545,7 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
           
           {/* Section 3: Telegram Bot Integration block */}
-          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-850/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
+          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
             <div className="flex items-center justify-between border-b border-slate-800/10 pb-2.5 light_sakura:border-rose-100">
               <h3 className="font-sans font-bold text-sm text-slate-200 light_sakura:text-slate-800 flex items-center gap-2">
                 <Send size={14} className="text-sky-400" />
@@ -570,7 +570,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   <Lock size={24} className="animate-pulse" />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="font-sans font-bold text-xs text-white light_sakura:text-slate-850">
+                  <h4 className="font-sans font-bold text-xs text-white light_sakura:text-slate-800">
                     {t("settings.premium_locked_title")}
                   </h4>
                   <p className="font-sans text-[11px] text-slate-400 light_sakura:text-slate-600 max-w-sm leading-relaxed">

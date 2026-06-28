@@ -302,7 +302,7 @@ export const AdminVoucherManager: React.FC = () => {
               setPageSize(val === "all" ? "all" : Number(val));
               setPage(0);
             }}
-            className="bg-slate-800 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-850 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+            className="bg-slate-800 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
           >
             <option value={5}>5</option>
             <option value={10}>10</option>
@@ -322,7 +322,7 @@ export const AdminVoucherManager: React.FC = () => {
               <button
                 disabled={page === 0}
                 onClick={() => setPage(p => p - 1)}
-                className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-665 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                className="p-2 rounded-xl bg-slate-900 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
               >
                 <ChevronLeft size={14} />
               </button>
@@ -330,7 +330,7 @@ export const AdminVoucherManager: React.FC = () => {
               <button
                 disabled={(page + 1) * pageSize >= vouchers.length}
                 onClick={() => setPage(p => p + 1)}
-                className="p-2 rounded-xl bg-slate-850 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-665 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                className="p-2 rounded-xl bg-slate-900 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
               >
                 <ChevronRight size={14} />
               </button>

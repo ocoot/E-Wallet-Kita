@@ -236,7 +236,7 @@ export const Onboarding: React.FC = () => {
                             value={practiceAmount}
                             onChange={(e) => setPracticeAmount(e.target.value)}
                             disabled={hasPracticedCatat}
-                            className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-900 text-white focus:outline-none focus:border-emerald-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:focus:border-rose-400 disabled:opacity-50"
+                            className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-900 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:focus:border-rose-400 disabled:opacity-50"
                           />
                         </div>
                       </div>
@@ -250,7 +250,7 @@ export const Onboarding: React.FC = () => {
                           value={practiceCategory}
                           onChange={(e) => setPracticeCategory(e.target.value)}
                           disabled={hasPracticedCatat}
-                          className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-900 text-white focus:outline-none focus:border-emerald-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:focus:border-rose-400 disabled:opacity-50"
+                          className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-900 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:focus:border-rose-400 disabled:opacity-50"
                         >
                           <option value="food_drink">{t("categories.food_drink")}</option>
                           <option value="transport">{t("categories.transport")}</option>
@@ -271,7 +271,7 @@ export const Onboarding: React.FC = () => {
                         value={practiceNote}
                         onChange={(e) => setPracticeNote(e.target.value)}
                         disabled={hasPracticedCatat}
-                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-900 text-white focus:outline-none focus:border-emerald-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:focus:border-rose-400 disabled:opacity-50"
+                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-900 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:focus:border-rose-400 disabled:opacity-50"
                       />
                     </div>
 
@@ -359,7 +359,7 @@ export const Onboarding: React.FC = () => {
                         placeholder={t("history.search_placeholder")}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-800 bg-slate-900 text-white focus:outline-none focus:border-emerald-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800"
+                        className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-800 bg-slate-900 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800"
                       />
                     </div>
 

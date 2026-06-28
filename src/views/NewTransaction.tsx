@@ -260,9 +260,9 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         >
           {/* Header Info */}
           <div className="flex flex-col border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
-            <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+            <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
               {t("transaction.add_title")}
-            </h2>
+            </h1>
             <p className="font-sans text-sm text-gray-400 mt-1 light_sakura:text-slate-500">
               {t("transaction.add_desc")}
             </p>

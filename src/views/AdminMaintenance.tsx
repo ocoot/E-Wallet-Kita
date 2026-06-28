@@ -144,10 +144,10 @@ export const AdminMaintenance: React.FC = () => {
       {/* ── Global Maintenance Toggle ── */}
       <div className="bg-slate-900 light_sakura:bg-white p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm space-y-6">
         <div className="border-b border-slate-800 light_sakura:border-slate-100 pb-5">
-          <h2 className="font-bold text-xl text-white light_sakura:text-slate-800 flex items-center gap-2">
+          <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
             <Wrench size={24} className="text-amber-500" />
             {t("admin.maintenance_title")}
-          </h2>
+          </h1>
           <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1">
             {t("admin.maintenance_desc")}
           </p>

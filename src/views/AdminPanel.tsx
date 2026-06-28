@@ -438,7 +438,7 @@ export const AdminPanel: React.FC = () => {
       <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-sans font-black text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
+            <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
               <Shield className="text-teal-400 light_sakura:text-rose-500" />
               <span>{t("nav.admin_panel")}</span>
             </h1>
@@ -551,7 +551,7 @@ export const AdminPanel: React.FC = () => {
                   placeholder={t("admin.search_placeholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl font-sans text-xs bg-slate-850 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-teal-400 light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:placeholder-slate-400"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:placeholder-slate-400"
                 />
               </div>
               
@@ -559,7 +559,7 @@ export const AdminPanel: React.FC = () => {
                 <select
                   value={roleFilter}
                   onChange={(e) => setRoleFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-850 border border-slate-800 text-slate-300 focus:outline-none focus:border-teal-400 cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-700"
+                  className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-700"
                 >
                   <option value="all">{t("admin.filter_role")}: {t("common.all")}</option>
                   <option value="owner">{t("admin.filter_role")}: Owner</option>
@@ -572,7 +572,7 @@ export const AdminPanel: React.FC = () => {
                 <select
                   value={premiumFilter}
                   onChange={(e) => setPremiumFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-850 border border-slate-800 text-slate-300 focus:outline-none focus:border-teal-400 cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-700"
+                  className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-700"
                 >
                   <option value="all">{t("admin.filter_premium")}: {t("common.all")}</option>
                   <option value="premium">{t("admin.filter_premium")}: {t("admin.status_active")}</option>
@@ -584,7 +584,7 @@ export const AdminPanel: React.FC = () => {
                 <select
                   value={banFilter}
                   onChange={(e) => setBanFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-850 border border-slate-800 text-slate-300 focus:outline-none focus:border-teal-400 cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-700"
+                  className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-700"
                 >
                   <option value="all">{t("admin.filter_status")}: {t("common.all")}</option>
                   <option value="normal">{t("admin.filter_status")}: {t("admin.status_active")}</option>
@@ -603,7 +603,7 @@ export const AdminPanel: React.FC = () => {
               <div className="flex flex-wrap items-center gap-2">
                 {[
                   { label: "Grant Premium",  action: "grant_premium"  as const, color: "text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 light_sakura:bg-amber-500/5" },
-                  { label: "Revoke Premium", action: "revoke_premium" as const, color: "text-slate-400 border-slate-700 bg-slate-800 hover:bg-slate-705 light_sakura:bg-white" },
+                  { label: "Revoke Premium", action: "revoke_premium" as const, color: "text-slate-400 border-slate-700 bg-slate-800 hover:bg-slate-700 light_sakura:bg-white" },
                   { label: "Ban Semua",      action: "ban"            as const, color: "text-red-400 border-red-500/30 bg-red-500/10 hover:bg-red-500/20" },
                   { label: "Unban Semua",    action: "unban"          as const, color: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20" },
                 ].map(({ label, action, color }) => (
@@ -649,7 +649,7 @@ export const AdminPanel: React.FC = () => {
                 <ScrollableTableWrapper>
                 <table className="w-full text-left border-collapse table-auto min-w-[900px]">
                   <thead>
-                    <tr className="border-b border-slate-800 bg-slate-850/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:border-rose-200 light_sakura:text-slate-600">
+                    <tr className="border-b border-slate-800 bg-slate-800/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:border-rose-200 light_sakura:text-slate-600">
                       <th className="px-4 py-4 w-10">
                         <input
                            type="checkbox"
@@ -672,7 +672,7 @@ export const AdminPanel: React.FC = () => {
                       return (
                         <tr 
                           key={user.id} 
-                          className={`hover:bg-slate-850/50 transition-all duration-150 ${user.is_banned ? "bg-red-950/10" : ""} light_sakura:hover:bg-rose-50/50`}
+                          className={`hover:bg-slate-800/50 transition-all duration-150 ${user.is_banned ? "bg-red-950/10" : ""} light_sakura:hover:bg-rose-50/50`}
                         >
                           {/* Checkbox column */}
                           <td className="px-4 py-4">
@@ -768,7 +768,7 @@ export const AdminPanel: React.FC = () => {
                                   audioFeedback.playClick();
                                   setDetailUser(user);
                                 }}
-                                className="p-1 px-2.5 text-[10px] font-bold text-slate-300 border border-slate-800 hover:bg-slate-850 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                                className="p-1 px-2.5 text-[10px] font-bold text-slate-300 border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
                                 title={t("admin.user_detail_title")}
                               >
                                 <User size={10} />
@@ -779,7 +779,7 @@ export const AdminPanel: React.FC = () => {
                               <button
                                 disabled={isSelf || user.role === "owner" || !isOwner}
                                 onClick={() => handleToggleRole(user)}
-                                className="p-1 px-2.5 text-[10px] font-bold text-slate-300 border border-slate-800 hover:bg-slate-850 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                                className="p-1 px-2.5 text-[10px] font-bold text-slate-300 border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
                                 title={t("admin.role_title")}
                               >
                                 <Shield size={10} />
@@ -821,7 +821,7 @@ export const AdminPanel: React.FC = () => {
                   setPageSize(val === "all" ? "all" : Number(val));
                   setPage(0);
                 }}
-                className="bg-slate-800 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-850 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
+                className="bg-slate-800 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
@@ -848,7 +848,7 @@ export const AdminPanel: React.FC = () => {
                       audioFeedback.playClick();
                       setPage(p => Math.max(0, p - 1));
                     }}
-                    className="px-3 py-1.5 rounded-lg border border-slate-850 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
+                    className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
                   >
                     {t("admin.prev")}
                   </button>
@@ -861,7 +861,7 @@ export const AdminPanel: React.FC = () => {
                       audioFeedback.playClick();
                       setPage(p => p + 1);
                     }}
-                    className="px-3 py-1.5 rounded-lg border border-slate-850 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
+                    className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
                   >
                     {t("admin.next")}
                   </button>

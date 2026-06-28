@@ -380,7 +380,7 @@ export const SupportChatWidget: React.FC = () => {
                   onChange={(e) => setFaqInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleFaqAsk()}
                   placeholder={t("support.faq.ask_placeholder")}
-                  className="flex-1 px-3 py-2 rounded-full bg-slate-800 text-xs text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500 light_sakura:bg-rose-50 light_sakura:text-slate-800 light_sakura:focus:ring-rose-400"
+                  className="flex-1 px-3 py-2 rounded-full bg-slate-800 text-xs text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500 light_sakura:bg-rose-50 light_sakura:text-slate-800 light_sakura:focus:ring-rose-400"
                 />
                 <button
                   type="button"
@@ -400,7 +400,7 @@ export const SupportChatWidget: React.FC = () => {
                   onKeyDown={(e) => e.key === "Enter" && handleSendAdminMessage()}
                   placeholder={t("support.admin_chat.placeholder")}
                   disabled={isSending}
-                  className="flex-1 px-3 py-2 rounded-full bg-slate-800 text-xs text-slate-100 outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-60 light_sakura:bg-rose-50 light_sakura:text-slate-800 light_sakura:focus:ring-rose-400"
+                  className="flex-1 px-3 py-2 rounded-full bg-slate-800 text-xs text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 light_sakura:bg-rose-50 light_sakura:text-slate-800 light_sakura:focus:ring-rose-400"
                 />
                 <button
                   type="button"

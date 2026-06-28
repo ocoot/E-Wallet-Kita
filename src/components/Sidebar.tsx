@@ -241,21 +241,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className="grid grid-cols-3 gap-1.5">
                   <button
                     onClick={toggleLanguage}
-                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-850 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
                   >
                     <Globe size={13} className="mb-0.5" />
                     <span>{locale.toUpperCase()}</span>
                   </button>
                   <button
                     onClick={toggleTheme}
-                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-850 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
                   >
                     <SunMoon size={13} className="mb-0.5" />
                     <span>{theme === "dark_obsidian" ? t("common.dark") : t("common.light")}</span>
                   </button>
                   <button
                     onClick={toggleMute}
-                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-850 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100 animate-fade-in"
+                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100 animate-fade-in"
                     title="Mute / Unmute"
                   >
                     {isMuted ? (

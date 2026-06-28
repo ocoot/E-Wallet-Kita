@@ -44,7 +44,7 @@ export const UpdatePrompt: React.FC = () => {
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 80, opacity: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 28 }}
-          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] w-[calc(100%-2rem)] max-w-sm"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[90] w-[calc(100%-2rem)] max-w-sm"
         >
           <div className="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-2xl border bg-slate-900 border-indigo-500/30 text-white light_sakura:bg-white light_sakura:border-rose-300/50 light_sakura:text-slate-800">
             <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-400 shrink-0 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">

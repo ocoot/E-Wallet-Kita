@@ -358,7 +358,7 @@ export const BillReminders: React.FC = () => {
       {/* Header Container */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-6 border-b border-slate-800/50 light_sakura:border-rose-100/30">
         <div>
-          <h1 className="font-sans font-bold text-2xl text-slate-100 light_sakura:text-slate-900">
+          <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
             {t("bill_reminders.page_title")}
           </h1>
           <p className="text-sm text-slate-400 mt-1.5 light_sakura:text-slate-500 leading-relaxed">
@@ -560,7 +560,7 @@ export const BillReminders: React.FC = () => {
                   value={form.name}
                   onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                   placeholder={t("bill_reminders.form_name_placeholder")}
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-emerald-500 light_sakura:focus:border-rose-400 placeholder:text-slate-600 light_sakura:placeholder:text-slate-400 transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 placeholder:text-slate-600 light_sakura:placeholder:text-slate-400 transition-colors"
                 />
               </div>
 
@@ -572,7 +572,7 @@ export const BillReminders: React.FC = () => {
                 <select
                   value={form.category_key}
                   onChange={(e) => setForm((f) => ({ ...f, category_key: e.target.value }))}
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-emerald-500 light_sakura:focus:border-rose-400 transition-colors cursor-pointer"
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 transition-colors cursor-pointer"
                 >
                   {expenseCategories.map((c) => (
                     <option key={c.key} value={c.key}>
@@ -593,7 +593,7 @@ export const BillReminders: React.FC = () => {
                   onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
                   placeholder={t("bill_reminders.form_amount_placeholder")}
                   min={0}
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-emerald-500 light_sakura:focus:border-rose-400 placeholder:text-slate-600 light_sakura:placeholder:text-slate-400 transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 placeholder:text-slate-600 light_sakura:placeholder:text-slate-400 transition-colors"
                 />
               </div>
 
@@ -635,7 +635,7 @@ export const BillReminders: React.FC = () => {
                     onChange={(e) => setForm((f) => ({ ...f, due_day: e.target.value }))}
                     min={1}
                     max={31}
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-emerald-500 light_sakura:focus:border-rose-400 transition-colors"
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 transition-colors"
                   />
                 </div>
               ) : (
@@ -647,7 +647,7 @@ export const BillReminders: React.FC = () => {
                     type="date"
                     value={form.due_date}
                     onChange={(e) => setForm((f) => ({ ...f, due_date: e.target.value }))}
-                    className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-emerald-500 light_sakura:focus:border-rose-400 transition-colors"
+                    className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 transition-colors"
                   />
                 </div>
               )}
@@ -662,7 +662,7 @@ export const BillReminders: React.FC = () => {
                   value={form.notes}
                   onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                   placeholder={t("bill_reminders.form_notes_placeholder")}
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-emerald-500 light_sakura:focus:border-rose-400 placeholder:text-slate-600 light_sakura:placeholder:text-slate-400 transition-colors"
+                  className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 placeholder:text-slate-600 light_sakura:placeholder:text-slate-400 transition-colors"
                 />
               </div>
 
