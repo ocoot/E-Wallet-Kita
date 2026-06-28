@@ -170,7 +170,7 @@ async function sendFcmReminder(
   // firebase-admin SDK on the Node/Vercel side — see api/_lib/fcm.ts — so
   // we just call into that via an internal, secret-protected endpoint.
   try {
-    await fetch(`${vercelAppUrl}/api/internal/send-bill-reminder-push`, {
+    const response = await fetch(`${vercelAppUrl}/api/internal/send-bill-reminder-push`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -183,6 +183,17 @@ async function sendFcmReminder(
         data: { bill_id: billId },
       }),
     });
+    if (!response.ok) {
+      // Non-2xx is NOT a JS exception, so without this check a failure here
+      // (401 secret mismatch, 500 Firebase credential error, etc.) would be
+      // completely silent -- this bit us in production: the Firebase service
+      // account key was revoked and the push channel failed with zero
+      // visibility in this function's logs until a user reported it.
+      const responseBody = await response.text();
+      console.error(
+        `[FCM] reminder push endpoint returned ${response.status} for bill ${billId}: ${responseBody}`
+      );
+    }
   } catch (err) {
     console.error(`[FCM] reminder channel error for bill ${billId}:`, err);
   }
