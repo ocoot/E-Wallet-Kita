@@ -107,6 +107,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   };
 
   // ── FCM: Register push token after login ───────────────────────────
+  // Depends on user?.id (not the whole `user` object) on purpose: Supabase
+  // replaces the `user` object with a new reference on every
+  // TOKEN_REFRESHED auth event (roughly hourly, whenever the access token
+  // auto-refreshes), even though it's still the same account. Depending on
+  // the whole object re-ran this effect on every token refresh, calling
+  // requestFcmToken() far more often than intended — combined with the
+  // in-memory token cache being relied on as the only de-dup mechanism,
+  // this was a contributing factor to token churn / duplicate device rows.
   useEffect(() => {
     if (!user) return;
     const setupFcm = async () => {
@@ -116,7 +124,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
       }
     };
     setupFcm();
-  }, [user]);
+  }, [user?.id]);
 
   // ── FCM: Show foreground message as toast ──────────────────────────
   useEffect(() => {

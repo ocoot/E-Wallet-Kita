@@ -75,6 +75,34 @@ function getFcmServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | 
 // a profile refetch) when we already resolved a token this session.
 let cachedToken: string | null = null;
 
+// Tracks the last token actually persisted to user_push_tokens, so
+// saveFcmToken() can detect & clean up a stale row if the token churns
+// again later for any reason (see saveFcmToken below). Persisted to
+// localStorage (not just an in-memory variable) so this also survives
+// page reloads, which reset module-level state — without this, a token
+// that churns across a reload would leave its previous row orphaned
+// forever, since nothing in memory would remember what it was.
+const LAST_TOKEN_STORAGE_KEY = 'ewk_fcm_last_token';
+
+function readLastSavedToken(): string | null {
+  try {
+    return typeof localStorage !== 'undefined' ? localStorage.getItem(LAST_TOKEN_STORAGE_KEY) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeLastSavedToken(token: string | null): void {
+  try {
+    if (typeof localStorage === 'undefined') return;
+    if (token) localStorage.setItem(LAST_TOKEN_STORAGE_KEY, token);
+    else localStorage.removeItem(LAST_TOKEN_STORAGE_KEY);
+  } catch {
+    // Ignore (e.g. private browsing mode blocking storage) — worst case
+    // is a stale row doesn't get auto-cleaned, which isn't fatal.
+  }
+}
+
 /**
  * Request notification permission and get FCM token.
  *
@@ -164,6 +192,16 @@ export const saveFcmToken = async (
   userId: string,
   token: string
 ): Promise<void> => {
+  // If a DIFFERENT token was saved previously for this browser (this
+  // session OR a prior one, since this is read from localStorage), clean
+  // up that stale row first so it doesn't linger forever as an orphan.
+  // Scoped to the exact previous token value — never matches on
+  // device_info alone, since that's just a coarse OS+browser label (e.g.
+  // two different Android phones would both say "Android Chrome") and
+  // isn't safe to delete by.
+  const previousToken = readLastSavedToken();
+  writeLastSavedToken(token);
+
   try {
     await supabaseClient.from("user_push_tokens").upsert(
       {
@@ -174,6 +212,14 @@ export const saveFcmToken = async (
       },
       { onConflict: "user_id,fcm_token" }
     );
+
+    if (previousToken && previousToken !== token) {
+      await supabaseClient
+        .from('user_push_tokens')
+        .delete()
+        .eq('user_id', userId)
+        .eq('fcm_token', previousToken);
+    }
   } catch (err) {
     console.error("[FCM] Error saving token to DB:", err);
   }
@@ -228,12 +274,21 @@ export const clearFcmToken = async (
       // registration (see its comment above), so getToken() returns the
       // same cached token that was originally saved to the DB, instead of
       // potentially churning to a new one.
-      currentToken = cachedToken ?? (vapidKey
-        ? await getToken(m, {
-            vapidKey,
-            ...(swRegistration ? { serviceWorkerRegistration: swRegistration } : {}),
-          }).catch(() => null)
-        : null);
+      // Prefer what we know was actually saved (in-memory cache, then
+      // localStorage) over calling getToken() fresh — a fresh getToken()
+      // call is exactly the kind of operation that can return a value
+      // different from what's stored in the DB, which is what caused
+      // stale rows to linger in the first place. Only fall back to
+      // calling it live if we have no record of a previously-saved token
+      // at all (e.g. user granted permission but saveFcmToken() never
+      // got a chance to run/persist it).
+      currentToken = cachedToken ?? readLastSavedToken();
+      if (!currentToken && vapidKey) {
+        currentToken = await getToken(m, {
+          vapidKey,
+          ...(swRegistration ? { serviceWorkerRegistration: swRegistration } : {}),
+        }).catch(() => null);
+      }
 
       await deleteToken(m).catch((err) => {
         // Non-fatal: even if the SDK-side revoke fails (e.g. no active
@@ -242,6 +297,7 @@ export const clearFcmToken = async (
       });
     }
     cachedToken = null;
+    writeLastSavedToken(null);
 
     if (userId && currentToken) {
       // Scoped to this device's exact token — leaves other devices'
