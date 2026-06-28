@@ -122,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* 1. Mobile top bar Header (visible only on mobile) */}
-      <header className="lg:hidden flex items-center justify-between p-4 border-b bg-slate-950/90 border-slate-800 text-white dark_obsidian:bg-slate-950 dark_obsidian:border-slate-800 light_sakura:bg-rose-500 light_sakura:border-rose-400 light_sakura:text-white sticky top-0 z-40">
+      <header className="md:hidden flex items-center justify-between p-4 border-b bg-slate-950/90 border-slate-800 text-white dark_obsidian:bg-slate-950 dark_obsidian:border-slate-800 light_sakura:bg-rose-500 light_sakura:border-rose-400 light_sakura:text-white sticky top-0 z-40">
         <div className="flex items-center gap-2">
           <div className="shrink-0">
             <img 
@@ -146,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* 2. Mobile Drawer Screen overlay (when open) */}
       <AnimatePresence>
         {isMobileOpen && (
-          <div className="fixed inset-0 z-50 flex lg:hidden">
+          <div className="fixed inset-0 z-50 flex md:hidden">
             {/* Overlay mask backing */}
             <motion.div 
               initial={{ opacity: 0 }}
@@ -286,7 +286,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* 3. Desktop Persistent and Collapsible Sidebar */}
       <aside 
-        className={`hidden lg:flex flex-col h-screen fixed top-0 left-0 border-r transition-all duration-300 z-30
+        className={`hidden md:flex flex-col h-screen fixed top-0 left-0 border-r transition-all duration-300 z-30
           bg-slate-950 border-slate-900 text-white dark_obsidian:bg-slate-950 dark_obsidian:border-slate-900
           light_sakura:bg-rose-50 light_sakura:text-slate-800 light_sakura:border-rose-100/80
           ${isCollapsed ? "w-20" : "w-64"}`}

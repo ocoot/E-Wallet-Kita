@@ -5,6 +5,7 @@ import { useToast } from "../contexts/ToastContext";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { Modal } from "../components/Modal";
+import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import {
   CreditCard, CheckCircle, Clock, XCircle, AlertCircle,
   TrendingUp, RefreshCw, ChevronLeft, ChevronRight, FlaskConical, AlertTriangle
@@ -309,8 +310,8 @@ export const AdminPremiumMonitor: React.FC = () => {
             {t("admin.no_transactions_found")}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[800px]">
+          <ScrollableTableWrapper>
+            <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[900px]">
               <thead className="bg-slate-800 light_sakura:bg-slate-50 text-slate-400 light_sakura:text-slate-500 uppercase text-xs">
                 <tr>
                   <th className="px-6 py-4">{t("admin.user_col")}</th>
@@ -361,7 +362,7 @@ export const AdminPremiumMonitor: React.FC = () => {
                 })}
               </tbody>
             </table>
-          </div>
+          </ScrollableTableWrapper>
         )}
       </div>
 

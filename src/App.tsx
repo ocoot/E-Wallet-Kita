@@ -254,7 +254,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-slate-950 text-white transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:text-slate-800">
+    <div className="min-h-screen flex flex-col md:flex-row bg-slate-950 text-white transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:text-slate-800">
       
       {/*Collapsible responsive Navigation Menu */}
       <Sidebar
@@ -265,7 +265,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
       />
 
       {/* Main active subview frame */}
-      <main className={`flex-1 min-h-screen overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
+      <main className={`flex-1 min-h-screen overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}>
         {/* Running text maintenance banner, shown globally above all pages */}
         <MaintenanceBanner />
 

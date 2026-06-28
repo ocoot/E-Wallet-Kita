@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Modal } from "../components/Modal";
+import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 
 // Import other panel views and components
@@ -645,8 +646,8 @@ export const AdminPanel: React.FC = () => {
                 </p>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse table-auto min-w-[800px]">
+                <ScrollableTableWrapper>
+                <table className="w-full text-left border-collapse table-auto min-w-[900px]">
                   <thead>
                     <tr className="border-b border-slate-800 bg-slate-850/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:border-rose-200 light_sakura:text-slate-600">
                       <th className="px-4 py-4 w-10">
@@ -804,7 +805,7 @@ export const AdminPanel: React.FC = () => {
                     })}
                   </tbody>
                 </table>
-              </div>
+                </ScrollableTableWrapper>
             )}
           </div>
 

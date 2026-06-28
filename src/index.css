@@ -40,13 +40,6 @@ html, body {
   background: rgba(99, 102, 241, 0.4);
 }
 
-/* Custom CSS helper values for side offsets on wider displays */
-@media (min-width: 1024px) {
-  .lg-pl-72-override {
-    padding-left: 17rem !important; /* Adjust desktop sidebar clearance */
-  }
-}
-
 /* Color theme modifications override classes */
 .dark_obsidian {
   /* Obsidian colors are natively integrated into Tailwind utility classes of slate grid */

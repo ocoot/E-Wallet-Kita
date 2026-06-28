@@ -4,6 +4,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
+import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { Tag, Plus, Pencil, Check, X, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Category {
@@ -225,8 +226,8 @@ export const AdminCategoryManager: React.FC = () => {
         <div className="py-16 text-center text-slate-400 light_sakura:text-slate-500 text-sm">{t("admin.loading")}</div>
       ) : (
         <div className="rounded-3xl border border-slate-800 light_sakura:border-slate-100 bg-slate-900 light_sakura:bg-white shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[720px]">
+          <ScrollableTableWrapper>
+            <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[900px]">
               <thead className="bg-slate-800 light_sakura:bg-slate-50 text-slate-400 light_sakura:text-slate-500 uppercase text-xs">
                 <tr>
                   <th className="px-6 py-4">Priority</th>
@@ -326,7 +327,7 @@ export const AdminCategoryManager: React.FC = () => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollableTableWrapper>
         </div>
       )}
 

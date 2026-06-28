@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
+import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import {
   Brain,
   RefreshCw,
@@ -263,8 +264,8 @@ export const AdminAiMonitor: React.FC = () => {
                 <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-0.5">{t("ai_monitor.per_key_desc")}</p>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[800px]">
+              <ScrollableTableWrapper>
+                <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[900px]">
                   <thead className="bg-slate-800 light_sakura:bg-slate-50 uppercase text-xs font-semibold text-slate-400 light_sakura:text-slate-500">
                     <tr>
                       <th className="px-6 py-4">{t("ai_monitor.col_key")}</th>
@@ -342,7 +343,7 @@ export const AdminAiMonitor: React.FC = () => {
                     })}
                   </tbody>
                 </table>
-              </div>
+              </ScrollableTableWrapper>
 
               {/* Pagination Controls */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-slate-800 light_sakura:border-slate-100 font-sans text-xs text-slate-400 bg-slate-900/50 light_sakura:bg-slate-50/50">
