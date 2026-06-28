@@ -5,11 +5,18 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const distDir = path.resolve(__dirname, '..', 'dist');
 
-const FIREBASE_API_KEY = 'AIzaSyATIzHTgl7ShGHG-pOjUFPjtxR8wJXBOPk';
-const FIREBASE_AUTH_DOMAIN = 'ewallet-kita.firebaseapp.com';
-const FIREBASE_PROJECT_ID = 'ewallet-kita';
-const FIREBASE_MESSAGING_SENDER_ID = '591031508771';
-const FIREBASE_APP_ID = '1:591031508771:web:b7ef6f4dbb8a75948d7696';
+// Firebase config is read from the SAME env vars used by src/lib/firebase.ts
+// (VITE_FIREBASE_*) so there is a single source of truth. Previously these
+// were hardcoded here, duplicating the values in firebase.ts and risking
+// the two going out of sync after a Firebase project change. The literal
+// fallbacks below only exist so a build doesn't silently produce a broken
+// service worker if the env vars are momentarily missing; set the env vars
+// in Vercel project settings as the real source.
+const FIREBASE_API_KEY = process.env.VITE_FIREBASE_API_KEY || 'AIzaSyATIzHTgl7ShGHG-pOjUFPjtxR8wJXBOPk';
+const FIREBASE_AUTH_DOMAIN = process.env.VITE_FIREBASE_AUTH_DOMAIN || 'ewallet-kita.firebaseapp.com';
+const FIREBASE_PROJECT_ID = process.env.VITE_FIREBASE_PROJECT_ID || 'ewallet-kita';
+const FIREBASE_MESSAGING_SENDER_ID = process.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '591031508771';
+const FIREBASE_APP_ID = process.env.VITE_FIREBASE_APP_ID || '1:591031508771:web:b7ef6f4dbb8a75948d7696';
 
 // ── Inject push handler into Workbox-generated sw.js ──
 const swPath = path.resolve(distDir, 'sw.js');

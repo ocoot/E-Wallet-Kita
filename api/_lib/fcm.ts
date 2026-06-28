@@ -76,12 +76,17 @@ export async function sendPushNotification(
   }
 }
 
+export interface BatchPushResult {
+  successCount: number;
+  failCount: number;
+}
+
 export async function sendPushNotificationBatch(
   tokens: string[],
   title: string,
   body: string,
   data?: Record<string, string>
-): Promise<void> {
+): Promise<BatchPushResult> {
   ensureApp();
   const response = await getMessaging().sendEachForMulticast({
     notification: { title, body },
@@ -108,6 +113,11 @@ export async function sendPushNotificationBatch(
       await purgeInvalidTokens(invalidTokens);
     }
   }
+
+  return {
+    successCount: response.successCount,
+    failCount: response.failureCount,
+  };
 }
 
 /**
@@ -128,7 +138,7 @@ export async function sendPushNotificationToUser(
   title: string,
   body: string,
   data?: Record<string, string>
-): Promise<void> {
+): Promise<BatchPushResult> {
   const { data: rows, error } = await supabaseBackend
     .from('user_push_tokens')
     .select('fcm_token')
@@ -136,18 +146,22 @@ export async function sendPushNotificationToUser(
 
   if (error) {
     console.error('[FCM] Failed to fetch push tokens for user:', error.message);
-    return;
+    return { successCount: 0, failCount: 0 };
   }
 
   const tokens = (rows ?? [])
     .map((r: { fcm_token: string }) => r.fcm_token)
     .filter(Boolean);
 
-  if (tokens.length === 0) return;
+  if (tokens.length === 0) return { successCount: 0, failCount: 0 };
 
   if (tokens.length === 1) {
-    await sendPushNotification(tokens[0], title, body, data);
-  } else {
-    await sendPushNotificationBatch(tokens, title, body, data);
+    try {
+      await sendPushNotification(tokens[0], title, body, data);
+      return { successCount: 1, failCount: 0 };
+    } catch {
+      return { successCount: 0, failCount: 1 };
+    }
   }
+  return sendPushNotificationBatch(tokens, title, body, data);
 }

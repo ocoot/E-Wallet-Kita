@@ -105,8 +105,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   for (let i = 0; i < total; i += BROADCAST_BATCH_SIZE) {
     const batch = allTokens.slice(i, i + BROADCAST_BATCH_SIZE);
     try {
-      await sendPushNotificationBatch(batch, title.trim(), body);
-      successCount += batch.length;
+      const result = await sendPushNotificationBatch(batch, title.trim(), body);
+      successCount += result.successCount;
+      failCount += result.failCount;
     } catch (err) {
       failCount += batch.length;
       console.error('[Push Broadcast] Batch failed:', err);

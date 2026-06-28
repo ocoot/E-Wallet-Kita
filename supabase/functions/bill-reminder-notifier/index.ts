@@ -150,6 +150,44 @@ async function sendTelegramReminder(
   }
 }
 
+async function sendFcmReminder(
+  vercelAppUrl: string,
+  internalSecret: string,
+  userId: string,
+  title: string,
+  body: string,
+  billId: string
+): Promise<void> {
+  // Best-effort secondary channel — a failure here must never affect the
+  // Telegram send result or the dedup log, so all errors are swallowed.
+  //
+  // NOTE: we deliberately do NOT call Firebase's HTTP API directly from
+  // here. The old fcm.googleapis.com/fcm/send "legacy" endpoint that took
+  // a simple server key was shut down by Google in June 2024; the current
+  // HTTP v1 endpoint requires an OAuth2 access token signed with the
+  // Firebase service account's private key, which would mean hand-rolling
+  // JWT signing in Deno. That logic already exists (and is tested) in the
+  // firebase-admin SDK on the Node/Vercel side — see api/_lib/fcm.ts — so
+  // we just call into that via an internal, secret-protected endpoint.
+  try {
+    await fetch(`${vercelAppUrl}/api/internal/send-bill-reminder-push`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-internal-secret": internalSecret,
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        title,
+        body,
+        data: { bill_id: billId },
+      }),
+    });
+  } catch (err) {
+    console.error(`[FCM] reminder channel error for bill ${billId}:`, err);
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -159,6 +197,12 @@ Deno.serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const telegramToken = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
+    // Optional: FCM secondary channel. If either is missing, we simply
+    // skip the FCM push and still send the Telegram reminder as before —
+    // this is an additive feature, not a hard requirement.
+    const vercelAppUrl = Deno.env.get("VERCEL_APP_URL") ?? "";
+    const internalApiSecret = Deno.env.get("INTERNAL_API_SECRET") ?? "";
+    const fcmChannelEnabled = !!vercelAppUrl && !!internalApiSecret;
 
     if (!supabaseUrl || !supabaseServiceKey) {
       throw new Error("SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not configured for this Edge Function");
@@ -220,6 +264,16 @@ Deno.serve(async (req: Request) => {
 
       if (ok) {
         sent++;
+
+        // FCM secondary channel — fire-and-forget, never blocks dedup
+        // logging or affects the Telegram-based `sent`/`skipped` counts.
+        if (fcmChannelEnabled) {
+          const pushTitle = row.lang === "id" ? "🔔 Pengingat Tagihan" : "🔔 Bill Reminder";
+          const pushBody = row.lang === "id"
+            ? `${row.name} jatuh tempo ${row.days_until_due === 0 ? "hari ini" : `${row.days_until_due} hari lagi`}`
+            : `${row.name} due ${row.days_until_due === 0 ? "today" : `in ${row.days_until_due} day(s)`}`;
+          sendFcmReminder(vercelAppUrl, internalApiSecret, row.user_id, pushTitle, pushBody, row.bill_id);
+        }
         // 3. Catat sudah terkirim -- HANYA kalau sendMessage sukses, supaya
         //    kegagalan kirim (mis. user blokir bot) tidak ikut ter-dedup
         //    dan masih dicoba lagi di jam berikutnya selama masih H-3..H+0.

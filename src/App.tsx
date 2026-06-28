@@ -33,7 +33,7 @@ import {
 import { motion, AnimatePresence } from "motion/react";
 import { LogOut } from "lucide-react";
 import { supabase } from "./lib/supabase";
-import { requestFcmToken, saveFcmToken } from "./lib/firebase";
+import { requestFcmToken, saveFcmToken, clearFcmToken } from "./lib/firebase";
 import { User } from "@supabase/supabase-js";
 
 // Code-split the heavier views instead of bundling them all into the main
@@ -215,8 +215,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   const executeSignout = async () => {
     setIsSignoutModalOpen(false);
     setIsLoggingOut(true);
-    
+
     try {
+      // Must run BEFORE signOut() while we still have user.id, and before
+      // the Supabase session/JWT is invalidated (the delete below relies
+      // on the RLS policy "user_id = auth.uid()" still matching).
+      if (user) {
+        await clearFcmToken(supabase, user.id);
+      }
       await signOut();
       navigate('/login');
       showToast(t("toast.logout_done"), "success");
