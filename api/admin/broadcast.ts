@@ -7,11 +7,7 @@ const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL ||
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-// FCM allows up to 500 tokens per multicast call.
 const PUSH_BATCH_SIZE = 500;
-
-// Telegram limit for messages to *different* chats is ~30/sec;
-// a batch of 20 fired together stays comfortably under that.
 const TELEGRAM_BATCH_SIZE = 20;
 const TELEGRAM_BATCH_DELAY_MS = 1000;
 
@@ -23,11 +19,11 @@ const TELEGRAM_BATCH_DELAY_MS = 1000;
  *
  * POST /api/admin/broadcast
  * Body:
- *   channel  : "push" | "telegram"   — which delivery channel to use
- *   title    : string                 — required for "push"; ignored for "telegram"
- *   message  : string                 — the message body (required for both)
+ *   channel  : "push" | "telegram"
+ *   title    : string  — required for "push"; ignored for "telegram"
+ *   message  : string  — required for both
  *
- * Auth: Bearer JWT (user must have role "admin" or "owner" in the users table).
+ * Auth: Bearer JWT (user must have role "admin" or "owner").
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -47,9 +43,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  // Use client with user's JWT so RLS checks apply on the role lookup.
   const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: authHeader } }
+    global: { headers: { Authorization: authHeader } },
   });
 
   const { data: { user }, error: authError } = await userSupabase.auth.getUser();
@@ -82,11 +77,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  // ── Route to the correct channel ───────────────────────────────────────────
+  // ── Route to correct channel ───────────────────────────────────────────────
   if (channel === 'push') {
-    return handlePushBroadcast(req, res, title, message);
+    return handlePushBroadcast(res, title, message);
   } else {
-    return handleTelegramBroadcast(res, userSupabase, message);
+    return handleTelegramBroadcast(req, res, authHeader, message);
   }
 }
 
@@ -95,10 +90,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 // (previously: api/admin/broadcast-push.ts)
 // ─────────────────────────────────────────────────────────────────────────────
 async function handlePushBroadcast(
-  req: VercelRequest,
   res: VercelResponse,
   title: string,
-  message: string
+  message: string,
 ) {
   if (!title || typeof title !== 'string' || title.trim().length < 3) {
     res.status(400).json({ error: 'Judul broadcast minimal 3 karakter' });
@@ -110,10 +104,7 @@ async function handlePushBroadcast(
     return;
   }
 
-  const supabaseBackend = createClient(
-    process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
-    supabaseServiceKey
-  );
+  const supabaseBackend = createClient(supabaseUrl, supabaseServiceKey);
 
   const { data: tokens, error: dbError } = await supabaseBackend
     .from('user_push_tokens')
@@ -130,17 +121,15 @@ async function handlePushBroadcast(
     return;
   }
 
-  const allTokens = tokens.map(r => r.fcm_token).filter(Boolean) as string[];
+  const allTokens = tokens.map((r: { fcm_token: string }) => r.fcm_token).filter(Boolean) as string[];
   const total = allTokens.length;
   let successCount = 0;
   let failCount = 0;
 
-  const body = message.trim();
-
   for (let i = 0; i < total; i += PUSH_BATCH_SIZE) {
     const batch = allTokens.slice(i, i + PUSH_BATCH_SIZE);
     try {
-      const result = await sendPushNotificationBatch(batch, title.trim(), body);
+      const result = await sendPushNotificationBatch(batch, title.trim(), message.trim());
       successCount += result.successCount;
       failCount += result.failCount;
     } catch (err) {
@@ -155,17 +144,26 @@ async function handlePushBroadcast(
 // ─────────────────────────────────────────────────────────────────────────────
 // Telegram broadcast
 // (previously: api/admin/broadcast-telegram.ts)
+// Client dibuat ulang di sini (tidak di-pass dari handler) untuk menghindari
+// TypeScript generic mismatch pada SupabaseClient parameter type.
 // ─────────────────────────────────────────────────────────────────────────────
 async function handleTelegramBroadcast(
+  req: VercelRequest,
   res: VercelResponse,
-  userSupabase: ReturnType<typeof createClient>,
-  message: string
+  authHeader: string,
+  message: string,
 ) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   if (!botToken) {
     res.status(500).json({ error: 'TELEGRAM_BOT_TOKEN tidak dikonfigurasi' });
     return;
   }
+
+  // Buat client baru dengan authHeader — tidak di-pass dari handler
+  // supaya tidak ada TypeScript generic mismatch pada parameter type.
+  const userSupabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
 
   const { data: targets, error: rpcError } = await userSupabase.rpc('admin_get_telegram_chat_ids');
   if (rpcError) {
