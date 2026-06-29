@@ -439,38 +439,36 @@ export const AdminPanel: React.FC = () => {
       <div className="rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm overflow-hidden bg-slate-900 light_sakura:bg-white">
         <div className="h-1.5 w-full bg-gradient-to-r from-teal-400 via-indigo-500 to-violet-500" />
         <div className="p-6 md:p-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
-              <Shield className="text-teal-400 light_sakura:text-rose-500" />
-              <span>{t("nav.admin_panel")}</span>
-            </h1>
-            <p className="font-sans text-xs text-slate-400 mt-1 light_sakura:text-slate-500">
-              {t("admin.panel_desc")}
-            </p>
-          </div>
-          <div className="flex gap-2 shrink-0">
-            {activeTab === "users" && (
-              <button
-                onClick={handleExportCSV}
-                className="px-4 py-2 text-xs font-bold rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
+                <Shield className="text-teal-400 light_sakura:text-rose-500" />
+                <span>{t("nav.admin_panel")}</span>
+              </h1>
+              <p className="font-sans text-xs text-slate-400 mt-1 light_sakura:text-slate-500">
+                {t("admin.panel_desc")}
+              </p>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              {activeTab === "users" && (
+                <button
+                  onClick={handleExportCSV}
+                  className="px-4 py-2 text-xs font-bold rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
+                >
+                  ↓ Export CSV
+                </button>
+              )}
+              <button 
+                onClick={() => {
+                  fetchUsers();
+                  loadMetrics();
+                }}
+                className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
               >
-                ↓ Export CSV
+                {t("admin.refresh")}
               </button>
-            )}
-            <button 
-              onClick={() => {
-                fetchUsers();
-                loadMetrics();
-              }}
-              className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
-            >
-              {t("admin.refresh")}
-            </button>
+            </div>
           </div>
-        </div>
-      </div>
-
         </div>
       </div>
 
