@@ -35,7 +35,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const { categories } = useCategories();
 
   const [displayName, setDisplayName] = useState<string>(userDisplayName || "");
-  const [dailyBudget, setDailyBudget] = useState<number>(0);
 
   useEffect(() => {
     if (userDisplayName) {
@@ -49,12 +48,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
     const fetchProfile = async () => {
       const { data, error } = await supabase
         .from("users")
-        .select("display_name, daily_budget")
+        .select("display_name")
         .eq("id", user.id)
         .single();
       if (!error && data) {
         if (data.display_name) setDisplayName(data.display_name);
-        setDailyBudget(data.daily_budget || 0);
       }
     };
     fetchProfile();
@@ -65,13 +63,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
     display_name: displayName || user?.user_metadata?.full_name || t("admin.guest_user"),
     is_guest: user?.is_anonymous || false,
     preferred_language: "id",
-    preferred_theme: "dark_obsidian",
-    daily_budget: dailyBudget
+    preferred_theme: "dark_obsidian"
   };
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [summary, setSummary] = useState({ income: 0, expense: 0, balance: 0 });
-  const [todaySpending, setTodaySpending] = useState(0);
   const [sparkPoints, setSparkPoints] = useState<number[]>([]);
   const [telegramStatus, setTelegramStatus] = useState<{ linked: boolean, lastSync: string | null }>({ linked: false, lastSync: null });
 
@@ -115,17 +111,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
         // Compute sums
         let inc = 0;
         let exp = 0;
-        let todayExp = 0;
-        const todayStr = today.toISOString().split('T')[0];
 
         data.forEach(t => {
           if (t.type === "income") {
             inc += t.amount;
           } else {
             exp += t.amount;
-            if (t.transaction_date === todayStr) {
-              todayExp += t.amount;
-            }
           }
         });
 
@@ -134,7 +125,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
           expense: exp,
           balance: inc - exp
         });
-        setTodaySpending(todayExp);
 
         // Compute cumulative balance trend (sparkline)
         const sortedData = [...data].sort((a, b) => a.transaction_date.localeCompare(b.transaction_date));
@@ -234,7 +224,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <DashboardHeader 
         currentUser={currentUser} 
         telegramStatus={telegramStatus} 
-        todaySpending={todaySpending}
       />
 
       {/* Onboarding Interactive Banner for new users */}

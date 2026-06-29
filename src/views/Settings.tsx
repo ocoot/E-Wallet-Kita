@@ -112,7 +112,6 @@ export const Settings: React.FC<SettingsProps> = ({
 
   // Profile Edit States
   const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.email?.split('@')[0] || "");
-  const [dailyBudget, setDailyBudget] = useState("0");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
@@ -120,12 +119,11 @@ export const Settings: React.FC<SettingsProps> = ({
     const fetchProfile = async () => {
       const { data, error } = await supabase
         .from('users')
-        .select('display_name, daily_budget')
+        .select('display_name')
         .eq('id', user.id)
         .single();
       if (!error && data) {
         if (data.display_name) setDisplayName(data.display_name);
-        if (data.daily_budget !== undefined) setDailyBudget(String(data.daily_budget));
       }
     };
     fetchProfile();
@@ -219,17 +217,10 @@ export const Settings: React.FC<SettingsProps> = ({
     audioFeedback.playChime();
     
     try {
-      const budgetNum = Number(dailyBudget);
-      if (isNaN(budgetNum) || budgetNum < 0) {
-        showToast(t("budget.invalid_limit"), "error");
-        return;
-      }
-
       const { error } = await supabase
         .from('users')
         .update({ 
-          display_name: displayName,
-          daily_budget: budgetNum
+          display_name: displayName
         })
         .eq('id', user?.id);
       
@@ -248,8 +239,7 @@ export const Settings: React.FC<SettingsProps> = ({
         display_name: displayName,
         is_guest: user?.is_anonymous || false,
         preferred_language: locale,
-        preferred_theme: theme,
-        daily_budget: budgetNum
+        preferred_theme: theme
       };
       onUserPrefUpdated(updatedUser);
       
@@ -385,22 +375,6 @@ export const Settings: React.FC<SettingsProps> = ({
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider block">
-                {t("settings.daily_budget")}
-              </label>
-              
-              <input
-                type="number"
-                min="0"
-                step="1000"
-                value={dailyBudget}
-                onChange={(e) => setDailyBudget(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-                placeholder="50000"
               />
             </div>
 
