@@ -6,6 +6,7 @@ export interface UserSession {
   preferred_theme: "dark_obsidian" | "light_sakura";
   telegram_chat_id?: string | null;
   email?: string | null;
+  daily_budget?: number;
 }
 
 export interface UserProfile {
@@ -15,6 +16,7 @@ export interface UserProfile {
   is_premium: boolean;
   is_banned: boolean;
   role: "owner" | "admin" | "user";
+  daily_budget?: number;
 }
 
 export interface Transaction {

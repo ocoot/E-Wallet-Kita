@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
           const { data: existingUser } = await supabase
             .from('users')
-            .select('display_name')
+            .select('display_name, daily_budget')
             .eq('id', session.user.id)
             .maybeSingle();
 
@@ -68,7 +68,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
               display_name: existingUser?.display_name || fallbackName,
               is_guest: session.user.is_anonymous || false,
               email: session.user.email || null,
-              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+              daily_budget: existingUser?.daily_budget || 0
             }, {
               onConflict: 'id',
               ignoreDuplicates: false

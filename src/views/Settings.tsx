@@ -112,6 +112,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
   // Profile Edit States
   const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.email?.split('@')[0] || "");
+  const [dailyBudget, setDailyBudget] = useState("0");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   useEffect(() => {
@@ -119,11 +120,12 @@ export const Settings: React.FC<SettingsProps> = ({
     const fetchProfile = async () => {
       const { data, error } = await supabase
         .from('users')
-        .select('display_name')
+        .select('display_name, daily_budget')
         .eq('id', user.id)
         .single();
-      if (!error && data?.display_name) {
-        setDisplayName(data.display_name);
+      if (!error && data) {
+        if (data.display_name) setDisplayName(data.display_name);
+        if (data.daily_budget !== undefined) setDailyBudget(String(data.daily_budget));
       }
     };
     fetchProfile();
@@ -217,9 +219,18 @@ export const Settings: React.FC<SettingsProps> = ({
     audioFeedback.playChime();
     
     try {
+      const budgetNum = Number(dailyBudget);
+      if (isNaN(budgetNum) || budgetNum < 0) {
+        showToast(t("budget.invalid_limit"), "error");
+        return;
+      }
+
       const { error } = await supabase
         .from('users')
-        .update({ display_name: displayName })
+        .update({ 
+          display_name: displayName,
+          daily_budget: budgetNum
+        })
         .eq('id', user?.id);
       
       if (error) throw error;
@@ -237,7 +248,8 @@ export const Settings: React.FC<SettingsProps> = ({
         display_name: displayName,
         is_guest: user?.is_anonymous || false,
         preferred_language: locale,
-        preferred_theme: theme
+        preferred_theme: theme,
+        daily_budget: budgetNum
       };
       onUserPrefUpdated(updatedUser);
       
@@ -368,24 +380,39 @@ export const Settings: React.FC<SettingsProps> = ({
                 {t("settings.display_name")}
               </label>
               
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-                />
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  type="button"
-                  onClick={handleUpdateProfileName}
-                  className="cursor-pointer border border-transparent bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 rounded-xl font-sans text-xs font-semibold text-white tracking-tight transition-all"
-                >
-                  {t("settings.btn_update_profile")}
-                </motion.button>
-              </div>
+              <input
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+              />
             </div>
+
+            <div className="space-y-1.5">
+              <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider block">
+                {t("settings.daily_budget")}
+              </label>
+              
+              <input
+                type="number"
+                min="0"
+                step="1000"
+                value={dailyBudget}
+                onChange={(e) => setDailyBudget(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+                placeholder="50000"
+              />
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              type="button"
+              onClick={handleUpdateProfileName}
+              className="w-full cursor-pointer border border-transparent bg-indigo-600 hover:bg-indigo-500 py-2.5 rounded-xl font-sans text-xs font-semibold text-white tracking-tight transition-all"
+            >
+              {t("settings.btn_update_profile")}
+            </motion.button>
           </div>
 
           {/* Section 2: Quick instant Switcher controls */}
