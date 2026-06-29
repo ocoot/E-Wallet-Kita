@@ -35,16 +35,24 @@ if (usedFallback.length > 0) {
   console.log('[inject] ✅ All Firebase config read from VITE_FIREBASE_* env vars');
 }
 
-// ── Inject push handler into Workbox-generated sw.js ──
+// ── sw.js (Workbox) intentionally does NOT get a push handler ──
+//
+// ROOT CAUSE FIX (duplicate push notifications): this script used to
+// ALSO append a raw `push` event listener into sw.js that called
+// self.registration.showNotification(...). Combined with
+// firebase-messaging-sw.js below (which uses messaging.onBackgroundMessage
+// to do the exact same showNotification call), every single FCM push
+// message was being displayed TWICE — once by each service worker,
+// both registered at overlapping scope for the same origin.
+//
+// firebase-messaging-sw.js is the correct, single owner of push display
+// logic for this app. sw.js (Workbox/vite-plugin-pwa) should stay focused
+// on asset caching/PWA install behavior only. If you need sw.js to keep
+// `skipWaiting()` on install, add that separately — just never re-add a
+// `push` listener here.
 const swPath = path.resolve(distDir, 'sw.js');
 if (fs.existsSync(swPath)) {
-  const code = `
-self.addEventListener('push',function(e){if(!e.data)return;try{var p=e.data.json();var d=p.notification||p.data||p;e.waitUntil(self.registration.showNotification(d.title||'E-Wallet Kita',{body:d.body||'',icon:'/icon-192.png',badge:'/icon-192.png'}))}catch(_){}});
-self.addEventListener('notificationclick',function(e){e.notification.close();e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(function(c){for(var x of c)if(x.url.includes(self.location.origin)&&'focus'in x)return x.focus();if(clients.openWindow)return clients.openWindow('/');}))});
-self.addEventListener('install',function(){self.skipWaiting()});
-`;
-  fs.appendFileSync(swPath, code);
-  console.log('[inject] ✅ Push handler → sw.js');
+  console.log('[inject] ℹ️  Skipped push handler injection into sw.js (handled solely by firebase-messaging-sw.js to avoid duplicate notifications)');
 }
 
 // ── Create firebase-messaging-sw.js with proper Firebase init ──
