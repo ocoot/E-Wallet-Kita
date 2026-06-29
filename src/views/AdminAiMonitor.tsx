@@ -285,7 +285,7 @@ export const AdminAiMonitor: React.FC = () => {
 
                       return (
                         <tr
-                          key={`${k.provider}-${k.key_alias}`}
+                          key={`${k.provider}-${k.key_alias}-${k.model}`}
                           className="hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50 transition-colors"
                         >
                           <td className="px-6 py-4">
