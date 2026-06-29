@@ -8,7 +8,8 @@
     "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs && node scripts/inject-push-handler.mjs",
     "start": "node dist/server.cjs",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit"
+    "lint": "tsc --noEmit",
+    "setup:telegram": "tsx scripts/setup-telegram-webhook.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.105.0",

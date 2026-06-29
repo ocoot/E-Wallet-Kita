@@ -21,7 +21,7 @@ console.log("====================================");
  * api/parse-transaction.ts — missing auth, rate limiting, the multi-model
  * Gemini fallback chain, and DB-driven categories. The route now delegates
  * to that handler directly (see startServer() below), the same pattern
- * already used for broadcast-telegram, telegram-webhook, and send-receipt.
+ * already used for broadcast, telegram-webhook, and send-receipt.
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -55,8 +55,8 @@ async function startServer() {
   const parseTransactionHandler = (await import("./api/parse-transaction")).default;
   const telegramWebhookHandler = (await import("./api/telegram-webhook")).default;
   const sendReceiptHandler = (await import("./api/send-receipt")).default;
-  const broadcastTelegramHandler = (await import("./api/admin/broadcast-telegram")).default;
-  const broadcastPushHandler = (await import("./api/admin/broadcast-push")).default;
+  const premiumPaymentHandler = (await import("./api/premium/payment")).default;
+  const broadcastHandler = (await import("./api/admin/broadcast")).default;
 
   // AI transaction parser (Delegated to serverless module — single source
   // of truth in api/parse-transaction.ts: auth check, per-user rate
@@ -64,8 +64,8 @@ async function startServer() {
   // DB-driven categories all now apply in dev too, not just in production)
   app.post("/api/parse-transaction", parseTransactionHandler as any);
 
-  // Telegram Broadcast for Admin (Delegated to serverless module)
-  app.post("/api/admin/broadcast-telegram", broadcastTelegramHandler as any);
+  // Admin Broadcast — unified push + telegram (Delegated to serverless module)
+  app.post("/api/admin/broadcast", broadcastHandler as any);
 
   // Telegram Bot Webhook (Delegated to serverless module — single source of
   // truth in api/telegram-webhook.ts, no duplicated logic here)
@@ -75,8 +75,10 @@ async function startServer() {
   // Send premium receipt email via SMTP (Gmail)
   app.post("/api/send-receipt", sendReceiptHandler as any);
 
-  // Push Notification Broadcast for Admin
-  app.post("/api/admin/broadcast-push", broadcastPushHandler as any);
+  // Premium payment — create, status check, webhook (Delegated to serverless module)
+  app.post("/api/premium/payment", premiumPaymentHandler as any);
+  app.get("/api/premium/payment", premiumPaymentHandler as any);
+  app.put("/api/premium/payment", premiumPaymentHandler as any);
 
   // Vite development vs production static handler integration
   if (process.env.NODE_ENV !== "production") {

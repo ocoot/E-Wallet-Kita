@@ -11,7 +11,7 @@ export interface PremiumTransaction {
   voucher_id?: string;
   final_amount?: number;
   // true kalau transaksi ini dibuat sebagai dummy oleh backend karena toggle
-  // "Dummy QRIS" di Admin Panel aktif (lihat api/premium/create-transaction.ts).
+  // "Dummy QRIS" di Admin Panel aktif (lihat api/premium/payment.ts — method POST).
   // Beda dengan isSandboxMode() di bawah, yang murni client-side & DEV-only.
   is_sandbox?: boolean;
 }
@@ -80,7 +80,7 @@ export async function createPremiumTransaction(userId: string, voucherId?: strin
   }
 
   const token = await getAuthToken();
-  const res = await fetch("/api/premium/create-transaction", {
+  const res = await fetch("/api/premium/payment", {
     method: "POST",
     headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
     body: JSON.stringify({ voucherId }),
@@ -124,7 +124,7 @@ export async function checkPremiumStatus(orderId: string): Promise<"PENDING" | "
   }
 
   const token = await getAuthToken();
-  const res = await fetch(`/api/premium/status?order_id=${encodeURIComponent(orderId)}&_t=${Date.now()}`, {
+  const res = await fetch(`/api/premium/payment?order_id=${encodeURIComponent(orderId)}&_t=${Date.now()}`, {
     headers: { 
       Authorization: `Bearer ${token}`,
       "Cache-Control": "no-cache"

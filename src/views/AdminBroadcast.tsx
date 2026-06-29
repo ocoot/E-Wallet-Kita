@@ -63,13 +63,13 @@ export const AdminBroadcast: React.FC = () => {
 
       if (channel === "telegram" || channel === "both") {
         try {
-          const res = await fetch("/api/admin/broadcast-telegram", {
+          const res = await fetch("/api/admin/broadcast", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${jwtToken}`,
             },
-            body: JSON.stringify({ message: message.trim() }),
+            body: JSON.stringify({ channel: "telegram", message: message.trim() }),
           });
           const json = await res.json();
           if (!res.ok) throw new Error(json.error || "Broadcast Telegram gagal");
@@ -82,13 +82,14 @@ export const AdminBroadcast: React.FC = () => {
 
       if (channel === "push" || channel === "both") {
         try {
-          const res = await fetch("/api/admin/broadcast-push", {
+          const res = await fetch("/api/admin/broadcast", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${jwtToken}`,
             },
             body: JSON.stringify({
+              channel: "push",
               title: title.trim() || "E-Wallet Kita",
               message: message.trim(),
             }),

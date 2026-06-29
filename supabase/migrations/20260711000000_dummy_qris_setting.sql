@@ -3,8 +3,8 @@
 -- Tujuan: memungkinkan admin menguji alur pembelian premium (create
 -- transaction -> tampil QR -> polling status -> sukses -> akun jadi premium)
 -- tanpa memanggil gateway KlikQRIS sungguhan, sebelum fitur premium
--- diperkenalkan ke publik. Kalau aktif, api/premium/create-transaction.ts
--- akan membuat QR palsu (is_sandbox = true) dan api/premium/status.ts akan
+-- diperkenalkan ke publik. Kalau aktif, api/premium/payment.ts (method POST)
+-- akan membuat QR palsu (is_sandbox = true) dan api/premium/payment.ts (method GET) akan
 -- otomatis menandai transaksi tersebut SUCCESS setelah beberapa detik,
 -- tanpa pernah menyentuh API KlikQRIS asli.
 --

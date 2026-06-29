@@ -1,15 +1,37 @@
 {
   "functions": {
-    "api/admin/broadcast-telegram.ts": { "maxDuration": 60 },
-    "api/admin/broadcast-push.ts": { "maxDuration": 60 }
+    "api/admin/broadcast.ts": {
+      "maxDuration": 60
+    },
+    "api/premium/payment.ts": {
+      "maxDuration": 30
+    }
   },
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" },
-    { "source": "/sw\\.js", "destination": "/sw.js" },
-    { "source": "/workbox-(.*)", "destination": "/workbox-$1" },
-    { "source": "/assets/(.*)", "destination": "/assets/$1" },
-    { "source": "/(.*)\\.(js|css|png|svg|jpg|ico|json|webmanifest)", "destination": "/$1.$2" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    },
+    {
+      "source": "/sw\\.js",
+      "destination": "/sw.js"
+    },
+    {
+      "source": "/workbox-(.*)",
+      "destination": "/workbox-$1"
+    },
+    {
+      "source": "/assets/(.*)",
+      "destination": "/assets/$1"
+    },
+    {
+      "source": "/(.*)\\.(js|css|png|svg|jpg|ico|json|webmanifest)",
+      "destination": "/$1.$2"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
   ],
   "headers": [
     {

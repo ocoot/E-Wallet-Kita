@@ -18,7 +18,7 @@ file yang konflik.
 | `src/lib/firebase.ts`                                  | `src/lib/firebase.ts`                                   | Diubah      |
 | `src/App.tsx`                                          | `src/App.tsx`                                           | Diubah      |
 | `api/_lib/fcm.ts`                                      | `api/_lib/fcm.ts`                                       | Diubah      |
-| `api/admin/broadcast-push.ts`                          | `api/admin/broadcast-push.ts`                           | Diubah      |
+| `api/admin/broadcast.ts`                               | `api/admin/broadcast.ts`                                | **MERGED**  |
 | `api/internal/send-bill-reminder-push.ts`              | `api/internal/send-bill-reminder-push.ts`               | **BARU**    |
 | `scripts/inject-push-handler.mjs`                      | `scripts/inject-push-handler.mjs`                       | Diubah      |
 | `vercel.json`                                          | `vercel.json` (root project)                            | Diubah      |
@@ -39,7 +39,7 @@ perubahan baru padanya — pastikan migration itu sudah Anda jalankan.
    sekarang baca dari env var `VITE_FIREBASE_*` (fallback ke nilai lama
    kalau env var belum di-set, supaya build tidak langsung patah).
 4. **Akurasi successCount/failCount broadcast** (`api/_lib/fcm.ts`,
-   `api/admin/broadcast-push.ts`) — sekarang melaporkan jumlah sukses/gagal
+   `api/admin/broadcast.ts`) — sekarang melaporkan jumlah sukses/gagal
    yang sebenarnya dari FCM, bukan asumsi semua sukses.
 5. **Kolom `device_info` diisi** (`firebase.ts`) — deteksi OS+browser
    sederhana dari User-Agent, dikirim setiap kali token disimpan.
