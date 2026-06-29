@@ -122,7 +122,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* 1. Mobile top bar Header (visible only on mobile) */}
-      <header className="md:hidden flex items-center justify-between p-4 border-b bg-slate-950/90 border-slate-800 text-white dark_obsidian:bg-slate-950 dark_obsidian:border-slate-800 light_sakura:bg-rose-500 light_sakura:border-rose-400 light_sakura:text-white sticky top-0 z-40">
+      <header className="md:hidden flex items-center justify-between p-4 border-b bg-slate-950/70 backdrop-blur-md border-slate-800 text-white dark_obsidian:bg-slate-950/70 dark_obsidian:border-slate-800 light_sakura:bg-rose-500/70 light_sakura:border-rose-400/50 light_sakura:text-white sticky top-0 z-40">
         <div className="flex items-center gap-2">
           <div className="shrink-0">
             <img 
