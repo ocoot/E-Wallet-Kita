@@ -36,6 +36,31 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     year: "numeric",
   }).format(new Date());
 
+  const getDynamicTip = (): string => {
+    const tipsId = [
+      "Tips hari ini: Selalu catat transaksi kecil seperti parkir atau jajan agar pengeluaran bulanan tetap terkontrol!",
+      "Tips hari ini: Gunakan fitur Anggaran Kategori untuk membatasi pengeluaran hiburan dan makan di luar.",
+      "Tips hari ini: Sisihkan minimal 10% pendapatan di awal bulan sebelum mulai berbelanja.",
+      "Tips hari ini: Sudahkah Anda memeriksa pengingat tagihan hari ini? Jangan biarkan denda menumpuk!",
+      "Tips hari ini: Gunakan OCR struk belanja untuk mencatat transaksi panjang dengan satu ketukan cepat.",
+      "Tips hari ini: Konsistensi adalah kunci! Catat keuangan setiap hari agar pengelolaan uang terasa lebih ringan.",
+      "Tips hari ini: Hubungkan Telegram Bot kami untuk mencatat transaksi langsung dari ruang chat Anda."
+    ];
+
+    const tipsEn = [
+      "Tip of the day: Always record small expenses like parking or snacks to keep your monthly budget under control!",
+      "Tip of the day: Use Category Budgets to limit entertainment and dining-out expenses.",
+      "Tip of the day: Save at least 10% of your income at the beginning of the month before spending.",
+      "Tip of the day: Have you checked your bill reminders today? Avoid late fees by staying ahead!",
+      "Tip of the day: Use receipt OCR to log long purchase receipts with a single quick tap.",
+      "Tip of the day: Consistency is key! Log daily to make money management feel effortless.",
+      "Tip of the day: Connect our Telegram Bot to record transactions directly from your chat app."
+    ];
+
+    const day = new Date().getDay(); // 0 to 6
+    return locale === "id" ? tipsId[day] : tipsEn[day];
+  };
+
   return (
     <div 
       id="dashboard-welcome-banner" 
@@ -70,8 +95,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
             {t(getGreetingKey(), { name: currentUser.display_name })}
           </h1>
-          <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500">
-            {t("app.tagline_sub")}
+          <p className="font-sans text-xs text-slate-400 mt-1.5 max-w-xl leading-relaxed light_sakura:text-slate-500 italic">
+            {getDynamicTip()}
           </p>
           {telegramStatus.linked && (
             <div className="flex items-center gap-1.5 mt-2 text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md w-fit border border-emerald-500/10">
