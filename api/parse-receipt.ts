@@ -39,6 +39,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
+  // 1b. Premium check — Receipt OCR is a premium feature. Guests
+  // (anonymous auth users) and non-premium accounts are rejected here
+  // too, not just hidden behind the upload zone in ReceiptUploader.tsx,
+  // so this endpoint can't be called directly to bypass the paywall.
+  if (user.is_anonymous) {
+    res.status(403).json({ error: 'Fitur Pindai Struk (AI) memerlukan akun terdaftar (bukan tamu).', code: 'GUEST_NOT_ALLOWED' });
+    return;
+  }
+  const { data: profile, error: profileError } = await supabase
+    .from('users')
+    .select('is_premium')
+    .eq('id', user.id)
+    .single();
+  if (profileError || !profile?.is_premium) {
+    res.status(402).json({ error: 'Fitur Pindai Struk (AI) adalah fitur khusus Pengguna Premium.', code: 'PREMIUM_REQUIRED' });
+    return;
+  }
+
   // Cek status maintenance & feature lock 'receipt_scan'. Ini wajib dicek
   // di backend juga (bukan cuma di frontend), supaya endpoint ini tidak
   // bisa dipanggil langsung untuk melewati kunci yang diset admin lewat

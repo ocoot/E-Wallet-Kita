@@ -13,6 +13,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ReceiptUploader } from "../components/ReceiptUploader";
 import { ReceiptPreview } from "../components/ReceiptPreview";
+import { VoiceRecorder, VoiceParsedResult } from "../components/VoiceRecorder";
 import { useCategories } from "../hooks/useCategories";
 import { checkSingleCategoryBudget } from "../hooks/useBudgets";
 
@@ -182,6 +183,17 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     }
   };
 
+  // Voice note prefills the manual form fields (type/category/amount/note)
+  // instead of going through the receipt-draft flow — same result the
+  // Telegram bot gives (a ready-to-confirm draft), but here the user still
+  // sees & can tweak it in the normal form before hitting submit.
+  const handleVoiceParsed = (result: VoiceParsedResult) => {
+    setType(result.type);
+    setCategory(result.category_key);
+    setAmount(result.amount);
+    setNote(result.original_text);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || amount <= 0 || isNaN(amount)) {
@@ -281,6 +293,9 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
             {/* ── AI Receipt uploader ──────────────────────────────────── */}
             <ReceiptUploader onParsed={(draft) => setReceiptDraft(draft)} />
+
+            {/* ── AI Voice note recorder ──────────────────────────────── */}
+            <VoiceRecorder onParsed={handleVoiceParsed} />
 
             {/* ── Divider ──────────────────────────────────────────────── */}
             <div className="relative flex items-center">

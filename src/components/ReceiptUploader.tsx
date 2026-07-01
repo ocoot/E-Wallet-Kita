@@ -212,6 +212,17 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
         
         if (contentType && contentType.includes("application/json")) {
           const errData = await response.json();
+          if (errData.code === "PREMIUM_REQUIRED") {
+            setIsPremiumOpen(true);
+            throw new Error(locale === "id" ? "Fitur ini khusus Pengguna Premium." : "This feature is Premium-only.");
+          }
+          if (errData.code === "GUEST_NOT_ALLOWED") {
+            throw new Error(
+              locale === "id"
+                ? "Silakan masuk atau daftar akun terlebih dahulu untuk menggunakan fitur ini."
+                : "Please sign in or register an account to use this feature."
+            );
+          }
           errorMessage = errData.error || errorMessage;
         } else {
           errorMessage = `Server Error (${response.status})`;
