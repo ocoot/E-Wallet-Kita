@@ -1,95 +1,111 @@
-# FCM Fixes — Panduan Replace File
+# E-Wallet Kita — Paket Perubahan (4 Fitur Baru)
 
-Audit & perbaikan ini mencakup poin #1–#7 dari hasil audit fitur FCM
-(e-wallet-kita__83_.zip). Semua file di sini sudah berisi PATCH LENGKAP
-(termasuk patch multi-device sebelumnya) — cukup timpa file lama dengan
-file yang sesuai, TIDAK perlu digabung manual.
+Struktur folder di zip ini **PERSIS SAMA** dengan struktur project Anda — tinggal
+copy/replace file yang sama persis ke lokasi yang sama di project Anda.
 
-## Cara pakai
-Salin tiap file ke lokasi yang SAMA PERSIS di project Anda (timpa file
-lama). Struktur folder di zip ini sudah mengikuti struktur project asli,
-jadi tinggal extract zip ini ke root project dan timpa (replace) semua
-file yang konflik.
+File BARU (belum ada sebelumnya) ditandai 🆕. File yang DIUBAH (menimpa file lama)
+ditandai ✏️.
 
-## Daftar file & lokasinya
+## 1. Kontrol Privasi & Data (Export Data + Hapus Akun Sendiri)
 
-| File di zip                                          | Lokasi di project                                     | Status      |
-|-------------------------------------------------------|--------------------------------------------------------|-------------|
-| `src/lib/firebase.ts`                                  | `src/lib/firebase.ts`                                   | Diubah      |
-| `src/App.tsx`                                          | `src/App.tsx`                                           | Diubah      |
-| `api/_lib/fcm.ts`                                      | `api/_lib/fcm.ts`                                       | Diubah      |
-| `api/admin/broadcast.ts`                               | `api/admin/broadcast.ts`                                | **MERGED**  |
-| `api/internal/send-bill-reminder-push.ts`              | `api/internal/send-bill-reminder-push.ts`               | **BARU**    |
-| `scripts/inject-push-handler.mjs`                      | `scripts/inject-push-handler.mjs`                       | Diubah      |
-| `vercel.json`                                          | `vercel.json` (root project)                            | Diubah      |
-| `supabase/functions/bill-reminder-notifier/index.ts`   | `supabase/functions/bill-reminder-notifier/index.ts`    | Diubah      |
+- 🆕 `supabase/migrations/20260731020000_self_service_account_deletion.sql`
+  — RPC `delete_own_account_data()` (service-role only) yang membersihkan
+  semua data terkait user di skema public sebelum akun auth-nya dihapus.
+- 🆕 `api/account/privacy.ts` — endpoint baru:
+  - `GET /api/account/privacy` → ekspor semua data pribadi user sebagai JSON
+  - `DELETE /api/account/privacy` → hapus akun & seluruh data secara permanen
+- 🆕 `src/lib/privacy.ts` — helper client (`exportMyData()`, `deleteMyAccount()`)
+- 🆕 `src/components/DeleteAccountModal.tsx` — modal konfirmasi hapus akun
+  (harus mengetik ulang frasa konfirmasi, bukan cuma klik tombol)
+- ✏️ `src/views/Settings.tsx` — section baru "Privasi & Data" di halaman Settings
+- ✏️ `vercel.json` — mendaftarkan function baru `api/account/privacy.ts`
 
-Catatan: migration SQL `20260728000000_push_tokens_multi_device.sql`
-(dari sesi sebelumnya) TIDAK disertakan ulang di sini karena tidak ada
-perubahan baru padanya — pastikan migration itu sudah Anda jalankan.
+**PENTING**: Endpoint ini butuh `SUPABASE_SERVICE_ROLE_KEY` di environment
+variables Vercel Anda (biasanya sudah ada karena dipakai `api/telegram-webhook.ts`
+& `api/premium/payment.ts` juga).
 
-## Ringkasan perbaikan per nomor
+## 2. Voice Note ke Transaksi (via Telegram Bot)
 
-1. **Hapus token saat logout** (`firebase.ts`, `App.tsx`) — fungsi baru
-   `clearFcmToken()` dipanggil sebelum `signOut()`, supaya device yang
-   dipakai bersama tidak terus menerima notifikasi user yang sudah logout.
-2. **Rewrite Vercel yang menimpa `firebase-messaging-sw.js`** (`vercel.json`)
-   — rule yang mengarahkan file itu ke `sw.js` sudah dihapus.
-3. **Hardcoded Firebase config** (`scripts/inject-push-handler.mjs`) —
-   sekarang baca dari env var `VITE_FIREBASE_*` (fallback ke nilai lama
-   kalau env var belum di-set, supaya build tidak langsung patah).
-4. **Akurasi successCount/failCount broadcast** (`api/_lib/fcm.ts`,
-   `api/admin/broadcast.ts`) — sekarang melaporkan jumlah sukses/gagal
-   yang sebenarnya dari FCM, bukan asumsi semua sukses.
-5. **Kolom `device_info` diisi** (`firebase.ts`) — deteksi OS+browser
-   sederhana dari User-Agent, dikirim setiap kali token disimpan.
-6. **Hindari permintaan izin & fetch token berulang** (`firebase.ts`) —
-   ada cache in-memory per sesi + short-circuit kalau permission sudah
-   `denied`.
-7. **FCM sebagai kanal tambahan untuk bill reminder** (`api/_lib/fcm.ts`,
-   `api/internal/send-bill-reminder-push.ts` [baru],
-   `supabase/functions/bill-reminder-notifier/index.ts`) — reminder
-   tagihan sekarang juga kirim push notification (selain Telegram seperti
-   sebelumnya), lewat endpoint internal baru.
+- ✏️ `api/telegram-webhook.ts` — menambahkan:
+  - `transcribeVoiceNote()` — transkripsi audio pakai Gemini (reuse model
+    fallback chain yang sama dengan parsing teks)
+  - `handleVoiceNote()` — download voice note → transkrip → masuk ke
+    pipeline parsing transaksi YANG SAMA PERSIS dengan pesan teks biasa
+  - Dispatch baru: `update.message.voice` di handler utama
+- ✏️ `api/_lib/botText.ts` — pesan bot baru (`voiceTranscribing`, `voiceHeard`,
+  `voiceTranscribeError`, `voiceTooLong`) + update teks `/help` & `/start`
+  untuk menyebutkan fitur voice note
 
-## ⚠️ WAJIB: Environment variable baru yang harus di-set
+Tidak ada perubahan skema database untuk fitur ini — reuse infrastruktur
+`parseFinancialQuery` + `upsert_pending_telegram_tx` yang sudah ada.
 
-Untuk poin #7 berfungsi, tambahkan env var berikut:
+## 3. Cicilan / Utang Jangka Panjang (dengan Progress)
 
-### Di Vercel (project settings → Environment Variables)
-- `INTERNAL_API_SECRET` — string rahasia acak (generate sendiri, contoh:
-  `openssl rand -hex 32`). Dipakai untuk autentikasi endpoint internal
-  baru `api/internal/send-bill-reminder-push.ts`.
+- 🆕 `supabase/migrations/20260731000000_installments.sql` — tabel
+  `installments` + RPC `mark_installment_month_paid_for_user()` &
+  `unmark_installment_last_payment_for_user()` + registrasi feature-lock
+  `installments` di Admin Panel
+- 🆕 `src/hooks/useInstallments.ts`
+- 🆕 `src/views/Installments.tsx` — halaman penuh (CRUD + progress bar +
+  "12 dari 24 bulan selesai")
+- 🆕 `src/components/DashboardInstallments.tsx` — widget ringkas di dashboard
+- ✏️ `src/types.ts` — interface `Installment`
+- ✏️ `src/lib/db.ts` — method CRUD + mark/unmark paid
+- ✏️ `src/components/Sidebar.tsx` — menu baru "Cicilan"
+- ✏️ `src/App.tsx` — route `/installments` + lazy import + skeleton
+- ✏️ `src/views/Dashboard.tsx` — render widget `DashboardInstallments`
 
-### Di Supabase Edge Function secrets (untuk `bill-reminder-notifier`)
-- `VERCEL_APP_URL` — URL domain produksi Anda, contoh `https://e-wallet-kita.vercel.app`
-  (tanpa trailing slash).
-- `INTERNAL_API_SECRET` — **HARUS SAMA PERSIS** dengan nilai yang di-set
-  di Vercel di atas.
+## 4. Saldo Terakumulasi di Dashboard
 
-Cara set secret di Supabase Edge Function (lewat Supabase CLI):
-```
-supabase secrets set VERCEL_APP_URL=https://domain-anda.vercel.app
-supabase secrets set INTERNAL_API_SECRET=nilai-rahasia-yang-sama
-```
+- 🆕 `supabase/migrations/20260731010000_accumulated_balance_rpc.sql` — RPC
+  `get_accumulated_balance()` (SUM agregat di server, bukan fetch semua
+  transaksi ke client)
+- 🆕 `src/components/DashboardAccumulatedBalance.tsx` — kartu banner baru
+  di paling atas dashboard (setelah header, sebelum ringkasan bulan berjalan)
+- ✏️ `src/lib/db.ts` — method `getAccumulatedBalance()`
+- ✏️ `src/views/Dashboard.tsx` — render banner tsb
 
-Kalau kedua env var di sisi Supabase ini TIDAK di-set, fitur #7 otomatis
-nonaktif (skip) dan reminder tagihan tetap berjalan normal lewat Telegram
-saja seperti sebelumnya — tidak ada yang patah kalau Anda belum sempat
-setup ini.
+## i18n
 
-## Langkah setelah replace file
+- ✏️ `src/locales/id.json` & `src/locales/en.json` — semua string baru untuk
+  ke-4 fitur di atas, termasuk label fitur baru "Cicilan/Utang" di Admin
+  Panel → Maintenance Mode.
 
-1. Timpa semua file sesuai tabel di atas.
-2. Set 2 env var baru (lihat bagian ⚠️ di atas) — atau skip kalau belum
-   mau pakai fitur #7.
-3. Deploy ulang ke Vercel (`vercel.json` berubah, jadi perlu redeploy
-   penuh, bukan cuma update function).
-4. Redeploy Edge Function `bill-reminder-notifier` ke Supabase:
-   ```
-   supabase functions deploy bill-reminder-notifier
-   ```
-5. Tes logout di satu device → cek tabel `user_push_tokens` di Supabase,
-   pastikan baris token device itu sudah terhapus setelah logout.
-6. Tes notifikasi push seperti biasa (transaksi baru / receipt) untuk
-   memastikan tidak ada regresi dari perubahan `fcm.ts`.
+## Deploy Checklist
+
+1. Copy semua file dari zip ini ke project Anda (replace langsung, path sudah sama).
+2. Jalankan 3 migration baru secara berurutan lewat Supabase CLI/Dashboard:
+   - `20260731000000_installments.sql`
+   - `20260731010000_accumulated_balance_rpc.sql`
+   - `20260731020000_self_service_account_deletion.sql`
+3. Deploy ke Vercel seperti biasa (`vercel.json` sudah include function baru).
+4. Cek Admin Panel → Maintenance untuk lihat entry fitur baru "Cicilan/Utang"
+   (defaultnya *tidak terkunci*).
+5. Test end-to-end:
+   - Settings → Privasi & Data → coba "Unduh Data Saya" (jangan test hapus akun
+     di akun produksi asli — buat akun uji coba dulu).
+   - Kirim voice note ke bot Telegram, mis. rekam "beli bensin 50 ribu".
+   - Buka `/installments`, tambah cicilan baru, coba "Tandai Bulan Ini Lunas".
+   - Buka Dashboard, cek banner "Saldo Terakumulasi" muncul di atas.
+
+## Catatan Desain Penting
+
+- **Hapus akun** memakai 2 langkah: RPC SECURITY DEFINER membersihkan skema
+  `public` dulu (termasuk `user_voucher_claims` yang tidak punya
+  `ON DELETE CASCADE`), baru setelah itu `supabase.auth.admin.deleteUser()`
+  dipanggil. Urutan ini disengaja: kalau langkah auth gagal, data yang sudah
+  bersih tidak apa-apa (user tinggal coba lagi), tapi tidak ada risiko akun
+  auth hilang duluan sementara datanya masih nyangkut.
+- **Voice note** TIDAK menulis ulang logic parsing transaksi — cuma
+  menambahkan langkah transkripsi di depan, lalu memanggil fungsi
+  `parseFinancialQuery()` yang sama persis dengan pesan teks biasa. Ini
+  supaya tidak ada 2 tempat terpisah yang perlu dites & dipelihara untuk
+  logic yang sama.
+- **Cicilan** pakai pola hybrid yang sama dengan `bill_reminders`: "Tandai
+  Bulan Ini Lunas" otomatis membuat transaksi pengeluaran (kalau nominal
+  cicilan/bulan sudah diisi). Kalau nominal belum diisi (variatif tiap
+  bulan), user diarahkan ke halaman "Transaksi Baru" dengan kategori &
+  catatan sudah terisi otomatis.
+- **Saldo terakumulasi** dihitung lewat `SUM()` di server (RPC), bukan fetch
+  semua baris transaksi ke browser lalu dijumlah di client — supaya tetap
+  cepat meski user sudah punya ribuan transaksi bertahun-tahun.

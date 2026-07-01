@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Transaction, Category, Budget, BillReminder } from "../types";
+import { Transaction, Category, Budget, BillReminder, Installment, AccumulatedBalance } from "../types";
 
 export const dbService = {
   async getCategories(): Promise<Category[]> {
@@ -396,5 +396,158 @@ export const dbService = {
       is_paid: paid,
       paid_at: paid ? new Date().toISOString() : null
     });
+  },
+
+  // ── Cicilan / Utang Jangka Panjang (Installments) ───────────────────
+
+  async getInstallments(userId: string): Promise<Installment[]> {
+    const { data, error } = await supabase
+      .from('installments')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching installments:', error);
+      throw error;
+    }
+
+    return data as Installment[];
+  },
+
+  async saveInstallment(
+    userId: string,
+    payload: {
+      name: string;
+      category_key: string;
+      principal_amount: number | null;
+      monthly_amount: number | null;
+      total_months: number;
+      start_date: string;
+      notes: string | null;
+    }
+  ): Promise<Installment> {
+    const { data, error } = await supabase
+      .from('installments')
+      .insert({ user_id: userId, ...payload })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error saving installment:', error);
+      throw error;
+    }
+
+    return data as Installment;
+  },
+
+  async updateInstallment(
+    userId: string,
+    installmentId: string,
+    updates: Partial<Pick<Installment, 'name' | 'category_key' | 'principal_amount' | 'monthly_amount' | 'total_months' | 'start_date' | 'notes'>>
+  ): Promise<Installment> {
+    const payload: Record<string, any> = { ...updates, updated_at: new Date().toISOString() };
+
+    const { data, error } = await supabase
+      .from('installments')
+      .update(payload)
+      .eq('id', installmentId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating installment:', error);
+      throw error;
+    }
+
+    return data as Installment;
+  },
+
+  async deleteInstallment(userId: string, installmentId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('installments')
+      .delete()
+      .eq('id', installmentId)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error deleting installment:', error);
+      return false;
+    }
+    return true;
+  },
+
+  /**
+   * Tandai 1 bulan cicilan lunas. Pakai RPC supaya increment months_paid +
+   * insert transaksi (kalau monthly_amount terisi) atomic dalam satu
+   * operasi -- sama polanya dengan markBillPaidWithTransaction.
+   */
+  async markInstallmentMonthPaid(installmentId: string): Promise<{
+    monthsPaid: number;
+    totalMonths: number;
+    isCompleted: boolean;
+    linkedTransactionId: string | null;
+    needsManualAmount: boolean;
+  }> {
+    const { data, error } = await supabase.rpc('mark_installment_month_paid_for_user', { p_installment_id: installmentId });
+    if (error) {
+      console.error('Error marking installment month paid:', error);
+      throw error;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) {
+      throw new Error('INSTALLMENT_NOT_FOUND_OR_ALREADY_COMPLETE');
+    }
+    return {
+      monthsPaid: row.months_paid,
+      totalMonths: row.total_months,
+      isCompleted: !!row.is_completed,
+      linkedTransactionId: row.linked_transaction_id ?? null,
+      needsManualAmount: !!row.needs_manual_amount
+    };
+  },
+
+  /** Batalkan pembayaran bulan terakhir (undo). Ikut menghapus transaksi terkait. */
+  async unmarkInstallmentLastPayment(installmentId: string): Promise<{
+    monthsPaid: number;
+    deletedTransactionId: string | null;
+  }> {
+    const { data, error } = await supabase.rpc('unmark_installment_last_payment_for_user', { p_installment_id: installmentId });
+    if (error) {
+      console.error('Error unmarking installment payment:', error);
+      throw error;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) {
+      throw new Error('INSTALLMENT_NOT_FOUND_OR_NO_PAYMENTS');
+    }
+    return {
+      monthsPaid: row.months_paid,
+      deletedTransactionId: row.deleted_transaction_id ?? null
+    };
+  },
+
+  // ── Saldo Terakumulasi (Accumulated Balance) ─────────────────────────
+
+  /**
+   * Total saldo terakumulasi dari SELURUH transaksi user sampai tanggal
+   * tertentu (default: hari ini), bukan cuma bulan berjalan. Dihitung di
+   * server (SUM agregat) lewat RPC get_accumulated_balance supaya tidak
+   * perlu fetch seluruh baris transaksi ke client.
+   */
+  async getAccumulatedBalance(asOfDate?: string): Promise<AccumulatedBalance> {
+    const { data, error } = await supabase.rpc('get_accumulated_balance', asOfDate ? { p_as_of_date: asOfDate } : {});
+    if (error) {
+      console.error('Error fetching accumulated balance:', error);
+      throw error;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    return {
+      income_total: Number(row?.income_total ?? 0),
+      expense_total: Number(row?.expense_total ?? 0),
+      balance: Number(row?.balance ?? 0),
+      first_transaction_date: row?.first_transaction_date ?? null
+    };
   }
 };

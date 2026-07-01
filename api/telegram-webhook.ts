@@ -339,6 +339,73 @@ PENTING: Nilai 'category_key' HARUS berupa key dari daftar di atas.`;
   };
 }
 
+// ─────────────────────────────────────────────────────────────
+// Voice note transcription (Telegram voice message → text)
+//
+// Why: Bot sudah bisa terima foto struk (OCR) tapi user harus mengetik
+// manual untuk transaksi cepat ("beli bensin 50 ribu"). Voice note lebih
+// cepat diucapkan daripada diketik saat buru-buru. Infrastruktur AI
+// parsing (parseFinancialQuery) sudah ada -- voice note cukup ditranskrip
+// jadi teks dulu, lalu masuk ke pipeline yang SAMA PERSIS dengan pesan
+// teks biasa (lihat handleVoiceNote di bawah), jadi tidak ada logic
+// parsing baru yang perlu ditulis/diuji ulang.
+//
+// Reuse GEMINI_MODEL_CHAIN yang sama dengan parseFinancialQuery supaya
+// urutan fallback model & timeout budget konsisten di seluruh bot.
+// ─────────────────────────────────────────────────────────────
+async function transcribeVoiceNote(base64Audio: string, mimeType: string): Promise<string | null> {
+  if (!ai) return null;
+
+  const systemInstruction =
+    `You transcribe short voice notes (Indonesian or English) into plain text ONLY. ` +
+    `The voice note is a person quickly logging a financial transaction (e.g. "beli bensin 50 ribu", ` +
+    `"gaji bulan ini masuk 5 juta"). Output ONLY the raw transcript, verbatim, no translation, ` +
+    `no commentary, no quotes, no markdown.`;
+
+  let lastError: any = null;
+
+  for (const { model, timeoutMs, thinkingConfig } of GEMINI_MODEL_CHAIN) {
+    try {
+      let timeoutId: NodeJS.Timeout | undefined;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error(`Gemini transcription timed out (${model}, ${timeoutMs}ms)`)), timeoutMs);
+      });
+
+      const responsePromise = ai.models.generateContent({
+        model,
+        contents: {
+          parts: [
+            { inlineData: { mimeType, data: base64Audio } },
+            { text: "Transcribe this voice note verbatim." }
+          ]
+        },
+        config: {
+          systemInstruction,
+          // Transcription is not a reasoning task; disable/limit thinking
+          // for speed, using the same per-model thinkingConfig shape as
+          // parseFinancialQuery (thinkingLevel for 3.x, thinkingBudget for 2.5).
+          thinkingConfig
+        }
+      });
+
+      const response = await Promise.race([responsePromise, timeoutPromise]);
+      if (timeoutId) clearTimeout(timeoutId);
+
+      const transcript = response.text?.trim();
+      if (transcript) return transcript;
+      // Empty transcript from this model — try the next one rather than
+      // treating a blank response as final.
+    } catch (err: any) {
+      lastError = err;
+      console.error(`❌ Gemini transcribeVoiceNote failed on model "${model}":`, err?.message ?? err);
+      continue;
+    }
+  }
+
+  console.error("❌ All Gemini models failed to transcribe voice note. Last error:", lastError?.message ?? lastError);
+  return null;
+}
+
 async function handleReceiptPhoto(message: any, maintenanceStatus: MaintenanceStatus) {
   const chatId = message.chat.id;
   
@@ -459,6 +526,119 @@ async function handleReceiptPhoto(message: any, maintenanceStatus: MaintenanceSt
     await sendTelegramMessage(chatId, lang === "id" 
       ? `❌ *Gagal Membaca Foto Struk*\n_Penyebab: ${err.message || 'Error internal parser struk'}_`
       : `❌ *Failed to Process Receipt Photo*\n_Reason: ${err.message || 'Internal parser error'}_`);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Voice note → transaction draft
+//
+// Same gating & pipeline as text natural-language transactions
+// (resolveUserContext, "new_transaction" maintenance gate,
+// parseFinancialQuery, upsert_pending_telegram_tx RPC, draft keyboard) --
+// the only new step is downloading + transcribing the Telegram voice
+// file first. This keeps the actual transaction-parsing logic in ONE
+// place instead of duplicating it for voice.
+// ─────────────────────────────────────────────────────────────
+async function handleVoiceNote(message: any, maintenanceStatus: MaintenanceStatus) {
+  const chatId = message.chat.id;
+
+  const userCtx = await resolveUserContext(chatId);
+  if (!userCtx) {
+    await sendTelegramMessage(chatId, tr("notLinkedForTx", "id"));
+    return;
+  }
+  const lang = userCtx.lang;
+
+  // Voice note masuk kategori "catat transaksi cepat" — pakai gate yang
+  // sama dengan pencatatan teks biasa (new_transaction), bukan gate
+  // terpisah, supaya kalau admin mengunci pencatatan transaksi, voice
+  // note ikut terkunci juga secara konsisten.
+  if (isFeatureLocked(maintenanceStatus, "new_transaction")) {
+    await respondFeatureUnderMaintenance(chatId, lang, getMaintenanceMessage(maintenanceStatus, lang));
+    return;
+  }
+
+  const voice = message.voice;
+  const MAX_DURATION_SECONDS = 60;
+  if (voice.duration && voice.duration > MAX_DURATION_SECONDS) {
+    await sendTelegramMessage(chatId, tr("voiceTooLong", lang));
+    return;
+  }
+
+  await sendTelegramMessage(chatId, tr("voiceTranscribing", lang));
+
+  try {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+
+    // Step 1: getFile
+    const getFileResp = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${voice.file_id}`);
+    if (!getFileResp.ok) {
+      throw new Error(`getFile API failed: ${getFileResp.statusText}`);
+    }
+    const getFileData = await getFileResp.json();
+    const filePath = getFileData.result?.file_path;
+    if (!filePath) {
+      throw new Error("Could not retrieve file path from Telegram.");
+    }
+
+    // Step 2: Download & base64-encode the audio (ogg/opus)
+    const audioUrl = `https://api.telegram.org/file/bot${token}/${filePath}`;
+    const audioResp = await fetch(audioUrl);
+    if (!audioResp.ok) {
+      throw new Error(`Failed to download voice note from Telegram: ${audioResp.statusText}`);
+    }
+    const arrayBuffer = await audioResp.arrayBuffer();
+    const base64Audio = Buffer.from(arrayBuffer).toString("base64");
+    const mimeType = voice.mime_type || "audio/ogg";
+
+    // Step 3: Transcribe with Gemini
+    const transcript = await transcribeVoiceNote(base64Audio, mimeType);
+    if (!transcript) {
+      await sendTelegramMessage(chatId, tr("voiceTranscribeError", lang));
+      return;
+    }
+
+    // Show the user what we heard, so they can immediately tell if the
+    // transcription is wrong before we even try to parse an amount.
+    await sendTelegramMessage(chatId, tr("voiceHeard", lang, transcript));
+    await sendTelegramMessage(chatId, tr("analyzing", lang));
+
+    // Step 4: Reuse the exact same natural-language parsing pipeline as
+    // text messages.
+    const parsed = await parseFinancialQuery(transcript);
+
+    if (parsed.amount <= 0) {
+      await sendTelegramMessage(chatId, tr("amountNotDetected", lang));
+      return;
+    }
+
+    const { error: upsertErr } = await supabaseBackend.rpc("upsert_pending_telegram_tx", {
+      p_chat_id: chatId,
+      p_type: parsed.type,
+      p_category_key: parsed.category_key,
+      p_amount: parsed.amount,
+      p_original_text: parsed.original_text
+    });
+
+    if (upsertErr) {
+      console.error("❌ RPC upsert_pending_telegram_tx error (voice):", upsertErr);
+      await sendTelegramMessage(chatId, tr("draftSaveError", lang));
+      return;
+    }
+
+    const localizedCat = await getCategoryLabel(parsed.category_key, lang);
+    const currencyStr = formatIDR(parsed.amount);
+    const typeLabel = parsed.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
+    const draftMarkup = buildDraftKeyboard(lang);
+
+    await sendTelegramMessage(
+      chatId,
+      tr("draftPrompt", lang, typeLabel, localizedCat, currencyStr, parsed.original_text),
+      draftMarkup
+    );
+  } catch (err: any) {
+    console.error("❌ handleVoiceNote error:", err);
+    await sendTelegramMessage(chatId, tr("voiceTranscribeError", lang));
   }
 }
 
@@ -1001,6 +1181,13 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       // Handle photos (Receipt Scan)
       if (update.message.photo && update.message.photo.length > 0) {
         await handleReceiptPhoto(update.message, maintenanceStatus);
+        res.status(200).json({ ok: true });
+        return;
+      }
+
+      // Handle voice notes (quick transaction logging via speech)
+      if (update.message.voice) {
+        await handleVoiceNote(update.message, maintenanceStatus);
         res.status(200).json({ ok: true });
         return;
       }

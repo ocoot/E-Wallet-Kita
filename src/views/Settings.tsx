@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
+import { DeleteAccountModal } from "../components/DeleteAccountModal";
 import { parseAmountFromString } from "../lib/parserUtils";
 import { audioFeedback } from "../lib/audio";
+import { exportMyData, deleteMyAccount } from "../lib/privacy";
 import { 
   User as UserIcon, 
   Globe, 
@@ -22,7 +25,9 @@ import {
   Sparkles,
   ShieldCheck,
   Lock,
-  Smartphone
+  Smartphone,
+  Download,
+  ShieldQuestion
 } from "lucide-react";
 import { motion } from "motion/react";
 import { UserSession } from "../types";
@@ -36,9 +41,10 @@ interface SettingsProps {
 export const Settings: React.FC<SettingsProps> = ({
   onUserPrefUpdated
 }) => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { locale, setLocale, t } = useLanguage();
   const { theme, setTheme } = useTheme();
+  const navigate = useNavigate();
   const { showToast } = useToast();
 
   const { isPremium, refresh: refreshPremium } = usePremium();
@@ -136,6 +142,10 @@ export const Settings: React.FC<SettingsProps> = ({
   const [isTelegramLinked, setIsTelegramLinked] = useState(false);
   const [telegramChatId, setTelegramChatId] = useState("");
   const [isUnlinkModalOpen, setIsUnlinkModalOpen] = useState(false);
+
+  // Privacy & Data controls
+  const [isExportingData, setIsExportingData] = useState(false);
+  const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
 
   // Baca status koneksi Telegram dari DB saat halaman pertama dibuka.
   // Tanpa ini, isTelegramLinked selalu mulai false dan hanya berubah lewat
@@ -323,6 +333,33 @@ export const Settings: React.FC<SettingsProps> = ({
       showToast(err.message, "error");
     }
   };
+
+  const handleExportMyData = async () => {
+    audioFeedback.playClick();
+    setIsExportingData(true);
+    try {
+      await exportMyData();
+      showToast(t("settings.privacy_export_success"), "success");
+    } catch (err: any) {
+      console.error("Export data error:", err);
+      showToast(t("settings.privacy_export_error"), "error");
+    } finally {
+      setIsExportingData(false);
+    }
+  };
+
+  const handleDeleteAccountConfirmed = async () => {
+    await deleteMyAccount();
+    audioFeedback.playChime();
+    showToast(t("settings.privacy_delete_success"), "success");
+    setIsDeleteAccountModalOpen(false);
+    // Sesi lokal masih menyimpan JWT lama (yang sekarang sudah tidak
+    // valid karena akunnya sudah terhapus di server) -- signOut()
+    // membersihkannya supaya user langsung diarahkan ke halaman login.
+    await signOut();
+    navigate("/login", { replace: true });
+  };
+
 
   // Formatter for timer YYYY-MM
   const formatTimerStr = (totalSec: number) => {
@@ -514,6 +551,69 @@ export const Settings: React.FC<SettingsProps> = ({
               </div>
             )}
           </div>
+
+            {/* Section 4: Privacy & Data controls (self-service export & account deletion) */}
+            <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
+              <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
+                <ShieldQuestion size={14} className="text-teal-400 light_sakura:text-rose-500" />
+                <span>{t("settings.privacy_section")}</span>
+              </h3>
+
+              <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
+                {t("settings.privacy_section_desc")}
+              </p>
+
+              {/* Export my data */}
+              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 space-y-2.5">
+                <div className="flex items-start gap-2.5">
+                  <Download size={14} className="text-teal-400 light_sakura:text-rose-500 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-sans text-xs font-semibold text-slate-200 light_sakura:text-slate-800">
+                      {t("settings.privacy_export_title")}
+                    </p>
+                    <p className="font-sans text-[11px] text-slate-500 leading-relaxed mt-0.5">
+                      {t("settings.privacy_export_desc")}
+                    </p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  type="button"
+                  onClick={handleExportMyData}
+                  disabled={isExportingData}
+                  className="w-full cursor-pointer border border-slate-700 bg-slate-900 hover:bg-slate-800 py-2.5 rounded-xl font-sans text-xs font-semibold text-slate-200 tracking-tight transition-all disabled:opacity-50 flex items-center justify-center gap-2 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                >
+                  <Download size={13} />
+                  <span>{isExportingData ? t("common.loading") : t("settings.privacy_export_button")}</span>
+                </motion.button>
+              </div>
+
+              {/* Delete account */}
+              <div className="p-3.5 rounded-xl bg-red-500/5 border border-red-500/20 space-y-2.5">
+                <div className="flex items-start gap-2.5">
+                  <Trash2 size={14} className="text-red-400 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-sans text-xs font-semibold text-red-300 light_sakura:text-red-600">
+                      {t("settings.privacy_delete_title")}
+                    </p>
+                    <p className="font-sans text-[11px] text-slate-500 leading-relaxed mt-0.5">
+                      {t("settings.privacy_delete_section_desc")}
+                    </p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
+                  type="button"
+                  onClick={() => { audioFeedback.playClick(); setIsDeleteAccountModalOpen(true); }}
+                  className="w-full cursor-pointer border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 py-2.5 rounded-xl font-sans text-xs font-semibold text-red-400 tracking-tight transition-all flex items-center justify-center gap-2"
+                >
+                  <Trash2 size={13} />
+                  <span>{t("settings.privacy_delete_button")}</span>
+                </motion.button>
+              </div>
+            </div>
 
             {/* Section 5: Unit Test scenarios validator diagnostics - REMOVED */}
           </div>
@@ -760,6 +860,12 @@ export const Settings: React.FC<SettingsProps> = ({
         onPremiumActivated={() => {
           refreshPremium();
         }}
+      />
+
+      <DeleteAccountModal
+        isOpen={isDeleteAccountModalOpen}
+        onCancel={() => setIsDeleteAccountModalOpen(false)}
+        onConfirm={handleDeleteAccountConfirmed}
       />
       </div>{/* grid */}
         </div>{/* card-body */}

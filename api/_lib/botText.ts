@@ -30,12 +30,13 @@ export const botText = {
       `     Ketik \`/link <kode_5_digit>\`\n` +
       `     Contoh: \`/link 58204\`\n\n` +
       `2️⃣ *Mencatat Keuangan* (Setelah Terhubung):\n` +
-      `     Cukup tulis pesan chat apa saja tentang transaksi Anda!\n` +
-      `     Contoh:\n` +
+      `     Cukup tulis pesan chat apa saja tentang transaksi Anda, kirim *pesan suara* 🎙️, atau kirim *foto struk belanja* 🧾!\n` +
+      `     Contoh teks:\n` +
       `     • \`Makan siang bersama bu siska 45rb\`\n` +
       `     • \`Gaji sampingan jualan kue 1.2jt\`\n` +
       `     • \`Belanja sayur bayam 12k\`\n` +
-      `     • \`Bayar tagihan listrik rumah 250rb\`\n\n` +
+      `     • \`Bayar tagihan listrik rumah 250rb\`\n` +
+      `     Atau cukup rekam pesan suara: _"beli bensin 50 ribu"_ 🎙️\n\n` +
       `3️⃣ *Daftar Perintah (Commands)*:\n` +
       `     • \`/saldo\` - Ringkasan saldo & perbandingan bulan ini vs bulan lalu.\n` +
       `     • \`/riwayat\` - Tampilkan 5 transaksi terakhir.\n` +
@@ -50,12 +51,13 @@ export const botText = {
       `     Type \`/link <5_digit_code>\`\n` +
       `     Example: \`/link 58204\`\n\n` +
       `2️⃣ *Recording Finances* (After Linking):\n` +
-      `     Just write any chat message about your transaction!\n` +
-      `     Examples:\n` +
+      `     Just write any chat message about your transaction, send a *voice note* 🎙️, or send a *receipt photo* 🧾!\n` +
+      `     Text examples:\n` +
       `     • \`Lunch with colleagues 45rb\`\n` +
       `     • \`Side income selling cakes 1.2jt\`\n` +
       `     • \`Bought vegetables 12k\`\n` +
-      `     • \`Paid electricity bill 250rb\`\n\n` +
+      `     • \`Paid electricity bill 250rb\`\n` +
+      `     Or just record a voice note: _"gas 50k"_ 🎙️\n\n` +
       `3️⃣ *Command List*:\n` +
       `     • \`/saldo\` - Balance summary & comparison vs last month.\n` +
       `     • \`/riwayat\` - Show last 5 transactions.\n` +
@@ -208,6 +210,28 @@ export const botText = {
   analyzing: {
     id: () => "🔄 _Sedang menganalisis catatan keuangan Anda..._",
     en: () => "🔄 _Analyzing your financial note..._",
+  },
+  voiceTranscribing: {
+    id: () => "🎙️ _Sedang mendengarkan pesan suara Anda..._",
+    en: () => "🎙️ _Listening to your voice note..._",
+  },
+  voiceHeard: {
+    id: (transcript: string) => `🎙️ *Transkrip Suara*: _"${transcript}"_`,
+    en: (transcript: string) => `🎙️ *Voice Transcript*: _"${transcript}"_`,
+  },
+  voiceTranscribeError: {
+    id: () =>
+      `⚠️ *Gagal Memproses Pesan Suara*\n\n` +
+      `Maaf, kami tidak berhasil mendengar/memahami pesan suara Anda dengan jelas.\n` +
+      `Coba rekam ulang di tempat yang tidak berisik, atau ketik transaksinya secara manual (mis. "beli bensin 50 ribu").`,
+    en: () =>
+      `⚠️ *Failed to Process Voice Note*\n\n` +
+      `Sorry, we couldn't clearly hear/understand your voice note.\n` +
+      `Try recording again somewhere quiet, or type the transaction manually (e.g. "gas 50k").`,
+  },
+  voiceTooLong: {
+    id: () => "⚠️ Pesan suara terlalu panjang (maks. 60 detik). Coba rekam versi yang lebih singkat.",
+    en: () => "⚠️ Voice note is too long (max. 60 seconds). Please record a shorter version.",
   },
   amountNotDetected: {
     id: () =>

@@ -91,3 +91,27 @@ export interface BillReminder {
   created_at: string;
   updated_at: string;
 }
+
+export interface Installment {
+  id: string;
+  user_id: string;
+  name: string;
+  category_key: string;
+  principal_amount: number | null;
+  monthly_amount: number | null;
+  total_months: number;
+  months_paid: number;
+  start_date: string;
+  is_completed: boolean;
+  notes: string | null;
+  last_transaction_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AccumulatedBalance {
+  income_total: number;
+  expense_total: number;
+  balance: number;
+  first_transaction_date: string | null;
+}

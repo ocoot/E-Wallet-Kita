@@ -16,6 +16,8 @@ import { DashboardRecentTransactions } from "../components/DashboardRecentTransa
 import { DashboardBudgetAlerts } from "../components/DashboardBudgetAlerts";
 import { DashboardBudgetSummary } from "../components/DashboardBudgetSummary";
 import { DashboardBillReminders } from "../components/DashboardBillReminders";
+import { DashboardInstallments } from "../components/DashboardInstallments";
+import { DashboardAccumulatedBalance } from "../components/DashboardAccumulatedBalance";
 import { useCategories } from "../hooks/useCategories";
 
 interface DashboardProps {
@@ -226,6 +228,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
         telegramStatus={telegramStatus} 
       />
 
+      {/* 1b. Saldo terakumulasi seluruh bulan s.d. bulan berjalan */}
+      <DashboardAccumulatedBalance
+        refreshTrigger={transactionsUpdatedTrigger}
+        formatIDR={formatIDR}
+      />
+
       {/* Onboarding Interactive Banner for new users */}
       {showOnboardingBanner && (
         <motion.div
@@ -282,6 +290,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardBudgetSummary />
         <DashboardBillReminders />
+        <DashboardInstallments />
       </div>
 
       {/* 2c. Alert card (hanya kalau urgent) */}

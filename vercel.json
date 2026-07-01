@@ -5,6 +5,9 @@
     },
     "api/premium/payment.ts": {
       "maxDuration": 30
+    },
+    "api/account/privacy.ts": {
+      "maxDuration": 30
     }
   },
   "rewrites": [
