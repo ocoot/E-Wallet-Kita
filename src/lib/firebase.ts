@@ -226,6 +226,22 @@ export const saveFcmToken = async (
 };
 
 /**
+ * Reset semua in-memory state FCM (cached token + SW registration promise).
+ *
+ * Dipanggil oleh swCleanup.ts setelah unregister service worker lama, supaya:
+ *   1. getToken() tidak menggunakan registrasi SW yang baru saja di-unregister.
+ *   2. Baris token lama yang mungkin terikat ke SW yang salah tidak ikut dipakai.
+ *
+ * Hanya mereset state in-memory — tidak menyentuh localStorage atau DB.
+ * App.tsx akan re-trigger requestFcmToken() saat user session terbaca kembali,
+ * sehingga token + registrasi SW baru akan di-resolve secara clean.
+ */
+export function resetFcmState(): void {
+  cachedToken = null;
+  swRegistrationPromise = null;
+}
+
+/**
  * Listen for foreground messages (app is open / in focus).
  * Returns an unsubscribe function.
  */

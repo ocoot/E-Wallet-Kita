@@ -5,13 +5,24 @@ import App from './App.tsx';
 import './index.css';
 import {AuthProvider} from './contexts/AuthContext';
 import { registerSW } from "virtual:pwa-register";
-import { onForegroundFcmMessage } from "./lib/firebase";
+import { onForegroundFcmMessage, resetFcmState } from "./lib/firebase";
+import { cleanupStaleServiceWorkers } from "./lib/swCleanup";
 
 // Register Service Worker via Vite PWA plugin.
 // onNeedRefresh dipanggil saat SW mendeteksi build baru sudah tersedia
 // (file precache berubah setelah deploy ke Vercel). Kita simpan fungsi
 // updateSW ke window agar bisa dipanggil dari komponen UpdatePrompt,
 // lalu dispatch custom event supaya komponen tersebut muncul.
+// ── One-time SW cleanup (jalankan sebelum registerSW agar tidak ada race) ──
+// Unregister service worker lama yang terdaftar dari sebelum fix
+// inject-push-handler.mjs di-deploy. Setelah cleanup, reset in-memory FCM
+// state supaya requestFcmToken() di App.tsx resolve ulang dengan registrasi SW
+// yang bersih. Flag localStorage mencegah cleanup ini jalan lebih dari sekali
+// per browser.
+cleanupStaleServiceWorkers((count) => {
+  if (count > 0) resetFcmState();
+});
+
 const updateSW = registerSW({
   immediate: true,
   onNeedRefresh() {
