@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
@@ -42,6 +42,8 @@ export const Installments: React.FC = () => {
   const [payConfirmTarget, setPayConfirmTarget] = useState<InstallmentWithProgress | null>(null);
   const [undoConfirmTarget, setUndoConfirmTarget] = useState<InstallmentWithProgress | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  // ── Formasi carousel: kartu yang sedang dipilih untuk ditampilkan detailnya ──
+  const [activeInstallmentId, setActiveInstallmentId] = useState<string | null>(null);
 
   const expenseCategories = categories.filter(c => c.type === "expense" || c.type === "both");
   const getCategoryLabel = (key: string) => {
@@ -151,6 +153,15 @@ export const Installments: React.FC = () => {
     finally { setBusyId(null); setUndoConfirmTarget(null); }
   };
 
+  useEffect(() => {
+    if (installments.length === 0) { setActiveInstallmentId(null); return; }
+    if (!activeInstallmentId || !installments.some(i => i.id === activeInstallmentId)) {
+      setActiveInstallmentId(installments[0].id);
+    }
+  }, [installments, activeInstallmentId]);
+
+  const activeInstallment = installments.find(i => i.id === activeInstallmentId) ?? null;
+
   const activeCount = installments.filter(i => !i.is_completed).length;
   const completedCount = installments.filter(i => i.is_completed).length;
   const totalMonthlyCommitment = installments
@@ -206,91 +217,108 @@ export const Installments: React.FC = () => {
           ) : installments.length === 0 ? (
             <EmptyState icon={<Landmark size={40} className="text-slate-600 light_sakura:text-slate-400" />} title={t("installments.empty_title")} description={t("installments.empty_desc")} />
           ) : (
-            <AnimatePresence>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {installments.map(i => (
-                  <motion.div key={i.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}
-                    className={`rounded-2xl border overflow-hidden ${i.is_completed
-                      ? "border-emerald-500/20 bg-emerald-500/5 light_sakura:bg-emerald-50/30 light_sakura:border-emerald-100"
-                      : "border-slate-800/50 bg-slate-950/40 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30"}`}>
-                    <div className="p-4 space-y-3">
-                      {/* Top row */}
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{i.name}</p>
-                          <p className="text-[11px] text-slate-500 mt-0.5">{getCategoryLabel(i.category_key)}</p>
+            <div className="space-y-4">
+              {/* ── Formasi carousel: geser kartu, ketuk untuk pilih ─────── */}
+              <AnimatePresence>
+                <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+                  {installments.map(i => {
+                    const isActive = i.id === activeInstallmentId;
+                    return (
+                      <motion.button key={i.id} type="button" onClick={() => { audioFeedback.playClick(); setActiveInstallmentId(i.id); }}
+                        initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}
+                        className={`shrink-0 w-56 snap-start text-left rounded-2xl p-4 cursor-pointer transition-all ${
+                          i.is_completed
+                            ? "bg-gradient-to-br from-emerald-600 to-emerald-800 text-white"
+                            : "bg-gradient-to-br from-indigo-600 to-violet-800 text-white light_sakura:from-rose-500 light_sakura:to-rose-700"
+                        } ${isActive ? "ring-2 ring-offset-2 ring-offset-slate-900 ring-white/70 light_sakura:ring-offset-white" : "opacity-80"}`}>
+                        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider opacity-80">
+                          <span className="truncate">{getCategoryLabel(i.category_key)}</span>
+                          <span>{i.progressPercent}%</span>
                         </div>
-                        {i.is_completed && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0 bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-600">
-                            <PartyPopper size={11} />{t("installments.status_completed")}
-                          </span>
-                        )}
-                      </div>
+                        <p className="font-sans font-bold text-base mt-3 truncate">{i.name}</p>
+                        <p className="text-xs opacity-80 mt-0.5">{formatIDR(i.monthly_amount)}/bulan</p>
+                        <div className="h-1.5 w-full rounded-full bg-white/25 overflow-hidden mt-4">
+                          <div className="h-full rounded-full bg-white" style={{ width: `${i.progressPercent}%` }} />
+                        </div>
+                        <p className="text-[10px] opacity-70 mt-1.5">{i.months_paid} dari {i.total_months} bulan</p>
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </AnimatePresence>
 
-                      {/* Progress bar */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-[11px]">
-                          <span className="text-slate-400 font-semibold">
-                            {t("installments.progress_label", { paid: i.months_paid, total: i.total_months })}
-                          </span>
-                          <span className={`font-bold ${i.is_completed ? "text-emerald-400" : "text-indigo-400 light_sakura:text-rose-500"}`}>
-                            {i.progressPercent}%
-                          </span>
-                        </div>
-                        <div className="h-2 w-full rounded-full bg-slate-800/70 light_sakura:bg-slate-200/70 overflow-hidden">
-                          <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${i.progressPercent}%` }}
-                            transition={{ duration: 0.5, ease: "easeOut" }}
-                            className={`h-full rounded-full ${i.is_completed ? "bg-emerald-500" : "bg-gradient-to-r from-indigo-500 to-violet-500 light_sakura:from-rose-500 light_sakura:to-rose-400"}`}
-                          />
-                        </div>
+              {/* ── Panel detail kartu terpilih ───────────────────────────── */}
+              {activeInstallment && (() => { const i = activeInstallment; return (
+                <div className="rounded-2xl border border-slate-800/50 bg-slate-950/40 overflow-hidden light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30">
+                  <div className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{i.name}</p>
+                        <p className="text-[11px] text-slate-500 mt-0.5">{getCategoryLabel(i.category_key)}</p>
                       </div>
+                      {i.is_completed && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0 bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-600">
+                          <PartyPopper size={11} />{t("installments.status_completed")}
+                        </span>
+                      )}
+                    </div>
 
-                      {/* Info rows */}
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-slate-500">{t("installments.monthly_amount_label")}</span>
-                          <span className="font-semibold text-slate-200 light_sakura:text-slate-700">{formatIDR(i.monthly_amount)}</span>
-                        </div>
-                        {i.principal_amount != null && (
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-slate-500">{t("installments.principal_label")}</span>
-                            <span className="font-semibold text-slate-200 light_sakura:text-slate-700">{formatIDR(i.principal_amount)}</span>
-                          </div>
-                        )}
-                        {!i.is_completed && (
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-slate-500">{t("installments.months_remaining_label")}</span>
-                            <span className="text-slate-300 light_sakura:text-slate-600">{t("installments.months_remaining_value", { count: i.monthsRemaining })}</span>
-                          </div>
-                        )}
-                        {i.notes && <p className="text-[11px] text-slate-500 italic truncate">{i.notes}</p>}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-slate-400 font-semibold">
+                          {t("installments.progress_label", { paid: i.months_paid, total: i.total_months })}
+                        </span>
+                        <span className={`font-bold ${i.is_completed ? "text-emerald-400" : "text-indigo-400 light_sakura:text-rose-500"}`}>
+                          {i.progressPercent}%
+                        </span>
                       </div>
-
-                      {/* Actions */}
-                      <div className="flex items-center gap-2 pt-1">
-                        {!i.is_completed && (
-                          <button onClick={() => requestMarkPaid(i)} disabled={busyId === i.id}
-                            className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
-                            {busyId === i.id ? <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" /> : <><CheckCircle2 size={12} /> {t("installments.mark_month_paid")}</>}
-                          </button>
-                        )}
-                        {i.months_paid > 0 && (
-                          <button onClick={() => requestUndoPaid(i)} disabled={busyId === i.id}
-                            title={t("installments.undo_last_payment")}
-                            className="p-2 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors cursor-pointer light_sakura:bg-amber-50 light_sakura:text-amber-500">
-                            <RotateCcw size={13} />
-                          </button>
-                        )}
-                        <button onClick={() => { audioFeedback.playClick(); openEditForm(i); }} className="p-2 rounded-xl bg-slate-700/50 text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer light_sakura:bg-slate-100 light_sakura:text-slate-500"><Edit2 size={13} /></button>
-                        <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(i); }} className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors cursor-pointer light_sakura:bg-red-50 light_sakura:text-red-400"><Trash2 size={13} /></button>
+                      <div className="h-2 w-full rounded-full bg-slate-800/70 light_sakura:bg-slate-200/70 overflow-hidden">
+                        <motion.div initial={{ width: 0 }} animate={{ width: `${i.progressPercent}%` }} transition={{ duration: 0.5, ease: "easeOut" }}
+                          className={`h-full rounded-full ${i.is_completed ? "bg-emerald-500" : "bg-gradient-to-r from-indigo-500 to-violet-500 light_sakura:from-rose-500 light_sakura:to-rose-400"}`} />
                       </div>
                     </div>
-                  </motion.div>
-                ))}
-              </div>
-            </AnimatePresence>
+
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-slate-500">{t("installments.monthly_amount_label")}</span>
+                        <span className="font-semibold text-slate-200 light_sakura:text-slate-700">{formatIDR(i.monthly_amount)}</span>
+                      </div>
+                      {i.principal_amount != null && (
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-500">{t("installments.principal_label")}</span>
+                          <span className="font-semibold text-slate-200 light_sakura:text-slate-700">{formatIDR(i.principal_amount)}</span>
+                        </div>
+                      )}
+                      {!i.is_completed && (
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-500">{t("installments.months_remaining_label")}</span>
+                          <span className="text-slate-300 light_sakura:text-slate-600">{t("installments.months_remaining_value", { count: i.monthsRemaining })}</span>
+                        </div>
+                      )}
+                      {i.notes && <p className="text-[11px] text-slate-500 italic truncate">{i.notes}</p>}
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      {!i.is_completed && (
+                        <button onClick={() => requestMarkPaid(i)} disabled={busyId === i.id}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
+                          {busyId === i.id ? <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" /> : <><CheckCircle2 size={12} /> {t("installments.mark_month_paid")}</>}
+                        </button>
+                      )}
+                      {i.months_paid > 0 && (
+                        <button onClick={() => requestUndoPaid(i)} disabled={busyId === i.id}
+                          title={t("installments.undo_last_payment")}
+                          className="p-2 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors cursor-pointer light_sakura:bg-amber-50 light_sakura:text-amber-500">
+                          <RotateCcw size={13} />
+                        </button>
+                      )}
+                      <button onClick={() => { audioFeedback.playClick(); openEditForm(i); }} className="p-2 rounded-xl bg-slate-700/50 text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer light_sakura:bg-slate-100 light_sakura:text-slate-500"><Edit2 size={13} /></button>
+                      <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(i); }} className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors cursor-pointer light_sakura:bg-red-50 light_sakura:text-red-400"><Trash2 size={13} /></button>
+                    </div>
+                  </div>
+                </div>
+              ); })()}
+            </div>
           )}
         </div>
       </div>

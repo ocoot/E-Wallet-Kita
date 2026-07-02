@@ -14,7 +14,7 @@ import { exportSummaryPdf, exportFullPdf } from "../lib/pdf/exportPdf";
 import { getCurrentMonthToDateRange, toISODate } from "../lib/pdf/dateRange";
 
 import { HistoryFilter } from "../components/HistoryFilter";
-import { HistoryTable } from "../components/HistoryTable";
+import { HistoryGroupedList } from "../components/HistoryGroupedList";
 import { HistoryPagination } from "../components/HistoryPagination";
 import { HistoryExport } from "../components/HistoryExport";
 import { HistoryDeleteModal } from "../components/HistoryDeleteModal";
@@ -338,7 +338,7 @@ export const History: React.FC<HistoryProps> = ({
             categories={categories}
           />
 
-          <HistoryTable
+          <HistoryGroupedList
             paginatedTransactions={paginatedTransactions}
             formatDateLabel={formatDateLabel}
             formatIDR={formatIDR}

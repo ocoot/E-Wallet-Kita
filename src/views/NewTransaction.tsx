@@ -102,6 +102,8 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   const [receiptDraft, setReceiptDraft] = useState<any>(null);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  // ── Formasi tab: Struk / Suara / Manual (hanya satu panel tampil) ────
+  const [activeInputTab, setActiveInputTab] = useState<"receipt" | "voice" | "manual">("manual");
 
   // ── Today summary ────────────────────────────────────────────────────
   const [todaySummary, setTodaySummary] = useState<{ income: number; expense: number } | null>(null);
@@ -291,22 +293,41 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
               )}
             </div>
 
-            {/* ── AI Receipt uploader ──────────────────────────────────── */}
-            <ReceiptUploader onParsed={(draft) => setReceiptDraft(draft)} />
-
-            {/* ── AI Voice note recorder ──────────────────────────────── */}
-            <VoiceRecorder onParsed={handleVoiceParsed} />
-
-            {/* ── Divider ──────────────────────────────────────────────── */}
-            <div className="relative flex items-center">
-              <div className="flex-grow border-t border-slate-800/70 light_sakura:border-rose-100/50" />
-              <span className="flex-shrink mx-4 text-slate-500 font-mono text-[9px] tracking-widest uppercase">
-                {t("dashboard.or_manual")}
-              </span>
-              <div className="flex-grow border-t border-slate-800/70 light_sakura:border-rose-100/50" />
+            {/* ── Formasi tab: pilih satu metode input ──────────────────── */}
+            <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-slate-950/60 border border-slate-800/50 light_sakura:bg-rose-50/30 light_sakura:border-rose-100">
+              {([
+                { key: "receipt", label: "Struk", icon: "📎" },
+                { key: "voice", label: "Suara", icon: "🎙" },
+                { key: "manual", label: "Manual", icon: "✎" },
+              ] as const).map(tab => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => { audioFeedback.playClick(); setActiveInputTab(tab.key); }}
+                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-sans text-xs font-bold transition-colors cursor-pointer ${
+                    activeInputTab === tab.key
+                      ? "bg-indigo-600 text-white shadow-sm light_sakura:bg-rose-500"
+                      : "text-slate-500 hover:text-slate-300 light_sakura:text-slate-400 light_sakura:hover:text-slate-600"
+                  }`}
+                >
+                  <span className="text-sm leading-none">{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
-            {/* ── Form ─────────────────────────────────────────────────── */}
+            {/* ── AI Receipt uploader (panel) ───────────────────────────── */}
+            {activeInputTab === "receipt" && (
+              <ReceiptUploader onParsed={(draft) => setReceiptDraft(draft)} />
+            )}
+
+            {/* ── AI Voice note recorder (panel) ────────────────────────── */}
+            {activeInputTab === "voice" && (
+              <VoiceRecorder onParsed={(result) => { handleVoiceParsed(result); setActiveInputTab("manual"); }} />
+            )}
+
+            {/* ── Form manual (panel) ───────────────────────────────────── */}
+            {activeInputTab === "manual" && (
             <motion.div animate={shakeControls}>
               <form onSubmit={handleSubmit} className="space-y-6">
 
@@ -483,6 +504,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
               </form>
             </motion.div>
+            )}
           </div>
         </motion.div>
       )}

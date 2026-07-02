@@ -182,68 +182,70 @@ export const Savings: React.FC = () => {
     } finally { setIsMoving(false); }
   };
 
+  // ── Formasi grid 2 kolom + ring progres bundar ────────────────────────
   const renderPocketCard = (p: SavingsPocketWithProgress) => {
     const Icon = POCKET_ICONS[p.pocket_type];
     const colorClasses = POCKET_COLORS[p.pocket_type];
+    const pct = p.target_amount != null ? p.progressPercent : null;
     return (
       <motion.div key={p.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}
         className={`rounded-2xl border overflow-hidden ${p.is_archived
           ? "border-slate-800/50 bg-slate-950/20 opacity-60"
           : "border-slate-800/50 bg-slate-950/40 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30"}`}>
-        <div className="p-4 space-y-3">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <div className={`w-9 h-9 shrink-0 rounded-xl border flex items-center justify-center ${colorClasses}`}>
-                <Icon size={16} />
-              </div>
-              <div className="min-w-0">
-                <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{p.name}</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">{t(`savings.pocket_type_${p.pocket_type}`)}</p>
+        <div className="p-4 space-y-3 text-center">
+          {/* Ring progres bundar */}
+          <div className="relative mx-auto w-20 h-20">
+            <div
+              className="w-full h-full rounded-full flex items-center justify-center"
+              style={{
+                background: pct != null
+                  ? `conic-gradient(var(--tw-ring-color, #6366f1) ${pct * 3.6}deg, rgba(148,163,184,0.15) 0deg)`
+                  : "conic-gradient(rgba(148,163,184,0.25) 360deg, rgba(148,163,184,0.15) 0deg)"
+              }}
+            >
+              <div className="w-[62px] h-[62px] rounded-full bg-slate-900 light_sakura:bg-white flex flex-col items-center justify-center">
+                <Icon size={16} className={colorClasses.split(" ")[0]} />
+                {pct != null && <span className="text-[10px] font-bold text-slate-300 light_sakura:text-slate-600 mt-0.5">{pct}%</span>}
               </div>
             </div>
             {p.is_archived && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0 bg-slate-700/40 text-slate-400">
+              <span className="absolute -top-1 -right-1 inline-flex items-center px-1.5 py-0.5 rounded-md text-[8px] font-bold bg-slate-700/70 text-slate-300">
                 {t("savings.archived_badge")}
               </span>
             )}
           </div>
 
+          <div>
+            <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{p.name}</p>
+            <p className="text-[10.5px] text-slate-500 mt-0.5">{t(`savings.pocket_type_${p.pocket_type}`)}</p>
+          </div>
+
           {p.target_amount != null ? (
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="text-slate-400 font-semibold">{formatIDR(p.current_amount)} / {formatIDR(p.target_amount)}</span>
-                <span className="font-bold text-indigo-400 light_sakura:text-rose-500">{p.progressPercent}%</span>
-              </div>
-              <div className="h-2 w-full rounded-full bg-slate-800/70 light_sakura:bg-slate-200/70 overflow-hidden">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${p.progressPercent}%` }} transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 light_sakura:from-rose-500 light_sakura:to-rose-400" />
-              </div>
-            </div>
+            <p className="text-[11px] font-semibold text-slate-300 light_sakura:text-slate-600">{formatIDR(p.current_amount)} <span className="text-slate-500 font-normal">/ {formatIDR(p.target_amount)}</span></p>
           ) : (
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-slate-500">{t("savings.saved_label")}</span>
-              <span className="font-bold text-slate-200 light_sakura:text-slate-700">{formatIDR(p.current_amount)}</span>
-            </div>
+            <p className="text-[11px] font-bold text-slate-200 light_sakura:text-slate-700">{formatIDR(p.current_amount)}</p>
           )}
 
-          {p.notes && <p className="text-[11px] text-slate-500 italic truncate">{p.notes}</p>}
+          {p.notes && <p className="text-[10.5px] text-slate-500 italic truncate">{p.notes}</p>}
 
-          <div className="flex items-center gap-2 pt-1">
+          <div className="grid grid-cols-2 gap-1.5 pt-1">
             <button onClick={() => openMove(p, "deposit")} disabled={busyId === p.id || p.is_archived}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
-              <ArrowDownCircle size={13} /> {t("savings.deposit_button")}
+              className="flex items-center justify-center gap-1 py-2 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
+              <ArrowDownCircle size={12} /> {t("savings.deposit_button")}
             </button>
             <button onClick={() => openMove(p, "withdraw")} disabled={busyId === p.id || p.is_archived || p.current_amount <= 0}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
-              <ArrowUpCircle size={13} /> {t("savings.withdraw_button")}
+              className="flex items-center justify-center gap-1 py-2 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
+              <ArrowUpCircle size={12} /> {t("savings.withdraw_button")}
             </button>
-            <button onClick={() => { audioFeedback.playClick(); openEditForm(p); }} className="p-2 rounded-xl bg-slate-700/50 text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer light_sakura:bg-slate-100 light_sakura:text-slate-500"><Edit2 size={13} /></button>
+          </div>
+          <div className="flex items-center justify-center gap-1.5">
+            <button onClick={() => { audioFeedback.playClick(); openEditForm(p); }} className="p-1.5 rounded-lg bg-slate-700/50 text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer light_sakura:bg-slate-100 light_sakura:text-slate-500"><Edit2 size={12} /></button>
             <button onClick={() => toggleArchive(p)} disabled={busyId === p.id}
               title={p.is_archived ? t("savings.unarchive_button") : t("savings.archive_button")}
-              className="p-2 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors cursor-pointer disabled:opacity-50 light_sakura:bg-amber-50">
-              {p.is_archived ? <ArchiveRestore size={13} /> : <Archive size={13} />}
+              className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors cursor-pointer disabled:opacity-50 light_sakura:bg-amber-50">
+              {p.is_archived ? <ArchiveRestore size={12} /> : <Archive size={12} />}
             </button>
-            <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(p); }} className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors cursor-pointer light_sakura:bg-red-50 light_sakura:text-red-400"><Trash2 size={13} /></button>
+            <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(p); }} className="p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors cursor-pointer light_sakura:bg-red-50 light_sakura:text-red-400"><Trash2 size={12} /></button>
           </div>
         </div>
       </motion.div>
@@ -300,7 +302,7 @@ export const Savings: React.FC = () => {
             <EmptyState icon={<PiggyBank size={40} className="text-slate-600 light_sakura:text-slate-400" />} title={t("savings.empty_title")} description={t("savings.empty_desc")} />
           ) : (
             <AnimatePresence>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {activePockets.map(renderPocketCard)}
                 {archivedPockets.map(renderPocketCard)}
               </div>

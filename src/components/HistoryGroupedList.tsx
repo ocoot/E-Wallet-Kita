@@ -1,0 +1,127 @@
+import React, { useMemo } from "react";
+import { useLanguage } from "../contexts/LanguageContext";
+import { Transaction, Category } from "../types";
+import { Trash2, Send, Pencil, ArrowDownLeft, ArrowUpRight } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { EmptyState } from "./EmptyState";
+
+interface HistoryGroupedListProps {
+  paginatedTransactions: Transaction[];
+  formatDateLabel: (dateStr: string) => string;
+  formatIDR: (num: number) => string;
+  getSourceIconLabel: (source: "manual" | "ai_web" | "telegram") => string;
+  onDeleteItem: (id: string) => void;
+  onEditItem: (tx: Transaction) => void;
+  categories: Category[];
+}
+
+// ── Formasi: dikelompokkan per tanggal, ala mutasi rekening m-banking ──
+// Menggantikan tabel horizontal-scroll dengan list vertikal yang lebih
+// nyaman dibaca di layar HP.
+export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
+  paginatedTransactions,
+  formatDateLabel,
+  formatIDR,
+  getSourceIconLabel,
+  onDeleteItem,
+  onEditItem,
+  categories,
+}) => {
+  const { t, locale } = useLanguage();
+
+  const groups = useMemo(() => {
+    const map = new Map<string, Transaction[]>();
+    for (const tx of paginatedTransactions) {
+      const key = tx.transaction_date;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(tx);
+    }
+    return Array.from(map.entries());
+  }, [paginatedTransactions]);
+
+  const getCategoryLabel = (key: string) => {
+    const cat = categories.find(c => c.key === key);
+    if (!cat) return key;
+    return locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key);
+  };
+
+  if (paginatedTransactions.length === 0) {
+    return (
+      <div className="border border-slate-800/80 rounded-2xl bg-slate-950/40 light_sakura:border-rose-100/50 light_sakura:bg-rose-50/10">
+        <EmptyState message={t("history.no_transactions")} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-5">
+      {groups.map(([date, txs]) => (
+        <div key={date}>
+          <div className="text-[10.5px] font-bold uppercase tracking-widest text-slate-500 mb-2 px-1">
+            {formatDateLabel(date)}
+          </div>
+          <div className="rounded-2xl border border-slate-800/80 bg-slate-950/40 overflow-hidden divide-y divide-slate-800/50 light_sakura:border-rose-100/50 light_sakura:bg-rose-50/10 light_sakura:divide-rose-100/40">
+            <AnimatePresence mode="popLayout">
+              {txs.map(tx => {
+                const isExpense = tx.type === "expense";
+                return (
+                  <motion.div
+                    key={tx.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.97 }}
+                    className="flex items-center gap-3 p-3.5 hover:bg-slate-950/20 transition-colors light_sakura:hover:bg-rose-50/30"
+                  >
+                    {/* Icon lingkaran */}
+                    <div className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center ${
+                      isExpense ? "bg-red-500/10 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500"
+                                : "bg-emerald-500/10 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-500"
+                    }`}>
+                      {isExpense ? <ArrowUpRight size={15} /> : <ArrowDownLeft size={15} />}
+                    </div>
+
+                    {/* Detail */}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">
+                        {getCategoryLabel(tx.category)}
+                      </p>
+                      <p className="text-[10.5px] text-slate-500 mt-0.5 truncate flex items-center gap-1">
+                        {tx.source === "telegram" && (
+                          <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-sm bg-[#0088cc]/20 text-[#0088cc] shrink-0">
+                            <Send size={8} className="-translate-x-0.5 translate-y-0.5 rotate-45" />
+                          </span>
+                        )}
+                        {tx.note ? tx.note : getSourceIconLabel(tx.source)}
+                      </p>
+                    </div>
+
+                    {/* Nominal + actions */}
+                    <div className="flex items-center gap-1 shrink-0">
+                      <span className={`font-mono font-bold text-sm ${isExpense ? "text-red-400 light_sakura:text-red-600" : "text-emerald-400 light_sakura:text-emerald-600"}`}>
+                        {isExpense ? "-" : "+"}{formatIDR(tx.amount)}
+                      </span>
+                      <button
+                        onClick={() => onEditItem(tx)}
+                        aria-label={t("common.edit")}
+                        className="btn-mobile-target p-2 rounded-lg text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors cursor-pointer"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      <button
+                        onClick={() => onDeleteItem(tx.id)}
+                        aria-label={t("common.delete")}
+                        className="btn-mobile-target p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};

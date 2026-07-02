@@ -390,6 +390,29 @@ export const Settings: React.FC<SettingsProps> = ({
           </p>
         </div>
 
+        {/* ── Formasi: strip profil ringkas ala kartu identitas ─────────── */}
+        <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-slate-950/40 border border-slate-800/60 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50">
+          <div className="w-11 h-11 shrink-0 rounded-full bg-indigo-600 light_sakura:bg-rose-500 text-white flex items-center justify-center font-sans font-bold text-lg">
+            {(displayName || "?").charAt(0).toUpperCase()}
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{displayName || t("admin.guest_user")}</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">{isGuest ? t("admin.guest_user") : t("settings.profile_section")}</p>
+          </div>
+          {!isGuest && (
+            isPremium ? (
+              <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/15 text-amber-400 light_sakura:bg-rose-100 light_sakura:text-rose-600">
+                <Sparkles size={11} /> {t("premium.menu_label")}
+              </span>
+            ) : (
+              <button onClick={() => { audioFeedback.playClick(); setIsPremiumOpen(true); }}
+                className="shrink-0 cursor-pointer px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors light_sakura:bg-slate-100 light_sakura:text-slate-500">
+                {t("premium.menu_label")}
+              </button>
+            )
+          )}
+        </div>
+
         {/* Grid panels */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           

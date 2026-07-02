@@ -195,29 +195,23 @@ export const BillReminders: React.FC = () => {
             </button>
           </div>
 
-          {/* ── Counter stats ──────────────────────────────────────── */}
+          {/* ── Counter stats: formasi strip chip horizontal ─────────── */}
           {reminders.length > 0 && (
-            <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-2xl bg-red-500/8 border border-red-500/15 px-4 py-3 light_sakura:bg-red-50/60 light_sakura:border-red-100">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <AlertCircle size={12} className="text-red-400" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Terlambat</span>
-                </div>
-                <p className="font-bold text-2xl text-red-400 light_sakura:text-red-600">{overdueCount}</p>
+            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 -mx-1 px-1">
+              <div className="shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl bg-red-500/8 border border-red-500/15 light_sakura:bg-red-50/60 light_sakura:border-red-100">
+                <AlertCircle size={13} className="text-red-400" />
+                <span className="font-bold text-lg text-red-400 light_sakura:text-red-600 leading-none">{overdueCount}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 leading-none">Terlambat</span>
               </div>
-              <div className="rounded-2xl bg-amber-500/8 border border-amber-500/15 px-4 py-3 light_sakura:bg-amber-50/60 light_sakura:border-amber-100">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <AlertTriangle size={12} className="text-amber-400" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Segera</span>
-                </div>
-                <p className="font-bold text-2xl text-amber-400 light_sakura:text-amber-600">{dueSoonCount}</p>
+              <div className="shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl bg-amber-500/8 border border-amber-500/15 light_sakura:bg-amber-50/60 light_sakura:border-amber-100">
+                <AlertTriangle size={13} className="text-amber-400" />
+                <span className="font-bold text-lg text-amber-400 light_sakura:text-amber-600 leading-none">{dueSoonCount}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 leading-none">Segera</span>
               </div>
-              <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-4 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <CheckCircle2 size={12} className="text-emerald-400" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Lunas</span>
-                </div>
-                <p className="font-bold text-2xl text-emerald-400 light_sakura:text-emerald-600">{paidCount}</p>
+              <div className="shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl bg-emerald-500/8 border border-emerald-500/15 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
+                <CheckCircle2 size={13} className="text-emerald-400" />
+                <span className="font-bold text-lg text-emerald-400 light_sakura:text-emerald-600 leading-none">{paidCount}</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 leading-none">Lunas</span>
               </div>
             </div>
           )}
@@ -256,56 +250,63 @@ export const BillReminders: React.FC = () => {
             <EmptyState icon={<Bell size={40} className="text-slate-600 light_sakura:text-slate-400" />} title={t("bill_reminders.empty_title")} description={t("bill_reminders.empty_desc")} />
           ) : (
             <AnimatePresence>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {reminders.map(r => {
-                  const cfg = urgencyConfig(r);
-                  return (
-                    <motion.div key={r.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}
-                      className="rounded-2xl border border-slate-800/50 bg-slate-950/40 overflow-hidden light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30">
-                      {/* Urgency stripe */}
-                      <div className={`h-1 w-full ${cfg.stripe}`} />
-                      <div className="p-4 space-y-3">
-                        {/* Top row */}
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{r.name}</p>
-                            <p className="text-[11px] text-slate-500 mt-0.5">{getCategoryLabel(r.category_key)} · {recurrenceLabel(r.recurrence_type)}</p>
-                          </div>
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0 ${cfg.badge}`}>{cfg.icon}{cfg.label}</span>
-                        </div>
+              {/* ── Formasi timeline: diurutkan dari yang paling mendesak ── */}
+              <div className="relative pl-5 before:content-[''] before:absolute before:left-[7px] before:top-1.5 before:bottom-1.5 before:w-px before:bg-slate-800 light_sakura:before:bg-rose-100">
+                {[...reminders]
+                  .sort((a, b) => {
+                    const rank = (r: BillReminderWithUrgency) => r.is_paid ? 3 : r.urgency === "overdue" ? 0 : r.urgency === "due_soon" ? 1 : 2;
+                    const rd = rank(a) - rank(b);
+                    if (rd !== 0) return rd;
+                    return (a.daysUntilDue ?? 9999) - (b.daysUntilDue ?? 9999);
+                  })
+                  .map((r, idx, arr) => {
+                    const cfg = urgencyConfig(r);
+                    const groupLabel = idx === 0 || (arr[idx - 1].is_paid !== r.is_paid) || (arr[idx - 1].urgency !== r.urgency)
+                      ? cfg.label : null;
+                    return (
+                      <React.Fragment key={r.id}>
+                        {groupLabel && (
+                          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-5 first:mt-0">{groupLabel}</div>
+                        )}
+                        <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }}
+                          className="relative mb-3">
+                          {/* Timeline dot */}
+                          <span className={`absolute -left-5 top-4 w-2.5 h-2.5 rounded-full ring-4 ring-slate-900 light_sakura:ring-white ${cfg.stripe}`} />
+                          <div className="rounded-2xl border border-slate-800/50 bg-slate-950/40 overflow-hidden light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30">
+                            <div className="p-4 space-y-3">
+                              {/* Top row */}
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0">
+                                  <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{r.name}</p>
+                                  <p className="text-[11px] text-slate-500 mt-0.5">{getCategoryLabel(r.category_key)} · {recurrenceLabel(r.recurrence_type)} · {dueDateLabel(r)}</p>
+                                </div>
+                                <span className="font-mono font-bold text-sm text-slate-200 light_sakura:text-slate-700 shrink-0">{formatIDR(r.amount)}</span>
+                              </div>
 
-                        {/* Info rows */}
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-slate-500">{t("bill_reminders.amount_label")}</span>
-                            <span className="font-semibold text-slate-200 light_sakura:text-slate-700">{formatIDR(r.amount)}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-slate-500">{t("bill_reminders.due_label")}</span>
-                            <span className="font-semibold text-slate-200 light_sakura:text-slate-700">{dueDateLabel(r)}</span>
-                          </div>
-                          {!r.is_paid && r.urgency !== "overdue" && (
-                            <div className="flex items-center justify-between text-xs">
-                              <span className="text-slate-500">{t("bill_reminders.next_due_label")}</span>
-                              <span className="text-slate-300 light_sakura:text-slate-600">{t("bill_reminders.days_left", { days: r.daysUntilDue })}</span>
+                              {/* Status + days left */}
+                              <div className="flex items-center justify-between">
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0 ${cfg.badge}`}>{cfg.icon}{cfg.label}</span>
+                                {!r.is_paid && r.urgency !== "overdue" && (
+                                  <span className="text-[11px] text-slate-400 light_sakura:text-slate-500">{t("bill_reminders.days_left", { days: r.daysUntilDue })}</span>
+                                )}
+                              </div>
+                              {r.notes && <p className="text-[11px] text-slate-500 italic truncate">{r.notes}</p>}
+
+                              {/* Actions */}
+                              <div className="flex items-center gap-2 pt-1">
+                                <button onClick={() => requestTogglePaid(r)} disabled={togglingId === r.id}
+                                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 ${r.is_paid ? "bg-slate-700/60 text-slate-400 hover:bg-slate-700 light_sakura:bg-slate-100 light_sakura:text-slate-500" : "bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 light_sakura:bg-emerald-50 light_sakura:text-emerald-600"}`}>
+                                  {togglingId === r.id ? <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" /> : r.is_paid ? <><Circle size={12} /> {t("bill_reminders.mark_unpaid")}</> : <><CheckCircle2 size={12} /> {t("bill_reminders.mark_paid")}</>}
+                                </button>
+                                <button onClick={() => { audioFeedback.playClick(); openEditForm(r); }} className="p-2 rounded-xl bg-slate-700/50 text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer light_sakura:bg-slate-100 light_sakura:text-slate-500"><Edit2 size={13} /></button>
+                                <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(r); }} className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors cursor-pointer light_sakura:bg-red-50 light_sakura:text-red-400"><Trash2 size={13} /></button>
+                              </div>
                             </div>
-                          )}
-                          {r.notes && <p className="text-[11px] text-slate-500 italic truncate">{r.notes}</p>}
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center gap-2 pt-1">
-                          <button onClick={() => requestTogglePaid(r)} disabled={togglingId === r.id}
-                            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 ${r.is_paid ? "bg-slate-700/60 text-slate-400 hover:bg-slate-700 light_sakura:bg-slate-100 light_sakura:text-slate-500" : "bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 light_sakura:bg-emerald-50 light_sakura:text-emerald-600"}`}>
-                            {togglingId === r.id ? <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" /> : r.is_paid ? <><Circle size={12} /> {t("bill_reminders.mark_unpaid")}</> : <><CheckCircle2 size={12} /> {t("bill_reminders.mark_paid")}</>}
-                          </button>
-                          <button onClick={() => { audioFeedback.playClick(); openEditForm(r); }} className="p-2 rounded-xl bg-slate-700/50 text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer light_sakura:bg-slate-100 light_sakura:text-slate-500"><Edit2 size={13} /></button>
-                          <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(r); }} className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors cursor-pointer light_sakura:bg-red-50 light_sakura:text-red-400"><Trash2 size={13} /></button>
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
+                          </div>
+                        </motion.div>
+                      </React.Fragment>
+                    );
+                  })}
               </div>
             </AnimatePresence>
           )}
