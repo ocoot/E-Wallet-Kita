@@ -5,6 +5,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { dbService } from "../lib/db";
 import { AccumulatedBalance, SavingsSummary } from "../types";
+import { InfoTooltip } from "./InfoTooltip";
 
 interface DashboardAccumulatedBalanceProps {
   /** Berubah setiap kali ada transaksi baru/diubah, dipakai untuk trigger refetch. */
@@ -82,8 +83,9 @@ export const DashboardAccumulatedBalance: React.FC<DashboardAccumulatedBalancePr
             <Layers size={20} />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500 flex items-center gap-1.5">
               {t("dashboard.accumulated_balance_label")}
+              <InfoTooltip text={t("dashboard.accumulated_balance_tooltip")} align="left" />
             </p>
             <p className={`font-sans font-bold text-2xl sm:text-3xl tracking-tight ${isPositive ? "text-white light_sakura:text-slate-900" : "text-red-400"}`}>
               {formatIDR(data.balance)}
@@ -120,7 +122,10 @@ export const DashboardAccumulatedBalance: React.FC<DashboardAccumulatedBalancePr
               <Wallet size={13} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] text-slate-500 uppercase font-semibold">{t("dashboard.available_balance_label")}</p>
+              <p className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1">
+                {t("dashboard.available_balance_label")}
+                <InfoTooltip text={t("dashboard.available_balance_tooltip")} align="left" />
+              </p>
               <p className="text-sm font-bold text-slate-100 light_sakura:text-slate-800 truncate">{formatIDR(availableBalance)}</p>
             </div>
           </div>

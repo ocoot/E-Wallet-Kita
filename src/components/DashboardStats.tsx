@@ -4,6 +4,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
+import { InfoTooltip } from "./InfoTooltip";
 
 interface DashboardStatsProps {
   summary: { income: number; expense: number; balance: number };
@@ -77,8 +78,9 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         className="p-6 rounded-3xl border bg-slate-900 border-slate-900 relative overflow-hidden transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 text-white light_sakura:text-slate-800 shadow-xs group cursor-pointer"
       >
         <div className="flex items-center justify-between mb-4 relative z-10">
-          <span className="font-sans text-xs font-semibold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
+          <span className="font-sans text-xs font-semibold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500 flex items-center gap-1.5">
             {t("dashboard.balance")}
+            <InfoTooltip text={t("dashboard.net_balance_tooltip")} align="left" />
           </span>
           <div className="shrink-0 transition-transform group-hover:scale-110 duration-300">
             <img 

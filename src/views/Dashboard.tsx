@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabase";
 import { UserSession, Transaction } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Plus, BookOpen, X } from "lucide-react";
+import { Plus, BookOpen, X, Layers, CalendarDays } from "lucide-react";
 import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
@@ -229,6 +229,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
       />
 
       {/* 1b. Saldo terakumulasi seluruh bulan s.d. bulan berjalan */}
+      <div className="flex items-center gap-2 px-1">
+        <Layers size={14} className="text-indigo-400 light_sakura:text-rose-500" />
+        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
+          {t("dashboard.overall_summary_label")}
+        </h3>
+      </div>
       <DashboardAccumulatedBalance
         refreshTrigger={transactionsUpdatedTrigger}
         formatIDR={formatIDR}
@@ -280,6 +286,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
       )}
 
       {/* 2. Scorecard Summaries (3 Column Bento format) */}
+      <div className="flex items-center gap-2 px-1 pt-2">
+        <CalendarDays size={14} className="text-emerald-400 light_sakura:text-emerald-500" />
+        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
+          {t("dashboard.balance_summary")}
+        </h3>
+      </div>
       <DashboardStats 
         summary={summary} 
         sparkPoints={sparkPoints} 

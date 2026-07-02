@@ -78,11 +78,13 @@
     "greeting_evening": "Selamat sore, {name} 🌤️",
     "greeting_night": "Selamat malam, {name} 🌙",
     "balance_summary": "Ikhtisar Keuangan Bulan Ini",
+    "overall_summary_label": "Ringkasan Keseluruhan",
     "income": "Pemasukan",
     "expense": "Pengeluaran",
-    "balance": "Saldo Bersih",
+    "balance": "Saldo Bulan Ini",
     "this_month": "Bulan Ini",
-    "net_balance_desc": "Sisa saldo bersih tabungan Anda saat ini",
+    "net_balance_desc": "Pemasukan dikurangi pengeluaran bulan ini",
+    "net_balance_tooltip": "Rumus: Pemasukan bulan ini − Pengeluaran bulan ini. Angka ini TIDAK memperhitungkan Total Kekayaan maupun dana di pos Tabungan.",
     "chart_title": "Tren Visual Aliran Masuk & Keluar",
     "chart_no_data": "Catat transaksi pertamamu atau gunakan asisten AI di bawah untuk melihat bagan visual reaktif!",
     "chart_desc_cumulative": "Perkembangan saldo bersih kumulatif dari waktu ke waktu",
@@ -114,9 +116,11 @@
     "accumulated_income_label": "Total Pemasukan",
     "accumulated_expense_label": "Total Pengeluaran",
     "accumulated_balance_hint": "Akumulasi dari seluruh bulan sebelumnya hingga bulan berjalan. Termasuk dana yang sudah dialokasikan ke pos Tabungan.",
+    "accumulated_balance_tooltip": "Rumus: Total Pemasukan − Total Pengeluaran, dihitung sejak transaksi pertama Anda (bukan cuma bulan ini). Dana di pos Tabungan tetap termasuk di sini karena masih milik Anda.",
     "available_balance_label": "Saldo Tersedia",
     "total_savings_label": "Total Tabungan",
-    "savings_breakdown_hint": "Saldo Tersedia sudah dikurangi dana yang tersimpan di pos Tabungan, supaya tidak sengaja terpakai."
+    "savings_breakdown_hint": "Saldo Tersedia sudah dikurangi dana yang tersimpan di pos Tabungan, supaya tidak sengaja terpakai.",
+    "available_balance_tooltip": "Rumus: Total Kekayaan − Total Tabungan. Ini uang yang benar-benar bebas dibelanjakan tanpa mengganggu tabungan Anda."
   },
   "transaction": {
     "add_title": "Catat Transaksi Manual",

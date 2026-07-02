@@ -78,11 +78,13 @@
     "greeting_evening": "Good evening, {name} 🌤️",
     "greeting_night": "Good night, {name} 🌙",
     "balance_summary": "Financial Overview This Month",
+    "overall_summary_label": "Overall Summary",
     "income": "Income",
     "expense": "Expense",
-    "balance": "Net Balance",
+    "balance": "Balance This Month",
     "this_month": "This Month",
-    "net_balance_desc": "Your net savings remaining balance",
+    "net_balance_desc": "Income minus expenses this month",
+    "net_balance_tooltip": "Formula: This month's income − This month's expenses. This number does NOT account for your Total Net Worth or funds held in Savings pockets.",
     "chart_title": "Income vs Expense Visual Trends",
     "chart_no_data": "Log a manual transaction or use AI quick insert below to display visual trends!",
     "chart_desc_cumulative": "Historical overview of cumulative net balance progress",
@@ -114,9 +116,11 @@
     "accumulated_income_label": "Total Income",
     "accumulated_expense_label": "Total Expense",
     "accumulated_balance_hint": "Accumulated from all previous months through the current month. Includes funds already allocated to Savings pockets.",
+    "accumulated_balance_tooltip": "Formula: Total Income − Total Expenses, calculated since your very first transaction (not just this month). Funds in Savings pockets are still included here since they're still yours.",
     "available_balance_label": "Available Balance",
     "total_savings_label": "Total Savings",
-    "savings_breakdown_hint": "Available Balance already excludes funds held in Savings pockets, so it isn't accidentally spent."
+    "savings_breakdown_hint": "Available Balance already excludes funds held in Savings pockets, so it isn't accidentally spent.",
+    "available_balance_tooltip": "Formula: Total Net Worth − Total Savings. This is the money you can truly spend freely without touching your savings."
   },
   "transaction": {
     "add_title": "Log Manual Transaction",
