@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Transaction, Category, Budget, BillReminder, Installment, AccumulatedBalance } from "../types";
+import { Transaction, Category, Budget, BillReminder, Installment, AccumulatedBalance, SavingsPocket, SavingsPocketEntry, SavingsSummary, SavingsPocketType } from "../types";
 
 export const dbService = {
   async getCategories(): Promise<Category[]> {
@@ -548,6 +548,172 @@ export const dbService = {
       expense_total: Number(row?.expense_total ?? 0),
       balance: Number(row?.balance ?? 0),
       first_transaction_date: row?.first_transaction_date ?? null
+    };
+  },
+
+  // ── Tabungan (Savings Pockets) ──────────────────────────────────────
+  // CRUD dasar pocket = direct table access (pola sama dengan bill_reminders),
+  // diamankan RLS. Deposit/withdraw WAJIB lewat RPC karena harus atomik
+  // dengan penulisan ke savings_pocket_entries (lihat migration terkait).
+
+  async getSavingsPockets(userId: string): Promise<SavingsPocket[]> {
+    const { data, error } = await supabase
+      .from('savings_pockets')
+      .select('*')
+      .eq('user_id', userId)
+      .order('is_archived', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching savings pockets:', error);
+      throw error;
+    }
+
+    return data as SavingsPocket[];
+  },
+
+  async createSavingsPocket(
+    userId: string,
+    payload: {
+      name: string;
+      pocket_type: SavingsPocketType;
+      target_amount: number | null;
+      target_date: string | null;
+      notes: string | null;
+    }
+  ): Promise<SavingsPocket> {
+    const { data, error } = await supabase
+      .from('savings_pockets')
+      .insert({ user_id: userId, ...payload })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating savings pocket:', error);
+      throw error;
+    }
+
+    return data as SavingsPocket;
+  },
+
+  async updateSavingsPocket(
+    userId: string,
+    pocketId: string,
+    updates: Partial<Pick<SavingsPocket, 'name' | 'target_amount' | 'target_date' | 'notes' | 'is_archived'>>
+  ): Promise<SavingsPocket> {
+    const payload: Record<string, any> = { ...updates, updated_at: new Date().toISOString() };
+
+    const { data, error } = await supabase
+      .from('savings_pockets')
+      .update(payload)
+      .eq('id', pocketId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating savings pocket:', error);
+      throw error;
+    }
+
+    return data as SavingsPocket;
+  },
+
+  async deleteSavingsPocket(userId: string, pocketId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('savings_pockets')
+      .delete()
+      .eq('id', pocketId)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error deleting savings pocket:', error);
+      return false;
+    }
+    return true;
+  },
+
+  async getSavingsPocketEntries(userId: string, pocketId: string): Promise<SavingsPocketEntry[]> {
+    const { data, error } = await supabase
+      .from('savings_pocket_entries')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('pocket_id', pocketId)
+      .order('entry_date', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching savings pocket entries:', error);
+      throw error;
+    }
+
+    return data as SavingsPocketEntry[];
+  },
+
+  /**
+   * Setor dana dari saldo tersedia ke sebuah pocket. TIDAK menyentuh
+   * transactions/accumulated balance -- murni reklasifikasi internal.
+   */
+  async depositToPocket(
+    pocketId: string,
+    amount: number,
+    note: string | null,
+    entryDate?: string
+  ): Promise<SavingsPocket> {
+    const { data, error } = await supabase.rpc('deposit_to_pocket_for_user', {
+      p_pocket_id: pocketId,
+      p_amount: amount,
+      p_note: note,
+      ...(entryDate ? { p_entry_date: entryDate } : {})
+    });
+
+    if (error) {
+      console.error('Error depositing to pocket:', error);
+      throw error;
+    }
+
+    return data as SavingsPocket;
+  },
+
+  /**
+   * Tarik dana dari pocket kembali ke saldo tersedia. RPC akan menolak
+   * (error INSUFFICIENT_POCKET_BALANCE) kalau amount > current_amount.
+   */
+  async withdrawFromPocket(
+    pocketId: string,
+    amount: number,
+    note: string | null,
+    entryDate?: string
+  ): Promise<SavingsPocket> {
+    const { data, error } = await supabase.rpc('withdraw_from_pocket_for_user', {
+      p_pocket_id: pocketId,
+      p_amount: amount,
+      p_note: note,
+      ...(entryDate ? { p_entry_date: entryDate } : {})
+    });
+
+    if (error) {
+      console.error('Error withdrawing from pocket:', error);
+      throw error;
+    }
+
+    return data as SavingsPocket;
+  },
+
+  /**
+   * Total tersimpan di semua pocket aktif (non-archived) + jumlah pocket.
+   * Dipakai untuk menghitung "Saldo Tersedia" = accumulated balance - total_saved.
+   */
+  async getSavingsSummary(): Promise<SavingsSummary> {
+    const { data, error } = await supabase.rpc('get_savings_summary');
+    if (error) {
+      console.error('Error fetching savings summary:', error);
+      throw error;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    return {
+      total_saved: Number(row?.total_saved ?? 0),
+      pocket_count: Number(row?.pocket_count ?? 0)
     };
   }
 };

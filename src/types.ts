@@ -115,3 +115,40 @@ export interface AccumulatedBalance {
   balance: number;
   first_transaction_date: string | null;
 }
+
+export type SavingsPocketType =
+  | "emergency_fund"  // Dana Darurat
+  | "goal"            // Tabungan Tujuan (liburan, gawai, nikah, dst)
+  | "education"       // Tabungan Pendidikan
+  | "retirement"      // Dana Pensiun
+  | "investment";     // Investasi
+
+export interface SavingsPocket {
+  id: string;
+  user_id: string;
+  name: string;
+  pocket_type: SavingsPocketType;
+  target_amount: number | null;
+  target_date: string | null;
+  current_amount: number;
+  notes: string | null;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SavingsPocketEntry {
+  id: string;
+  pocket_id: string;
+  user_id: string;
+  direction: "deposit" | "withdrawal";
+  amount: number;
+  note: string | null;
+  entry_date: string;
+  created_at: string;
+}
+
+export interface SavingsSummary {
+  total_saved: number;
+  pocket_count: number;
+}
