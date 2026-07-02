@@ -26,7 +26,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
   className = "",
 }) => {
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -56,7 +56,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
       : "left-1/2 -translate-x-1/2";
 
   return (
-    <div ref={containerRef} className={`relative inline-flex ${className}`}>
+    <span ref={containerRef} className={`relative inline-flex ${className}`}>
       <button
         type="button"
         onClick={(e) => {
@@ -71,12 +71,12 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
       </button>
 
       {open && (
-        <div
-          className={`absolute z-50 top-full mt-1.5 ${alignClass} w-56 p-2.5 rounded-xl bg-slate-800 border border-slate-700 shadow-xl text-[11px] leading-relaxed font-normal normal-case tracking-normal text-slate-200 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-700`}
+        <span
+          className={`absolute z-50 top-full mt-1.5 ${alignClass} w-56 p-2.5 rounded-xl bg-slate-800 border border-slate-700 shadow-xl text-[11px] leading-relaxed font-normal normal-case tracking-normal text-slate-200 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-700 block`}
         >
           {text}
-        </div>
+        </span>
       )}
-    </div>
+    </span>
   );
 };
