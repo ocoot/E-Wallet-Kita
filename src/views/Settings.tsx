@@ -23,7 +23,6 @@ import {
   Copy,
   RefreshCw,
   Sparkles,
-  ShieldCheck,
   Lock,
   Smartphone,
   Download,
@@ -402,7 +401,7 @@ export const Settings: React.FC<SettingsProps> = ({
           {!isGuest && (
             isPremium ? (
               <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-amber-500/15 text-amber-400 light_sakura:bg-rose-100 light_sakura:text-rose-600">
-                <Sparkles size={11} /> {t("premium.menu_label")}
+                <Sparkles size={11} /> {t("premium.badge_active")}
               </span>
             ) : (
               <button onClick={() => { audioFeedback.playClick(); setIsPremiumOpen(true); }}
@@ -643,32 +642,6 @@ export const Settings: React.FC<SettingsProps> = ({
 
         {/* Panel Right: Telegram linking & Account promotion */}
         <div className="space-y-6">
-          
-          {/* Premium Gating Card */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-5 font-sans light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                {isPremium ? (
-                  <ShieldCheck className="text-emerald-400" size={20} />
-                ) : isGuest ? (
-                  <Lock className="text-slate-500" size={20} />
-                ) : (
-                  <ShieldCheck className="text-slate-500" size={20} />
-                )}
-                <span className="font-bold text-white text-sm light_sakura:text-slate-800">
-                  {isPremium ? t("premium.badge_active") : t("premium.menu_label")}
-                </span>
-              </div>
-              {!isPremium && (
-                <button
-                  onClick={() => setIsPremiumOpen(true)}
-                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold cursor-pointer transition-colors shadow-md shadow-indigo-600/10"
-                >
-                  {t("premium.unlock_now")}
-                </button>
-              )}
-            </div>
-          </div>
           
           {/* Section 3: Telegram Bot Integration block */}
           <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
