@@ -110,10 +110,13 @@
     "voice_processing": "Processing your voice note...",
     "voice_processing_desc": "Gemini AI is transcribing, then analyzing the amount & category.",
     "voice_recording": "Recording... tap to stop",
-    "accumulated_balance_label": "Accumulated Balance",
+    "accumulated_balance_label": "Total Net Worth",
     "accumulated_income_label": "Total Income",
     "accumulated_expense_label": "Total Expense",
-    "accumulated_balance_hint": "Accumulated from all previous months through the current month, not just this month."
+    "accumulated_balance_hint": "Accumulated from all previous months through the current month. Includes funds already allocated to Savings pockets.",
+    "available_balance_label": "Available Balance",
+    "total_savings_label": "Total Savings",
+    "savings_breakdown_hint": "Available Balance already excludes funds held in Savings pockets, so it isn't accidentally spent."
   },
   "transaction": {
     "add_title": "Log Manual Transaction",
@@ -1059,6 +1062,9 @@
     "withdraw_success": "Successfully withdrew from {name}.",
     "withdraw_error": "Failed to withdraw funds. Please try again.",
     "insufficient_balance_error": "This pocket doesn't have enough balance for that withdrawal.",
-    "info_banner_text": "Total Savings still counts toward your net worth -- it's only separated from your Available Balance so it isn't accidentally spent."
+    "info_banner_text": "Total Savings still counts toward your net worth -- it's only separated from your Available Balance so it isn't accidentally spent.",
+    "insufficient_available_balance_error": "Your available balance isn't enough for that deposit.",
+    "available_balance_hint": "Available balance: {amount}",
+    "pocket_balance_hint": "This pocket's balance: {amount}"
   }
 }

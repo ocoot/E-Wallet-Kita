@@ -110,10 +110,13 @@
     "voice_recording": "Sedang merekam... ketuk untuk berhenti",
     "voice_processing": "Sedang memproses suara Anda...",
     "voice_processing_desc": "Gemini AI sedang mentranskrip lalu menganalisis nominal & kategori transaksi.",
-    "accumulated_balance_label": "Saldo Terakumulasi",
+    "accumulated_balance_label": "Total Kekayaan",
     "accumulated_income_label": "Total Pemasukan",
     "accumulated_expense_label": "Total Pengeluaran",
-    "accumulated_balance_hint": "Akumulasi dari seluruh bulan sebelumnya hingga bulan berjalan, bukan cuma bulan ini."
+    "accumulated_balance_hint": "Akumulasi dari seluruh bulan sebelumnya hingga bulan berjalan. Termasuk dana yang sudah dialokasikan ke pos Tabungan.",
+    "available_balance_label": "Saldo Tersedia",
+    "total_savings_label": "Total Tabungan",
+    "savings_breakdown_hint": "Saldo Tersedia sudah dikurangi dana yang tersimpan di pos Tabungan, supaya tidak sengaja terpakai."
   },
   "transaction": {
     "add_title": "Catat Transaksi Manual",
@@ -1059,6 +1062,9 @@
     "withdraw_success": "Berhasil menarik dari {name}.",
     "withdraw_error": "Gagal menarik dana. Silakan coba lagi.",
     "insufficient_balance_error": "Saldo pos tabungan tidak cukup untuk ditarik sebesar itu.",
-    "info_banner_text": "Total Tabungan tetap dihitung sebagai kekayaanmu -- hanya dipisahkan dari Saldo Tersedia supaya tidak sengaja terpakai."
+    "info_banner_text": "Total Tabungan tetap dihitung sebagai kekayaanmu -- hanya dipisahkan dari Saldo Tersedia supaya tidak sengaja terpakai.",
+    "insufficient_available_balance_error": "Saldo tersedia tidak cukup untuk menyetor sebesar itu.",
+    "available_balance_hint": "Saldo tersedia: {amount}",
+    "pocket_balance_hint": "Saldo pos ini: {amount}"
   }
 }

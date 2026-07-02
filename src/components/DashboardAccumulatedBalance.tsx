@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import { Wallet, TrendingUp, TrendingDown, Layers } from "lucide-react";
+import { Wallet, TrendingUp, TrendingDown, Layers, PiggyBank, Vault } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { dbService } from "../lib/db";
-import { AccumulatedBalance } from "../types";
+import { AccumulatedBalance, SavingsSummary } from "../types";
 
 interface DashboardAccumulatedBalanceProps {
   /** Berubah setiap kali ada transaksi baru/diubah, dipakai untuk trigger refetch. */
@@ -18,6 +18,15 @@ interface DashboardAccumulatedBalanceProps {
  * DashboardStats). Dihitung lewat RPC get_accumulated_balance (SUM agregat
  * di server) supaya user langsung tahu "total uang saya sebenarnya berapa"
  * tanpa harus menjumlahkan manual dari riwayat.
+ *
+ * Sejak fitur Tabungan (savings pockets) ada, angka ini juga dipecah jadi:
+ * - Total Kekayaan (accumulated balance, TIDAK berubah saat dana dipindah
+ *   ke/dari pocket -- itu murni reklasifikasi internal, bukan pengeluaran).
+ * - Saldo Tersedia = Total Kekayaan - Total Tabungan (yang benar-benar
+ *   bebas dibelanjakan).
+ * - Total Tabungan = jumlah semua pocket aktif (dari get_savings_summary).
+ * Breakdown hanya ditampilkan kalau user punya minimal 1 pocket aktif,
+ * supaya tidak menambah noise buat user yang belum pakai fitur Tabungan.
  */
 export const DashboardAccumulatedBalance: React.FC<DashboardAccumulatedBalanceProps> = ({
   refreshTrigger,
@@ -26,14 +35,22 @@ export const DashboardAccumulatedBalance: React.FC<DashboardAccumulatedBalancePr
   const { t } = useLanguage();
   const { user } = useAuth();
   const [data, setData] = useState<AccumulatedBalance | null>(null);
+  const [savings, setSavings] = useState<SavingsSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user?.id) return;
     let cancelled = false;
     setLoading(true);
-    dbService.getAccumulatedBalance()
-      .then(res => { if (!cancelled) setData(res); })
+    Promise.all([
+      dbService.getAccumulatedBalance(),
+      dbService.getSavingsSummary().catch(() => ({ total_saved: 0, pocket_count: 0 }))
+    ])
+      .then(([balanceRes, savingsRes]) => {
+        if (cancelled) return;
+        setData(balanceRes);
+        setSavings(savingsRes);
+      })
       .catch(err => console.error("DashboardAccumulatedBalance error:", err))
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
@@ -50,6 +67,8 @@ export const DashboardAccumulatedBalance: React.FC<DashboardAccumulatedBalancePr
   }
 
   const isPositive = data.balance >= 0;
+  const hasSavings = !!savings && savings.pocket_count > 0;
+  const availableBalance = hasSavings ? data.balance - savings!.total_saved : data.balance;
 
   return (
     <motion.div
@@ -93,8 +112,32 @@ export const DashboardAccumulatedBalance: React.FC<DashboardAccumulatedBalancePr
           </div>
         </div>
       </div>
+
+      {hasSavings && (
+        <div className="px-5 sm:px-6 pb-4 -mt-1 flex flex-col sm:flex-row gap-3">
+          <div className="flex-1 flex items-center gap-2.5 rounded-2xl border border-indigo-500/15 bg-indigo-500/5 px-4 py-2.5 light_sakura:bg-indigo-50/40 light_sakura:border-indigo-100">
+            <div className="w-7 h-7 rounded-lg bg-indigo-500/15 flex items-center justify-center text-indigo-400 shrink-0">
+              <Wallet size={13} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] text-slate-500 uppercase font-semibold">{t("dashboard.available_balance_label")}</p>
+              <p className="text-sm font-bold text-slate-100 light_sakura:text-slate-800 truncate">{formatIDR(availableBalance)}</p>
+            </div>
+          </div>
+          <div className="flex-1 flex items-center gap-2.5 rounded-2xl border border-emerald-500/15 bg-emerald-500/5 px-4 py-2.5 light_sakura:bg-emerald-50/40 light_sakura:border-emerald-100">
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-400 shrink-0">
+              <Vault size={13} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] text-slate-500 uppercase font-semibold">{t("dashboard.total_savings_label")}</p>
+              <p className="text-sm font-bold text-slate-100 light_sakura:text-slate-800 truncate">{formatIDR(savings!.total_saved)}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <p className="px-5 sm:px-6 pb-4 -mt-1 text-[11px] text-slate-500 leading-relaxed">
-        {t("dashboard.accumulated_balance_hint")}
+        {hasSavings ? t("dashboard.savings_breakdown_hint") : t("dashboard.accumulated_balance_hint")}
       </p>
     </motion.div>
   );

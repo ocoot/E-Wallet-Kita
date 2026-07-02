@@ -174,6 +174,8 @@ export const Savings: React.FC = () => {
       const msg = String(err?.message || "");
       if (msg.includes("INSUFFICIENT_POCKET_BALANCE")) {
         showToast(t("savings.insufficient_balance_error"), "error");
+      } else if (msg.includes("INSUFFICIENT_AVAILABLE_BALANCE")) {
+        showToast(t("savings.insufficient_available_balance_error"), "error");
       } else {
         showToast(moveTarget.direction === "deposit" ? t("savings.deposit_error") : t("savings.withdraw_error"), "error");
       }
@@ -376,6 +378,12 @@ export const Savings: React.FC = () => {
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_amount")}</label>
                   <input type="number" value={moveAmount} onChange={e => setMoveAmount(e.target.value)} placeholder={t("savings.form_amount_placeholder")} min={0} autoFocus className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
+                  {moveTarget.direction === "deposit" && availableBalance != null && (
+                    <p className="text-[11px] text-slate-500 mt-1.5">{t("savings.available_balance_hint", { amount: formatIDR(availableBalance) })}</p>
+                  )}
+                  {moveTarget.direction === "withdraw" && (
+                    <p className="text-[11px] text-slate-500 mt-1.5">{t("savings.pocket_balance_hint", { amount: formatIDR(moveTarget.pocket.current_amount) })}</p>
+                  )}
                 </div>
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_entry_date")}</label>
