@@ -57,6 +57,7 @@ async function startServer() {
   const sendReceiptHandler = (await import("./api/send-receipt")).default;
   const premiumPaymentHandler = (await import("./api/premium/payment")).default;
   const broadcastHandler = (await import("./api/admin/broadcast")).default;
+  const weatherHandler = (await import("./api/weather")).default;
 
   // AI transaction parser (Delegated to serverless module — single source
   // of truth in api/parse-transaction.ts: auth check, per-user rate
@@ -79,6 +80,9 @@ async function startServer() {
   app.post("/api/premium/payment", premiumPaymentHandler as any);
   app.get("/api/premium/payment", premiumPaymentHandler as any);
   app.put("/api/premium/payment", premiumPaymentHandler as any);
+
+  // Widget cuaca dinamis di Dashboard (Delegated to serverless module)
+  app.get("/api/weather", weatherHandler as any);
 
   // Vite development vs production static handler integration
   if (process.env.NODE_ENV !== "production") {

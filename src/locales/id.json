@@ -78,6 +78,7 @@
     "greeting_afternoon": "Selamat siang, {name} ☀️",
     "greeting_evening": "Selamat sore, {name} 🌤️",
     "greeting_night": "Selamat malam, {name} 🌙",
+    "weather_loading": "Memuat cuaca...",
     "balance_summary": "Ikhtisar Keuangan Bulan Ini",
     "overall_summary_label": "Ringkasan Keseluruhan",
     "income": "Pemasukan",

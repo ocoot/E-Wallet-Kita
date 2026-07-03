@@ -2,8 +2,11 @@ import React from "react";
 import logoUrl from "../assets/images/user_logo_transparent.png";
 import { useLanguage } from "../contexts/LanguageContext";
 import { UserSession } from "../types";
-import { Send, Info, Calendar } from "lucide-react";
+import { Send, Info, Calendar, MapPin } from "lucide-react";
 import { motion } from "motion/react";
+import { useWeather } from "../hooks/useWeather";
+import { getWeatherTheme } from "../lib/weatherTheme";
+import { DashboardWeatherLayer } from "./DashboardWeatherLayer";
 
 interface DashboardHeaderProps {
   currentUser: UserSession;
@@ -15,6 +18,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   telegramStatus,
 }) => {
   const { t, locale } = useLanguage();
+  const { weather, loading: weatherLoading } = useWeather();
+  const weatherTheme = weather ? getWeatherTheme(weather.current.condition, weather.current.isDay) : null;
 
   const getGreetingKey = (): string => {
     const hour = new Date().getHours();
@@ -64,9 +69,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   return (
     <div 
       id="dashboard-welcome-banner" 
-      className="p-6 rounded-3xl border bg-slate-900 border-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-sm"
+      className="relative overflow-hidden p-6 rounded-3xl border bg-slate-900 border-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-sm"
     >
-      <div className="flex items-center gap-4">
+      {weatherTheme && weather && (
+        <DashboardWeatherLayer condition={weather.current.condition} isDay={weather.current.isDay} />
+      )}
+
+      <div className="relative z-10 flex items-center gap-4">
         {/* Logo PNG transparan */}
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
@@ -86,11 +95,31 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
         >
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-slate-300 light_sakura:bg-rose-50 light_sakura:border-rose-100/50 light_sakura:text-rose-600 transition-colors duration-300">
               <Calendar size={12} className="shrink-0" />
               <span>{formattedDate}</span>
             </div>
+
+            {weatherLoading && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-slate-500 animate-pulse">
+                <span>{t("dashboard.weather_loading")}</span>
+              </div>
+            )}
+
+            {weather && weatherTheme && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-slate-300 light_sakura:bg-rose-50 light_sakura:border-rose-100/50 light_sakura:text-rose-600 transition-colors duration-300">
+                <weatherTheme.icon size={12} className={`shrink-0 ${weatherTheme.accentClass}`} />
+                <span>
+                  {locale === "id" ? weatherTheme.labelId : weatherTheme.labelEn}
+                  {" · "}
+                  {weather.current.temperatureC}°C
+                </span>
+                <span className="w-px h-3 bg-white/10 mx-0.5" />
+                <MapPin size={11} className="shrink-0 opacity-70" />
+                <span className="max-w-[9rem] truncate">{weather.location.city}</span>
+              </div>
+            )}
           </div>
           <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
             {t(getGreetingKey(), { name: currentUser.display_name })}
@@ -115,7 +144,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4, delay: 0.3 }}
-          className="self-start md:self-center bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-2 font-sans text-xs font-semibold text-amber-500 flex items-center gap-2"
+          className="relative z-10 self-start md:self-center bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-2 font-sans text-xs font-semibold text-amber-500 flex items-center gap-2"
         >
           <Info size={14} />
           <span>{t("auth.guest_badge")}</span>

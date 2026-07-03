@@ -78,6 +78,7 @@
     "greeting_afternoon": "Good afternoon, {name} ☀️",
     "greeting_evening": "Good evening, {name} 🌤️",
     "greeting_night": "Good night, {name} 🌙",
+    "weather_loading": "Loading weather...",
     "balance_summary": "Financial Overview This Month",
     "overall_summary_label": "Overall Summary",
     "income": "Income",

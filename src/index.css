@@ -114,6 +114,124 @@ html, body {
   animation-play-state: paused;
 }
 
+/* ── Animasi partikel cuaca dinamis (DashboardWeatherLayer) ──────────
+   Dipakai untuk mensimulasikan hujan, salju, awan bergerak, kabut, dan
+   kilat di background welcome banner Dashboard, sesuai kondisi cuaca
+   real-time dari /api/weather. Semua partikel posisi & timing-nya
+   di-generate di JS lalu dikontrol lewat CSS var per elemen supaya tidak
+   perlu banyak keyframe unik. */
+
+@keyframes weather-rain-fall {
+  0%   { transform: translateY(-20%); opacity: 0; }
+  10%  { opacity: 0.8; }
+  100% { transform: translateY(220%); opacity: 0; }
+}
+
+.weather-raindrop {
+  position: absolute;
+  top: 0;
+  left: var(--wx-left, 50%);
+  width: 1.5px;
+  height: var(--wx-h, 18px);
+  background: linear-gradient(to bottom, transparent, rgba(191, 219, 254, 0.85));
+  border-radius: 999px;
+  animation: weather-rain-fall var(--wx-dur, 1.1s) linear infinite;
+  animation-delay: var(--wx-delay, 0s);
+}
+
+@keyframes weather-snow-fall {
+  0%   { transform: translate(0, -15%) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.9; }
+  100% { transform: translate(var(--wx-drift, 20px), 220%) rotate(180deg); opacity: 0; }
+}
+
+.weather-snowflake {
+  position: absolute;
+  top: 0;
+  left: var(--wx-left, 50%);
+  width: var(--wx-size, 5px);
+  height: var(--wx-size, 5px);
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  animation: weather-snow-fall var(--wx-dur, 6s) linear infinite;
+  animation-delay: var(--wx-delay, 0s);
+}
+
+@keyframes weather-cloud-drift {
+  0%   { transform: translateX(-8%); }
+  50%  { transform: translateX(6%); }
+  100% { transform: translateX(-8%); }
+}
+
+.weather-cloud {
+  position: absolute;
+  animation: weather-cloud-drift var(--wx-dur, 18s) ease-in-out infinite;
+  animation-delay: var(--wx-delay, 0s);
+}
+
+@keyframes weather-fog-drift {
+  0%   { transform: translateX(-6%); opacity: 0.35; }
+  50%  { transform: translateX(6%); opacity: 0.6; }
+  100% { transform: translateX(-6%); opacity: 0.35; }
+}
+
+.weather-fog-band {
+  position: absolute;
+  animation: weather-fog-drift var(--wx-dur, 12s) ease-in-out infinite;
+  animation-delay: var(--wx-delay, 0s);
+}
+
+@keyframes weather-lightning-flash {
+  0%, 92%, 100% { opacity: 0; }
+  93%           { opacity: 0.9; }
+  94%           { opacity: 0.1; }
+  95%           { opacity: 0.7; }
+  96%, 100%     { opacity: 0; }
+}
+
+.weather-lightning {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(224, 231, 255, 0.9), transparent 60%);
+  animation: weather-lightning-flash 6s ease-in-out infinite;
+  animation-delay: var(--wx-delay, 0s);
+  pointer-events: none;
+}
+
+@keyframes weather-sun-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.85; transform: scale(1.06); }
+}
+
+.weather-sun-glow {
+  animation: weather-sun-pulse 4s ease-in-out infinite;
+}
+
+@keyframes weather-twinkle {
+  0%, 100% { opacity: 0.15; }
+  50%      { opacity: 0.9; }
+}
+
+.weather-star {
+  position: absolute;
+  border-radius: 999px;
+  background: white;
+  animation: weather-twinkle var(--wx-dur, 3s) ease-in-out infinite;
+  animation-delay: var(--wx-delay, 0s);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .weather-raindrop,
+  .weather-snowflake,
+  .weather-cloud,
+  .weather-fog-band,
+  .weather-lightning,
+  .weather-sun-glow,
+  .weather-star {
+    animation: none !important;
+  }
+}
+
 /* ── Mobile touch target sizing ──────────────────────────────────── */
 /* Ensure all interactive elements have ≥ 44px tap area on mobile */
 @media (max-width: 639px) {
