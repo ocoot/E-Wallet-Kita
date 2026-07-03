@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Transaction, Category, Budget, BillReminder, Installment, AccumulatedBalance, SavingsPocket, SavingsPocketEntry, SavingsSummary, SavingsPocketType, GoldPocket, GoldPocketEntry, GoldHoldingsSummary, GoldBrand } from "../types";
+import { Transaction, Category, Budget, BillReminder, Installment, AccumulatedBalance, SavingsPocket, SavingsPocketEntry, SavingsSummary, SavingsPocketType, GoldPocket, GoldPocketEntry, GoldHoldingsSummary, GoldBrand, ACTIVE_GOLD_BRANDS } from "../types";
 
 export const dbService = {
   async getCategories(): Promise<Category[]> {
@@ -915,6 +915,7 @@ export const dbService = {
     const { data, error } = await supabase
       .from('gold_prices')
       .select('brand, sell_price_per_gram, buyback_price_per_gram, price_date, fetched_at')
+      .in('brand', ACTIVE_GOLD_BRANDS)
       .order('price_date', { ascending: false })
       .order('fetched_at', { ascending: false });
 

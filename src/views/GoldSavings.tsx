@@ -4,7 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { dbService } from "../lib/db";
 import { useGoldSavings } from "../hooks/useGoldSavings";
-import { GoldPocket, GoldBrand } from "../types";
+import { GoldPocket, GoldBrand, ACTIVE_GOLD_BRANDS } from "../types";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
 import { motion, AnimatePresence } from "motion/react";
@@ -14,7 +14,9 @@ import {
   Archive, ArchiveRestore, Info, AlertTriangle, PackagePlus, PackageMinus
 } from "lucide-react";
 
-const GOLD_BRANDS: GoldBrand[] = ["antam", "logammulia", "ubs", "galeri24", "pegadaian", "sampoernagold", "hartadinataabadi"];
+// GOLD_BRANDS lama (7 brand) diganti ACTIVE_GOLD_BRANDS dari types.ts --
+// supaya user tidak bisa membuat pos untuk brand yang sudah tidak lagi
+// disinkron gold-price-sync (lihat cakupan yang dipersempit ke 4 brand).
 
 const formatIDR = (num: number | null) => num != null ? "Rp" + Math.round(num).toLocaleString("id-ID") : "-";
 const formatGrams = (num: number) => `${num.toLocaleString("id-ID", { maximumFractionDigits: 4 })} gr`;
@@ -50,6 +52,17 @@ export const GoldSavings: React.FC = () => {
   const activePockets = useMemo(() => pockets.filter(p => !p.is_archived), [pockets]);
   const archivedPockets = useMemo(() => pockets.filter(p => p.is_archived), [pockets]);
   const priceByBrand = useMemo(() => new Map(prices.map(p => [p.brand, p])), [prices]);
+  // Defensif: kalau pos yang sedang diedit brand-nya sudah tidak lagi
+  // disinkron (di luar ACTIVE_GOLD_BRANDS -- mis. dibuat sebelum cakupan
+  // dipersempit), tetap tampilkan brand itu di dropdown supaya tidak
+  // kelihatan kosong/salah pilih. Select tetap disabled saat edit, jadi
+  // ini murni supaya nilainya kebaca benar, bukan supaya bisa dipilih ulang.
+  const formBrandOptions = useMemo(() => {
+    if (editTarget && !ACTIVE_GOLD_BRANDS.includes(editTarget.brand)) {
+      return [editTarget.brand, ...ACTIVE_GOLD_BRANDS];
+    }
+    return ACTIVE_GOLD_BRANDS;
+  }, [editTarget]);
 
   const openAddForm = () => { setEditTarget(null); setForm(emptyForm()); setIsFormOpen(true); };
   const openEditForm = (p: GoldPocket) => {
@@ -156,7 +169,13 @@ export const GoldSavings: React.FC = () => {
 
   const renderPocketCard = (p: GoldPocket) => {
     const price = priceByBrand.get(p.brand);
-    const marketValue = price ? p.grams_owned * price.buyback_price_per_gram : null;
+    // Sama seperti get_gold_holdings_summary di database: kalau buyback
+    // belum tersedia, estimasi pakai harga jual (lebih dekat ke kenyataan
+    // daripada 0, yang sebelumnya bikin kartu ini menampilkan "Rp0" padahal
+    // di kartu ringkasan atas sudah benar karena RPC-nya sudah fallback).
+    const effectivePricePerGram = price?.buyback_price_per_gram ?? price?.sell_price_per_gram ?? null;
+    const isEstimated = !!price && price.buyback_price_per_gram == null && price.sell_price_per_gram != null;
+    const marketValue = effectivePricePerGram != null ? p.grams_owned * effectivePricePerGram : null;
     const gainLoss = marketValue != null ? marketValue - p.cash_locked_amount : null;
     return (
       <motion.div key={p.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}
@@ -186,6 +205,9 @@ export const GoldSavings: React.FC = () => {
             <p className="text-[11px] text-slate-500 mt-0.5">
               {marketValue != null ? t("gold.est_value", { amount: formatIDR(marketValue) }) : t("gold.price_unavailable_short")}
             </p>
+            {isEstimated && (
+              <p className="text-[9.5px] text-amber-500/80 mt-0.5">{t("gold.est_from_sell_price_note")}</p>
+            )}
             {gainLoss != null && p.grams_owned > 0 && (
               <p className={`text-[10.5px] font-semibold mt-0.5 ${gainLoss >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                 {gainLoss >= 0 ? "▲ " : "▼ "}{formatIDR(Math.abs(gainLoss))} {t(gainLoss >= 0 ? "gold.unrealized_gain" : "gold.unrealized_loss")}
@@ -338,7 +360,7 @@ export const GoldSavings: React.FC = () => {
                 <div>
                   <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_brand")}</label>
                   <select value={form.brand} disabled={!!editTarget} onChange={e => setForm(f => ({ ...f, brand: e.target.value as GoldBrand }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-amber-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                    {GOLD_BRANDS.map(b => <option key={b} value={b}>{t(`gold.brand_${b}`)}</option>)}
+                    {formBrandOptions.map(b => <option key={b} value={b}>{t(`gold.brand_${b}`)}</option>)}
                   </select>
                   <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
                     {editTarget ? t("gold.form_brand_locked_hint") : t("gold.form_brand_hint")}

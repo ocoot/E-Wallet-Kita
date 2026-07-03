@@ -1101,6 +1101,7 @@
     "brand_hartadinataabadi": "Hartadinata Abadi",
     "est_value": "Estimated value {amount}",
     "price_unavailable_short": "Price not available yet",
+    "est_from_sell_price_note": "Estimated from sell price (buyback not available yet)",
     "unrealized_gain": "unrealized",
     "unrealized_loss": "unrealized",
     "archived_badge": "Archived",

@@ -162,6 +162,16 @@ export type GoldBrand =
   | "sampoernagold"
   | "hartadinataabadi";
 
+/**
+ * Brand yang AKTIF disinkron oleh Edge Function gold-price-sync (harus
+ * persis sama dengan TARGET_BRANDS di supabase/functions/gold-price-sync/index.ts).
+ * gold_prices bisa saja masih menyimpan baris lama untuk brand lain (dari
+ * sebelum cakupan dipersempit) -- dipakai untuk memfilter itu di frontend
+ * supaya brand yang sudah tidak disinkron tidak muncul di strip harga atau
+ * pilihan brand saat membuat pos baru.
+ */
+export const ACTIVE_GOLD_BRANDS: GoldBrand[] = ["antam", "pegadaian", "ubs", "galeri24"];
+
 export interface GoldPocket {
   id: string;
   user_id: string;

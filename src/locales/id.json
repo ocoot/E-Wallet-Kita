@@ -1101,6 +1101,7 @@
     "brand_hartadinataabadi": "Hartadinata Abadi",
     "est_value": "Estimasi nilai {amount}",
     "price_unavailable_short": "Harga belum tersedia",
+    "est_from_sell_price_note": "Estimasi dari harga jual (buyback belum tersedia)",
     "unrealized_gain": "belum direalisasi",
     "unrealized_loss": "belum direalisasi",
     "archived_badge": "Diarsipkan",
