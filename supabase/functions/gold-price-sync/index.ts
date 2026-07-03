@@ -60,8 +60,13 @@ interface PriceResult {
 // ── PRIMARY: logam-mulia-api (iamutaki) ─────────────────────────────────
 const PRIMARY_API_BASE = "https://logam-mulia-api.iamutaki.workers.dev/api/prices";
 
-const PRIMARY_CONFIG: Record<TargetBrand, { source: string; materialTypeIncludes?: string[]; materialTypeExcludes?: string[] }> = {
-  antam: { source: "logammulia" }, // situs resmi Antam, dedicated single-brand -- tidak perlu filter
+const PRIMARY_CONFIG: Record<TargetBrand, { source: string; materialTypeExact?: string; materialTypeIncludes?: string[]; materialTypeExcludes?: string[] }> = {
+  // materialTypeExact "emas batangan" WAJIB persis, BUKAN includes -- kalau
+  // pakai includes, "Emas Batangan Gift Series"/"...Imlek"/"...Batik Seri
+  // III" ikut lolos (varian edisi khusus/kolektor, harga per gram biasanya
+  // lebih mahal dari batangan standar, jadi tidak representatif buat
+  // referensi harga umum).
+  antam: { source: "logammulia", materialTypeExact: "emas batangan" },
   pegadaian: { source: "pegadaian" }, // BELUM DIKONFIRMASI single-brand atau tidak -- lihat log kalau ada >1 materialType
   galeri24: { source: "galeri24", materialTypeExcludes: ["ubs"] }, // representasi "harga listing Galeri24", BUKAN produk UBS
   ubs: { source: "galeri24", materialTypeIncludes: ["ubs"] }, // fix bug: eksplisit filter UBS, tidak lagi ambil baris apa adanya
@@ -88,10 +93,37 @@ async function fetchFromPrimary(brand: TargetBrand): Promise<PriceResult | null>
       weight: Number(r.weight),
       sellPrice: Number(r.sellPrice),
       buybackPrice: Number(r.buybackPrice),
+      material: String(r.material ?? ""),
       materialType: String(r.materialType ?? ""),
       recordedDate: r.recordedDate,
     })).filter((r: any) => r.weight > 0 && r.sellPrice > 0);
 
+    // LAPIS 1 (safety net wajib): buang apapun yang bukan emas -- source ini
+    // ternyata juga menjual PERAK ("Perak Murni", "Perak Heritage") dalam
+    // response yang sama. Tanpa filter ini, brand emas kita bisa kesimpan
+    // harga perak kalau kebetulan beratnya lebih kecil. Kalau field
+    // `material` kosong/tidak ada di suatu baris, baris itu tetap dibuang
+    // (fail-safe: mending skip daripada berisiko salah logam).
+    const beforeMaterialFilter = rows.length;
+    rows = rows.filter((r: any) => r.material.toLowerCase() === "gold");
+    if (rows.length === 0 && beforeMaterialFilter > 0) {
+      console.error(`[primary] ${brand} (${config.source}): semua ${beforeMaterialFilter} baris terbuang oleh filter material=gold. Distinct material seen:`, JSON.stringify([...new Set(json.data.map((r: any) => r.material))]));
+      return null;
+    }
+
+    // LAPIS 2: materialType, kalau dikonfigurasi.
+    if (config.materialTypeExact) {
+      const target = config.materialTypeExact.toLowerCase();
+      const before = rows.length;
+      rows = rows.filter((r: any) => r.materialType.toLowerCase() === target);
+      if (rows.length === 0) {
+        console.error(
+          `[primary] ${brand} (${config.source}): tidak ada baris dengan materialType persis "${config.materialTypeExact}" dari ${before} kandidat emas. Distinct materialType (emas saja):`,
+          JSON.stringify([...new Set(json.data.filter((r: any) => String(r.material ?? "").toLowerCase() === "gold").map((r: any) => r.materialType))])
+        );
+        return null;
+      }
+    }
     if (config.materialTypeIncludes) {
       const before = rows.length;
       rows = rows.filter((r: any) =>
