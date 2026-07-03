@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Transaction, Category, Budget, BillReminder, Installment, AccumulatedBalance, SavingsPocket, SavingsPocketEntry, SavingsSummary, SavingsPocketType } from "../types";
+import { Transaction, Category, Budget, BillReminder, Installment, AccumulatedBalance, SavingsPocket, SavingsPocketEntry, SavingsSummary, SavingsPocketType, GoldPocket, GoldPocketEntry, GoldHoldingsSummary, GoldBrand } from "../types";
 
 export const dbService = {
   async getCategories(): Promise<Category[]> {
@@ -715,5 +715,221 @@ export const dbService = {
       total_saved: Number(row?.total_saved ?? 0),
       pocket_count: Number(row?.pocket_count ?? 0)
     };
+  },
+
+  // ── Tabungan Emas (Gold Savings) ───────────────────────────
+  // CRUD dasar pocket = direct table access (sama seperti savings_pockets).
+  // Buy/sell/adjust WAJIB lewat RPC karena harus atomik dengan
+  // gold_pocket_entries + validasi harga terkini (lihat migration
+  // 20260803000000_gold_savings.sql untuk detail akuntansi cash_locked_amount).
+
+  async getGoldPockets(userId: string): Promise<GoldPocket[]> {
+    const { data, error } = await supabase
+      .from('gold_pockets')
+      .select('*')
+      .eq('user_id', userId)
+      .order('is_archived', { ascending: true })
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.error('Error fetching gold pockets:', error);
+      throw error;
+    }
+
+    return data as GoldPocket[];
+  },
+
+  async createGoldPocket(
+    userId: string,
+    payload: { name: string; brand: GoldBrand; notes: string | null }
+  ): Promise<GoldPocket> {
+    const { data, error } = await supabase
+      .from('gold_pockets')
+      .insert({ user_id: userId, ...payload })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error creating gold pocket:', error);
+      throw error;
+    }
+
+    return data as GoldPocket;
+  },
+
+  async updateGoldPocket(
+    userId: string,
+    pocketId: string,
+    updates: Partial<Pick<GoldPocket, 'name' | 'notes' | 'is_archived'>>
+  ): Promise<GoldPocket> {
+    const payload: Record<string, any> = { ...updates, updated_at: new Date().toISOString() };
+
+    const { data, error } = await supabase
+      .from('gold_pockets')
+      .update(payload)
+      .eq('id', pocketId)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating gold pocket:', error);
+      throw error;
+    }
+
+    return data as GoldPocket;
+  },
+
+  async deleteGoldPocket(userId: string, pocketId: string): Promise<boolean> {
+    const { error } = await supabase
+      .from('gold_pockets')
+      .delete()
+      .eq('id', pocketId)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error deleting gold pocket:', error);
+      return false;
+    }
+    return true;
+  },
+
+  async getGoldPocketEntries(userId: string, pocketId: string): Promise<GoldPocketEntry[]> {
+    const { data, error } = await supabase
+      .from('gold_pocket_entries')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('pocket_id', pocketId)
+      .order('entry_date', { ascending: false })
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching gold pocket entries:', error);
+      throw error;
+    }
+
+    return data as GoldPocketEntry[];
+  },
+
+  /** Beli emas pakai Saldo Tersedia, di harga pasar terkini + margin aplikasi. */
+  async buyGold(
+    pocketId: string,
+    idrAmount: number,
+    note: string | null,
+    entryDate?: string
+  ): Promise<GoldPocket> {
+    const { data, error } = await supabase.rpc('buy_gold_for_user', {
+      p_pocket_id: pocketId,
+      p_idr_amount: idrAmount,
+      p_note: note,
+      ...(entryDate ? { p_entry_date: entryDate } : {})
+    });
+
+    if (error) {
+      console.error('Error buying gold:', error);
+      throw error;
+    }
+
+    return data as GoldPocket;
+  },
+
+  /** Jual sebagian/seluruh gram, hasil masuk balik ke Saldo Tersedia. */
+  async sellGold(
+    pocketId: string,
+    grams: number,
+    note: string | null,
+    entryDate?: string
+  ): Promise<GoldPocket> {
+    const { data, error } = await supabase.rpc('sell_gold_for_user', {
+      p_pocket_id: pocketId,
+      p_grams: grams,
+      p_note: note,
+      ...(entryDate ? { p_entry_date: entryDate } : {})
+    });
+
+    if (error) {
+      console.error('Error selling gold:', error);
+      throw error;
+    }
+
+    return data as GoldPocket;
+  },
+
+  /**
+   * Declare emas fisik yang sudah dimiliki (direction='add') atau koreksi
+   * keluar di luar app (direction='remove'). TIDAK memotong/menambah Saldo
+   * Tersedia -- lihat catatan di migration.
+   */
+  async adjustGoldHolding(
+    pocketId: string,
+    direction: 'add' | 'remove',
+    grams: number,
+    note: string | null,
+    entryDate?: string
+  ): Promise<GoldPocket> {
+    const { data, error } = await supabase.rpc('adjust_gold_holding_for_user', {
+      p_pocket_id: pocketId,
+      p_direction: direction,
+      p_grams: grams,
+      p_note: note,
+      ...(entryDate ? { p_entry_date: entryDate } : {})
+    });
+
+    if (error) {
+      console.error('Error adjusting gold holding:', error);
+      throw error;
+    }
+
+    return data as GoldPocket;
+  },
+
+  /**
+   * Total gram, cash_locked (pengurang Saldo Tersedia), estimasi nilai
+   * pasar sekarang & untung/rugi belum direalisasi (penambah Total Kekayaan).
+   */
+  async getGoldHoldingsSummary(): Promise<GoldHoldingsSummary> {
+    const { data, error } = await supabase.rpc('get_gold_holdings_summary');
+    if (error) {
+      console.error('Error fetching gold holdings summary:', error);
+      throw error;
+    }
+    const row = Array.isArray(data) ? data[0] : data;
+    return {
+      total_grams: Number(row?.total_grams ?? 0),
+      total_cash_locked: Number(row?.total_cash_locked ?? 0),
+      total_market_value: Number(row?.total_market_value ?? 0),
+      unrealized_gain_loss: Number(row?.unrealized_gain_loss ?? 0),
+      pocket_count: Number(row?.pocket_count ?? 0),
+      stale_pocket_count: Number(row?.stale_pocket_count ?? 0)
+    };
+  },
+
+  /** Harga terbaru semua brand (untuk halaman pilih brand & tampilan harga). */
+  async getLatestGoldPrices(): Promise<Array<{
+    brand: GoldBrand;
+    sell_price_per_gram: number;
+    buyback_price_per_gram: number;
+    price_date: string;
+    fetched_at: string;
+  }>> {
+    const { data, error } = await supabase
+      .from('gold_prices')
+      .select('brand, sell_price_per_gram, buyback_price_per_gram, price_date, fetched_at')
+      .order('price_date', { ascending: false })
+      .order('fetched_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching gold prices:', error);
+      throw error;
+    }
+
+    // Ambil baris terbaru per brand saja (data bisa berisi histori beberapa hari).
+    const latestByBrand = new Map<string, any>();
+    for (const row of (data || [])) {
+      if (!latestByBrand.has(row.brand)) {
+        latestByBrand.set(row.brand, row);
+      }
+    }
+    return Array.from(latestByBrand.values());
   }
 };

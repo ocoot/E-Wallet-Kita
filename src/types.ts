@@ -152,3 +152,49 @@ export interface SavingsSummary {
   total_saved: number;
   pocket_count: number;
 }
+
+export type GoldBrand =
+  | "antam"
+  | "logammulia"
+  | "ubs"
+  | "galeri24"
+  | "pegadaian"
+  | "sampoernagold"
+  | "hartadinataabadi";
+
+export interface GoldPocket {
+  id: string;
+  user_id: string;
+  name: string;
+  brand: GoldBrand;
+  grams_owned: number;
+  /** Bukan "modal" akuntansi baku -- lihat catatan di migration gold_savings. */
+  cash_locked_amount: number;
+  notes: string | null;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GoldPocketEntry {
+  id: string;
+  pocket_id: string;
+  user_id: string;
+  entry_type: "buy" | "sell" | "manual_add" | "manual_remove";
+  grams: number;
+  price_per_gram_used: number | null;
+  idr_amount: number | null;
+  note: string | null;
+  entry_date: string;
+  created_at: string;
+}
+
+export interface GoldHoldingsSummary {
+  total_grams: number;
+  total_cash_locked: number;
+  total_market_value: number;
+  unrealized_gain_loss: number;
+  pocket_count: number;
+  stale_pocket_count: number;
+}
+

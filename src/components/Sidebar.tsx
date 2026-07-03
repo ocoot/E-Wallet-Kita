@@ -28,7 +28,8 @@ import {
   PiggyBank,
   Bell,
   Landmark,
-  Vault
+  Vault,
+  Coins
 } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
 import { useAdmin } from "../hooks/useAdmin";
@@ -91,6 +92,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: "bill_reminders", label: t("nav.bill_reminders"), icon: Bell, path: "/bill-reminders", featureKey: "bill_reminders" },
     { id: "installments", label: t("nav.installments"), icon: Landmark, path: "/installments", featureKey: "installments" },
     { id: "savings", label: t("nav.savings"), icon: Vault, path: "/savings", featureKey: "savings" },
+    { id: "gold_savings", label: t("nav.gold_savings"), icon: Coins, path: "/gold-savings", featureKey: "gold_savings" },
     { id: "history", label: t("nav.history"), icon: HistoryIcon, path: "/transactions", featureKey: "history" },
     { id: "settings", label: t("nav.settings"), icon: SettingsIcon, path: "/settings", featureKey: "settings" },
   ];
