@@ -5,19 +5,18 @@ import { supabase } from "../lib/supabase";
 import { UserSession, Transaction } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Plus, BookOpen, X, Layers, CalendarDays } from "lucide-react";
+import { Plus, BookOpen, X, Layers } from "lucide-react";
 import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
 import { DashboardHeader } from "../components/DashboardHeader";
-import { DashboardStats } from "../components/DashboardStats";
 import { DashboardChart } from "../components/DashboardChart";
 import { DashboardRecentTransactions } from "../components/DashboardRecentTransactions";
 import { DashboardBudgetAlerts } from "../components/DashboardBudgetAlerts";
 import { DashboardBudgetSummary } from "../components/DashboardBudgetSummary";
 import { DashboardBillReminders } from "../components/DashboardBillReminders";
 import { DashboardInstallments } from "../components/DashboardInstallments";
-import { DashboardAccumulatedBalance } from "../components/DashboardAccumulatedBalance";
+import { DashboardOverviewCard } from "../components/DashboardOverviewCard";
 import { useCategories } from "../hooks/useCategories";
 
 interface DashboardProps {
@@ -228,16 +227,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
         telegramStatus={telegramStatus} 
       />
 
-      {/* 1b. Saldo terakumulasi seluruh bulan s.d. bulan berjalan */}
+      {/* 1b. Ringkasan Keuangan -- 1 kartu (Saldo Tersedia, Total Kekayaan,
+          Bulan Ini, Rincian Aset expandable), gabungan dari 2 komponen lama
+          yang sebelumnya menampilkan 8 angka Rupiah terpisah. */}
       <div className="flex items-center gap-2 px-1">
         <Layers size={14} className="text-indigo-400 light_sakura:text-rose-500" />
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
           {t("dashboard.overall_summary_label")}
         </h3>
       </div>
-      <DashboardAccumulatedBalance
+      <DashboardOverviewCard
         refreshTrigger={transactionsUpdatedTrigger}
         formatIDR={formatIDR}
+        monthlySummary={summary}
       />
 
       {/* Onboarding Interactive Banner for new users */}
@@ -285,18 +287,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </motion.div>
       )}
 
-      {/* 2. Scorecard Summaries (3 Column Bento format) */}
-      <div className="flex items-center gap-2 px-1 pt-2">
-        <CalendarDays size={14} className="text-emerald-400 light_sakura:text-emerald-500" />
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
-          {t("dashboard.balance_summary")}
-        </h3>
-      </div>
-      <DashboardStats 
-        summary={summary} 
-        sparkPoints={sparkPoints} 
-        formatIDR={formatIDR} 
-      />
+      {/* 2. Scorecard Summaries -- dipindahkan ke dalam DashboardOverviewCard
+          (strip "Bulan Ini") supaya tidak ada 2 grup kartu saldo terpisah. */}
 
       {/* 2b. Budget Summary & Bill Reminders */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

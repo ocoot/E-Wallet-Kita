@@ -116,12 +116,17 @@
     "accumulated_balance_label": "Total Kekayaan",
     "accumulated_income_label": "Total Pemasukan",
     "accumulated_expense_label": "Total Pengeluaran",
-    "accumulated_balance_hint": "Akumulasi dari seluruh bulan sebelumnya hingga bulan berjalan. Termasuk dana yang sudah dialokasikan ke pos Tabungan.",
+    "accumulated_balance_hint": "Akumulasi dari seluruh bulan sebelumnya hingga bulan berjalan. Termasuk dana yang sudah dialokasikan ke pos Tabungan & Tabungan Emas.",
     "accumulated_balance_tooltip": "Rumus: Total Pemasukan − Total Pengeluaran, dihitung sejak transaksi pertama Anda (bukan cuma bulan ini). Dana di pos Tabungan tetap termasuk di sini karena masih milik Anda.",
     "available_balance_label": "Saldo Tersedia",
     "total_savings_label": "Total Tabungan",
-    "savings_breakdown_hint": "Saldo Tersedia sudah dikurangi dana yang tersimpan di pos Tabungan, supaya tidak sengaja terpakai.",
-    "available_balance_tooltip": "Rumus: Total Kekayaan − Total Tabungan. Ini uang yang benar-benar bebas dibelanjakan tanpa mengganggu tabungan Anda."
+    "savings_breakdown_hint": "Saldo Tersedia sudah dikurangi dana yang tersimpan di pos Tabungan & Tabungan Emas, supaya tidak sengaja terpakai.",
+    "available_balance_tooltip": "Rumus: Total Kekayaan − Total Tabungan − dana yang terpakai beli Emas. Ini uang yang benar-benar bebas dibelanjakan tanpa mengganggu tabungan Anda.",
+    "net_worth_tooltip": "Rumus: Total Pemasukan − Total Pengeluaran + Untung/Rugi Emas belum direalisasi. Sudah termasuk nilai pasar emas Anda saat ini, bukan cuma uang yang dibelanjakan untuk membelinya.",
+    "asset_breakdown_label": "Rincian Aset & Riwayat",
+    "total_gold_label": "Total Emas (Nilai Pasar)",
+    "total_gold_tooltip": "Estimasi nilai emas Anda di harga pasar terkini (harga buyback), bukan harga saat dibeli. Bisa naik/turun mengikuti harga emas.",
+    "gold_stale_note": "Harga sebagian pos emas belum diperbarui baru-baru ini -- nilai yang ditampilkan mungkin tidak mencerminkan harga pasar terkini."
   },
   "transaction": {
     "add_title": "Catat Transaksi Manual",

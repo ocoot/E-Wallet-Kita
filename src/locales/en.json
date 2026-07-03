@@ -116,12 +116,17 @@
     "accumulated_balance_label": "Total Net Worth",
     "accumulated_income_label": "Total Income",
     "accumulated_expense_label": "Total Expense",
-    "accumulated_balance_hint": "Accumulated from all previous months through the current month. Includes funds already allocated to Savings pockets.",
+    "accumulated_balance_hint": "Accumulated from all previous months through the current month. Includes funds already allocated to Savings pockets & Gold Savings.",
     "accumulated_balance_tooltip": "Formula: Total Income − Total Expenses, calculated since your very first transaction (not just this month). Funds in Savings pockets are still included here since they're still yours.",
     "available_balance_label": "Available Balance",
     "total_savings_label": "Total Savings",
-    "savings_breakdown_hint": "Available Balance already excludes funds held in Savings pockets, so it isn't accidentally spent.",
-    "available_balance_tooltip": "Formula: Total Net Worth − Total Savings. This is the money you can truly spend freely without touching your savings."
+    "savings_breakdown_hint": "Available Balance already excludes funds held in Savings pockets & Gold Savings, so it isn't accidentally spent.",
+    "available_balance_tooltip": "Formula: Net Worth − Total Savings − cash used to buy Gold. This is the money you can truly spend freely without touching your savings.",
+    "net_worth_tooltip": "Formula: Total Income − Total Expense + unrealized Gold gain/loss. Already includes your gold's current market value, not just the cash spent buying it.",
+    "asset_breakdown_label": "Asset & History Breakdown",
+    "total_gold_label": "Total Gold (Market Value)",
+    "total_gold_tooltip": "Estimated value of your gold at the current market (buyback) price, not the price when purchased. Can go up/down with the gold price.",
+    "gold_stale_note": "Prices for some gold pockets haven't updated recently -- the value shown may not reflect the current market price."
   },
   "transaction": {
     "add_title": "Log Manual Transaction",
