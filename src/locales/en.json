@@ -1145,6 +1145,8 @@
     "price_stale_error": "Gold price for this pocket hasn't updated recently. Try again after the next price sync.",
     "price_unavailable_error": "Gold price for this brand isn't available yet.",
     "insufficient_gold_error": "That amount exceeds the gold owned in this pocket.",
-    "amount_too_small_error": "That Rupiah amount is too small to convert into grams."
+    "amount_too_small_error": "That Rupiah amount is too small to convert into grams.",
+    "buyback_unavailable_error": "Buyback price for this brand isn't available from the data source yet. Selling for this brand is temporarily disabled.",
+    "buyback_unavailable_hint": "Buyback price not available yet for this brand -- Sell is temporarily disabled."
   }
 }

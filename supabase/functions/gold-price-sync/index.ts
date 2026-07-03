@@ -61,7 +61,7 @@ interface SourceApiResponse {
 
 async function fetchBrandPrice(brand: string): Promise<{
   sellPrice: number;
-  buybackPrice: number;
+  buybackPrice: number | null;
   priceDate: string;
 } | null> {
   const source = BRAND_SOURCE_MAP[brand];
@@ -71,10 +71,6 @@ async function fetchBrandPrice(brand: string): Promise<{
   }
 
   try {
-    // Tanpa &weight=1 -- beberapa sumber tidak menjual pecahan 1 gram persis
-    // atau field weight-nya tidak match dengan filter ketat. Ambil semua baris,
-    // lalu normalisasi manual di bawah (lebih robust terhadap variasi schema
-    // antar sumber daripada berharap API filter query-nya konsisten).
     const url = `${API_BASE}/${source}`;
     const response = await fetch(url, { headers: { Accept: "application/json" } });
     if (!response.ok) {
@@ -88,9 +84,13 @@ async function fetchBrandPrice(brand: string): Promise<{
       return null;
     }
 
-    // Defensif: coerce ke Number (beberapa sumber mengembalikan weight/harga
-    // sebagai string), lalu ambil baris dengan harga valid (>0) dan weight
-    // terkecil (paling dekat ke 1 gram) untuk dinormalisasi jadi harga/gram.
+    // PENTING: buybackPrice sering null/0 di beberapa sumber (Logam Mulia,
+    // Hartadinata Abadi) -- sumbernya memang tidak selalu punya data
+    // buyback, bukan berarti seluruh baris harus dibuang. Syarat MINIMAL
+    // hanya sellPrice > 0 supaya fitur Beli tetap bisa jalan; buybackPrice
+    // dibawa apa adanya (null kalau tidak ada) dan Jual akan diblokir
+    // khusus untuk brand itu sampai datanya tersedia -- lihat
+    // sell_gold_for_user di migration 20260803020000.
     const candidates = json.data
       .map((r) => ({
         weight: Number((r as any).weight),
@@ -98,23 +98,26 @@ async function fetchBrandPrice(brand: string): Promise<{
         buybackPrice: Number((r as any).buybackPrice),
         recordedDate: (r as any).recordedDate,
       }))
-      .filter((r) => r.weight > 0 && r.sellPrice > 0 && r.buybackPrice > 0)
+      .filter((r) => r.weight > 0 && r.sellPrice > 0)
       .sort((a, b) => a.weight - b.weight);
 
     if (candidates.length === 0) {
-      // Log sample mentah supaya kalau masih gagal, bentuk data aslinya
-      // kelihatan di Supabase Edge Function logs untuk didiagnosis lebih lanjut.
       console.error(
-        `[gold-price-sync] ${brand} (${source}) has no row with valid non-zero price/weight. Raw sample:`,
+        `[gold-price-sync] ${brand} (${source}) has no row with a valid sell price. Raw sample:`,
         JSON.stringify(json.data.slice(0, 3))
       );
       return null;
     }
 
     const best = candidates[0];
+    const hasBuyback = Number.isFinite(best.buybackPrice) && best.buybackPrice > 0;
+    if (!hasBuyback) {
+      console.warn(`[gold-price-sync] ${brand} (${source}) has no buyback price -- storing sell-only, sell will work but buy-back/jual will be blocked until available.`);
+    }
+
     return {
       sellPrice: Math.round(best.sellPrice / best.weight),
-      buybackPrice: Math.round(best.buybackPrice / best.weight),
+      buybackPrice: hasBuyback ? Math.round(best.buybackPrice / best.weight) : null,
       priceDate: best.recordedDate ?? new Date().toISOString().slice(0, 10),
     };
   } catch (err) {

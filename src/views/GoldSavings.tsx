@@ -139,6 +139,7 @@ export const GoldSavings: React.FC = () => {
     } catch (err: any) {
       const msg = String(err?.message || "");
       if (msg.includes("PRICE_STALE")) showToast(t("gold.price_stale_error"), "error");
+      else if (msg.includes("BUYBACK_PRICE_UNAVAILABLE")) showToast(t("gold.buyback_unavailable_error"), "error");
       else if (msg.includes("PRICE_NOT_AVAILABLE")) showToast(t("gold.price_unavailable_error"), "error");
       else if (msg.includes("INSUFFICIENT_GOLD_BALANCE")) showToast(t("gold.insufficient_gold_error"), "error");
       else if (msg.includes("AMOUNT_TOO_SMALL")) showToast(t("gold.amount_too_small_error"), "error");
@@ -199,7 +200,8 @@ export const GoldSavings: React.FC = () => {
               className="flex items-center justify-center gap-1 py-2 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
               <ArrowDownCircle size={12} /> {t("gold.buy_button")}
             </button>
-            <button onClick={() => openMove(p, "sell")} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0}
+            <button onClick={() => openMove(p, "sell")} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0 || !price?.buyback_price_per_gram}
+              title={!price?.buyback_price_per_gram ? t("gold.buyback_unavailable_hint") : undefined}
               className="flex items-center justify-center gap-1 py-2 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
               <ArrowUpCircle size={12} /> {t("gold.sell_button")}
             </button>

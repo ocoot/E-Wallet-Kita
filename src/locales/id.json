@@ -1145,6 +1145,8 @@
     "price_stale_error": "Harga emas untuk pos ini belum diperbarui baru-baru ini. Coba lagi setelah sinkronisasi harga berikutnya.",
     "price_unavailable_error": "Harga emas untuk brand ini belum tersedia.",
     "insufficient_gold_error": "Jumlah gram melebihi emas yang dimiliki di pos ini.",
-    "amount_too_small_error": "Jumlah Rupiah terlalu kecil untuk dikonversi ke gram."
+    "amount_too_small_error": "Jumlah Rupiah terlalu kecil untuk dikonversi ke gram.",
+    "buyback_unavailable_error": "Harga buyback untuk brand ini belum tersedia dari sumber data. Jual untuk brand ini sementara dinonaktifkan.",
+    "buyback_unavailable_hint": "Harga buyback belum tersedia untuk brand ini -- Jual sementara dinonaktifkan."
   }
 }
