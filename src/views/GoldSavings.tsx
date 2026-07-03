@@ -208,10 +208,14 @@ export const GoldSavings: React.FC = () => {
             {isEstimated && (
               <p className="text-[9.5px] text-amber-500/80 mt-0.5">{t("gold.est_from_sell_price_note")}</p>
             )}
-            {gainLoss != null && p.grams_owned > 0 && (
-              <p className={`text-[10.5px] font-semibold mt-0.5 ${gainLoss >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+            {gainLoss != null && p.grams_owned > 0 && p.cash_locked_amount > 0 && (
+              <p className={`text-[10.5px] font-semibold mt-0.5 flex items-center justify-center gap-1 ${gainLoss >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                 {gainLoss >= 0 ? "▲ " : "▼ "}{formatIDR(Math.abs(gainLoss))} {t(gainLoss >= 0 ? "gold.unrealized_gain" : "gold.unrealized_loss")}
+                <InfoTooltip text={t("gold.unrealized_tooltip")} align="left" />
               </p>
+            )}
+            {p.cash_locked_amount === 0 && p.grams_owned > 0 && (
+              <p className="text-[9.5px] text-slate-500 mt-0.5">{t("gold.no_cost_basis_note")}</p>
             )}
           </div>
 
