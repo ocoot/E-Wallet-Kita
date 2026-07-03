@@ -204,7 +204,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                       <div className="min-w-0">
                         <p className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1">
                           {t("dashboard.total_gold_label")}
-                          <InfoTooltip text={t("dashboard.total_gold_tooltip")} align="left" />
+                          <InfoTooltip text={t("dashboard.total_gold_tooltip")} align="right" />
                         </p>
                         <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 truncate">{formatIDR(goldMarketValue)}</p>
                         <p className={`text-[9.5px] font-semibold ${goldGainLoss >= 0 ? "text-emerald-400" : "text-red-400"}`}>
