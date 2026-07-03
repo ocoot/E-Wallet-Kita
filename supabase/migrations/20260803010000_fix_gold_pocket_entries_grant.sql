@@ -1,0 +1,35 @@
+-- Fix: permission denied for table gold_pocket_entries
+--
+-- Root cause: di migration 20260803000000_gold_savings.sql saya menulis
+--   REVOKE INSERT, UPDATE, DELETE ON public.gold_pocket_entries FROM authenticated;
+-- dengan asumsi "mutasi cuma boleh lewat RPC, jadi table-level INSERT
+-- langsung harus ditutup". Itu keliru: buy_gold_for_user / sell_gold_for_user
+-- / adjust_gold_holding_for_user semuanya SECURITY INVOKER (BUKAN
+-- SECURITY DEFINER), artinya statement INSERT INTO gold_pocket_entries di
+-- dalam RPC tsb tetap dieksekusi SEBAGAI role `authenticated` (role si
+-- pemanggil), bukan sebagai pemilik fungsi. Me-REVOKE privilege
+-- table-level dari `authenticated` otomatis membuat RPC-nya sendiri gagal,
+-- karena keamanan yang seharusnya cukup dijaga oleh RLS policy
+-- ("Only RPC can insert gold entries", WITH CHECK auth.uid() = user_id)
+-- malah ketutup duluan oleh REVOKE ini.
+--
+-- Supabase secara default sudah GRANT ALL ON ALL TABLES IN SCHEMA public
+-- ke role authenticated/anon saat provisioning project (RLS-lah yang jadi
+-- pagar sebenarnya) -- jadi REVOKE eksplisit ini SEHARUSNYA memang tidak
+-- perlu ditulis sama sekali. Fix di sini: GRANT balik INSERT (tetap TANPA
+-- UPDATE/DELETE, karena user memang tidak boleh mengubah/menghapus baris
+-- ledger yang sudah tercatat -- itu semua by design cuma bisa lewat INSERT
+-- entry baru, sesuai pola audit-trail).
+--
+-- PENTING -- bug yang SAMA PERSIS kemungkinan besar ada di fitur Tabungan
+-- yang sudah ada duluan: migration 20260801000000_savings_pockets.sql baris
+-- 134 punya REVOKE INSERT, UPDATE, DELETE ON public.savings_pocket_entries
+-- FROM authenticated, sementara deposit_to_pocket_for_user /
+-- withdraw_from_pocket_for_user juga SECURITY INVOKER. Saya TIDAK
+-- menyertakan fix untuk itu di migration ini (di luar scope error yang
+-- dilaporkan, dan saya belum verifikasi langsung ke database Anda) --
+-- tolong coba deposit/withdraw di halaman Tabungan; kalau muncul error
+-- "permission denied for table savings_pocket_entries" yang sama, kabari
+-- saya supaya saya buatkan migration fix terpisah untuk itu juga.
+
+GRANT INSERT ON public.gold_pocket_entries TO authenticated;

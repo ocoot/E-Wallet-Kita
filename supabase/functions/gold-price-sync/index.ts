@@ -71,7 +71,11 @@ async function fetchBrandPrice(brand: string): Promise<{
   }
 
   try {
-    const url = `${API_BASE}/${source}?weight=1`;
+    // Tanpa &weight=1 -- beberapa sumber tidak menjual pecahan 1 gram persis
+    // atau field weight-nya tidak match dengan filter ketat. Ambil semua baris,
+    // lalu normalisasi manual di bawah (lebih robust terhadap variasi schema
+    // antar sumber daripada berharap API filter query-nya konsisten).
+    const url = `${API_BASE}/${source}`;
     const response = await fetch(url, { headers: { Accept: "application/json" } });
     if (!response.ok) {
       console.error(`[gold-price-sync] ${brand} (${source}) fetch failed: HTTP ${response.status}`);
@@ -84,19 +88,34 @@ async function fetchBrandPrice(brand: string): Promise<{
       return null;
     }
 
-    // Kalau ada lebih dari satu baris (beberapa materialType di source yang
-    // sama), pilih yang weight === 1 dan harga > 0 pertama.
-    const row = json.data.find((r) => r.weight === 1 && r.sellPrice > 0 && r.buybackPrice > 0);
+    // Defensif: coerce ke Number (beberapa sumber mengembalikan weight/harga
+    // sebagai string), lalu ambil baris dengan harga valid (>0) dan weight
+    // terkecil (paling dekat ke 1 gram) untuk dinormalisasi jadi harga/gram.
+    const candidates = json.data
+      .map((r) => ({
+        weight: Number((r as any).weight),
+        sellPrice: Number((r as any).sellPrice),
+        buybackPrice: Number((r as any).buybackPrice),
+        recordedDate: (r as any).recordedDate,
+      }))
+      .filter((r) => r.weight > 0 && r.sellPrice > 0 && r.buybackPrice > 0)
+      .sort((a, b) => a.weight - b.weight);
 
-    if (!row) {
-      console.error(`[gold-price-sync] ${brand} (${source}) has no row with valid non-zero prices.`);
+    if (candidates.length === 0) {
+      // Log sample mentah supaya kalau masih gagal, bentuk data aslinya
+      // kelihatan di Supabase Edge Function logs untuk didiagnosis lebih lanjut.
+      console.error(
+        `[gold-price-sync] ${brand} (${source}) has no row with valid non-zero price/weight. Raw sample:`,
+        JSON.stringify(json.data.slice(0, 3))
+      );
       return null;
     }
 
+    const best = candidates[0];
     return {
-      sellPrice: row.sellPrice,
-      buybackPrice: row.buybackPrice,
-      priceDate: row.recordedDate,
+      sellPrice: Math.round(best.sellPrice / best.weight),
+      buybackPrice: Math.round(best.buybackPrice / best.weight),
+      priceDate: best.recordedDate ?? new Date().toISOString().slice(0, 10),
     };
   } catch (err) {
     console.error(`[gold-price-sync] ${brand} (${source}) fetch exception:`, err);
