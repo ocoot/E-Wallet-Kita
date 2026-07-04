@@ -1,5 +1,4 @@
 import React, { useMemo } from "react";
-import { Cloud } from "lucide-react";
 import { WeatherCondition } from "../hooks/useWeather";
 import { getWeatherTheme } from "../lib/weatherTheme";
 
@@ -13,6 +12,46 @@ function seededRandom(seed: number): number {
   const x = Math.sin(seed * 999) * 10000;
   return x - Math.floor(x);
 }
+
+function lerp(min: number, max: number, t: number): number {
+  return min + (max - min) * t;
+}
+
+interface CloudPuffConfig {
+  top: string;
+  left: string;
+  scale: number;
+  opacity: number;
+  dur: string;
+  delay: string;
+  blurPx: number;
+  driftPx: number;
+}
+
+/**
+ * Awan "puff" yang disusun dari beberapa lingkaran bertumpuk (teknik klasik
+ * CSS cumulus cloud) alih-alih ikon outline -- jauh lebih menyerupai awan
+ * asli karena punya volume & bayangan lembut, bukan sekadar garis kontur.
+ */
+const CloudPuff: React.FC<{ tint: string; blurPx: number }> = ({ tint, blurPx }) => {
+  // Ukuran dasar 1x, di-scale oleh transform pada wrapper pemanggil.
+  return (
+    <div
+      className="relative"
+      style={{
+        width: 96,
+        height: 40,
+        filter: `blur(${blurPx}px) drop-shadow(0 6px 10px rgba(0,0,0,0.18))`,
+      }}
+    >
+      <div className="absolute left-1 bottom-0 rounded-full" style={{ width: 88, height: 24, background: tint }} />
+      <div className="absolute rounded-full" style={{ width: 30, height: 30, left: 4, bottom: 10, background: tint }} />
+      <div className="absolute rounded-full" style={{ width: 40, height: 40, left: 22, bottom: 14, background: tint }} />
+      <div className="absolute rounded-full" style={{ width: 34, height: 34, left: 48, bottom: 12, background: tint }} />
+      <div className="absolute rounded-full" style={{ width: 24, height: 24, left: 70, bottom: 6, background: tint }} />
+    </div>
+  );
+};
 
 /**
  * Overlay animasi di belakang welcome banner Dashboard. Murni dekoratif
@@ -57,18 +96,31 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
     []
   );
 
-  const clouds = useMemo(
-    () =>
-      Array.from({ length: 3 }, (_, i) => ({
-        top: `${8 + i * 22}%`,
-        size: 40 + i * 18,
-        dur: `${16 + i * 6}s`,
-        delay: `${i * 2}s`,
-        opacity: 0.12 + i * 0.04,
-        right: `${5 + i * 15}%`,
-      })),
-    []
-  );
+  // Awan disusun 3 lapis "kedalaman" (parallax): lapis belakang kecil, redup,
+  // lambat & tinggi; lapis depan besar, lebih pekat, cepat & rendah. Ini yang
+  // bikin kesan volume/jarak, bukan cuma tempelan ikon rata.
+  const clouds = useMemo(() => {
+    const isOvercast = condition === "cloudy";
+    const total = isOvercast ? 6 : 4;
+
+    return Array.from({ length: total }, (_, i) => {
+      const depth = i / Math.max(total - 1, 1); // 0 = paling jauh, 1 = paling dekat
+      const r1 = seededRandom(i + 1);
+      const r2 = seededRandom(i + 31);
+      const r3 = seededRandom(i + 61);
+
+      return {
+        top: `${lerp(6, 46, depth) + (r1 - 0.5) * 8}%`,
+        left: `${(r2 * 90 - 10).toFixed(1)}%`,
+        scale: lerp(0.45, 1.05, depth) * (isOvercast ? 1.15 : 1),
+        opacity: lerp(0.12, isOvercast ? 0.4 : 0.3, depth),
+        dur: `${lerp(34, 16, depth).toFixed(0)}s`,
+        delay: `${(r3 * -20).toFixed(1)}s`,
+        blurPx: lerp(3, 0.5, depth),
+        driftPx: lerp(14, 34, depth),
+      } as CloudPuffConfig;
+    });
+  }, [condition]);
 
   const fogBands = useMemo(
     () =>
@@ -79,6 +131,15 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
       })),
     []
   );
+
+  // Tint awan menyesuaikan waktu & kepadatan cuaca supaya terasa "milik"
+  // langit saat itu -- putih hangat siang cerah, kelabu tebal saat overcast,
+  // kebiruan redup di malam hari.
+  const cloudTint = condition === "cloudy"
+    ? "linear-gradient(to bottom, rgba(203,213,225,0.85), rgba(100,116,139,0.55))"
+    : isDay
+      ? "linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(226,232,240,0.55))"
+      : "linear-gradient(to bottom, rgba(199,210,254,0.4), rgba(100,116,139,0.35))";
 
   return (
     <div
@@ -169,21 +230,24 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
       {theme.particle === "clouds" && (
         <>
           {clouds.map((c, i) => (
-            <Cloud
+            <div
               key={i}
-              className="weather-cloud text-white"
+              className="weather-cloud"
               style={
                 {
                   top: c.top,
-                  right: c.right,
-                  width: c.size,
-                  height: c.size,
+                  left: c.left,
                   opacity: c.opacity,
                   "--wx-dur": c.dur,
                   "--wx-delay": c.delay,
+                  "--wx-drift": `${c.driftPx}px`,
                 } as React.CSSProperties
               }
-            />
+            >
+              <div style={{ transform: `scale(${c.scale})`, transformOrigin: "left center" }}>
+                <CloudPuff tint={cloudTint} blurPx={c.blurPx} />
+              </div>
+            </div>
           ))}
         </>
       )}

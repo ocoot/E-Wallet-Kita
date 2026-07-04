@@ -158,9 +158,9 @@ html, body {
 }
 
 @keyframes weather-cloud-drift {
-  0%   { transform: translateX(-8%); }
-  50%  { transform: translateX(6%); }
-  100% { transform: translateX(-8%); }
+  0%   { transform: translateX(calc(var(--wx-drift, 20px) * -1)); }
+  50%  { transform: translateX(var(--wx-drift, 20px)); }
+  100% { transform: translateX(calc(var(--wx-drift, 20px) * -1)); }
 }
 
 .weather-cloud {
