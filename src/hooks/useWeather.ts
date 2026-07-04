@@ -108,25 +108,39 @@ export function useWeather(): UseWeatherResult {
       setLoading(false);
     };
 
-    const fallbackToIp = () => {
+    const fallbackToIp = (previousError?: Error) => {
+      if (previousError) {
+        console.warn(`[useWeather] GPS fetch failed, trying IP-based location:`, previousError.message);
+      }
       fetchWeather()
         .then(finish)
-        .catch((err) => fail(err.message || "Gagal memuat data cuaca."));
+        .catch((err) => {
+          const msg = err.message || "Gagal memuat data cuaca.";
+          console.error(`[useWeather] IP-based weather fetch also failed:`, msg);
+          fail(msg);
+        });
     };
 
     if (!("geolocation" in navigator)) {
+      console.warn("[useWeather] Geolocation not supported in navigator, using IP-based fallback");
       fallbackToIp();
       return;
     }
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+        console.log(`[useWeather] GPS location obtained: ${pos.coords.latitude}, ${pos.coords.longitude}`);
         fetchWeather(pos.coords.latitude, pos.coords.longitude)
           .then(finish)
-          .catch(() => fallbackToIp());
+          .catch((err) => {
+            console.warn(`[useWeather] GPS-based weather fetch failed:`, err.message);
+            fallbackToIp(err);
+          });
       },
-      () => {
+      (geoError) => {
         // Izin ditolak, timeout, atau posisi tidak tersedia -> fallback IP
+        const geoMsg = geoError.code === 1 ? "Izin geolocation ditolak" : geoError.message || "Geolocation timeout/unavailable";
+        console.warn(`[useWeather] Geolocation error: ${geoMsg}, falling back to IP`, geoError);
         fallbackToIp();
       },
       { enableHighAccuracy: false, timeout: 8000, maximumAge: 10 * 60 * 1000 }
