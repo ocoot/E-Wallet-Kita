@@ -157,16 +157,17 @@ html, body {
   animation-delay: var(--wx-delay, 0s);
 }
 
-@keyframes weather-cloud-drift {
-  0%   { transform: translateX(calc(var(--wx-drift, 20px) * -1)); }
-  50%  { transform: translateX(var(--wx-drift, 20px)); }
-  100% { transform: translateX(calc(var(--wx-drift, 20px) * -1)); }
+@keyframes weather-blob-drift {
+  0%   { transform: translate(0, 0) rotate(var(--wx-rot-base, 0deg)) scale(1); }
+  50%  { transform: translate(var(--wx-driftx, 24px), var(--wx-drifty, 10px)) rotate(var(--wx-rot-base, 0deg)) scale(1.05); }
+  100% { transform: translate(0, 0) rotate(var(--wx-rot-base, 0deg)) scale(1); }
 }
 
-.weather-cloud {
+.weather-blob {
   position: absolute;
-  animation: weather-cloud-drift var(--wx-dur, 18s) ease-in-out infinite;
+  animation: weather-blob-drift var(--wx-dur, 32s) ease-in-out infinite;
   animation-delay: var(--wx-delay, 0s);
+  will-change: transform;
 }
 
 @keyframes weather-fog-drift {
@@ -198,6 +199,22 @@ html, body {
   pointer-events: none;
 }
 
+/* Kilat yang menerangi seluruh lapisan awan dari dalam (bukan cuma flash
+   layar penuh) -- dipakai bareng .weather-lightning agar terasa datang dari
+   balik awannya sendiri saat kondisi hujan petir. */
+@keyframes weather-sheet-flash {
+  0%, 92%, 100% { filter: brightness(1) saturate(1); }
+  93%           { filter: brightness(2.4) saturate(1.3); }
+  94%           { filter: brightness(1.05) saturate(1); }
+  95%           { filter: brightness(1.8) saturate(1.2); }
+  96%, 100%     { filter: brightness(1) saturate(1); }
+}
+
+.weather-sheet-flash {
+  animation: weather-sheet-flash 6s ease-in-out infinite;
+  animation-delay: 0.3s;
+}
+
 @keyframes weather-sun-pulse {
   0%, 100% { opacity: 0.55; transform: scale(1); }
   50%      { opacity: 0.85; transform: scale(1.06); }
@@ -223,7 +240,8 @@ html, body {
 @media (prefers-reduced-motion: reduce) {
   .weather-raindrop,
   .weather-snowflake,
-  .weather-cloud,
+  .weather-blob,
+  .weather-sheet-flash,
   .weather-fog-band,
   .weather-lightning,
   .weather-sun-glow,

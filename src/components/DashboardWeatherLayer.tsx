@@ -17,46 +17,89 @@ function lerp(min: number, max: number, t: number): number {
   return min + (max - min) * t;
 }
 
-interface CloudPuffConfig {
+/**
+ * Noise tipis (SVG feTurbulence sebagai data-URI, statis/tidak dianimasikan
+ * supaya ringan) untuk memberi kesan grain/tekstur foto seperti aplikasi
+ * cuaca asli, dipadu mix-blend-mode 'overlay' di atas blob awan.
+ */
+const NOISE_DATA_URI =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    "<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'>" +
+      "<filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter>" +
+      "<rect width='100%' height='100%' filter='url(%23n)'/></svg>"
+  );
+
+interface CloudBlobConfig {
   top: string;
   left: string;
-  scale: number;
+  width: number;
+  height: number;
+  radius: string;
+  rotate: number;
   opacity: number;
+  blurPx: number;
   dur: string;
   delay: string;
-  blurPx: number;
-  driftPx: number;
+  driftX: string;
+  driftY: string;
+  tintIndex: number;
 }
 
-/**
- * Awan "puff" yang disusun dari beberapa lingkaran bertumpuk (teknik klasik
- * CSS cumulus cloud) alih-alih ikon outline -- jauh lebih menyerupai awan
- * asli karena punya volume & bayangan lembut, bukan sekadar garis kontur.
- */
-const CloudPuff: React.FC<{ tint: string; blurPx: number }> = ({ tint, blurPx }) => {
-  // Ukuran dasar 1x, di-scale oleh transform pada wrapper pemanggil.
-  return (
-    <div
-      className="relative"
-      style={{
-        width: 96,
-        height: 40,
-        filter: `blur(${blurPx}px) drop-shadow(0 6px 10px rgba(0,0,0,0.18))`,
-      }}
-    >
-      <div className="absolute left-1 bottom-0 rounded-full" style={{ width: 88, height: 24, background: tint }} />
-      <div className="absolute rounded-full" style={{ width: 30, height: 30, left: 4, bottom: 10, background: tint }} />
-      <div className="absolute rounded-full" style={{ width: 40, height: 40, left: 22, bottom: 14, background: tint }} />
-      <div className="absolute rounded-full" style={{ width: 34, height: 34, left: 48, bottom: 12, background: tint }} />
-      <div className="absolute rounded-full" style={{ width: 24, height: 24, left: 70, bottom: 6, background: tint }} />
-    </div>
-  );
-};
+interface CloudDensity {
+  count: number;
+  maxOpacity: number;
+  blurFar: number;
+  blurNear: number;
+  sizeBoost: number;
+}
+
+/** Seberapa banyak & seberapa "tebal" lapisan awan sesuai kondisi -- mendung/hujan/petir jauh lebih padat & gelap daripada sekadar cerah berawan. */
+function getCloudDensity(condition: WeatherCondition): CloudDensity {
+  switch (condition) {
+    case "partly_cloudy":
+      return { count: 3, maxOpacity: 0.26, blurFar: 26, blurNear: 16, sizeBoost: 0.85 };
+    case "drizzle":
+      return { count: 4, maxOpacity: 0.38, blurFar: 24, blurNear: 14, sizeBoost: 1 };
+    case "cloudy":
+      return { count: 5, maxOpacity: 0.46, blurFar: 22, blurNear: 12, sizeBoost: 1.15 };
+    case "rain":
+      return { count: 5, maxOpacity: 0.5, blurFar: 22, blurNear: 12, sizeBoost: 1.2 };
+    case "thunderstorm":
+      return { count: 5, maxOpacity: 0.54, blurFar: 20, blurNear: 11, sizeBoost: 1.25 };
+    default:
+      return { count: 3, maxOpacity: 0.26, blurFar: 26, blurNear: 16, sizeBoost: 0.85 };
+  }
+}
+
+/** 2 warna tint per kondisi supaya blob-nya tidak monoton satu warna datar. */
+function getCloudTints(condition: WeatherCondition, isDay: boolean): [string, string] {
+  switch (condition) {
+    case "cloudy":
+      return ["rgba(226,232,240,0.9)", "rgba(100,116,139,0.75)"];
+    case "drizzle":
+      return ["rgba(191,209,229,0.85)", "rgba(85,104,133,0.75)"];
+    case "rain":
+      return ["rgba(148,163,184,0.75)", "rgba(42,58,84,0.85)"];
+    case "thunderstorm":
+      return ["rgba(129,140,168,0.7)", "rgba(24,29,52,0.9)"];
+    case "partly_cloudy":
+    default:
+      return isDay
+        ? ["rgba(255,255,255,0.9)", "rgba(203,213,225,0.6)"]
+        : ["rgba(199,210,254,0.35)", "rgba(71,85,105,0.5)"];
+  }
+}
 
 /**
  * Overlay animasi di belakang welcome banner Dashboard. Murni dekoratif
  * (aria-hidden) -- tidak pernah menghalangi interaksi (pointer-events-none)
  * dan otomatis nonaktif saat prefers-reduced-motion (lihat index.css).
+ *
+ * Awan digambar sebagai beberapa blob raksasa berbentuk organik (border-radius
+ * asimetris) yang sangat blur & bertumpuk transparan -- bukan kluster
+ * lingkaran kecil bergaya kartun -- supaya terasa seperti "kabut/asap"
+ * atmosferik ala aplikasi cuaca native (Google/Apple Weather).
  */
 export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ condition, isDay }) => {
   const theme = getWeatherTheme(condition, isDay);
@@ -68,6 +111,17 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
         h: `${12 + seededRandom(i + 50) * 14}px`,
         dur: `${0.7 + seededRandom(i + 100) * 0.6}s`,
         delay: `${seededRandom(i + 150) * 1.5}s`,
+      })),
+    []
+  );
+
+  const drizzleDrops = useMemo(
+    () =>
+      Array.from({ length: 14 }, (_, i) => ({
+        left: `${(seededRandom(i + 400) * 100).toFixed(1)}%`,
+        h: `${8 + seededRandom(i + 450) * 8}px`,
+        dur: `${0.6 + seededRandom(i + 500) * 0.5}s`,
+        delay: `${seededRandom(i + 550) * 1.5}s`,
       })),
     []
   );
@@ -96,32 +150,6 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
     []
   );
 
-  // Awan disusun 3 lapis "kedalaman" (parallax): lapis belakang kecil, redup,
-  // lambat & tinggi; lapis depan besar, lebih pekat, cepat & rendah. Ini yang
-  // bikin kesan volume/jarak, bukan cuma tempelan ikon rata.
-  const clouds = useMemo(() => {
-    const isOvercast = condition === "cloudy";
-    const total = isOvercast ? 6 : 4;
-
-    return Array.from({ length: total }, (_, i) => {
-      const depth = i / Math.max(total - 1, 1); // 0 = paling jauh, 1 = paling dekat
-      const r1 = seededRandom(i + 1);
-      const r2 = seededRandom(i + 31);
-      const r3 = seededRandom(i + 61);
-
-      return {
-        top: `${lerp(6, 46, depth) + (r1 - 0.5) * 8}%`,
-        left: `${(r2 * 90 - 10).toFixed(1)}%`,
-        scale: lerp(0.45, 1.05, depth) * (isOvercast ? 1.15 : 1),
-        opacity: lerp(0.12, isOvercast ? 0.4 : 0.3, depth),
-        dur: `${lerp(34, 16, depth).toFixed(0)}s`,
-        delay: `${(r3 * -20).toFixed(1)}s`,
-        blurPx: lerp(3, 0.5, depth),
-        driftPx: lerp(14, 34, depth),
-      } as CloudPuffConfig;
-    });
-  }, [condition]);
-
   const fogBands = useMemo(
     () =>
       Array.from({ length: 3 }, (_, i) => ({
@@ -132,21 +160,110 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
     []
   );
 
-  // Tint awan menyesuaikan waktu & kepadatan cuaca supaya terasa "milik"
-  // langit saat itu -- putih hangat siang cerah, kelabu tebal saat overcast,
-  // kebiruan redup di malam hari.
-  const cloudTint = condition === "cloudy"
-    ? "linear-gradient(to bottom, rgba(203,213,225,0.85), rgba(100,116,139,0.55))"
-    : isDay
-      ? "linear-gradient(to bottom, rgba(255,255,255,0.95), rgba(226,232,240,0.55))"
-      : "linear-gradient(to bottom, rgba(199,210,254,0.4), rgba(100,116,139,0.35))";
+  const showClouds = ["partly_cloudy", "cloudy", "drizzle", "rain", "thunderstorm"].includes(condition);
+  const showThunder = condition === "thunderstorm";
+  const sunRimEnabled = condition === "partly_cloudy" && isDay;
+  const [tintA, tintB] = getCloudTints(condition, isDay);
+
+  // Blob-blob awan raksasa, disebar dengan sedikit lapisan kedalaman: yang
+  // "jauh" lebih kecil, lebih transparan, lebih blur & lambat; yang "dekat"
+  // lebih besar, lebih pekat, lebih tajam & sedikit lebih cepat.
+  const blobs = useMemo(() => {
+    const density = getCloudDensity(condition);
+    const total = density.count;
+
+    return Array.from({ length: total }, (_, i) => {
+      const depth = i / Math.max(total - 1, 1);
+      const r1 = seededRandom(i + 1);
+      const r2 = seededRandom(i + 31);
+      const r3 = seededRandom(i + 61);
+      const r4 = seededRandom(i + 91);
+      const r5 = seededRandom(i + 121);
+
+      const baseSize = lerp(160, 320, r2) * density.sizeBoost;
+
+      return {
+        top: `${(lerp(-15, 55, depth) + (r1 - 0.5) * 20).toFixed(1)}%`,
+        left: `${(r2 * 110 - 15).toFixed(1)}%`,
+        width: baseSize,
+        height: baseSize * lerp(0.45, 0.7, r3),
+        radius: `${40 + r1 * 30}% ${60 - r1 * 20}% ${50 + r4 * 20}% ${45 - r4 * 15}% / ${55 - r3 * 20}% ${45 + r3 * 15}% ${60 - r5 * 20}% ${40 + r5 * 20}%`,
+        rotate: (r4 - 0.5) * 30,
+        opacity: lerp(0.14, density.maxOpacity, depth),
+        blurPx: lerp(density.blurFar, density.blurNear, depth),
+        dur: `${lerp(46, 24, depth).toFixed(0)}s`,
+        delay: `${(r5 * -30).toFixed(1)}s`,
+        driftX: `${lerp(18, 46, depth).toFixed(0)}px`,
+        driftY: `${lerp(6, 16, depth).toFixed(0)}px`,
+        tintIndex: i % 2,
+      } as CloudBlobConfig;
+    });
+  }, [condition]);
 
   return (
     <div
       aria-hidden="true"
       className={`pointer-events-none absolute inset-0 overflow-hidden rounded-3xl bg-gradient-to-br ${theme.gradientClass}`}
     >
-      {theme.particle === "rain" && (
+      {/* Kilau matahari samar di balik awan -- hanya cerah berawan siang hari */}
+      {sunRimEnabled && (
+        <div className="weather-sun-glow absolute -top-10 right-8 w-32 h-32 rounded-full bg-amber-300/25 blur-3xl" />
+      )}
+
+      {showClouds && (
+        <div className={`absolute inset-0 ${showThunder ? "weather-sheet-flash" : ""}`}>
+          {blobs.map((b, i) => (
+            <div
+              key={i}
+              className="weather-blob"
+              style={
+                {
+                  top: b.top,
+                  left: b.left,
+                  width: b.width,
+                  height: b.height,
+                  borderRadius: b.radius,
+                  background: `radial-gradient(ellipse at 35% 35%, ${b.tintIndex === 0 ? tintA : tintB}, transparent 72%)`,
+                  opacity: b.opacity,
+                  filter: `blur(${b.blurPx}px)`,
+                  "--wx-dur": b.dur,
+                  "--wx-delay": b.delay,
+                  "--wx-driftx": b.driftX,
+                  "--wx-drifty": b.driftY,
+                  "--wx-rot-base": `${b.rotate}deg`,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+
+          {/* Grain halus di atas blob supaya terasa bertekstur, bukan gradient polos */}
+          <div
+            className="absolute inset-0 mix-blend-overlay"
+            style={{ backgroundImage: `url("${NOISE_DATA_URI}")`, opacity: 0.06 }}
+          />
+        </div>
+      )}
+
+      {condition === "drizzle" && (
+        <>
+          {drizzleDrops.map((d, i) => (
+            <span
+              key={i}
+              className="weather-raindrop"
+              style={
+                {
+                  "--wx-left": d.left,
+                  "--wx-h": d.h,
+                  "--wx-dur": d.dur,
+                  "--wx-delay": d.delay,
+                } as React.CSSProperties
+              }
+            />
+          ))}
+        </>
+      )}
+
+      {(condition === "rain" || condition === "thunderstorm") && (
         <>
           {raindrops.map((d, i) => (
             <span
@@ -165,22 +282,9 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
         </>
       )}
 
-      {theme.particle === "thunder" && (
+      {/* Kilatan menyeluruh -- menerangi seluruh banner sesaat, melengkapi kilau lapisan awan */}
+      {showThunder && (
         <>
-          {raindrops.slice(0, 18).map((d, i) => (
-            <span
-              key={i}
-              className="weather-raindrop"
-              style={
-                {
-                  "--wx-left": d.left,
-                  "--wx-h": d.h,
-                  "--wx-dur": d.dur,
-                  "--wx-delay": d.delay,
-                } as React.CSSProperties
-              }
-            />
-          ))}
           <div className="weather-lightning" style={{ "--wx-delay": "0.5s" } as React.CSSProperties} />
           <div className="weather-lightning" style={{ "--wx-delay": "3.2s" } as React.CSSProperties} />
         </>
@@ -227,31 +331,6 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
         </>
       )}
 
-      {theme.particle === "clouds" && (
-        <>
-          {clouds.map((c, i) => (
-            <div
-              key={i}
-              className="weather-cloud"
-              style={
-                {
-                  top: c.top,
-                  left: c.left,
-                  opacity: c.opacity,
-                  "--wx-dur": c.dur,
-                  "--wx-delay": c.delay,
-                  "--wx-drift": `${c.driftPx}px`,
-                } as React.CSSProperties
-              }
-            >
-              <div style={{ transform: `scale(${c.scale})`, transformOrigin: "left center" }}>
-                <CloudPuff tint={cloudTint} blurPx={c.blurPx} />
-              </div>
-            </div>
-          ))}
-        </>
-      )}
-
       {theme.particle === "fog" && (
         <>
           {fogBands.map((f, i) => (
@@ -265,9 +344,7 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
       )}
 
       {theme.particle === "sun" && (
-        <div
-          className="weather-sun-glow absolute -top-6 right-6 w-28 h-28 rounded-full bg-amber-300/30 blur-2xl"
-        />
+        <div className="weather-sun-glow absolute -top-6 right-6 w-28 h-28 rounded-full bg-amber-300/30 blur-2xl" />
       )}
     </div>
   );

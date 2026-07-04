@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import logoUrl from "../assets/images/user_logo_transparent.png";
 import { useLanguage } from "../contexts/LanguageContext";
 import { UserSession } from "../types";
@@ -8,6 +8,7 @@ import { useWeather } from "../hooks/useWeather";
 import { useBudgets } from "../hooks/useBudgets";
 import { getWeatherTheme } from "../lib/weatherTheme";
 import { DashboardWeatherLayer } from "./DashboardWeatherLayer";
+import { WeatherDebugToggle, WeatherDebugOverride } from "./WeatherDebugToggle";
 
 interface DashboardHeaderProps {
   currentUser: UserSession;
@@ -21,7 +22,19 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const { t, locale } = useLanguage();
   const { weather, loading: weatherLoading } = useWeather();
   const { budgets, loading: budgetsLoading } = useBudgets(currentUser.id);
-  const weatherTheme = weather ? getWeatherTheme(weather.current.condition, weather.current.isDay) : null;
+
+  // ⚠️ TEMPORARY DEV TOOL -- lihat komentar di WeatherDebugToggle.tsx.
+  // Saat override aktif, ini menggantikan data cuaca asli hanya untuk
+  // preview visual (tidak mengubah/menyimpan apa pun).
+  const [debugOverride, setDebugOverride] = useState<WeatherDebugOverride | null>(null);
+
+  const effectiveWeather: { condition: WeatherDebugOverride["condition"]; isDay: boolean } | null = debugOverride
+    ? debugOverride
+    : weather
+      ? { condition: weather.current.condition, isDay: weather.current.isDay }
+      : null;
+
+  const weatherTheme = effectiveWeather ? getWeatherTheme(effectiveWeather.condition, effectiveWeather.isDay) : null;
 
   const getGreetingKey = (): string => {
     const hour = new Date().getHours();
@@ -127,8 +140,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       id="dashboard-welcome-banner" 
       className="relative overflow-hidden p-6 rounded-3xl border bg-slate-900 border-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-sm"
     >
-      {weatherTheme && weather && (
-        <DashboardWeatherLayer condition={weather.current.condition} isDay={weather.current.isDay} />
+      {weatherTheme && effectiveWeather && (
+        <DashboardWeatherLayer condition={effectiveWeather.condition} isDay={effectiveWeather.isDay} />
       )}
 
       <div className="relative z-10 flex items-center gap-4">
@@ -157,25 +170,29 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               <span>{formattedDate}</span>
             </div>
 
-            {weatherLoading && (
+            {weatherLoading && !debugOverride && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-slate-500 animate-pulse">
                 <span>{t("dashboard.weather_loading")}</span>
               </div>
             )}
 
-            {weather && weatherTheme && (
+            {effectiveWeather && weatherTheme && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-slate-300 light_sakura:bg-rose-50 light_sakura:border-rose-100/50 light_sakura:text-rose-600 transition-colors duration-300">
                 <weatherTheme.icon size={12} className={`shrink-0 ${weatherTheme.accentClass}`} />
-                <span>
-                  {locale === "id" ? weatherTheme.labelId : weatherTheme.labelEn}
-                  {" · "}
-                  {weather.current.temperatureC}°C
-                </span>
-                <span className="w-px h-3 bg-white/10 mx-0.5" />
-                <MapPin size={11} className="shrink-0 opacity-70" />
-                <span className="max-w-[9rem] truncate">{weather.location.city}</span>
+                <span>{locale === "id" ? weatherTheme.labelId : weatherTheme.labelEn}</span>
+                {!debugOverride && weather && (
+                  <>
+                    <span>· {weather.current.temperatureC}°C</span>
+                    <span className="w-px h-3 bg-white/10 mx-0.5" />
+                    <MapPin size={11} className="shrink-0 opacity-70" />
+                    <span className="max-w-[9rem] truncate">{weather.location.city}</span>
+                  </>
+                )}
+                {debugOverride && <span className="text-fuchsia-300">(debug)</span>}
               </div>
             )}
+
+            <WeatherDebugToggle value={debugOverride} onChange={setDebugOverride} />
           </div>
           <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
             {t(getGreetingKey(), { name: currentUser.display_name })}
