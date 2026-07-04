@@ -74,8 +74,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       if (dangerBudget) {
         return {
           text: locale === "id"
-            ? `⚠️ Peringatan Anggaran: Kategori "${dangerBudget.category_key}" telah terpakai ${Math.round(dangerBudget.percent)}%! Batasi pengeluaran Anda hari ini.`
-            : `⚠️ Budget Alert: Category "${dangerBudget.category_key}" is at ${Math.round(dangerBudget.percent)}%! Mind your spending today.`,
+            ? `Peringatan Anggaran: Kategori "${dangerBudget.category_key}" telah terpakai ${Math.round(dangerBudget.percent)}%! Batasi pengeluaran Anda hari ini.`
+            : `Budget Alert: Category "${dangerBudget.category_key}" is at ${Math.round(dangerBudget.percent)}%! Mind your spending today.`,
           type: "budget_danger"
         };
       }
@@ -84,8 +84,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       if (warningBudget) {
         return {
           text: locale === "id"
-            ? `⚡ Perhatian Anggaran: Kategori "${warningBudget.category_key}" mendekati batas (${Math.round(warningBudget.percent)}% terpakai).`
-            : `⚡ Budget Warning: Category "${warningBudget.category_key}" is approaching limit (${Math.round(warningBudget.percent)}% spent).`,
+            ? `Perhatian Anggaran: Kategori "${warningBudget.category_key}" mendekati batas (${Math.round(warningBudget.percent)}% terpakai).`
+            : `Budget Warning: Category "${warningBudget.category_key}" is approaching limit (${Math.round(warningBudget.percent)}% spent).`,
           type: "budget_warning"
         };
       }
@@ -109,8 +109,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
         return {
           text: locale === "id"
-            ? `📊 Status Anggaran Harian: Jatah aman harian ± ${formattedAllowance} (${remainingDays} hari tersisa, ${overallPercent}% anggaran terpakai).`
-            : `📊 Daily Budget Status: Safe daily allowance ± ${formattedAllowance} (${remainingDays} days remaining, ${overallPercent}% budget spent).`,
+            ? `Status Anggaran Harian: Jatah aman harian ± ${formattedAllowance} (${remainingDays} hari tersisa, ${overallPercent}% anggaran terpakai).`
+            : `Daily Budget Status: Safe daily allowance ± ${formattedAllowance} (${remainingDays} days remaining, ${overallPercent}% budget spent).`,
           type: "budget_ok"
         };
       }
