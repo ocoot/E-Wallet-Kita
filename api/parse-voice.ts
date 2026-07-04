@@ -128,9 +128,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const transcript = await transcribeVoiceNote(cleanBase64, resolvedMimeType);
+    // traceId dipakai untuk mengaitkan log request ini dengan log
+    // per-attempt di dalam transcribeVoiceNote (lihat Runtime Logs Vercel).
+    const traceId = `vt_web_${user.id}_${Date.now()}`;
+    console.log(
+      `🎙️ [${traceId}] Voice note diterima dari web — userId=${user.id} ` +
+      `clientMimeType=${typeof mimeType === "string" ? mimeType : "unknown"} ` +
+      `resolvedMimeType="${resolvedMimeType}" durationSeconds=${durationSeconds ?? "unknown"} ` +
+      `base64Len=${cleanBase64.length}`
+    );
+
+    const transcript = await transcribeVoiceNote(cleanBase64, resolvedMimeType, traceId);
 
     if (!transcript) {
+      console.error(`❌ [${traceId}] transcribeVoiceNote returned null — lihat log "${traceId}" di atas untuk detail kegagalan tiap model.`);
       res.status(422).json({ error: "Gagal mentranskrip pesan suara. Coba rekam ulang dengan lebih jelas." });
       return;
     }

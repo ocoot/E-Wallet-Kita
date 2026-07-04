@@ -47,8 +47,46 @@ if (apiKey) {
   });
 }
 
-export async function transcribeVoiceNote(base64Audio: string, mimeType: string): Promise<string | null> {
-  if (!ai) return null;
+// ─────────────────────────────────────────────────────────────
+// DEBUG LOGGING (added 2026-07-04)
+//
+// Same root-cause investigation as the Telegram bot's inline copy of
+// this function (see api/telegram-webhook.ts): every model in the
+// chain failing at once, on every voice note, points at a codec/format
+// mismatch rather than a per-model capability gap — but this only
+// logged `err?.message` before, and the caller's HTTP status doesn't
+// reveal WHY transcription failed. These logs make each attempt's
+// outcome (thrown error with status/code, or a silent empty transcript
+// with its finishReason) visible in Vercel's Runtime Logs.
+// ─────────────────────────────────────────────────────────────
+function describeAudioForLog(base64Audio: string, mimeType: string): string {
+  const approxBytes = Math.floor((base64Audio.length * 3) / 4);
+  return `mimeType="${mimeType}" base64Len=${base64Audio.length} approxAudioBytes=${approxBytes} (~${(approxBytes / 1024).toFixed(1)}KB)`;
+}
+
+function describeGeminiError(err: any): string {
+  const parts: string[] = [];
+  if (err?.status !== undefined) parts.push(`status=${err.status}`);
+  if (err?.code !== undefined) parts.push(`code=${err.code}`);
+  if (err?.error?.code !== undefined) parts.push(`error.code=${err.error.code}`);
+  if (err?.error?.status !== undefined) parts.push(`error.status=${err.error.status}`);
+  if (err?.error?.message) parts.push(`error.message=${err.error.message}`);
+  if (err?.name) parts.push(`name=${err.name}`);
+  if (err?.message) parts.push(`message=${err.message}`);
+  return parts.length ? parts.join(" | ") : String(err);
+}
+
+export async function transcribeVoiceNote(
+  base64Audio: string,
+  mimeType: string,
+  traceId: string = `vt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+): Promise<string | null> {
+  console.log(`🎙️ [${traceId}] transcribeVoiceNote start — ${describeAudioForLog(base64Audio, mimeType)}`);
+
+  if (!ai) {
+    console.error(`❌ [${traceId}] transcribeVoiceNote aborted — GEMINI_API_KEY is not set (ai client is null). No model was attempted.`);
+    return null;
+  }
 
   const systemInstruction =
     `You transcribe short voice notes (Indonesian or English) into plain text ONLY. ` +
@@ -56,9 +94,11 @@ export async function transcribeVoiceNote(base64Audio: string, mimeType: string)
     `"gaji bulan ini masuk 5 juta"). Output ONLY the raw transcript, verbatim, no translation, ` +
     `no commentary, no quotes, no markdown.`;
 
+  const attempts: { model: string; outcome: string }[] = [];
   let lastError: any = null;
 
   for (const { model, timeoutMs, thinkingConfig } of GEMINI_MODEL_CHAIN) {
+    const attemptStart = Date.now();
     try {
       let timeoutId: NodeJS.Timeout | undefined;
       const timeoutPromise = new Promise<never>((_, reject) => {
@@ -81,18 +121,42 @@ export async function transcribeVoiceNote(base64Audio: string, mimeType: string)
 
       const response = await Promise.race([responsePromise, timeoutPromise]);
       if (timeoutId) clearTimeout(timeoutId);
+      const elapsedMs = Date.now() - attemptStart;
 
       const transcript = response.text?.trim();
-      if (transcript) return transcript;
+      if (transcript) {
+        console.log(`✅ [${traceId}] transcribeVoiceNote succeeded on "${model}" in ${elapsedMs}ms — transcriptLen=${transcript.length}`);
+        return transcript;
+      }
+
+      // No exception, but also no text — the silent-failure case that
+      // was previously invisible. finishReason / promptFeedback usually
+      // explains why (e.g. a safety block vs. a genuine decode failure).
+      const candidate = (response as any)?.candidates?.[0];
+      const finishReason = candidate?.finishReason ?? "unknown";
+      const safetyRatings = candidate?.safetyRatings ? JSON.stringify(candidate.safetyRatings) : "none";
+      const promptFeedback = (response as any)?.promptFeedback ? JSON.stringify((response as any).promptFeedback) : "none";
+      console.warn(
+        `⚠️ [${traceId}] transcribeVoiceNote got EMPTY transcript from "${model}" in ${elapsedMs}ms — ` +
+        `finishReason=${finishReason} safetyRatings=${safetyRatings} promptFeedback=${promptFeedback}`
+      );
+      attempts.push({ model, outcome: `empty (finishReason=${finishReason})` });
       // Empty transcript from this model — try the next one rather than
       // treating a blank response as final.
     } catch (err: any) {
+      const elapsedMs = Date.now() - attemptStart;
       lastError = err;
-      console.error(`❌ Gemini transcribeVoiceNote failed on model "${model}":`, err?.message ?? err);
+      attempts.push({ model, outcome: `error (${describeGeminiError(err)})` });
+      console.error(`❌ [${traceId}] transcribeVoiceNote failed on "${model}" after ${elapsedMs}ms — ${describeGeminiError(err)}`);
       continue;
     }
   }
 
-  console.error("❌ All Gemini models failed to transcribe voice note. Last error:", lastError?.message ?? lastError);
+  console.error(
+    `❌ [${traceId}] All ${GEMINI_MODEL_CHAIN.length} Gemini models failed to transcribe voice note. ` +
+    `Attempt summary: ${attempts.map(a => `${a.model}=${a.outcome}`).join(" | ")}. ` +
+    `Input: ${describeAudioForLog(base64Audio, mimeType)}. ` +
+    `Last thrown error: ${lastError ? describeGeminiError(lastError) : "none (all attempts returned empty, no exceptions)"}`
+  );
   return null;
 }

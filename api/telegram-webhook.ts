@@ -353,8 +353,58 @@ PENTING: Nilai 'category_key' HARUS berupa key dari daftar di atas.`;
 // Reuse GEMINI_MODEL_CHAIN yang sama dengan parseFinancialQuery supaya
 // urutan fallback model & timeout budget konsisten di seluruh bot.
 // ─────────────────────────────────────────────────────────────
-async function transcribeVoiceNote(base64Audio: string, mimeType: string): Promise<string | null> {
-  if (!ai) return null;
+// ─────────────────────────────────────────────────────────────
+// DEBUG LOGGING (added 2026-07-04)
+//
+// Root-cause investigation so far: Telegram voice notes are an OGG
+// container with the Opus codec, but Gemini's documented "audio/ogg"
+// support is specifically OGG *Vorbis*. All 7 models in the chain
+// failing at once on every voice note is consistent with a codec/format
+// mismatch rather than a per-model capability gap — but the previous
+// version of this function only logged `err?.message`, and Vercel's
+// invocation overview always shows 200 here because a full fallback
+// exhaustion is a handled `return null`, not a thrown error. That made
+// the real cause invisible without digging into Runtime Logs.
+//
+// These logs are written so each Runtime Log entry answers, per model
+// attempt: did Gemini throw (and with what status/code), or did it
+// return an empty transcript silently (and what finishReason explains
+// that)? The final summary line lists the outcome of all 7 attempts in
+// one place so a single log line is enough to diagnose a failed voice
+// note, without needing to piece together 7 separate log lines.
+// ─────────────────────────────────────────────────────────────
+function describeAudioForLog(base64Audio: string, mimeType: string): string {
+  const approxBytes = Math.floor((base64Audio.length * 3) / 4);
+  return `mimeType="${mimeType}" base64Len=${base64Audio.length} approxAudioBytes=${approxBytes} (~${(approxBytes / 1024).toFixed(1)}KB)`;
+}
+
+function describeGeminiError(err: any): string {
+  // Gemini SDK errors surface the real reason in different shapes
+  // depending on whether the failure came from the HTTP layer or the
+  // SDK's own validation, so every field that has historically carried
+  // useful info is pulled out rather than guessing which one applies.
+  const parts: string[] = [];
+  if (err?.status !== undefined) parts.push(`status=${err.status}`);
+  if (err?.code !== undefined) parts.push(`code=${err.code}`);
+  if (err?.error?.code !== undefined) parts.push(`error.code=${err.error.code}`);
+  if (err?.error?.status !== undefined) parts.push(`error.status=${err.error.status}`);
+  if (err?.error?.message) parts.push(`error.message=${err.error.message}`);
+  if (err?.name) parts.push(`name=${err.name}`);
+  if (err?.message) parts.push(`message=${err.message}`);
+  return parts.length ? parts.join(" | ") : String(err);
+}
+
+async function transcribeVoiceNote(
+  base64Audio: string,
+  mimeType: string,
+  traceId: string = `vt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
+): Promise<string | null> {
+  console.log(`🎙️ [${traceId}] transcribeVoiceNote start — ${describeAudioForLog(base64Audio, mimeType)}`);
+
+  if (!ai) {
+    console.error(`❌ [${traceId}] transcribeVoiceNote aborted — GEMINI_API_KEY is not set (ai client is null). No model was attempted.`);
+    return null;
+  }
 
   const systemInstruction =
     `You transcribe short voice notes (Indonesian or English) into plain text ONLY. ` +
@@ -362,9 +412,11 @@ async function transcribeVoiceNote(base64Audio: string, mimeType: string): Promi
     `"gaji bulan ini masuk 5 juta"). Output ONLY the raw transcript, verbatim, no translation, ` +
     `no commentary, no quotes, no markdown.`;
 
+  const attempts: { model: string; outcome: string }[] = [];
   let lastError: any = null;
 
   for (const { model, timeoutMs, thinkingConfig } of GEMINI_MODEL_CHAIN) {
+    const attemptStart = Date.now();
     try {
       let timeoutId: NodeJS.Timeout | undefined;
       const timeoutPromise = new Promise<never>((_, reject) => {
@@ -390,19 +442,44 @@ async function transcribeVoiceNote(base64Audio: string, mimeType: string): Promi
 
       const response = await Promise.race([responsePromise, timeoutPromise]);
       if (timeoutId) clearTimeout(timeoutId);
+      const elapsedMs = Date.now() - attemptStart;
 
       const transcript = response.text?.trim();
-      if (transcript) return transcript;
+      if (transcript) {
+        console.log(`✅ [${traceId}] transcribeVoiceNote succeeded on "${model}" in ${elapsedMs}ms — transcriptLen=${transcript.length}`);
+        return transcript;
+      }
+
+      // No exception was thrown, but there's also no text — this is the
+      // SILENT failure case the old code never logged at all. finishReason
+      // / promptFeedback usually explains why Gemini returned nothing
+      // (e.g. a safety block, vs. genuinely failing to decode the audio).
+      const candidate = (response as any)?.candidates?.[0];
+      const finishReason = candidate?.finishReason ?? "unknown";
+      const safetyRatings = candidate?.safetyRatings ? JSON.stringify(candidate.safetyRatings) : "none";
+      const promptFeedback = (response as any)?.promptFeedback ? JSON.stringify((response as any).promptFeedback) : "none";
+      console.warn(
+        `⚠️ [${traceId}] transcribeVoiceNote got EMPTY transcript from "${model}" in ${elapsedMs}ms — ` +
+        `finishReason=${finishReason} safetyRatings=${safetyRatings} promptFeedback=${promptFeedback}`
+      );
+      attempts.push({ model, outcome: `empty (finishReason=${finishReason})` });
       // Empty transcript from this model — try the next one rather than
       // treating a blank response as final.
     } catch (err: any) {
+      const elapsedMs = Date.now() - attemptStart;
       lastError = err;
-      console.error(`❌ Gemini transcribeVoiceNote failed on model "${model}":`, err?.message ?? err);
+      attempts.push({ model, outcome: `error (${describeGeminiError(err)})` });
+      console.error(`❌ [${traceId}] transcribeVoiceNote failed on "${model}" after ${elapsedMs}ms — ${describeGeminiError(err)}`);
       continue;
     }
   }
 
-  console.error("❌ All Gemini models failed to transcribe voice note. Last error:", lastError?.message ?? lastError);
+  console.error(
+    `❌ [${traceId}] All ${GEMINI_MODEL_CHAIN.length} Gemini models failed to transcribe voice note. ` +
+    `Attempt summary: ${attempts.map(a => `${a.model}=${a.outcome}`).join(" | ")}. ` +
+    `Input: ${describeAudioForLog(base64Audio, mimeType)}. ` +
+    `Last thrown error: ${lastError ? describeGeminiError(lastError) : "none (all attempts returned empty, no exceptions)"}`
+  );
   return null;
 }
 
@@ -567,36 +644,56 @@ async function handleVoiceNote(message: any, maintenanceStatus: MaintenanceStatu
 
   await sendTelegramMessage(chatId, tr("voiceTranscribing", lang));
 
+  // traceId dipakai untuk mengaitkan semua log satu voice note ini —
+  // mulai dari getFile Telegram sampai hasil akhir tiap model Gemini —
+  // supaya di Vercel Runtime Logs tinggal filter satu string ini.
+  const traceId = `vt_${chatId}_${Date.now()}`;
+  console.log(
+    `🎙️ [${traceId}] Voice note diterima dari chatId=${chatId} — ` +
+    `file_id=${voice.file_id} duration=${voice.duration ?? "unknown"}s ` +
+    `telegram_mime_type=${voice.mime_type ?? "unknown"} file_size=${voice.file_size ?? "unknown"}`
+  );
+
   try {
     const token = process.env.TELEGRAM_BOT_TOKEN;
 
     // Step 1: getFile
     const getFileResp = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${voice.file_id}`);
     if (!getFileResp.ok) {
+      console.error(`❌ [${traceId}] getFile API failed: status=${getFileResp.status} statusText=${getFileResp.statusText}`);
       throw new Error(`getFile API failed: ${getFileResp.statusText}`);
     }
     const getFileData = await getFileResp.json();
     const filePath = getFileData.result?.file_path;
     if (!filePath) {
+      console.error(`❌ [${traceId}] getFile response missing file_path. Raw response:`, JSON.stringify(getFileData));
       throw new Error("Could not retrieve file path from Telegram.");
     }
+    console.log(`📁 [${traceId}] getFile OK — file_path=${filePath} reported_file_size=${getFileData.result?.file_size ?? "unknown"}`);
 
     // Step 2: Download & base64-encode the audio (ogg/opus)
     const audioUrl = `https://api.telegram.org/file/bot${token}/${filePath}`;
     const audioResp = await fetch(audioUrl);
     if (!audioResp.ok) {
+      console.error(`❌ [${traceId}] Download voice note failed: status=${audioResp.status} statusText=${audioResp.statusText} url=${audioUrl}`);
       throw new Error(`Failed to download voice note from Telegram: ${audioResp.statusText}`);
     }
     const arrayBuffer = await audioResp.arrayBuffer();
     const base64Audio = Buffer.from(arrayBuffer).toString("base64");
     const mimeType = voice.mime_type || "audio/ogg";
+    console.log(
+      `📥 [${traceId}] Audio downloaded — bytesDownloaded=${arrayBuffer.byteLength} ` +
+      `resolvedMimeType="${mimeType}" filePath="${filePath}" (extension menunjukkan container asli dari Telegram)`
+    );
 
     // Step 3: Transcribe with Gemini
-    const transcript = await transcribeVoiceNote(base64Audio, mimeType);
+    const transcript = await transcribeVoiceNote(base64Audio, mimeType, traceId);
     if (!transcript) {
+      console.error(`❌ [${traceId}] transcribeVoiceNote returned null — mengirim pesan error ke user. Lihat log "${traceId}" di atas untuk detail kegagalan tiap model.`);
       await sendTelegramMessage(chatId, tr("voiceTranscribeError", lang));
       return;
     }
+    console.log(`✅ [${traceId}] Transcript diterima, lanjut ke parseFinancialQuery — transcriptLen=${transcript.length}`);
 
     // Show the user what we heard, so they can immediately tell if the
     // transcription is wrong before we even try to parse an amount.
@@ -637,7 +734,7 @@ async function handleVoiceNote(message: any, maintenanceStatus: MaintenanceStatu
       draftMarkup
     );
   } catch (err: any) {
-    console.error("❌ handleVoiceNote error:", err);
+    console.error(`❌ [${traceId}] handleVoiceNote error (di luar transcribeVoiceNote — kemungkinan getFile/download Telegram gagal, lihat log di atas):`, err?.message ?? err);
     await sendTelegramMessage(chatId, tr("voiceTranscribeError", lang));
   }
 }
