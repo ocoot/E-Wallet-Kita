@@ -74,7 +74,19 @@ if (!supabaseServiceKey) {
 const supabaseBackend = createClient(supabaseUrl, supabaseServiceKey);
 
 // Initialize Gemini
-const apiKey = process.env.GEMINI_API_KEY;
+// FIX (2026-07-04): GEMINI_API_KEY tidak di-set di Vercel — dikonfirmasi
+// lewat log "GEMINI_API_KEY is not set (ai client is null)" saat voice note
+// gagal total. api/_lib/receipt-parser.ts sudah punya pool key aktif
+// (GEMINI_API_KEY_1..4). Fallback ke key pertama dari pool tsb supaya bot
+// langsung berfungsi dengan credential yang sudah terbukti valid, tanpa
+// menunggu env var baru ditambahkan. GEMINI_API_KEY tetap diprioritaskan
+// kalau di-set nanti.
+const apiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY_1;
+const apiKeySource = process.env.GEMINI_API_KEY
+  ? "GEMINI_API_KEY"
+  : process.env.GEMINI_API_KEY_1
+  ? "GEMINI_API_KEY_1 (fallback dari pool receipt-parser)"
+  : "none";
 let ai: GoogleGenAI | null = null;
 if (apiKey) {
   ai = new GoogleGenAI({
@@ -82,6 +94,7 @@ if (apiKey) {
     httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
   });
 }
+console.log(`🔑 [telegram-webhook] Gemini API key source: ${apiKeySource}`);
 
 
 // ─────────────────────────────────────────────────────────────
@@ -402,7 +415,7 @@ async function transcribeVoiceNote(
   console.log(`🎙️ [${traceId}] transcribeVoiceNote start — ${describeAudioForLog(base64Audio, mimeType)}`);
 
   if (!ai) {
-    console.error(`❌ [${traceId}] transcribeVoiceNote aborted — GEMINI_API_KEY is not set (ai client is null). No model was attempted.`);
+    console.error(`❌ [${traceId}] transcribeVoiceNote aborted — tidak ada Gemini API key yang tersedia (GEMINI_API_KEY maupun GEMINI_API_KEY_1 sama-sama kosong). No model was attempted.`);
     return null;
   }
 

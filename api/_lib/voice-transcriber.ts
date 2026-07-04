@@ -36,7 +36,22 @@ const GEMINI_MODEL_CHAIN: GeminiModelConfig[] = [
   { model: "gemini-2.5-flash-lite",   timeoutMs: 4000, thinkingConfig: { thinkingBudget: 0 } },
 ];
 
-const apiKey = process.env.GEMINI_API_KEY;
+// FIX (2026-07-04): GEMINI_API_KEY (tanpa suffix) TIDAK di-set di Vercel —
+// dikonfirmasi lewat log "GEMINI_API_KEY is not set (ai client is null)".
+// Sementara itu api/_lib/receipt-parser.ts sudah punya pool key yang aktif
+// (GEMINI_API_KEY_1..4) untuk fitur OCR struk. Voice transcription tidak
+// punya fallback non-AI (beda dengan parse-transaction.ts yang diam-diam
+// jatuh ke regex), jadi tanpa key yang valid fitur ini 100% mati. Fallback
+// ke key pertama dari pool yang sama supaya fitur langsung berfungsi
+// menggunakan credential yang sudah terbukti aktif, tanpa menunggu env var
+// baru ditambahkan di Vercel. GEMINI_API_KEY (kalau di-set nanti) tetap
+// diprioritaskan lebih dulu.
+const apiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY_1;
+const apiKeySource = process.env.GEMINI_API_KEY
+  ? "GEMINI_API_KEY"
+  : process.env.GEMINI_API_KEY_1
+  ? "GEMINI_API_KEY_1 (fallback dari pool receipt-parser)"
+  : "none";
 let ai: GoogleGenAI | null = null;
 if (apiKey) {
   ai = new GoogleGenAI({
@@ -46,6 +61,7 @@ if (apiKey) {
     }
   });
 }
+console.log(`🔑 [voice-transcriber] Gemini API key source: ${apiKeySource}`);
 
 // ─────────────────────────────────────────────────────────────
 // DEBUG LOGGING (added 2026-07-04)
@@ -84,7 +100,7 @@ export async function transcribeVoiceNote(
   console.log(`🎙️ [${traceId}] transcribeVoiceNote start — ${describeAudioForLog(base64Audio, mimeType)}`);
 
   if (!ai) {
-    console.error(`❌ [${traceId}] transcribeVoiceNote aborted — GEMINI_API_KEY is not set (ai client is null). No model was attempted.`);
+    console.error(`❌ [${traceId}] transcribeVoiceNote aborted — tidak ada Gemini API key yang tersedia (GEMINI_API_KEY maupun GEMINI_API_KEY_1 sama-sama kosong). No model was attempted.`);
     return null;
   }
 
