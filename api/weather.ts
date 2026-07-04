@@ -27,8 +27,11 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
  * Fetch wrapper with explicit timeout -- Vercel runtime sering timeout
  * saat reach external APIs tanpa timeout eksplisit. Default fetch() tidak
  * punya timeout di Node.js kecuali AbortController di-setup.
+ *
+ * Timeout 6s lebih reasonable untuk Vercel daripada 3s -- beberapa region
+ * atau kondisi network memang butuh lebih lama dari 3s.
  */
-async function fetchWithTimeout(url: string, options?: RequestInit, timeoutMs: number = 3000): Promise<Response> {
+async function fetchWithTimeout(url: string, options?: RequestInit, timeoutMs: number = 6000): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -113,10 +116,11 @@ async function resolveByIp(ip: string | null): Promise<{ lat: number; lon: numbe
   const url = isPrivateIp ? 'https://ipapi.co/json/' : `https://ipapi.co/${ip}/json/`;
 
   let lastError: any;
-  // Retry 2x untuk ipapi.co karena sering timeout di Vercel
+  // Retry 2x untuk ipapi.co dengan exponential backoff (500ms, 1000ms)
+  // karena sering timeout di Vercel. Timeout 8s (lebih generous untuk geo lookup).
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
-      const resp = await fetchWithTimeout(url, { headers: { 'User-Agent': 'e-wallet-kita-app/1.0' } }, 3000);
+      const resp = await fetchWithTimeout(url, { headers: { 'User-Agent': 'e-wallet-kita-app/1.0' } }, 8000);
       if (!resp.ok) throw new Error(`ipapi.co responded ${resp.status}`);
       const data = await resp.json();
       if (data.error) throw new Error(data.reason || 'ipapi.co lookup error');
@@ -132,7 +136,10 @@ async function resolveByIp(ip: string | null): Promise<{ lat: number; lon: numbe
     } catch (err) {
       lastError = err;
       console.warn(`[api/weather] ipapi.co attempt ${attempt}/2 failed:`, err?.message);
-      if (attempt < 2) await new Promise(r => setTimeout(r, 500)); // wait 500ms sebelum retry
+      if (attempt < 2) {
+        const backoffMs = attempt === 1 ? 500 : 1000; // exponential: 500ms, 1000ms
+        await new Promise(r => setTimeout(r, backoffMs));
+      }
     }
   }
   throw lastError;
@@ -141,7 +148,7 @@ async function resolveByIp(ip: string | null): Promise<{ lat: number; lon: numbe
 async function reverseGeocode(lat: number, lon: number): Promise<ResolvedLocation> {
   const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`;
   try {
-    const resp = await fetchWithTimeout(url, { headers: { 'User-Agent': 'e-wallet-kita-app/1.0' } }, 3000);
+    const resp = await fetchWithTimeout(url, { headers: { 'User-Agent': 'e-wallet-kita-app/1.0' } }, 6000);
     if (!resp.ok) throw new Error(`bigdatacloud responded ${resp.status}`);
     const data = await resp.json();
 
@@ -199,7 +206,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day&timezone=auto`;
-    const weatherResp = await fetchWithTimeout(weatherUrl, { headers: { 'User-Agent': 'e-wallet-kita-app/1.0' } }, 3000);
+    const weatherResp = await fetchWithTimeout(weatherUrl, { headers: { 'User-Agent': 'e-wallet-kita-app/1.0' } }, 6000);
     if (!weatherResp.ok) throw new Error(`open-meteo responded ${weatherResp.status}`);
     const weatherData = await weatherResp.json();
     const current = weatherData.current;
