@@ -50,6 +50,20 @@
 // eksplisit) kalau source itu memang tidak punya baris 1g sama sekali
 // (kasus nyata: "pegadaian" cuma py 1 baris, weight 0.01g).
 //
+// FIX KETIGA (versi ini): sebelumnya, fallback ke secondary (Emas API ID)
+// CUMA jalan kalau primary GAGAL TOTAL (return null). Untuk "antam", primary
+// tidak pernah gagal total -- sellPrice-nya valid, cuma buybackPrice-nya
+// memang kosong dari source "logammulia" (dikonfirmasi live: 23/23 baris
+// null, bukan kegagalan sesaat). Akibatnya fallback TIDAK PERNAH dicoba
+// untuk "antam", padahal dokumentasi Emas API ID menunjukkan resource
+// "antam" mereka JUSTRU py buyback_price. Fix: kalau primary sukses tapi
+// buybackPrice-nya null, coba secondary KHUSUS untuk mengisi buyback saja
+// (sellPrice tetap pakai primary, tidak diganti) -- supaya brand yang sudah
+// benar sell price-nya tidak ikut berubah sumber cuma gara-gara buyback
+// kosong. Backfill ini butuh EMAS_API_ID_KEY di-set sbg secret; kalau belum,
+// di-skip dengan warning seperti biasa (fitur tetap jalan, cuma tanpa
+// buyback utk brand yg bersangkutan, sell tetap jalan seperti sebelumnya).
+//
 // PENTING (ditemukan saat riset, bukan asumsi): endpoint sumber untuk
 // kombinasi source+materialType+weight tertentu bisa mengembalikan
 // sellPrice/buybackPrice = 0/null (bukan error HTTP, datanya memang kosong).
@@ -292,6 +306,7 @@ Deno.serve(async (req: Request) => {
     let synced = 0;
     let skipped = 0;
     const usedFallbackFor: string[] = [];
+    const backfilledBuybackFor: string[] = [];
     const failedBrands: string[] = [];
 
     for (const brand of TARGET_BRANDS) {
@@ -303,6 +318,20 @@ Deno.serve(async (req: Request) => {
         result = await fetchFromSecondary(brand);
         sourceLabel = "emas-api-id";
         if (result) usedFallbackFor.push(brand);
+      } else if (result.buybackPrice === null) {
+        // Primary sukses (sellPrice valid) tapi buyback kosong dari source
+        // ini -- coba backfill KHUSUS buyback dari secondary, sellPrice
+        // primary TETAP dipakai (tidak diganti begitu saja oleh secondary,
+        // supaya tidak ganti sumber sell price yang sudah benar).
+        console.warn(`[gold-price-sync] "${brand}": primary sukses tapi buyback kosong, mencoba backfill buyback dari fallback...`);
+        const secondary = await fetchFromSecondary(brand);
+        if (secondary && secondary.buybackPrice !== null) {
+          result = { ...result, buybackPrice: secondary.buybackPrice };
+          sourceLabel = "logam-mulia-api+emas-api-id-buyback";
+          backfilledBuybackFor.push(brand);
+        } else {
+          console.warn(`[gold-price-sync] "${brand}": backfill buyback dari fallback tetap tidak tersedia (${!secondary ? "fallback gagal/di-skip" : "buyback secondary juga kosong"}) -- lanjut sell-only.`);
+        }
       }
 
       if (!result) {
@@ -335,7 +364,10 @@ Deno.serve(async (req: Request) => {
     }
 
     if (usedFallbackFor.length > 0) {
-      console.warn(`[gold-price-sync] Brand yang dilayani FALLBACK (Emas API ID) kali ini: ${usedFallbackFor.join(", ")}`);
+      console.warn(`[gold-price-sync] Brand yang dilayani FALLBACK PENUH (Emas API ID) kali ini: ${usedFallbackFor.join(", ")}`);
+    }
+    if (backfilledBuybackFor.length > 0) {
+      console.warn(`[gold-price-sync] Brand yang buyback-nya di-backfill dari fallback kali ini: ${backfilledBuybackFor.join(", ")}`);
     }
 
     // Kalau SEMUA brand gagal (primary & fallback dua-duanya), balikan status
@@ -349,6 +381,7 @@ Deno.serve(async (req: Request) => {
         skipped,
         failed_brands: failedBrands,
         used_fallback_for: usedFallbackFor,
+        backfilled_buyback_for: backfilledBuybackFor,
         total: TARGET_BRANDS.length,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status }
