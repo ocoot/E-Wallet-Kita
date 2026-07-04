@@ -23,6 +23,25 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
  * punya rate limit pada tier gratisnya.
  */
 
+/**
+ * Fetch wrapper with explicit timeout -- Vercel runtime sering timeout
+ * saat reach external APIs tanpa timeout eksplisit. Default fetch() tidak
+ * punya timeout di Node.js kecuali AbortController di-setup.
+ */
+async function fetchWithTimeout(url: string, options?: RequestInit, timeoutMs: number = 3000): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const resp = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return resp;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
 type WeatherCondition =
   | 'clear'
   | 'partly_cloudy'
@@ -32,6 +51,27 @@ type WeatherCondition =
   | 'rain'
   | 'snow'
   | 'thunderstorm';
+
+/**
+ * Fallback cuaca default kalau semua API gagal -- setidaknya widget cuaca
+ * tidak blank/error di dashboard, hanya "data tidak tersedia" tapi cukup
+ * inform user apa yang terjadi.
+ */
+function getFallbackWeather(): WeatherData {
+  return {
+    location: {
+      city: "Lokasi tidak dapat diakses",
+      source: "ip",
+    },
+    current: {
+      temperatureC: 0,
+      weatherCode: 3, // cloudy fallback
+      isDay: true,
+      condition: "cloudy",
+    },
+    updatedAt: new Date().toISOString(),
+  };
+}
 
 interface ResolvedLocation {
   city: string;
@@ -72,33 +112,50 @@ async function resolveByIp(ip: string | null): Promise<{ lat: number; lon: numbe
   const isPrivateIp = !ip || /^(127\.|10\.|192\.168\.|::1)/.test(ip);
   const url = isPrivateIp ? 'https://ipapi.co/json/' : `https://ipapi.co/${ip}/json/`;
 
-  const resp = await fetch(url, { headers: { 'User-Agent': 'e-wallet-kita-app/1.0' } });
-  if (!resp.ok) throw new Error(`ipapi.co responded ${resp.status}`);
-  const data = await resp.json();
-  if (data.error) throw new Error(data.reason || 'ipapi.co lookup error');
+  let lastError: any;
+  // Retry 2x untuk ipapi.co karena sering timeout di Vercel
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const resp = await fetchWithTimeout(url, { headers: { 'User-Agent': 'e-wallet-kita-app/1.0' } }, 3000);
+      if (!resp.ok) throw new Error(`ipapi.co responded ${resp.status}`);
+      const data = await resp.json();
+      if (data.error) throw new Error(data.reason || 'ipapi.co lookup error');
 
-  return {
-    lat: data.latitude,
-    lon: data.longitude,
-    city: data.city || 'Lokasi tidak diketahui',
-    region: data.region,
-    country: data.country_name,
-    source: 'ip',
-  };
+      return {
+        lat: data.latitude,
+        lon: data.longitude,
+        city: data.city || 'Lokasi tidak diketahui',
+        region: data.region,
+        country: data.country_name,
+        source: 'ip',
+      };
+    } catch (err) {
+      lastError = err;
+      console.warn(`[api/weather] ipapi.co attempt ${attempt}/2 failed:`, err?.message);
+      if (attempt < 2) await new Promise(r => setTimeout(r, 500)); // wait 500ms sebelum retry
+    }
+  }
+  throw lastError;
 }
 
 async function reverseGeocode(lat: number, lon: number): Promise<ResolvedLocation> {
   const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=id`;
-  const resp = await fetch(url);
-  if (!resp.ok) throw new Error(`bigdatacloud responded ${resp.status}`);
-  const data = await resp.json();
+  try {
+    const resp = await fetchWithTimeout(url, { headers: { 'User-Agent': 'e-wallet-kita-app/1.0' } }, 3000);
+    if (!resp.ok) throw new Error(`bigdatacloud responded ${resp.status}`);
+    const data = await resp.json();
 
-  return {
-    city: data.city || data.locality || data.principalSubdivision || 'Lokasi Anda',
-    region: data.principalSubdivision,
-    country: data.countryName,
-    source: 'gps',
-  };
+    return {
+      city: data.city || data.locality || data.principalSubdivision || 'Lokasi Anda',
+      region: data.principalSubdivision,
+      country: data.countryName,
+      source: 'gps',
+    };
+  } catch (err) {
+    console.warn(`[api/weather] reverseGeocode failed (non-fatal):`, err?.message);
+    // Reverse geocode adalah optional -- kalau gagal, fallback ke generic location name
+    throw err;
+  }
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -142,7 +199,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day&timezone=auto`;
-    const weatherResp = await fetch(weatherUrl);
+    const weatherResp = await fetchWithTimeout(weatherUrl, { headers: { 'User-Agent': 'e-wallet-kita-app/1.0' } }, 3000);
     if (!weatherResp.ok) throw new Error(`open-meteo responded ${weatherResp.status}`);
     const weatherData = await weatherResp.json();
     const current = weatherData.current;
@@ -162,7 +219,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       updatedAt: new Date().toISOString(),
     });
   } catch (err: any) {
-    console.error('[api/weather] error:', err?.message || err);
-    return res.status(502).json({ error: 'Gagal mengambil data cuaca saat ini. Coba lagi nanti.' });
+    const errMsg = err?.message || String(err);
+    console.error('[api/weather] error:', errMsg);
+    
+    // Graceful degradation: return fallback data instead of 502 error
+    // sehingga widget cuaca tetap tampil dengan "data tidak tersedia" dibanding
+    // blank/error. Ini lebih baik UX-wise daripada hard failure.
+    const fallback = getFallbackWeather();
+    res.setHeader('Cache-Control', 's-maxage=60'); // cache fallback hanya 1 menit
+    return res.status(200).json({
+      ...fallback,
+      _error: errMsg, // debug info untuk inspect error di frontend (optional)
+    });
   }
 }
