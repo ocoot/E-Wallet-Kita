@@ -7,6 +7,7 @@ import { useGoldSavings } from "../hooks/useGoldSavings";
 import { GoldPocket, GoldBrand, ACTIVE_GOLD_BRANDS } from "../types";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
+import { InfoTooltip } from "../components/InfoTooltip";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import {

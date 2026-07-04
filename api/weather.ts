@@ -55,6 +55,20 @@ type WeatherCondition =
   | 'snow'
   | 'thunderstorm';
 
+export interface WeatherData {
+  location: {
+    city: string;
+    source: 'geolocation' | 'ip';
+  };
+  current: {
+    temperatureC: number;
+    weatherCode: number;
+    isDay: boolean;
+    condition: WeatherCondition;
+  };
+  updatedAt: string;
+}
+
 /**
  * Fallback cuaca default kalau semua API gagal -- setidaknya widget cuaca
  * tidak blank/error di dashboard, hanya "data tidak tersedia" tapi cukup

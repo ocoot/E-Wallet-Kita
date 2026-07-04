@@ -5,6 +5,7 @@ import { UserSession } from "../types";
 import { Send, Info, Calendar, MapPin } from "lucide-react";
 import { motion } from "motion/react";
 import { useWeather } from "../hooks/useWeather";
+import { useBudgets } from "../hooks/useBudgets";
 import { getWeatherTheme } from "../lib/weatherTheme";
 import { DashboardWeatherLayer } from "./DashboardWeatherLayer";
 
@@ -19,6 +20,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 }) => {
   const { t, locale } = useLanguage();
   const { weather, loading: weatherLoading } = useWeather();
+  const { budgets, loading: budgetsLoading } = useBudgets(currentUser.id);
   const weatherTheme = weather ? getWeatherTheme(weather.current.condition, weather.current.isDay) : null;
 
   const getGreetingKey = (): string => {
@@ -64,6 +66,60 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
     const day = new Date().getDay(); // 0 to 6
     return locale === "id" ? tipsId[day] : tipsEn[day];
+  };
+
+  const getDynamicSubGreeting = (): { text: string; type: "budget_danger" | "budget_warning" | "budget_ok" | "tip" } => {
+    if (!budgetsLoading && budgets.length > 0) {
+      const dangerBudget = budgets.find(b => b.status === "danger" || b.percent >= 100);
+      if (dangerBudget) {
+        return {
+          text: locale === "id"
+            ? `⚠️ Peringatan Anggaran: Kategori "${dangerBudget.category_key}" telah terpakai ${Math.round(dangerBudget.percent)}%! Batasi pengeluaran Anda hari ini.`
+            : `⚠️ Budget Alert: Category "${dangerBudget.category_key}" is at ${Math.round(dangerBudget.percent)}%! Mind your spending today.`,
+          type: "budget_danger"
+        };
+      }
+
+      const warningBudget = budgets.find(b => b.status === "warning");
+      if (warningBudget) {
+        return {
+          text: locale === "id"
+            ? `⚡ Perhatian Anggaran: Kategori "${warningBudget.category_key}" mendekati batas (${Math.round(warningBudget.percent)}% terpakai).`
+            : `⚡ Budget Warning: Category "${warningBudget.category_key}" is approaching limit (${Math.round(warningBudget.percent)}% spent).`,
+          type: "budget_warning"
+        };
+      }
+
+      const totalLimit = budgets.reduce((acc, b) => acc + b.monthly_limit, 0);
+      const totalSpent = budgets.reduce((acc, b) => acc + b.spent, 0);
+
+      if (totalLimit > 0) {
+        const today = new Date();
+        const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+        const remainingDays = Math.max(1, daysInMonth - today.getDate() + 1);
+        const remainingBudget = Math.max(0, totalLimit - totalSpent);
+        const dailyAllowance = Math.floor(remainingBudget / remainingDays);
+        const overallPercent = Math.round((totalSpent / totalLimit) * 100);
+
+        const formattedAllowance = new Intl.NumberFormat(locale === "id" ? "id-ID" : "en-US", {
+          style: "currency",
+          currency: "IDR",
+          maximumFractionDigits: 0
+        }).format(dailyAllowance);
+
+        return {
+          text: locale === "id"
+            ? `📊 Status Anggaran Harian: Jatah aman harian ± ${formattedAllowance} (${remainingDays} hari tersisa, ${overallPercent}% anggaran terpakai).`
+            : `📊 Daily Budget Status: Safe daily allowance ± ${formattedAllowance} (${remainingDays} days remaining, ${overallPercent}% budget spent).`,
+          type: "budget_ok"
+        };
+      }
+    }
+
+    return {
+      text: getDynamicTip(),
+      type: "tip"
+    };
   };
 
   return (
@@ -124,9 +180,22 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
             {t(getGreetingKey(), { name: currentUser.display_name })}
           </h1>
-          <p className="font-sans text-xs text-slate-400 mt-1.5 max-w-xl leading-relaxed light_sakura:text-slate-500 italic">
-            {getDynamicTip()}
-          </p>
+          {(() => {
+            const subGreeting = getDynamicSubGreeting();
+            return (
+              <p className={`font-sans text-xs mt-1.5 max-w-xl leading-relaxed transition-colors ${
+                subGreeting.type === "budget_danger"
+                  ? "text-rose-400 font-semibold light_sakura:text-rose-600"
+                  : subGreeting.type === "budget_warning"
+                  ? "text-amber-300 font-medium light_sakura:text-amber-700"
+                  : subGreeting.type === "budget_ok"
+                  ? "text-emerald-300 font-medium light_sakura:text-emerald-700"
+                  : "text-slate-400 light_sakura:text-slate-500 italic"
+              }`}>
+                {subGreeting.text}
+              </p>
+            );
+          })()}
           {telegramStatus.linked && (
             <div className="flex items-center gap-1.5 mt-2 text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md w-fit border border-emerald-500/10">
               <Send size={10} />

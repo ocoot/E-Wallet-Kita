@@ -78,6 +78,7 @@
     "greeting_afternoon": "Selamat siang, {name} ☀️",
     "greeting_evening": "Selamat sore, {name} 🌤️",
     "greeting_night": "Selamat malam, {name} 🌙",
+    "weather_loading": "Memuat cuaca...",
     "balance_summary": "Ikhtisar Keuangan Bulan Ini",
     "overall_summary_label": "Ringkasan Keseluruhan",
     "income": "Pemasukan",
@@ -165,6 +166,7 @@
   "history": {
     "title": "Buku Kas & Riwayat Transaksi",
     "desc": "Berisi seluruh catatan masuk dan keluar keuangan yang diurutkan rapi berdasarkan tanggal terbaru.",
+    "filter_all": "Semua",
     "filter_month": "Pilih Bulan & Tahun",
     "search_label": "Cari Deskripsi",
     "page_size": "Tampilkan baris",
@@ -697,7 +699,10 @@
       "telegram_bot": "Bot Telegram",
       "budget": "Anggaran/Budget",
       "bill_reminders": "Pengingat Tagihan",
-      "installments": "Cicilan/Utang"
+      "installments": "Cicilan/Utang",
+      "savings": "Pos Tabungan",
+      "gold": "Tabungan Emas",
+      "gold_savings": "Tabungan Emas"
     },
     "tab_voucher": "🎟️ Voucher",
     "tab_ai_monitor": "🤖 Monitor AI",
