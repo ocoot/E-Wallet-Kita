@@ -22,6 +22,23 @@ import {
 const formatIDR = (num: number | null) => num != null ? "Rp" + Math.round(num).toLocaleString("id-ID") : "-";
 const formatGrams = (num: number) => `${num.toLocaleString("id-ID", { maximumFractionDigits: 4 })} gr`;
 
+// Format price_date (kolom DATE, contoh "2026-07-04") jadi label panjang
+// ("04 Juli 2026") maupun pendek ("04 Jul") sesuai locale aktif. Dibuat local
+// noon (bukan parse langsung sebagai UTC midnight) supaya tidak ada risiko
+// mundur satu hari akibat pergeseran timezone browser user.
+const parsePriceDate = (dateStr: string): Date => {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1, 12, 0, 0);
+};
+const formatPriceDateLong = (dateStr: string, locale: string): string =>
+  new Intl.DateTimeFormat(locale === "id" ? "id-ID" : "en-US", {
+    day: "2-digit", month: "long", year: "numeric",
+  }).format(parsePriceDate(dateStr));
+const formatPriceDateShort = (dateStr: string, locale: string): string =>
+  new Intl.DateTimeFormat(locale === "id" ? "id-ID" : "en-US", {
+    day: "2-digit", month: "short",
+  }).format(parsePriceDate(dateStr));
+
 interface PocketFormState {
   name: string;
   brand: GoldBrand;
@@ -32,7 +49,7 @@ const emptyForm = (): PocketFormState => ({ name: "", brand: "antam", notes: "" 
 type MoveDirection = "buy" | "sell" | "manual_add" | "manual_remove";
 
 export const GoldSavings: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const { user } = useAuth();
   const { showToast } = useToast();
   const { pockets, summary, prices, loading, refresh } = useGoldSavings(user?.id);
@@ -53,6 +70,21 @@ export const GoldSavings: React.FC = () => {
   const activePockets = useMemo(() => pockets.filter(p => !p.is_archived), [pockets]);
   const archivedPockets = useMemo(() => pockets.filter(p => p.is_archived), [pockets]);
   const priceByBrand = useMemo(() => new Map(prices.map(p => [p.brand, p])), [prices]);
+  // price_date terbaru di antara semua brand aktif -- dipakai sebagai
+  // headline "Harga terbaru per: ...". Kalau ada brand yang price_date-nya
+  // BEDA dari yang paling baru ini (mis. pegadaian ketinggalan sehari
+  // karena source-nya gagal sync), kita tandai priceDatesMismatch = true
+  // supaya usernya tahu bukan semua harga di strip itu sama segarnya --
+  // ini persis kasus nyata yang pernah kejadian di gold-price-sync (lihat
+  // catatan bug timeout di migration 20260704000000_fix_gold_price_sync_cron_timeout.sql).
+  const latestPriceDate = useMemo(() => {
+    if (prices.length === 0) return null;
+    return prices.reduce((max, p) => (p.price_date > max ? p.price_date : max), prices[0].price_date);
+  }, [prices]);
+  const priceDatesMismatch = useMemo(
+    () => latestPriceDate != null && prices.some(p => p.price_date !== latestPriceDate),
+    [prices, latestPriceDate]
+  );
   // Defensif: kalau pos yang sedang diedit brand-nya sudah tidak lagi
   // disinkron (di luar ACTIVE_GOLD_BRANDS -- mis. dibuat sebelum cakupan
   // dipersempit), tetap tampilkan brand itu di dropdown supaya tidak
@@ -317,14 +349,34 @@ export const GoldSavings: React.FC = () => {
 
           {/* Strip harga referensi hari ini */}
           {prices.length > 0 && (
-            <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-              {prices.map(pr => (
-                <div key={pr.brand} className="shrink-0 rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2 min-w-[128px] light_sakura:bg-slate-50 light_sakura:border-slate-200">
-                  <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wide">{t(`gold.brand_${pr.brand}`)}</p>
-                  <p className="text-[11px] font-bold text-amber-400 light_sakura:text-amber-600">{formatIDR(pr.sell_price_per_gram)}</p>
-                  <p className="text-[9.5px] text-slate-500">{t("gold.buyback_short")} {formatIDR(pr.buyback_price_per_gram)}</p>
-                </div>
-              ))}
+            <div className="space-y-2">
+              <p className="text-[10.5px] font-semibold text-slate-500 light_sakura:text-slate-500 px-1">
+                {t(priceDatesMismatch ? "gold.prices_updated_mismatch" : "gold.prices_updated_as_of", {
+                  date: formatPriceDateLong(latestPriceDate as string, locale),
+                })}
+              </p>
+              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
+                {prices.map(pr => {
+                  const isStaleVsOthers = priceDatesMismatch && pr.price_date !== latestPriceDate;
+                  return (
+                    <div
+                      key={pr.brand}
+                      title={isStaleVsOthers ? t("gold.price_stale_brand_hint") : undefined}
+                      className={`shrink-0 rounded-xl border px-3 py-2 min-w-[128px] ${isStaleVsOthers
+                        ? "border-amber-500/40 bg-amber-500/5"
+                        : "border-slate-800 bg-slate-950/40 light_sakura:bg-slate-50 light_sakura:border-slate-200"}`}
+                    >
+                      <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wide">{t(`gold.brand_${pr.brand}`)}</p>
+                      <p className="text-[11px] font-bold text-amber-400 light_sakura:text-amber-600">{formatIDR(pr.sell_price_per_gram)}</p>
+                      <p className="text-[9.5px] text-slate-500">{t("gold.buyback_short")} {formatIDR(pr.buyback_price_per_gram)}</p>
+                      <p className={`text-[9px] mt-1 flex items-center gap-1 ${isStaleVsOthers ? "text-amber-400" : "text-slate-600"}`}>
+                        {isStaleVsOthers && <AlertTriangle size={9} className="shrink-0" />}
+                        {t("gold.price_updated_short", { date: formatPriceDateShort(pr.price_date, locale) })}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
 
