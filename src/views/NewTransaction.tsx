@@ -13,7 +13,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ReceiptUploader } from "../components/ReceiptUploader";
 import { ReceiptPreview } from "../components/ReceiptPreview";
-import { VoiceRecorder, VoiceParsedResult } from "../components/VoiceRecorder";
+import { VoiceRecorder } from "../components/VoiceRecorder";
 import { useCategories } from "../hooks/useCategories";
 import { checkSingleCategoryBudget } from "../hooks/useBudgets";
 
@@ -185,15 +185,29 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     }
   };
 
-  // Voice note prefills the manual form fields (type/category/amount/note)
-  // instead of going through the receipt-draft flow — same result the
-  // Telegram bot gives (a ready-to-confirm draft), but here the user still
-  // sees & can tweak it in the normal form before hitting submit.
-  const handleVoiceParsed = (result: VoiceParsedResult) => {
-    setType(result.type);
-    setCategory(result.category_key);
-    setAmount(result.amount);
-    setNote(result.original_text);
+  // Dipanggil setelah pengguna menekan "Sudah Sesuai" di modal review
+  // VoicePreview (lihat VoiceRecorder.tsx). Langsung menyimpan transaksi
+  // ke database — TIDAK lagi hanya mengisi form manual — supaya pengguna
+  // tidak perlu menekan submit dua kali (satu di modal, satu lagi di form).
+  const handleVoiceApprove = async (finalData: {
+    type: "income" | "expense"; category_key: string; amount: number; note: string;
+  }) => {
+    setIsLoading(true);
+    try {
+      const savedTx = await dbService.saveTransaction(
+        currentUser.id, finalData.type, finalData.category_key,
+        finalData.amount, finalData.note || null, "ai_web", new Date().toISOString().split("T")[0]
+      );
+      if (savedTx?.id) (window as any).lastSavedTransactionId = savedTx.id;
+      showToast(t("toast.success_save"), "success");
+      onTransactionAdded();
+      await maybeWarnBudget(finalData.category_key, finalData.type);
+      navigate("/dashboard");
+    } catch {
+      showToast(t("toast.error_general"), "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -323,7 +337,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
             {/* ── AI Voice note recorder (panel) ────────────────────────── */}
             {activeInputTab === "voice" && (
-              <VoiceRecorder onParsed={(result) => { handleVoiceParsed(result); setActiveInputTab("manual"); }} />
+              <VoiceRecorder onApprove={handleVoiceApprove} />
             )}
 
             {/* ── Form manual (panel) ───────────────────────────────────── */}

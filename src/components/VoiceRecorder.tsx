@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Mic, Square, Loader2, ShieldAlert, Lock } from "lucide-react";
+import { Mic, Square, Lock } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -8,6 +8,7 @@ import { useMaintenance } from "../contexts/MaintenanceContext";
 import { audioFeedback } from "../lib/audio";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "./PremiumModal";
+import { VoicePreview, VoiceModalStatus } from "./VoicePreview";
 
 export interface VoiceParsedResult {
   type: "income" | "expense";
@@ -17,7 +18,17 @@ export interface VoiceParsedResult {
 }
 
 interface VoiceRecorderProps {
-  onParsed: (result: VoiceParsedResult) => void;
+  // Dipanggil setelah pengguna MENGKONFIRMASI hasil parsing AI di dalam
+  // modal review (VoicePreview) dengan menekan "Sudah Sesuai". Nilai yang
+  // dikirim sudah final (boleh sudah diedit pengguna) dan siap langsung
+  // disimpan sebagai transaksi baru oleh pemanggil — tidak perlu lagi
+  // melalui form manual.
+  onApprove: (finalData: {
+    type: "income" | "expense";
+    category_key: string;
+    amount: number;
+    note: string;
+  }) => void;
 }
 
 const MAX_DURATION_SECONDS = 60;
@@ -28,7 +39,7 @@ const MAX_DURATION_SECONDS = 60;
 // admin mengunci fitur ini lewat tab Maintenance.
 const FEATURE_KEY = "new_transaction";
 
-export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onParsed }) => {
+export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
   const { session, user } = useAuth();
   const { t, locale } = useLanguage();
   const { showToast } = useToast();
@@ -44,6 +55,12 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onParsed }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [seconds, setSeconds] = useState(0);
   const [error, setError] = useState<string | null>(null);
+
+  // ── Modal Dialog state: dialog loading saat AI memproses, dialog error
+  // yang jelas saat gagal, dan form review/edit saat AI berhasil ─────────
+  const [modalStatus, setModalStatus] = useState<VoiceModalStatus>(null);
+  const [modalDraft, setModalDraft] = useState<VoiceParsedResult | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
@@ -68,6 +85,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onParsed }) => {
     });
 
   const startRecording = async () => {
+    if (isProcessing) return;
     if (isVoiceLocked) {
       audioFeedback.playDullPluck();
       if (isGuest) {
@@ -177,6 +195,10 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onParsed }) => {
 
     setIsProcessing(true);
     setError(null);
+    // Buka dialog loading segera setelah rekaman selesai & mulai diproses AI
+    setModalError(null);
+    setModalDraft(null);
+    setModalStatus("processing");
     try {
       if (!session?.access_token) {
         throw new Error(locale === "id" ? "Sesi login berakhir. Silakan login kembali." : "Session expired. Please log in again.");
@@ -246,25 +268,57 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onParsed }) => {
       }
 
       audioFeedback.playChime();
-      showToast(
-        locale === "id" ? `🎙️ Terdengar: "${transcript}"` : `🎙️ Heard: "${transcript}"`,
-        "success"
-      );
 
-      onParsed({
+      // Jangan langsung kirim ke form manual — tampilkan dulu form modal
+      // review (nominal, kategori, catatan) supaya pengguna bisa
+      // mengecek/mengedit sebelum mengkonfirmasi "sudah sesuai".
+      setModalDraft({
         type: parsed.type === "income" ? "income" : "expense",
         category_key: parsed.category_key || "other",
         amount: parsed.amount,
         original_text: transcript,
       });
+      setModalStatus("success");
     } catch (err: any) {
       console.error("Voice note parse error:", err);
       audioFeedback.playDullPluck();
-      setError(err.message || (locale === "id" ? "Gagal memproses pesan suara." : "Failed to process voice note."));
-      showToast(err.message || (locale === "id" ? "Gagal memproses pesan suara." : "Failed to process voice note."), "error");
+      const message = err.message || (locale === "id" ? "Gagal memproses pesan suara." : "Failed to process voice note.");
+      setError(message);
+      // Tampilkan dialog error yang jelas ke pengguna, alih-alih hanya toast
+      setModalError(message);
+      setModalStatus("error");
     } finally {
       setIsProcessing(false);
     }
+  };
+
+  // Dipanggil saat pengguna menekan "Sudah Sesuai" di form review modal —
+  // langsung memicu penyimpanan transaksi di komponen pemanggil (lihat
+  // handleVoiceApprove di NewTransaction.tsx), tanpa singgah ke form manual.
+  const handleModalConfirm = (finalData: {
+    type: "income" | "expense";
+    category_key: string;
+    amount: number;
+    note: string;
+  }) => {
+    setModalStatus(null);
+    setModalDraft(null);
+    onApprove(finalData);
+  };
+
+  // Menutup modal (baik dari state error maupun success) tanpa menyimpan apa pun
+  const handleModalClose = () => {
+    setModalStatus(null);
+    setModalDraft(null);
+    setModalError(null);
+  };
+
+  // Dipanggil dari dialog error → tutup modal & biarkan pengguna menekan
+  // tombol mic lagi untuk merekam ulang dari awal
+  const handleModalRetry = () => {
+    setModalStatus(null);
+    setModalDraft(null);
+    setModalError(null);
   };
 
   const formatTimer = (s: number) => `0:${s.toString().padStart(2, "0")}`;
@@ -296,25 +350,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onParsed }) => {
             }`}
         >
           <AnimatePresence mode="wait">
-            {isProcessing ? (
-              <motion.div
-                key="processing"
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95 }}
-                className="flex flex-col items-center space-y-3"
-              >
-                <Loader2 className="animate-spin text-indigo-400" size={28} />
-                <div className="space-y-1">
-                  <p className="font-sans text-xs font-bold text-white light_sakura:text-slate-800">
-                    {t("dashboard.voice_processing")}
-                  </p>
-                  <p className="font-sans text-[11px] text-slate-400 max-w-sm px-4 leading-relaxed">
-                    {t("dashboard.voice_processing_desc")}
-                  </p>
-                </div>
-              </motion.div>
-            ) : isRecording ? (
+            {isRecording ? (
               <motion.div
                 key="recording"
                 initial={{ opacity: 0 }}
@@ -374,22 +410,6 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onParsed }) => {
         </div>
       )}
 
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="p-3 rounded-xl border border-red-500/20 bg-red-500/5 flex items-start gap-2.5 text-red-400"
-        >
-          <ShieldAlert size={16} className="mt-0.5 shrink-0" />
-          <div className="space-y-0.5">
-            <p className="font-sans text-xs font-bold">
-              {locale === "id" ? "Gagal Memproses Suara" : "Voice Processing Failed"}
-            </p>
-            <p className="font-sans text-[11px] leading-relaxed text-red-300/85">{error}</p>
-          </div>
-        </motion.div>
-      )}
-
       {/* Premium upsell modal */}
       <PremiumModal
         isOpen={isPremiumOpen}
@@ -397,6 +417,17 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onParsed }) => {
         onPremiumActivated={() => {
           refreshPremium();
         }}
+      />
+
+      {/* Dialog loading (AI memproses) → dialog error (jika gagal) →
+          form review/edit (jika sukses) dengan tombol konfirmasi */}
+      <VoicePreview
+        status={modalStatus}
+        draft={modalDraft}
+        errorMessage={modalError}
+        onClose={handleModalClose}
+        onRetry={handleModalRetry}
+        onConfirm={handleModalConfirm}
       />
     </div>
   );
