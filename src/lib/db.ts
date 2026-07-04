@@ -908,7 +908,9 @@ export const dbService = {
   async getLatestGoldPrices(): Promise<Array<{
     brand: GoldBrand;
     sell_price_per_gram: number;
-    buyback_price_per_gram: number;
+    // Nullable sejak migration 20260803020000_allow_null_buyback_price.sql --
+    // selaraskan dengan GoldPriceRow di useGoldSavings.ts.
+    buyback_price_per_gram: number | null;
     price_date: string;
     fetched_at: string;
   }>> {

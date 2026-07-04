@@ -5,7 +5,11 @@ import { GoldPocket, GoldHoldingsSummary, GoldBrand } from "../types";
 export interface GoldPriceRow {
   brand: GoldBrand;
   sell_price_per_gram: number;
-  buyback_price_per_gram: number;
+  // Nullable sejak migration 20260803020000_allow_null_buyback_price.sql --
+  // sumber harga (iamutaki) tidak selalu punya data buyback untuk brand
+  // tertentu. Runtime sudah aman (GoldSavings.tsx sudah cek `!!price?.buyback_price_per_gram`),
+  // ini cuma menyelaraskan tipe supaya TypeScript ikut menangkap kasusnya.
+  buyback_price_per_gram: number | null;
   price_date: string;
   fetched_at: string;
 }

@@ -21,15 +21,34 @@
 //   cuma tanpa jaring pengaman kalau primary down.
 //
 // BUG YANG DIPERBAIKI DI VERSI INI (root cause, bukan kosmetik):
-// Source "galeri24" di iamutaki menjual LEBIH DARI SATU brand fisik (Antam
-// & UBS) dalam satu response, dibedakan lewat field `materialType`. Versi
-// sebelumnya mengambil baris berat-terkecil APA ADANYA tanpa filter
-// `materialType` -- artinya brand "ubs" dan "galeri24" di tabel kita BISA
-// jadi menyimpan harga produk yang SAMA (kalau kebetulan baris
-// berat-terkecil yang ketemu adalah produk yang sama), padahal keduanya
-// dimaksudkan sebagai referensi harga yang berbeda. Fix: filter eksplisit
-// `materialType` kontains "ubs" untuk brand ubs, dan KECUALIKAN "ubs" untuk
-// brand galeri24, supaya dua-duanya tidak overlap.
+// Source "galeri24" di iamutaki menjual LEBIH DARI SATU brand fisik (Antam,
+// UBS, Lotus Archi, Dinar, Batik Series edisi khusus, dst) dalam satu
+// response, dibedakan lewat field `materialType`. Versi sebelumnya untuk
+// brand "galeri24" dan "ubs" cuma filter LONGGAR (materialTypeIncludes /
+// materialTypeExcludes kata "ubs"), BUKAN exact-match seperti yang sudah
+// benar dipakai brand "antam" (materialTypeExact "emas batangan"). Akibat
+// nyata (dikonfirmasi lewat fetch live ke API, bukan asumsi):
+//   - brand "galeri24": filter exclude "ubs" saja MELOLOSKAN materialType
+//     lain seperti "BATIK SERIES" yang beratnya bisa 0.02g -- lebih kecil
+//     dari "GALERI 24" 0.5g/1g yang dimaksud. Karena baris berat-terkecil
+//     yang menang, "galeri24" bisa kesimpan harga BATIK SERIES 0.02g
+//     (~Rp5.55jt/gram, buyback 0 -> null) padahal seharusnya GALERI 24 1g
+//     (~Rp2.64jt/gram, buyback ada).
+//   - brand "ubs": filter includes "ubs" saja MELOLOSKAN "UBS DISNEY",
+//     "UBS ELSA", "UBS ANNA", dst (edisi kolektor). "UBS DISNEY" 0.1g bisa
+//     menang atas "UBS" 1g standar (~Rp3.53jt/gram vs ~Rp2.65jt/gram,
+//     buyback 0 -> null padahal UBS standar punya buyback).
+// Fix: exact-match materialType ("galeri 24" utuh utk galeri24, "ubs" utuh
+// utk ubs -- BUKAN includes/excludes), persis pola antam.
+//
+// FIX KEDUA di versi ini: pemilihan baris representatif sebelumnya SELALU
+// pakai berat TERKECIL yang tersisa, bukan berat 1 gram. Harga emas batangan
+// tidak linear per gram (pecahan kecil lebih mahal per gram karena biaya
+// cetak/sertifikasi tetap) -- dikonfirmasi live: Antam-materialType 0.5g di
+// logammulia = Rp2.77jt/gram vs baris 1g = Rp2.67jt/gram. Fix: cari baris
+// weight === 1 dulu; HANYA fallback ke berat terkecil (dengan console.warn
+// eksplisit) kalau source itu memang tidak punya baris 1g sama sekali
+// (kasus nyata: "pegadaian" cuma py 1 baris, weight 0.01g).
 //
 // PENTING (ditemukan saat riset, bukan asumsi): endpoint sumber untuk
 // kombinasi source+materialType+weight tertentu bisa mengembalikan
@@ -68,8 +87,12 @@ const PRIMARY_CONFIG: Record<TargetBrand, { source: string; materialTypeExact?: 
   // referensi harga umum).
   antam: { source: "logammulia", materialTypeExact: "emas batangan" },
   pegadaian: { source: "pegadaian" }, // BELUM DIKONFIRMASI single-brand atau tidak -- lihat log kalau ada >1 materialType
-  galeri24: { source: "galeri24", materialTypeExcludes: ["ubs"] }, // representasi "harga listing Galeri24", BUKAN produk UBS
-  ubs: { source: "galeri24", materialTypeIncludes: ["ubs"] }, // fix bug: eksplisit filter UBS, tidak lagi ambil baris apa adanya
+  // exact-match, BUKAN includes/excludes -- lihat catatan bug di header file:
+  // includes/excludes longgar meloloskan varian lain (Batik Series, UBS
+  // Disney/Elsa/Anna, dst) yang beratnya bisa lebih kecil dan mengalahkan
+  // baris "GALERI 24"/"UBS" standar saat sorting berat-terkecil.
+  galeri24: { source: "galeri24", materialTypeExact: "galeri 24" }, // representasi "harga listing Galeri24", BUKAN produk UBS/Batik/Lotus/Dinar
+  ubs: { source: "galeri24", materialTypeExact: "ubs" }, // UBS standar saja, BUKAN UBS Disney/Elsa/Anna/Mickey/Hello Kitty
 };
 
 async function fetchFromPrimary(brand: TargetBrand): Promise<PriceResult | null> {
@@ -157,8 +180,27 @@ async function fetchFromPrimary(brand: TargetBrand): Promise<PriceResult | null>
       }
     }
 
-    rows.sort((a: any, b: any) => a.weight - b.weight);
-    const best = rows[0];
+    // LAPIS 3 (fix normalisasi per-gram): prioritaskan baris weight === 1
+    // secara eksplisit -- ini yang paling representatif untuk "harga per
+    // gram" yang biasa ditampilkan publik. Harga emas batangan TIDAK linear
+    // per gram (pecahan kecil lebih mahal per gram akibat biaya cetak/
+    // sertifikasi tetap), jadi baris berat-terkecil BUKAN proxy yang aman
+    // untuk baris 1g kalau baris 1g itu sendiri tersedia. Fallback ke berat
+    // terkecil HANYA kalau source tsb memang tidak punya baris 1g sama
+    // sekali (mis. "pegadaian" yang cuma py 1 baris, weight 0.01g) --
+    // fallback ini di-log eksplisit supaya kelihatan di monitoring, bukan
+    // silent approximation.
+    const exactGramRows = rows.filter((r: any) => r.weight === 1);
+    let best: any;
+    if (exactGramRows.length > 0) {
+      best = exactGramRows[0];
+    } else {
+      rows.sort((a: any, b: any) => a.weight - b.weight);
+      best = rows[0];
+      console.warn(
+        `[primary] ${brand} (${config.source}): tidak ada baris weight===1, fallback ke berat terkecil yang tersedia (${best.weight}g). Harga per-gram hasil normalisasi ini adalah APROKSIMASI, bukan kuotasi 1g asli.`
+      );
+    }
     const hasBuyback = Number.isFinite(best.buybackPrice) && best.buybackPrice > 0;
 
     return {
