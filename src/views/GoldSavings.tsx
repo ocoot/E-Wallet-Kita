@@ -39,6 +39,30 @@ const formatPriceDateShort = (dateStr: string, locale: string): string =>
     day: "2-digit", month: "short",
   }).format(parsePriceDate(dateStr));
 
+// Indikator ↑/↓ perbandingan harga (sell atau buyback) brand tertentu vs
+// harga hari sebelumnya. Return null (tidak render apa-apa) kalau data
+// pembanding belum ada atau harganya persis sama -- supaya tidak menampilkan
+// panah yang menyesatkan saat sebenarnya tidak ada perubahan atau memang
+// belum ada histori 2 hari.
+const renderPriceDelta = (
+  current: number | null | undefined,
+  prev: number | null | undefined,
+  t: (key: string) => string
+) => {
+  if (current == null || prev == null || prev === 0) return null;
+  const diff = current - prev;
+  if (diff === 0) return null;
+  const isUp = diff > 0;
+  return (
+    <span
+      className={`inline-flex items-center ${isUp ? "text-emerald-400" : "text-red-400"}`}
+      title={t(isUp ? "gold.price_up_hint" : "gold.price_down_hint")}
+    >
+      {isUp ? "▲" : "▼"}
+    </span>
+  );
+};
+
 interface PocketFormState {
   name: string;
   brand: GoldBrand;
@@ -367,8 +391,14 @@ export const GoldSavings: React.FC = () => {
                         : "border-slate-800 bg-slate-950/40 light_sakura:bg-slate-50 light_sakura:border-slate-200"}`}
                     >
                       <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wide">{t(`gold.brand_${pr.brand}`)}</p>
-                      <p className="text-[11px] font-bold text-amber-400 light_sakura:text-amber-600">{formatIDR(pr.sell_price_per_gram)}</p>
-                      <p className="text-[9.5px] text-slate-500">{t("gold.buyback_short")} {formatIDR(pr.buyback_price_per_gram)}</p>
+                      <p className="text-[11px] font-bold text-amber-400 light_sakura:text-amber-600 flex items-center gap-1">
+                        {formatIDR(pr.sell_price_per_gram)}
+                        {renderPriceDelta(pr.sell_price_per_gram, pr.prev_sell_price_per_gram, t)}
+                      </p>
+                      <p className="text-[9.5px] text-slate-500 flex items-center gap-1">
+                        {t("gold.buyback_short")} {formatIDR(pr.buyback_price_per_gram)}
+                        {renderPriceDelta(pr.buyback_price_per_gram, pr.prev_buyback_price_per_gram, t)}
+                      </p>
                       <p className={`text-[9px] mt-1 flex items-center gap-1 ${isStaleVsOthers ? "text-amber-400" : "text-slate-600"}`}>
                         {isStaleVsOthers && <AlertTriangle size={9} className="shrink-0" />}
                         {t("gold.price_updated_short", { date: formatPriceDateShort(pr.price_date, locale) })}

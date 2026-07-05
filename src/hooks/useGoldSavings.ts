@@ -12,6 +12,11 @@ export interface GoldPriceRow {
   buyback_price_per_gram: number | null;
   price_date: string;
   fetched_at: string;
+  // Harga hari sebelumnya (brand yang sama), dipakai untuk indikator ↑↓ di
+  // GoldSavings.tsx. `null` kalau brand baru pertama kali sync.
+  prev_sell_price_per_gram: number | null;
+  prev_buyback_price_per_gram: number | null;
+  prev_price_date: string | null;
 }
 
 /**
