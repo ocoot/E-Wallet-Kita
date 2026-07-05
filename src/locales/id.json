@@ -1109,8 +1109,6 @@
     "prices_updated_mismatch": "Harga terbaru per: {date} -- beberapa brand mungkin belum tersinkron",
     "price_updated_short": "Update {date}",
     "price_stale_brand_hint": "Harga brand ini lebih lama dari brand lain -- kemungkinan belum tersinkron di sinkronisasi terakhir.",
-    "price_up_hint": "Naik dibanding harga hari sebelumnya",
-    "price_down_hint": "Turun dibanding harga hari sebelumnya",
     "empty_title": "Belum Ada Pos Emas",
     "empty_desc": "Buat pos untuk mulai membeli emas bertahap, atau catat emas fisik yang sudah kamu miliki.",
     "brand_antam": "Antam",

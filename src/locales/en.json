@@ -1109,8 +1109,6 @@
     "prices_updated_mismatch": "Latest price as of {date} -- some brands may not have synced yet",
     "price_updated_short": "Updated {date}",
     "price_stale_brand_hint": "This brand's price is older than the others -- it may not have synced in the latest run yet.",
-    "price_up_hint": "Up from the previous day's price",
-    "price_down_hint": "Down from the previous day's price",
     "empty_title": "No Gold Pockets Yet",
     "empty_desc": "Create a pocket to start buying gold gradually, or record physical gold you already own.",
     "brand_antam": "Antam",
