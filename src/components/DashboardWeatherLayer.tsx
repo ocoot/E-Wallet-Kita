@@ -1,6 +1,8 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { WeatherCondition } from "../hooks/useWeather";
 import { getWeatherTheme } from "../lib/weatherTheme";
+import { getLottieIconSlug } from "../lib/lottieWeather";
+import { LottieWeatherIcon } from "./LottieWeatherIcon";
 
 interface DashboardWeatherLayerProps {
   condition: WeatherCondition;
@@ -104,6 +106,14 @@ function getCloudTints(condition: WeatherCondition, isDay: boolean): [string, st
 export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ condition, isDay }) => {
   const theme = getWeatherTheme(condition, isDay);
 
+  // Ikon "hero" Lottie (Meteocons, hand-animated) -- di-fetch runtime dari
+  // CDN resmi mereka. Kalau gagal (offline/CDN diblokir) atau kombinasi
+  // kondisi+waktu belum ada pemetaan yang dikonfirmasi, otomatis fallback
+  // ke cluster awan CSS/SVG generative kita (selalu tersedia, tanpa network).
+  const lottieSlug = getLottieIconSlug(condition, isDay);
+  const [failedSlug, setFailedSlug] = useState<string | null>(null);
+  const lottieAvailable = Boolean(lottieSlug) && lottieSlug !== failedSlug;
+
   const raindrops = useMemo(
     () =>
       Array.from({ length: 26 }, (_, i) => ({
@@ -205,12 +215,28 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
       aria-hidden="true"
       className={`pointer-events-none absolute inset-0 overflow-hidden rounded-3xl bg-gradient-to-br ${theme.gradientClass}`}
     >
-      {/* Kilau matahari samar di balik awan -- hanya cerah berawan siang hari */}
-      {sunRimEnabled && (
+      {/* Kilau matahari samar di balik awan -- hanya cerah berawan siang hari, dan
+          hanya saat pakai render CSS fallback (ikon Lottie partly-cloudy-day
+          sudah menggambar cahaya mataharinya sendiri) */}
+      {sunRimEnabled && !lottieAvailable && (
         <div className="weather-sun-glow absolute -top-10 right-8 w-32 h-32 rounded-full bg-amber-300/25 blur-3xl" />
       )}
 
-      {showClouds && (
+      {/* Ikon "hero" Lottie -- hand-animated, jauh lebih detail daripada blob
+          CSS kita. Diposisikan sebagai elemen dekoratif di pojok, bukan
+          menggantikan seluruh background (gradient + partikel ambient di
+          bawah ini tetap jalan bareng). */}
+      {lottieAvailable && lottieSlug && (
+        <LottieWeatherIcon
+          key={lottieSlug}
+          slug={lottieSlug}
+          size={132}
+          className="absolute top-1/2 right-3 md:right-8 -translate-y-1/2 opacity-90 drop-shadow-[0_10px_16px_rgba(0,0,0,0.35)]"
+          onError={() => setFailedSlug(lottieSlug)}
+        />
+      )}
+
+      {showClouds && !lottieAvailable && (
         <div className={`absolute inset-0 ${showThunder ? "weather-sheet-flash" : ""}`}>
           {blobs.map((b, i) => (
             <div
@@ -235,12 +261,6 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
               }
             />
           ))}
-
-          {/* Grain halus di atas blob supaya terasa bertekstur, bukan gradient polos */}
-          <div
-            className="absolute inset-0 mix-blend-overlay"
-            style={{ backgroundImage: `url("${NOISE_DATA_URI}")`, opacity: 0.06 }}
-          />
         </div>
       )}
 
@@ -310,7 +330,7 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
         </>
       )}
 
-      {theme.particle === "stars" && (
+      {theme.particle === "stars" && !lottieAvailable && (
         <>
           {stars.map((s, i) => (
             <span
@@ -343,9 +363,16 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
         </>
       )}
 
-      {theme.particle === "sun" && (
+      {theme.particle === "sun" && !lottieAvailable && (
         <div className="weather-sun-glow absolute -top-6 right-6 w-28 h-28 rounded-full bg-amber-300/30 blur-2xl" />
       )}
+
+      {/* Grain halus di seluruh layer -- tetap ada baik saat pakai hero Lottie
+          maupun fallback CSS, supaya teksturnya konsisten. */}
+      <div
+        className="absolute inset-0 mix-blend-overlay"
+        style={{ backgroundImage: `url("${NOISE_DATA_URI}")`, opacity: 0.05 }}
+      />
     </div>
   );
 };
