@@ -138,7 +138,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   return (
     <div 
       id="dashboard-welcome-banner" 
-      className="relative overflow-hidden p-6 rounded-3xl border bg-slate-900 border-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-sm"
+      className="relative p-6 rounded-3xl border bg-slate-900 border-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-sm"
     >
       {weatherTheme && effectiveWeather && (
         <DashboardWeatherLayer condition={effectiveWeather.condition} isDay={effectiveWeather.isDay} />
