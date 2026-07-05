@@ -913,6 +913,12 @@ export const dbService = {
     buyback_price_per_gram: number | null;
     price_date: string;
     fetched_at: string;
+    // Ditambahkan untuk indikator ↑↓ perbandingan harga vs hari sebelumnya
+    // (lihat GoldSavings.tsx). `null` kalau brand baru pertama kali sync
+    // atau memang belum ada data 2 hari berbeda.
+    prev_sell_price_per_gram: number | null;
+    prev_buyback_price_per_gram: number | null;
+    prev_price_date: string | null;
   }>> {
     const { data, error } = await supabase
       .from('gold_prices')
@@ -926,13 +932,28 @@ export const dbService = {
       throw error;
     }
 
-    // Ambil baris terbaru per brand saja (data bisa berisi histori beberapa hari).
-    const latestByBrand = new Map<string, any>();
+    // Data sudah terurut price_date terbaru dulu. Kolom `gold_prices` punya
+    // UNIQUE(brand, price_date), jadi ambil maksimal 2 baris pertama yang
+    // ditemui per brand: baris ke-1 = harga terbaru, baris ke-2 (otomatis
+    // price_date berbeda karena constraint unique) = harga hari sebelumnya.
+    const rowsByBrand = new Map<string, any[]>();
     for (const row of (data || [])) {
-      if (!latestByBrand.has(row.brand)) {
-        latestByBrand.set(row.brand, row);
+      const existing = rowsByBrand.get(row.brand) ?? [];
+      if (existing.length < 2) {
+        existing.push(row);
+        rowsByBrand.set(row.brand, existing);
       }
     }
-    return Array.from(latestByBrand.values());
+
+    return Array.from(rowsByBrand.values()).map(([latest, prev]) => ({
+      brand: latest.brand,
+      sell_price_per_gram: latest.sell_price_per_gram,
+      buyback_price_per_gram: latest.buyback_price_per_gram,
+      price_date: latest.price_date,
+      fetched_at: latest.fetched_at,
+      prev_sell_price_per_gram: prev?.sell_price_per_gram ?? null,
+      prev_buyback_price_per_gram: prev?.buyback_price_per_gram ?? null,
+      prev_price_date: prev?.price_date ?? null,
+    }));
   }
 };

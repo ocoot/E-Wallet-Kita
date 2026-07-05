@@ -122,9 +122,9 @@ html, body {
    perlu banyak keyframe unik. */
 
 @keyframes weather-rain-fall {
-  0%   { transform: translate(0, -20%) rotate(13deg); opacity: 0; }
+  0%   { transform: translateY(-20%); opacity: 0; }
   10%  { opacity: 0.8; }
-  100% { transform: translate(26px, 220%) rotate(13deg); opacity: 0; }
+  100% { transform: translateY(220%); opacity: 0; }
 }
 
 .weather-raindrop {
@@ -157,22 +157,17 @@ html, body {
   animation-delay: var(--wx-delay, 0s);
 }
 
-/* Awan melayang satu arah kontinu (angin), bukan bolak-balik "bernapas".
-   Opacity-nya sendiri diambil dari --wx-op (nilai depth/parallax per-awan)
-   supaya bisa di-fade in/out mulus di ujung siklus tanpa kelihatan "lompat"
-   saat animasi mengulang dari awal. */
 @keyframes weather-blob-drift {
-  0%   { transform: translate(calc(var(--wx-driftx, 24px) * -1), 0) rotate(var(--wx-rot-base, 0deg)); opacity: 0; }
-  12%  { opacity: var(--wx-op, 0.6); }
-  88%  { opacity: var(--wx-op, 0.6); }
-  100% { transform: translate(var(--wx-driftx, 24px), 0) rotate(var(--wx-rot-base, 0deg)); opacity: 0; }
+  0%   { transform: translate(0, 0) rotate(var(--wx-rot-base, 0deg)) scale(1); }
+  50%  { transform: translate(var(--wx-driftx, 24px), var(--wx-drifty, 10px)) rotate(var(--wx-rot-base, 0deg)) scale(1.05); }
+  100% { transform: translate(0, 0) rotate(var(--wx-rot-base, 0deg)) scale(1); }
 }
 
 .weather-blob {
   position: absolute;
-  animation: weather-blob-drift var(--wx-dur, 32s) linear infinite;
+  animation: weather-blob-drift var(--wx-dur, 32s) ease-in-out infinite;
   animation-delay: var(--wx-delay, 0s);
-  will-change: transform, opacity;
+  will-change: transform;
 }
 
 @keyframes weather-fog-drift {
