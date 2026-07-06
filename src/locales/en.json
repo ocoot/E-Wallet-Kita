@@ -1178,7 +1178,7 @@
     "buyback_unavailable_error": "Buyback price for this brand isn't available from the data source yet. Selling for this brand is temporarily disabled.",
     "buyback_unavailable_hint": "Buyback price not available yet for this brand -- Sell is temporarily disabled.",
     "card_tap_hint_actions": "Tap the card to see actions",
-    "card_tap_hint_front": "Tap to close",
+    "card_tap_hint_front": "Tap outside the card to close",
     "card_show_actions": "Show gold pocket actions",
     "card_show_front": "Close actions, show card"
   }

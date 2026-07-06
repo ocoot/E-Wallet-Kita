@@ -249,7 +249,7 @@ export const GoldSavings: React.FC = () => {
     const isFlipped = flippedIds.has(p.id);
 
     return (
-      <motion.div key={p.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}>
+      <motion.div key={p.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} className={isFlipped ? "relative z-50" : "relative"}>
         <div className="[perspective:1200px] h-48">
           <div
             className={`relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] rounded-2xl ${isFlipped ? "[transform:rotateY(180deg)]" : ""}`}
@@ -306,14 +306,15 @@ export const GoldSavings: React.FC = () => {
               </div>
             </div>
 
-            {/* ===== SISI BELAKANG: aksi -- ketuk di mana saja (selain
-                tombol aksi) untuk tutup. Aman dari bug "susah diklik"
-                sebelumnya karena pointer-events-none di sisi depan (di atas)
-                sudah mencegah sisi depan ikut mencegat tap. */}
+            {/* ===== SISI BELAKANG: aksi -- kartu sendiri TIDAK menutup kalau
+                diketuk (dulu susah kena karena grid tombolnya padat). Tutup
+                dilakukan lewat backdrop tak-terlihat yang menutupi seluruh
+                halaman DI LUAR kartu (lihat render backdrop di bawah), atau
+                tombol Escape. z-50 di wrapper motion.div (atas) memastikan
+                kartu ini tetap di atas backdrop selama terbuka. */}
             <div
-              onClick={() => toggleFlip(p.id)}
               onKeyDown={(e) => { if (e.key === "Escape") { toggleFlip(p.id); } }}
-              className={`absolute inset-0 rounded-2xl p-2.5 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-slate-900 border border-amber-500/20 light_sakura:bg-white light_sakura:border-amber-200 shadow-lg cursor-pointer ${!isFlipped ? "pointer-events-none" : ""}`}
+              className={`absolute inset-0 rounded-2xl p-2.5 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-slate-900 border border-amber-500/20 light_sakura:bg-white light_sakura:border-amber-200 shadow-lg ${!isFlipped ? "pointer-events-none" : ""}`}
             >
               <div className="grid grid-cols-2 gap-1.5 h-full content-center">
                 <button onClick={(e) => { e.stopPropagation(); openMove(p, "buy"); }} disabled={busyId === p.id || p.is_archived} tabIndex={isFlipped ? 0 : -1}
@@ -361,6 +362,19 @@ export const GoldSavings: React.FC = () => {
 
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+
+      {/* Backdrop tak-terlihat -- muncul begitu ada kartu emas yang terbuka
+          (flippedIds tidak kosong), menutupi SELURUH halaman ini. Kartu yang
+          sedang terbuka dinaikkan ke z-50 (lihat renderPocketCard) supaya
+          tetap di atas backdrop & tetap bisa diklik normal; ngetuk di luar
+          kartu (di mana saja) kena backdrop ini dan menutup semua kartu. */}
+      {flippedIds.size > 0 && (
+        <div
+          className="fixed inset-0 z-40 cursor-default"
+          aria-hidden="true"
+          onClick={() => setFlippedIds(new Set())}
+        />
+      )}
 
       <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500" />
