@@ -22,7 +22,7 @@ function lerp(min: number, max: number, t: number): number {
 /**
  * Noise tipis (SVG feTurbulence sebagai data-URI, statis/tidak dianimasikan
  * supaya ringan) untuk memberi kesan grain/tekstur foto seperti aplikasi
- * cuaca asli, dipadu mix-blend-mode 'overlay' di atas blob awan.
+ * cuaca asli, dipadu mix-blend-mode 'overlay' di atas awan.
  */
 const NOISE_DATA_URI =
   "data:image/svg+xml;utf8," +
@@ -32,20 +32,17 @@ const NOISE_DATA_URI =
       "<rect width='100%' height='100%' filter='url(%23n)'/></svg>"
   );
 
-interface CloudBlobConfig {
+interface CloudInstanceConfig {
   top: string;
   left: string;
   width: number;
   height: number;
-  radius: string;
   rotate: number;
   opacity: number;
   blurPx: number;
   dur: string;
   delay: string;
-  driftX: string;
-  driftY: string;
-  tintIndex: number;
+  driftPx: number;
 }
 
 interface CloudDensity {
@@ -60,56 +57,102 @@ interface CloudDensity {
 function getCloudDensity(condition: WeatherCondition): CloudDensity {
   switch (condition) {
     case "partly_cloudy":
-      return { count: 3, maxOpacity: 0.26, blurFar: 26, blurNear: 16, sizeBoost: 0.85 };
+      return { count: 3, maxOpacity: 0.85, blurFar: 3.5, blurNear: 1, sizeBoost: 0.85 };
     case "drizzle":
-      return { count: 4, maxOpacity: 0.38, blurFar: 24, blurNear: 14, sizeBoost: 1 };
+      return { count: 4, maxOpacity: 0.9, blurFar: 3, blurNear: 0.8, sizeBoost: 1 };
     case "cloudy":
-      return { count: 5, maxOpacity: 0.46, blurFar: 22, blurNear: 12, sizeBoost: 1.15 };
+      return { count: 5, maxOpacity: 0.94, blurFar: 2.5, blurNear: 0.6, sizeBoost: 1.15 };
     case "rain":
-      return { count: 5, maxOpacity: 0.5, blurFar: 22, blurNear: 12, sizeBoost: 1.2 };
+      return { count: 5, maxOpacity: 0.95, blurFar: 2.5, blurNear: 0.6, sizeBoost: 1.2 };
     case "thunderstorm":
-      return { count: 5, maxOpacity: 0.54, blurFar: 20, blurNear: 11, sizeBoost: 1.25 };
+      return { count: 5, maxOpacity: 0.96, blurFar: 2.2, blurNear: 0.5, sizeBoost: 1.25 };
     default:
-      return { count: 3, maxOpacity: 0.26, blurFar: 26, blurNear: 16, sizeBoost: 0.85 };
+      return { count: 3, maxOpacity: 0.85, blurFar: 3.5, blurNear: 1, sizeBoost: 0.85 };
   }
 }
 
-/** 2 warna tint per kondisi supaya blob-nya tidak monoton satu warna datar. */
-function getCloudTints(condition: WeatherCondition, isDay: boolean): [string, string] {
+/** Warna terang (puncak, kena cahaya) & gelap (dasar, bayangan) per kondisi -- dipakai sebagai 2 stop linear-gradient vertikal supaya awan punya kesan volume, bukan flat. */
+function getCloudShades(condition: WeatherCondition, isDay: boolean): [string, string] {
   switch (condition) {
     case "cloudy":
-      return ["rgba(226,232,240,0.9)", "rgba(100,116,139,0.75)"];
+      return ["#E7ECF2", "#5B6B82"];
     case "drizzle":
-      return ["rgba(191,209,229,0.85)", "rgba(85,104,133,0.75)"];
+      return ["#CBDAEA", "#4E6180"];
     case "rain":
-      return ["rgba(148,163,184,0.75)", "rgba(42,58,84,0.85)"];
+      return ["#9FB0C4", "#2E3B54"];
     case "thunderstorm":
-      return ["rgba(129,140,168,0.7)", "rgba(24,29,52,0.9)"];
+      return ["#8D93BE", "#171A2E"];
     case "partly_cloudy":
     default:
-      return isDay
-        ? ["rgba(255,255,255,0.9)", "rgba(203,213,225,0.6)"]
-        : ["rgba(199,210,254,0.35)", "rgba(71,85,105,0.5)"];
+      return isDay ? ["#FFFFFF", "#C3CEDD"] : ["#C9D3F5", "#3D4863"];
   }
 }
+
+/**
+ * Awan digambar sebagai SVG: beberapa ellipse yang menyatu jadi satu siluet
+ * puffy, diwarnai satu `linearGradient` vertikal (terang di puncak -> gelap
+ * di dasar) supaya terasa punya volume/3D seperti widget cuaca native
+ * (iOS/Google Weather), bukan blob CSS datar. Blur & drop-shadow diterapkan
+ * SEKALI di level grup lewat CSS filter pada wrapper -- bukan per-bentuk --
+ * supaya siluetnya tetap jelas, tidak luntur jadi kabut.
+ */
+const CloudShape: React.FC<{
+  lightShade: string;
+  darkShade: string;
+  sunRim?: boolean;
+  blurPx: number;
+}> = ({ lightShade, darkShade, sunRim, blurPx }) => {
+  const [uid] = useState(() => Math.random().toString(36).slice(2, 9));
+  const gradId = `wx-cloud-grad-${uid}`;
+  const rimId = `wx-cloud-rim-${uid}`;
+
+  return (
+    <svg
+      viewBox="0 0 100 46"
+      width="100%"
+      height="100%"
+      style={{ filter: `blur(${blurPx}px) drop-shadow(0 5px 7px rgba(10,14,26,0.28))`, display: "block" }}
+    >
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={lightShade} />
+          <stop offset="100%" stopColor={darkShade} />
+        </linearGradient>
+        {sunRim && (
+          <radialGradient id={rimId} cx="72%" cy="18%" r="55%">
+            <stop offset="0%" stopColor="rgba(255,231,160,0.95)" />
+            <stop offset="100%" stopColor="rgba(255,231,160,0)" />
+          </radialGradient>
+        )}
+      </defs>
+      <g fill={`url(#${gradId})`}>
+        <ellipse cx="30" cy="34" rx="26" ry="15" />
+        <ellipse cx="49" cy="23" rx="21" ry="19" />
+        <ellipse cx="69" cy="29" rx="19" ry="14" />
+        <ellipse cx="17" cy="36" rx="13" ry="9" />
+        <ellipse cx="84" cy="33" rx="12" ry="8.5" />
+      </g>
+      {sunRim && <ellipse cx="64" cy="14" rx="24" ry="13" fill={`url(#${rimId})`} style={{ mixBlendMode: "screen" }} />}
+    </svg>
+  );
+};
 
 /**
  * Overlay animasi di belakang welcome banner Dashboard. Murni dekoratif
  * (aria-hidden) -- tidak pernah menghalangi interaksi (pointer-events-none)
  * dan otomatis nonaktif saat prefers-reduced-motion (lihat index.css).
  *
- * Awan digambar sebagai beberapa blob raksasa berbentuk organik (border-radius
- * asimetris) yang sangat blur & bertumpuk transparan -- bukan kluster
- * lingkaran kecil bergaya kartun -- supaya terasa seperti "kabut/asap"
- * atmosferik ala aplikasi cuaca native (Google/Apple Weather).
+ * Prioritas render: ikon Lottie (Meteocons, hand-animated, fetch dari CDN
+ * saat runtime) kalau berhasil dimuat -> fallback ke awan SVG generative di
+ * bawah ini kalau gagal (mis. offline / CDN diblokir jaringan preview).
  */
 export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ condition, isDay }) => {
   const theme = getWeatherTheme(condition, isDay);
 
-  // Ikon "hero" Lottie (Meteocons, hand-animated) -- di-fetch runtime dari
-  // CDN resmi mereka. Kalau gagal (offline/CDN diblokir) atau kombinasi
-  // kondisi+waktu belum ada pemetaan yang dikonfirmasi, otomatis fallback
-  // ke cluster awan CSS/SVG generative kita (selalu tersedia, tanpa network).
+  // Ikon "hero" Lottie -- di-fetch runtime dari CDN resmi Meteocons. Kalau
+  // gagal (mis. sandbox preview tanpa akses internet keluar) atau kombinasi
+  // kondisi+waktu belum ada pemetaan yang dikonfirmasi, otomatis fallback ke
+  // cluster awan SVG generative di bawah (selalu tersedia, tanpa network).
   const lottieSlug = getLottieIconSlug(condition, isDay);
   const [failedSlug, setFailedSlug] = useState<string | null>(null);
   const lottieAvailable = Boolean(lottieSlug) && lottieSlug !== failedSlug;
@@ -173,12 +216,9 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
   const showClouds = ["partly_cloudy", "cloudy", "drizzle", "rain", "thunderstorm"].includes(condition);
   const showThunder = condition === "thunderstorm";
   const sunRimEnabled = condition === "partly_cloudy" && isDay;
-  const [tintA, tintB] = getCloudTints(condition, isDay);
+  const [lightShade, darkShade] = getCloudShades(condition, isDay);
 
-  // Blob-blob awan raksasa, disebar dengan sedikit lapisan kedalaman: yang
-  // "jauh" lebih kecil, lebih transparan, lebih blur & lambat; yang "dekat"
-  // lebih besar, lebih pekat, lebih tajam & sedikit lebih cepat.
-  const blobs = useMemo(() => {
+  const clouds = useMemo(() => {
     const density = getCloudDensity(condition);
     const total = density.count;
 
@@ -190,23 +230,20 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
       const r4 = seededRandom(i + 91);
       const r5 = seededRandom(i + 121);
 
-      const baseSize = lerp(160, 320, r2) * density.sizeBoost;
+      const baseWidth = lerp(90, 190, r2) * density.sizeBoost;
 
       return {
-        top: `${(lerp(-15, 55, depth) + (r1 - 0.5) * 20).toFixed(1)}%`,
-        left: `${(r2 * 110 - 15).toFixed(1)}%`,
-        width: baseSize,
-        height: baseSize * lerp(0.45, 0.7, r3),
-        radius: `${40 + r1 * 30}% ${60 - r1 * 20}% ${50 + r4 * 20}% ${45 - r4 * 15}% / ${55 - r3 * 20}% ${45 + r3 * 15}% ${60 - r5 * 20}% ${40 + r5 * 20}%`,
-        rotate: (r4 - 0.5) * 30,
-        opacity: lerp(0.14, density.maxOpacity, depth),
+        top: `${(lerp(2, 48, depth) + (r1 - 0.5) * 16).toFixed(1)}%`,
+        left: `${(r2 * 70 - 5).toFixed(1)}%`,
+        width: baseWidth,
+        height: baseWidth * 0.46,
+        rotate: (r4 - 0.5) * 8,
+        opacity: lerp(0.35, density.maxOpacity, depth),
         blurPx: lerp(density.blurFar, density.blurNear, depth),
-        dur: `${lerp(46, 24, depth).toFixed(0)}s`,
-        delay: `${(r5 * -30).toFixed(1)}s`,
-        driftX: `${lerp(18, 46, depth).toFixed(0)}px`,
-        driftY: `${lerp(6, 16, depth).toFixed(0)}px`,
-        tintIndex: i % 2,
-      } as CloudBlobConfig;
+        dur: `${lerp(52, 30, depth).toFixed(0)}s`,
+        delay: `${(r5 * -40).toFixed(1)}s`,
+        driftPx: lerp(60, 110, depth),
+      } as CloudInstanceConfig;
     });
   }, [condition]);
 
@@ -215,17 +252,16 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
       aria-hidden="true"
       className={`pointer-events-none absolute inset-0 overflow-hidden rounded-3xl bg-gradient-to-br ${theme.gradientClass}`}
     >
-      {/* Kilau matahari samar di balik awan -- hanya cerah berawan siang hari, dan
-          hanya saat pakai render CSS fallback (ikon Lottie partly-cloudy-day
-          sudah menggambar cahaya mataharinya sendiri) */}
+      {/* Kilau matahari samar di balik awan -- hanya cerah berawan siang hari,
+          dan hanya saat pakai render SVG fallback (ikon Lottie
+          partly-cloudy-day sudah menggambar cahaya mataharinya sendiri) */}
       {sunRimEnabled && !lottieAvailable && (
         <div className="weather-sun-glow absolute -top-10 right-8 w-32 h-32 rounded-full bg-amber-300/25 blur-3xl" />
       )}
 
-      {/* Ikon "hero" Lottie -- hand-animated, jauh lebih detail daripada blob
-          CSS kita. Diposisikan sebagai elemen dekoratif di pojok, bukan
-          menggantikan seluruh background (gradient + partikel ambient di
-          bawah ini tetap jalan bareng). */}
+      {/* Ikon "hero" Lottie -- hand-animated, jauh lebih detail daripada
+          render SVG generative kita. Kalau gagal dimuat (lihat komentar di
+          atas), otomatis lewat ke blok showClouds di bawah. */}
       {lottieAvailable && lottieSlug && (
         <LottieWeatherIcon
           key={lottieSlug}
@@ -238,28 +274,31 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
 
       {showClouds && !lottieAvailable && (
         <div className={`absolute inset-0 ${showThunder ? "weather-sheet-flash" : ""}`}>
-          {blobs.map((b, i) => (
+          {clouds.map((c, i) => (
             <div
               key={i}
               className="weather-blob"
               style={
                 {
-                  top: b.top,
-                  left: b.left,
-                  width: b.width,
-                  height: b.height,
-                  borderRadius: b.radius,
-                  background: `radial-gradient(ellipse at 35% 35%, ${b.tintIndex === 0 ? tintA : tintB}, transparent 72%)`,
-                  opacity: b.opacity,
-                  filter: `blur(${b.blurPx}px)`,
-                  "--wx-dur": b.dur,
-                  "--wx-delay": b.delay,
-                  "--wx-driftx": b.driftX,
-                  "--wx-drifty": b.driftY,
-                  "--wx-rot-base": `${b.rotate}deg`,
+                  top: c.top,
+                  left: c.left,
+                  width: c.width,
+                  height: c.height,
+                  "--wx-dur": c.dur,
+                  "--wx-delay": c.delay,
+                  "--wx-driftx": `${c.driftPx}px`,
+                  "--wx-rot-base": `${c.rotate}deg`,
+                  "--wx-op": c.opacity,
                 } as React.CSSProperties
               }
-            />
+            >
+              <CloudShape
+                lightShade={lightShade}
+                darkShade={darkShade}
+                blurPx={c.blurPx}
+                sunRim={sunRimEnabled && i % 2 === 0}
+              />
+            </div>
           ))}
         </div>
       )}
@@ -367,8 +406,8 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
         <div className="weather-sun-glow absolute -top-6 right-6 w-28 h-28 rounded-full bg-amber-300/30 blur-2xl" />
       )}
 
-      {/* Grain halus di seluruh layer -- tetap ada baik saat pakai hero Lottie
-          maupun fallback CSS, supaya teksturnya konsisten. */}
+      {/* Grain halus di seluruh layer -- tetap ada baik saat pakai hero
+          Lottie maupun fallback SVG, supaya teksturnya konsisten. */}
       <div
         className="absolute inset-0 mix-blend-overlay"
         style={{ backgroundImage: `url("${NOISE_DATA_URI}")`, opacity: 0.05 }}
