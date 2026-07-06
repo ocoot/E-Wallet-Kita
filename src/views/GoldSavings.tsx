@@ -12,7 +12,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import {
   Coins, Plus, Trash2, Edit2, ArrowDownCircle, ArrowUpCircle,
-  Archive, ArchiveRestore, Info, AlertTriangle, PackagePlus, PackageMinus
+  Archive, ArchiveRestore, Info, AlertTriangle, PackagePlus, PackageMinus, X
 } from "lucide-react";
 
 // GOLD_BRANDS lama (7 brand) diganti ACTIVE_GOLD_BRANDS dari types.ts --
@@ -247,24 +247,27 @@ export const GoldSavings: React.FC = () => {
     const marketValue = effectivePricePerGram != null ? p.grams_owned * effectivePricePerGram : null;
     const gainLoss = marketValue != null ? marketValue - p.cash_locked_amount : null;
     const isFlipped = flippedIds.has(p.id);
-    // stopPropagation di semua tombol sisi belakang -- supaya nge-klik
-    // tombol aksi tidak ikut men-toggle flip balik ke depan kartu.
-    const stop = (e: React.MouseEvent) => e.stopPropagation();
 
     return (
       <motion.div key={p.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}>
         <div className="[perspective:1200px] h-48">
           <div
-            role="button"
-            tabIndex={0}
-            aria-pressed={isFlipped}
-            aria-label={t(isFlipped ? "gold.card_show_front" : "gold.card_show_actions")}
-            onClick={() => toggleFlip(p.id)}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleFlip(p.id); } }}
-            className={`relative w-full h-full cursor-pointer outline-none transition-transform duration-500 [transform-style:preserve-3d] focus-visible:ring-2 focus-visible:ring-amber-400 rounded-2xl ${isFlipped ? "[transform:rotateY(180deg)]" : ""}`}
+            className={`relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] rounded-2xl ${isFlipped ? "[transform:rotateY(180deg)]" : ""}`}
           >
-            {/* ===== SISI DEPAN: kartu emas fisik ===== */}
-            <div className={`absolute inset-0 rounded-2xl p-3.5 flex flex-col justify-between [backface-visibility:hidden] shadow-lg gold-card-shine ${p.is_archived ? "is-archived" : ""}`}>
+            {/* ===== SISI DEPAN: kartu emas fisik (tap untuk buka aksi) =====
+                pointer-events-none saat isFlipped: backface-visibility:hidden
+                SAJA tidak cukup di beberapa browser mobile -- elemen yang
+                "tersembunyi" secara visual kadang masih ke-hit-test dan
+                mencegat tap yang seharusnya kena tombol di sisi belakang.
+                Inilah akar dari laporan "tombolnya kadang susah diklik". */}
+            <div
+              role="button"
+              tabIndex={isFlipped ? -1 : 0}
+              aria-label={t("gold.card_show_actions")}
+              onClick={() => !isFlipped && toggleFlip(p.id)}
+              onKeyDown={(e) => { if (!isFlipped && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggleFlip(p.id); } }}
+              className={`absolute inset-0 rounded-2xl p-3.5 flex flex-col justify-between [backface-visibility:hidden] shadow-lg gold-card-shine cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${p.is_archived ? "is-archived" : ""} ${isFlipped ? "pointer-events-none" : ""}`}
+            >
               <div className="relative z-[1] flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <p className="font-sans font-bold text-[13px] text-amber-950 truncate">{p.name}</p>
@@ -295,7 +298,7 @@ export const GoldSavings: React.FC = () => {
                 {gainLoss != null && p.grams_owned > 0 && p.cash_locked_amount > 0 && (
                   <span className={`relative shrink-0 inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9.5px] font-bold ${gainLoss >= 0 ? "bg-black/15 text-emerald-950" : "bg-black/25 text-red-950"}`}>
                     {gainLoss >= 0 ? "▲" : "▼"} {formatIDR(Math.abs(gainLoss))}
-                    <span onClick={stop} className="text-black/50">
+                    <span onClick={(e) => e.stopPropagation()} className="text-black/50">
                       <InfoTooltip text={t("gold.unrealized_tooltip")} align="left" />
                     </span>
                   </span>
@@ -303,43 +306,60 @@ export const GoldSavings: React.FC = () => {
               </div>
             </div>
 
-            {/* ===== SISI BELAKANG: aksi ===== */}
-            <div className="absolute inset-0 rounded-2xl p-2.5 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-slate-900 border border-amber-500/20 light_sakura:bg-white light_sakura:border-amber-200 shadow-lg grid grid-cols-2 gap-1.5 content-center">
-              <button onClick={(e) => { stop(e); openMove(p, "buy"); }} disabled={busyId === p.id || p.is_archived}
-                className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
-                <ArrowDownCircle size={12} /> {t("gold.buy_button")}
+            {/* ===== SISI BELAKANG: aksi -- tutup lewat tombol ✕ eksplisit,
+                bukan lagi "ketuk area kosong" yang ambigu (nyaris tidak ada
+                area kosong tersisa begitu grid 7 tombol terisi penuh). */}
+            <div
+              className={`absolute inset-0 rounded-2xl p-2.5 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-slate-900 border border-amber-500/20 light_sakura:bg-white light_sakura:border-amber-200 shadow-lg ${!isFlipped ? "pointer-events-none" : ""}`}
+            >
+              <button
+                type="button"
+                onClick={() => toggleFlip(p.id)}
+                aria-label={t("gold.card_show_front")}
+                tabIndex={isFlipped ? 0 : -1}
+                className="absolute top-1.5 right-1.5 z-[1] w-6 h-6 rounded-full flex items-center justify-center bg-slate-700/70 text-slate-300 hover:bg-slate-700 active:scale-95 transition-all cursor-pointer light_sakura:bg-slate-100 light_sakura:text-slate-500 light_sakura:hover:bg-slate-200"
+              >
+                <X size={13} />
               </button>
-              <button onClick={(e) => { stop(e); openMove(p, "sell"); }} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0 || !price?.buyback_price_per_gram}
-                title={!price?.buyback_price_per_gram ? t("gold.buyback_unavailable_hint") : undefined}
-                className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
-                <ArrowUpCircle size={12} /> {t("gold.sell_button")}
-              </button>
-              <button onClick={(e) => { stop(e); openMove(p, "manual_add"); }} disabled={busyId === p.id || p.is_archived}
-                className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-sky-500/15 text-sky-400 hover:bg-sky-500/25">
-                <PackagePlus size={12} /> {t("gold.manual_add_button_short")}
-              </button>
-              <button onClick={(e) => { stop(e); openMove(p, "manual_remove"); }} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0}
-                className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-slate-700/40 text-slate-400 hover:bg-slate-700/60">
-                <PackageMinus size={12} /> {t("gold.manual_remove_button_short")}
-              </button>
-              <button onClick={(e) => { stop(e); audioFeedback.playClick(); openEditForm(p); }}
-                className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer bg-slate-700/40 text-slate-300 hover:bg-slate-700/60 light_sakura:bg-slate-100 light_sakura:text-slate-600">
-                <Edit2 size={12} /> {t("common.edit")}
-              </button>
-              <button onClick={(e) => { stop(e); toggleArchive(p); }} disabled={busyId === p.id}
-                className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20">
-                {p.is_archived ? <ArchiveRestore size={12} /> : <Archive size={12} />} {t(p.is_archived ? "gold.unarchive_button" : "gold.archive_button")}
-              </button>
-              <button onClick={(e) => { stop(e); audioFeedback.playClick(); setDeleteTarget(p); }}
-                className="col-span-2 flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer bg-red-500/10 text-red-500 hover:bg-red-500/20 light_sakura:bg-red-50 light_sakura:text-red-400">
-                <Trash2 size={12} /> {t("common.delete")}
-              </button>
+              <div className="grid grid-cols-2 gap-1.5 h-full content-center">
+                <button onClick={() => openMove(p, "buy")} disabled={busyId === p.id || p.is_archived} tabIndex={isFlipped ? 0 : -1}
+                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
+                  <ArrowDownCircle size={12} /> {t("gold.buy_button")}
+                </button>
+                <button onClick={() => openMove(p, "sell")} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0 || !price?.buyback_price_per_gram} tabIndex={isFlipped ? 0 : -1}
+                  title={!price?.buyback_price_per_gram ? t("gold.buyback_unavailable_hint") : undefined}
+                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
+                  <ArrowUpCircle size={12} /> {t("gold.sell_button")}
+                </button>
+                <button onClick={() => openMove(p, "manual_add")} disabled={busyId === p.id || p.is_archived} tabIndex={isFlipped ? 0 : -1}
+                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-sky-500/15 text-sky-400 hover:bg-sky-500/25">
+                  <PackagePlus size={12} /> {t("gold.manual_add_button_short")}
+                </button>
+                <button onClick={() => openMove(p, "manual_remove")} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0} tabIndex={isFlipped ? 0 : -1}
+                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-slate-700/40 text-slate-400 hover:bg-slate-700/60">
+                  <PackageMinus size={12} /> {t("gold.manual_remove_button_short")}
+                </button>
+                <button onClick={() => { audioFeedback.playClick(); openEditForm(p); }} tabIndex={isFlipped ? 0 : -1}
+                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer bg-slate-700/40 text-slate-300 hover:bg-slate-700/60 light_sakura:bg-slate-100 light_sakura:text-slate-600">
+                  <Edit2 size={12} /> {t("common.edit")}
+                </button>
+                <button onClick={() => toggleArchive(p)} disabled={busyId === p.id} tabIndex={isFlipped ? 0 : -1}
+                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20">
+                  {p.is_archived ? <ArchiveRestore size={12} /> : <Archive size={12} />} {t(p.is_archived ? "gold.unarchive_button" : "gold.archive_button")}
+                </button>
+                <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(p); }} tabIndex={isFlipped ? 0 : -1}
+                  className="col-span-2 flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer bg-red-500/10 text-red-500 hover:bg-red-500/20 light_sakura:bg-red-50 light_sakura:text-red-400">
+                  <Trash2 size={12} /> {t("common.delete")}
+                </button>
+              </div>
             </div>
           </div>
         </div>
-        <p className="text-center text-[9px] text-slate-500 mt-1.5 select-none">
-          {t(isFlipped ? "gold.card_tap_hint_front" : "gold.card_tap_hint_actions")}
-        </p>
+        {!isFlipped && (
+          <p className="text-center text-[9px] text-slate-500 mt-1.5 select-none">
+            {t("gold.card_tap_hint_actions")}
+          </p>
+        )}
       </motion.div>
     );
   };
