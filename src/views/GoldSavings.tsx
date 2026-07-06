@@ -43,18 +43,23 @@ const formatPriceDateLong = (dateStr: string, locale: string): string =>
 const renderPriceDelta = (
   current: number | null | undefined,
   prev: number | null | undefined,
-  t: (key: string) => string
+  t: (key: string, replacements?: Record<string, string | number>) => string
 ) => {
   if (current == null || prev == null || prev === 0) return null;
   const diff = current - prev;
   if (diff === 0) return null;
   const isUp = diff > 0;
+  const pct = (Math.abs(diff) / prev) * 100;
+  // Persentase super kecil (misal Rp1 dari harga jutaan) tetap dibulatkan ke
+  // 1 desimal -- kalau hasilnya "0.0%" itu artinya memang nyaris tidak
+  // bergerak, bukan bug. Arrow tetap tampil karena diff != 0 di atas.
+  const pctLabel = pct < 0.05 ? "<0.1" : pct.toFixed(1);
   return (
     <span
-      className={`inline-flex items-center ${isUp ? "text-emerald-400" : "text-red-400"}`}
-      title={t(isUp ? "gold.price_up_hint" : "gold.price_down_hint")}
+      className={`inline-flex items-center gap-0.5 whitespace-nowrap ${isUp ? "text-emerald-400" : "text-red-400"}`}
+      title={t(isUp ? "gold.price_up_hint" : "gold.price_down_hint", { pct: pctLabel })}
     >
-      {isUp ? "▲" : "▼"}
+      {isUp ? "▲" : "▼"} {pctLabel}%
     </span>
   );
 };
