@@ -34,10 +34,6 @@ const formatPriceDateLong = (dateStr: string, locale: string): string =>
   new Intl.DateTimeFormat(locale === "id" ? "id-ID" : "en-US", {
     day: "2-digit", month: "long", year: "numeric",
   }).format(parsePriceDate(dateStr));
-const formatPriceDateShort = (dateStr: string, locale: string): string =>
-  new Intl.DateTimeFormat(locale === "id" ? "id-ID" : "en-US", {
-    day: "2-digit", month: "short",
-  }).format(parsePriceDate(dateStr));
 
 // Indikator ↑/↓ perbandingan harga (sell atau buyback) brand tertentu vs
 // harga hari sebelumnya. Return null (tidak render apa-apa) kalau data
@@ -90,6 +86,17 @@ export const GoldSavings: React.FC = () => {
   const [moveNote, setMoveNote] = useState("");
   const [isMoving, setIsMoving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  // Kartu emas "fisik" (Konsep D): id pos yang sedang di-flip (nampilkan sisi
+  // aksi). Set (bukan single value) supaya beberapa kartu bisa flip
+  // independen kalau usernya memang mau bandingkan aksi 2 pos sekaligus.
+  const [flippedIds, setFlippedIds] = useState<Set<string>>(new Set());
+  const toggleFlip = (id: string) => {
+    setFlippedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
 
   const activePockets = useMemo(() => pockets.filter(p => !p.is_archived), [pockets]);
   const archivedPockets = useMemo(() => pockets.filter(p => p.is_archived), [pockets]);
@@ -234,79 +241,100 @@ export const GoldSavings: React.FC = () => {
     const isEstimated = !!price && price.buyback_price_per_gram == null && price.sell_price_per_gram != null;
     const marketValue = effectivePricePerGram != null ? p.grams_owned * effectivePricePerGram : null;
     const gainLoss = marketValue != null ? marketValue - p.cash_locked_amount : null;
+    const isFlipped = flippedIds.has(p.id);
+    // stopPropagation di semua tombol sisi belakang -- supaya nge-klik
+    // tombol aksi tidak ikut men-toggle flip balik ke depan kartu.
+    const stop = (e: React.MouseEvent) => e.stopPropagation();
+
     return (
-      <motion.div key={p.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}
-        className={`rounded-2xl border overflow-hidden ${p.is_archived
-          ? "border-slate-800/50 bg-slate-950/20 opacity-60"
-          : "border-slate-800/50 bg-slate-950/40 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30"}`}>
-        <div className="p-4 space-y-3">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
-                <Coins size={16} className="text-amber-400" />
+      <motion.div key={p.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}>
+        <div className="[perspective:1200px] h-48">
+          <div
+            role="button"
+            tabIndex={0}
+            aria-pressed={isFlipped}
+            aria-label={t(isFlipped ? "gold.card_show_front" : "gold.card_show_actions")}
+            onClick={() => toggleFlip(p.id)}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleFlip(p.id); } }}
+            className={`relative w-full h-full cursor-pointer outline-none transition-transform duration-500 [transform-style:preserve-3d] focus-visible:ring-2 focus-visible:ring-amber-400 rounded-2xl ${isFlipped ? "[transform:rotateY(180deg)]" : ""}`}
+          >
+            {/* ===== SISI DEPAN: kartu emas fisik ===== */}
+            <div className={`absolute inset-0 rounded-2xl p-3.5 flex flex-col justify-between [backface-visibility:hidden] shadow-lg gold-card-shine ${p.is_archived ? "is-archived" : ""}`}>
+              <div className="relative z-[1] flex items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-sans font-bold text-[13px] text-amber-950 truncate">{p.name}</p>
+                  <p className="text-[8.5px] font-bold uppercase tracking-wide text-amber-900/70">{t(`gold.brand_${p.brand}`)}</p>
+                </div>
+                {p.is_archived && (
+                  <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-md text-[8px] font-bold bg-black/20 text-white">
+                    {t("gold.archived_badge")}
+                  </span>
+                )}
               </div>
-              <div className="min-w-0">
-                <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{p.name}</p>
-                <p className="text-[10.5px] text-slate-500">{t(`gold.brand_${p.brand}`)}</p>
+
+              <div className="relative z-[1]">
+                <p className="font-black text-[22px] leading-none text-amber-950 tracking-tight">{formatGrams(p.grams_owned)}</p>
+                {p.notes && <p className="text-[9px] text-amber-900/70 italic truncate mt-1">{p.notes}</p>}
+              </div>
+
+              <div className="relative z-[1] flex items-end justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="text-[10.5px] font-bold text-amber-950 truncate">
+                    {marketValue != null ? formatIDR(marketValue) : t("gold.price_unavailable_short")}
+                  </p>
+                  {isEstimated && <p className="text-[8px] text-amber-900/60 truncate">{t("gold.est_from_sell_price_note")}</p>}
+                  {p.cash_locked_amount === 0 && p.grams_owned > 0 && (
+                    <p className="text-[8px] text-amber-900/60 truncate">{t("gold.no_cost_basis_note")}</p>
+                  )}
+                </div>
+                {gainLoss != null && p.grams_owned > 0 && p.cash_locked_amount > 0 && (
+                  <span className={`relative shrink-0 inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9.5px] font-bold ${gainLoss >= 0 ? "bg-black/15 text-emerald-950" : "bg-black/25 text-red-950"}`}>
+                    {gainLoss >= 0 ? "▲" : "▼"} {formatIDR(Math.abs(gainLoss))}
+                    <span onClick={stop} className="text-black/50">
+                      <InfoTooltip text={t("gold.unrealized_tooltip")} align="left" />
+                    </span>
+                  </span>
+                )}
               </div>
             </div>
-            {p.is_archived && (
-              <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-md text-[8px] font-bold bg-slate-700/70 text-slate-300">
-                {t("gold.archived_badge")}
-              </span>
-            )}
-          </div>
 
-          <div className="text-center py-1">
-            <p className="font-bold text-lg text-amber-400 light_sakura:text-amber-600">{formatGrams(p.grams_owned)}</p>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              {marketValue != null ? t("gold.est_value", { amount: formatIDR(marketValue) }) : t("gold.price_unavailable_short")}
-            </p>
-            {isEstimated && (
-              <p className="text-[9.5px] text-amber-500/80 mt-0.5">{t("gold.est_from_sell_price_note")}</p>
-            )}
-            {gainLoss != null && p.grams_owned > 0 && p.cash_locked_amount > 0 && (
-              <p className={`text-[10.5px] font-semibold mt-0.5 flex items-center justify-center gap-1 ${gainLoss >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                {gainLoss >= 0 ? "▲ " : "▼ "}{formatIDR(Math.abs(gainLoss))} {t(gainLoss >= 0 ? "gold.unrealized_gain" : "gold.unrealized_loss")}
-                <InfoTooltip text={t("gold.unrealized_tooltip")} align="left" />
-              </p>
-            )}
-            {p.cash_locked_amount === 0 && p.grams_owned > 0 && (
-              <p className="text-[9.5px] text-slate-500 mt-0.5">{t("gold.no_cost_basis_note")}</p>
-            )}
-          </div>
-
-          {p.notes && <p className="text-[10.5px] text-slate-500 italic truncate text-center">{p.notes}</p>}
-
-          <div className="grid grid-cols-2 gap-1.5">
-            <button onClick={() => openMove(p, "buy")} disabled={busyId === p.id || p.is_archived}
-              className="flex items-center justify-center gap-1 py-2 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
-              <ArrowDownCircle size={12} /> {t("gold.buy_button")}
-            </button>
-            <button onClick={() => openMove(p, "sell")} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0 || !price?.buyback_price_per_gram}
-              title={!price?.buyback_price_per_gram ? t("gold.buyback_unavailable_hint") : undefined}
-              className="flex items-center justify-center gap-1 py-2 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
-              <ArrowUpCircle size={12} /> {t("gold.sell_button")}
-            </button>
-            <button onClick={() => openMove(p, "manual_add")} disabled={busyId === p.id || p.is_archived}
-              className="flex items-center justify-center gap-1 py-2 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-sky-500/15 text-sky-400 hover:bg-sky-500/25">
-              <PackagePlus size={12} /> {t("gold.manual_add_button_short")}
-            </button>
-            <button onClick={() => openMove(p, "manual_remove")} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0}
-              className="flex items-center justify-center gap-1 py-2 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-slate-700/40 text-slate-400 hover:bg-slate-700/60">
-              <PackageMinus size={12} /> {t("gold.manual_remove_button_short")}
-            </button>
-          </div>
-          <div className="flex items-center justify-center gap-1.5 pt-0.5">
-            <button onClick={() => { audioFeedback.playClick(); openEditForm(p); }} className="p-1.5 rounded-lg bg-slate-700/50 text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer light_sakura:bg-slate-100 light_sakura:text-slate-500"><Edit2 size={12} /></button>
-            <button onClick={() => toggleArchive(p)} disabled={busyId === p.id}
-              title={p.is_archived ? t("gold.unarchive_button") : t("gold.archive_button")}
-              className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors cursor-pointer disabled:opacity-50 light_sakura:bg-amber-50">
-              {p.is_archived ? <ArchiveRestore size={12} /> : <Archive size={12} />}
-            </button>
-            <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(p); }} className="p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors cursor-pointer light_sakura:bg-red-50 light_sakura:text-red-400"><Trash2 size={12} /></button>
+            {/* ===== SISI BELAKANG: aksi ===== */}
+            <div className="absolute inset-0 rounded-2xl p-2.5 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-slate-900 border border-amber-500/20 light_sakura:bg-white light_sakura:border-amber-200 shadow-lg grid grid-cols-2 gap-1.5 content-center">
+              <button onClick={(e) => { stop(e); openMove(p, "buy"); }} disabled={busyId === p.id || p.is_archived}
+                className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
+                <ArrowDownCircle size={12} /> {t("gold.buy_button")}
+              </button>
+              <button onClick={(e) => { stop(e); openMove(p, "sell"); }} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0 || !price?.buyback_price_per_gram}
+                title={!price?.buyback_price_per_gram ? t("gold.buyback_unavailable_hint") : undefined}
+                className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
+                <ArrowUpCircle size={12} /> {t("gold.sell_button")}
+              </button>
+              <button onClick={(e) => { stop(e); openMove(p, "manual_add"); }} disabled={busyId === p.id || p.is_archived}
+                className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-sky-500/15 text-sky-400 hover:bg-sky-500/25">
+                <PackagePlus size={12} /> {t("gold.manual_add_button_short")}
+              </button>
+              <button onClick={(e) => { stop(e); openMove(p, "manual_remove"); }} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0}
+                className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-slate-700/40 text-slate-400 hover:bg-slate-700/60">
+                <PackageMinus size={12} /> {t("gold.manual_remove_button_short")}
+              </button>
+              <button onClick={(e) => { stop(e); audioFeedback.playClick(); openEditForm(p); }}
+                className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer bg-slate-700/40 text-slate-300 hover:bg-slate-700/60 light_sakura:bg-slate-100 light_sakura:text-slate-600">
+                <Edit2 size={12} /> {t("common.edit")}
+              </button>
+              <button onClick={(e) => { stop(e); toggleArchive(p); }} disabled={busyId === p.id}
+                className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20">
+                {p.is_archived ? <ArchiveRestore size={12} /> : <Archive size={12} />} {t(p.is_archived ? "gold.unarchive_button" : "gold.archive_button")}
+              </button>
+              <button onClick={(e) => { stop(e); audioFeedback.playClick(); setDeleteTarget(p); }}
+                className="col-span-2 flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer bg-red-500/10 text-red-500 hover:bg-red-500/20 light_sakura:bg-red-50 light_sakura:text-red-400">
+                <Trash2 size={12} /> {t("common.delete")}
+              </button>
+            </div>
           </div>
         </div>
+        <p className="text-center text-[9px] text-slate-500 mt-1.5 select-none">
+          {t(isFlipped ? "gold.card_tap_hint_front" : "gold.card_tap_hint_actions")}
+        </p>
       </motion.div>
     );
   };
@@ -371,7 +399,9 @@ export const GoldSavings: React.FC = () => {
             <p className="text-[11px] leading-relaxed text-slate-400 light_sakura:text-slate-600">{t("gold.info_banner_text")}</p>
           </div>
 
-          {/* Strip harga referensi hari ini */}
+          {/* Ticker harga pasar -- auto-scroll (Konsep D), berhenti sebentar
+              saat di-hover/di-tap supaya masih bisa dibaca kalau perlu.
+              Konten di-duplikasi 2x supaya loop-nya mulus (lihat .gold-marquee-track). */}
           {prices.length > 0 && (
             <div className="space-y-2">
               <p className="text-[10.5px] font-semibold text-slate-500 light_sakura:text-slate-500 px-1">
@@ -379,33 +409,30 @@ export const GoldSavings: React.FC = () => {
                   date: formatPriceDateLong(latestPriceDate as string, locale),
                 })}
               </p>
-              <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1">
-                {prices.map(pr => {
-                  const isStaleVsOthers = priceDatesMismatch && pr.price_date !== latestPriceDate;
-                  return (
-                    <div
-                      key={pr.brand}
-                      title={isStaleVsOthers ? t("gold.price_stale_brand_hint") : undefined}
-                      className={`shrink-0 rounded-xl border px-3 py-2 min-w-[128px] ${isStaleVsOthers
-                        ? "border-amber-500/40 bg-amber-500/5"
-                        : "border-slate-800 bg-slate-950/40 light_sakura:bg-slate-50 light_sakura:border-slate-200"}`}
-                    >
-                      <p className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wide">{t(`gold.brand_${pr.brand}`)}</p>
-                      <p className="text-[11px] font-bold text-amber-400 light_sakura:text-amber-600 flex items-center gap-1">
-                        {formatIDR(pr.sell_price_per_gram)}
-                        {renderPriceDelta(pr.sell_price_per_gram, pr.prev_sell_price_per_gram, t)}
-                      </p>
-                      <p className="text-[9.5px] text-slate-500 flex items-center gap-1">
-                        {t("gold.buyback_short")} {formatIDR(pr.buyback_price_per_gram)}
-                        {renderPriceDelta(pr.buyback_price_per_gram, pr.prev_buyback_price_per_gram, t)}
-                      </p>
-                      <p className={`text-[9px] mt-1 flex items-center gap-1 ${isStaleVsOthers ? "text-amber-400" : "text-slate-600"}`}>
-                        {isStaleVsOthers && <AlertTriangle size={9} className="shrink-0" />}
-                        {t("gold.price_updated_short", { date: formatPriceDateShort(pr.price_date, locale) })}
-                      </p>
-                    </div>
-                  );
-                })}
+              <div className="gold-marquee-viewport overflow-hidden rounded-xl border border-slate-800 bg-slate-950/40 light_sakura:bg-slate-50 light_sakura:border-slate-200 py-2">
+                <div className="gold-marquee-track">
+                  {[...prices, ...prices].map((pr, idx) => {
+                    const isStaleVsOthers = priceDatesMismatch && pr.price_date !== latestPriceDate;
+                    return (
+                      <div
+                        key={`${pr.brand}-${idx}`}
+                        title={isStaleVsOthers ? t("gold.price_stale_brand_hint") : undefined}
+                        className={`shrink-0 px-4 py-0.5 border-r border-slate-800/60 light_sakura:border-slate-200 ${isStaleVsOthers ? "bg-amber-500/5" : ""}`}
+                      >
+                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap">{t(`gold.brand_${pr.brand}`)}</p>
+                        <p className="text-[11px] font-bold text-amber-400 light_sakura:text-amber-600 flex items-center gap-1 whitespace-nowrap">
+                          {formatIDR(pr.sell_price_per_gram)}
+                          {renderPriceDelta(pr.sell_price_per_gram, pr.prev_sell_price_per_gram, t)}
+                        </p>
+                        <p className="text-[9px] text-slate-500 flex items-center gap-1 whitespace-nowrap">
+                          {t("gold.buyback_short")} {formatIDR(pr.buyback_price_per_gram)}
+                          {renderPriceDelta(pr.buyback_price_per_gram, pr.prev_buyback_price_per_gram, t)}
+                          {isStaleVsOthers && <AlertTriangle size={8} className="shrink-0 text-amber-400 ml-0.5" />}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
