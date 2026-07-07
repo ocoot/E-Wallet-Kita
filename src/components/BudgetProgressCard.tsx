@@ -230,7 +230,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
                   Terpakai
                 </p>
                 <p
-                  className="text-xs font-black leading-tight break-words"
+                  className="text-[10.5px] font-black leading-tight whitespace-nowrap tabular-nums tracking-tight"
                   style={{ color: cfg.barFrom }}
                 >
                   {formatIDR(budget.spent)}
@@ -240,7 +240,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
                 <p className="text-[9px] uppercase tracking-wider font-bold text-slate-500 light_sakura:text-slate-400 mb-0.5">
                   {overBudget ? "Melebihi" : "Sisa"}
                 </p>
-                <p className={`text-xs font-black leading-tight break-words ${overBudget ? "text-red-400" : "text-emerald-400"}`}>
+                <p className={`text-[10.5px] font-black leading-tight whitespace-nowrap tabular-nums tracking-tight ${overBudget ? "text-red-400" : "text-emerald-400"}`}>
                   {overBudget
                     ? `+${formatIDR(budget.spent - budget.monthly_limit)}`
                     : formatIDR(remaining)}

@@ -268,7 +268,7 @@ export const History: React.FC<HistoryProps> = ({
                     {t("dashboard.expense")}
                   </span>
                 </div>
-                <p className="font-bold text-[13px] leading-tight break-words text-red-400 light_sakura:text-red-600">
+                <p className="font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight text-red-400 light_sakura:text-red-600">
                   −{formatIDR(stats.expense)}
                 </p>
               </div>
@@ -279,7 +279,7 @@ export const History: React.FC<HistoryProps> = ({
                     {t("dashboard.income")}
                   </span>
                 </div>
-                <p className="font-bold text-[13px] leading-tight break-words text-emerald-400 light_sakura:text-emerald-600">
+                <p className="font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight text-emerald-400 light_sakura:text-emerald-600">
                   +{formatIDR(stats.income)}
                 </p>
               </div>
@@ -294,7 +294,7 @@ export const History: React.FC<HistoryProps> = ({
                     {t("dashboard.balance")}
                   </span>
                 </div>
-                <p className={`font-bold text-[13px] leading-tight break-words ${
+                <p className={`font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight ${
                   stats.net >= 0 ? "text-indigo-400 light_sakura:text-indigo-600" : "text-orange-400 light_sakura:text-orange-600"
                 }`}>
                   {stats.net >= 0 ? "+" : ""}{formatIDR(stats.net)}
