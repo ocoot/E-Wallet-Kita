@@ -2,10 +2,14 @@ import React, { useMemo, useState } from "react";
 import { WeatherCondition } from "../hooks/useWeather";
 import { getWeatherTheme } from "../lib/weatherTheme";
 import { WeatherLottie } from "./WeatherLottie";
+import { EventOverlay } from "./EventOverlay";
+import type { OverlayType } from "../api/eventCalendar";
 
 interface DashboardWeatherLayerProps {
   condition: WeatherCondition;
   isDay: boolean;
+  /** Overlay event aktif (confetti/fireworks/hearts/sparkles), atau null/tak ada. */
+  eventOverlay?: OverlayType | null;
 }
 
 /** Angka acak deterministik per-index supaya posisi partikel stabil selama komponen tidak remount */
@@ -144,7 +148,7 @@ const CloudShape: React.FC<{
  * Ikon hero Lottie di-import statis dari npm package @meteocons/lottie
  * (offline-safe). Awan SVG generative di bawah sebagai pelengkap latar.
  */
-export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ condition, isDay }) => {
+export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ condition, isDay, eventOverlay }) => {
   const theme = getWeatherTheme(condition, isDay);
 
   // Ikon "hero" Lottie -- di-import statis dari npm package @meteocons/lottie
@@ -258,6 +262,10 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
         size={132}
         className="absolute top-1/2 right-3 md:right-8 -translate-y-1/2 opacity-90 drop-shadow-[0_10px_16px_rgba(0,0,0,0.35)]"
       />
+
+      {/* Overlay partikel event/liburan (confetti, fireworks, hearts, sparkles).
+          Tidak pakai teks/greeting -- hanya animasi dekoratif murni. */}
+      {eventOverlay && <EventOverlay type={eventOverlay} />}
 
       {showClouds && (
         <div className={`absolute inset-0 ${showThunder ? "weather-sheet-flash" : ""}`}>

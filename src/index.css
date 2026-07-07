@@ -260,6 +260,83 @@ html, body {
   animation-delay: var(--wx-delay, 0s);
 }
 
+/* ── Animasi partikel event overlay (EventOverlay) ──────────
+   Dihidupkan otomatis saat hari libur/event tertentu terdeteksi,
+   melengkapi partikel cuaca yang sudah ada. */
+
+/* Confetti — kotak warna-warni jatuh serak */
+@keyframes event-confetti-fall {
+  0%   { transform: translateY(-10vh) rotate(0deg) scale(1); opacity: 1; }
+  25%  { opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg) scale(0.3); opacity: 0; }
+}
+.event-particle-confetti {
+  position: absolute;
+  top: -20px;
+  width: 8px;
+  height: 10px;
+  border-radius: 1px;
+  animation: event-confetti-fall linear infinite;
+  animation-duration: var(--ev-dur, 3s);
+  animation-delay: var(--ev-delay, 0s);
+}
+
+/* Fireworks — lingkaran meledak dari titik pusat, lalu luntur */
+@keyframes event-firework-burst {
+  0%   { transform: translate(0, 0) scale(0.5); opacity: 1; }
+  50%  { opacity: 0.8; }
+  100% { transform: translate(var(--ev-driftx, 0), var(--ev-drifty, -80px)) scale(1.4); opacity: 0; }
+}
+@keyframes event-firework-flash {
+  0%, 100% { opacity: 0; }
+  5%       { opacity: 0.9; }
+  15%      { opacity: 0.1; }
+}
+.event-firework {
+  position: absolute;
+  pointer-events: none;
+}
+.event-firework-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.7), transparent 50%);
+  animation: event-firework-flash var(--ev-dur, 4s) ease-out infinite;
+  animation-delay: var(--ev-delay, 0s);
+}
+
+/* Hearts — melayang ke atas sambil bergoyang */
+@keyframes event-hearts-float {
+  0%   { transform: translateY(0) scale(0.6) rotate(0deg); opacity: 0; }
+  15%  { opacity: 0.9; }
+  85%  { opacity: 0.7; }
+  100% { transform: translateY(-110vh) scale(1.1) rotate(var(--ev-rot, 20deg)); opacity: 0; }
+}
+.event-particle-heart {
+  position: absolute;
+  bottom: -20px;
+  font-size: var(--ev-size, 18px);
+  animation: event-hearts-float ease-in infinite;
+  animation-duration: var(--ev-dur, 5s);
+  animation-delay: var(--ev-delay, 0s);
+  will-change: transform, opacity;
+}
+
+/* Sparkles — gemerlap seperti bintang jatuh */
+@keyframes event-sparkle-twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+  30%      { opacity: 1; transform: scale(1.2) rotate(180deg); }
+  60%      { opacity: 0.6; transform: scale(0.8) rotate(360deg); }
+}
+.event-particle-sparkle {
+  position: absolute;
+  width: var(--ev-size, 6px);
+  height: var(--ev-size, 6px);
+  border-radius: 999px;
+  animation: event-sparkle-twinkle ease-in-out infinite;
+  animation-duration: var(--ev-dur, 2.5s);
+  animation-delay: var(--ev-delay, 0s);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .weather-raindrop,
   .weather-snowflake,
@@ -268,7 +345,12 @@ html, body {
   .weather-fog-band,
   .weather-lightning,
   .weather-sun-glow,
-  .weather-star {
+  .weather-star,
+  .event-particle-confetti,
+  .event-firework,
+  .event-firework-flash,
+  .event-particle-heart,
+  .event-particle-sparkle {
     animation: none !important;
   }
 }

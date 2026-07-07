@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import logoUrl from "../assets/images/user_logo_transparent.png";
 import { useLanguage } from "../contexts/LanguageContext";
 import { UserSession } from "../types";
@@ -9,6 +9,9 @@ import { useBudgets } from "../hooks/useBudgets";
 import { getWeatherTheme } from "../lib/weatherTheme";
 import { DashboardWeatherLayer } from "./DashboardWeatherLayer";
 import { WeatherDebugToggle, WeatherDebugOverride } from "./WeatherDebugToggle";
+import { getActiveEvent, fetchAllHolidays } from "../api/eventCalendar";
+import type { NagerHoliday } from "../api/eventCalendar";
+import type { OverlayType } from "../api/eventCalendar";
 
 interface DashboardHeaderProps {
   currentUser: UserSession;
@@ -27,6 +30,20 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   // Saat override aktif, ini menggantikan data cuaca asli hanya untuk
   // preview visual (tidak mengubah/menyimpan apa pun).
   const [debugOverride, setDebugOverride] = useState<WeatherDebugOverride | null>(null);
+
+  // ── Deteksi event/liburan aktif ──
+  const [holidays, setHolidays] = useState<NagerHoliday[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchAllHolidays().then((data) => {
+      if (!cancelled) setHolidays(data);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  const activeEvent = holidays ? getActiveEvent(new Date(), holidays) : null;
+  const eventOverlay: OverlayType | null = activeEvent?.event.overlay.type ?? null;
 
   const effectiveWeather: { condition: WeatherDebugOverride["condition"]; isDay: boolean } | null = debugOverride
     ? debugOverride
@@ -125,7 +142,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       className="relative p-6 rounded-3xl border bg-slate-900 border-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-sm"
     >
       {weatherTheme && effectiveWeather && (
-        <DashboardWeatherLayer condition={effectiveWeather.condition} isDay={effectiveWeather.isDay} />
+        <DashboardWeatherLayer
+          condition={effectiveWeather.condition}
+          isDay={effectiveWeather.isDay}
+          eventOverlay={eventOverlay}
+        />
       )}
 
       <div className="relative z-10 flex items-center gap-4">
