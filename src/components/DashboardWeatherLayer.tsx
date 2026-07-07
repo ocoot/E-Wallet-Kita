@@ -1,8 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { WeatherCondition } from "../hooks/useWeather";
 import { getWeatherTheme } from "../lib/weatherTheme";
-import { getLottieIconSlug } from "../lib/lottieWeather";
-import { LottieWeatherIcon } from "./LottieWeatherIcon";
+import { WeatherLottie } from "./WeatherLottie";
 
 interface DashboardWeatherLayerProps {
   condition: WeatherCondition;
@@ -142,20 +141,14 @@ const CloudShape: React.FC<{
  * (aria-hidden) -- tidak pernah menghalangi interaksi (pointer-events-none)
  * dan otomatis nonaktif saat prefers-reduced-motion (lihat index.css).
  *
- * Prioritas render: ikon Lottie (Meteocons, hand-animated, fetch dari CDN
- * saat runtime) kalau berhasil dimuat -> fallback ke awan SVG generative di
- * bawah ini kalau gagal (mis. offline / CDN diblokir jaringan preview).
+ * Ikon hero Lottie di-import statis dari npm package @meteocons/lottie
+ * (offline-safe). Awan SVG generative di bawah sebagai pelengkap latar.
  */
 export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ condition, isDay }) => {
   const theme = getWeatherTheme(condition, isDay);
 
-  // Ikon "hero" Lottie -- di-fetch runtime dari CDN resmi Meteocons. Kalau
-  // gagal (mis. sandbox preview tanpa akses internet keluar) atau kombinasi
-  // kondisi+waktu belum ada pemetaan yang dikonfirmasi, otomatis fallback ke
-  // cluster awan SVG generative di bawah (selalu tersedia, tanpa network).
-  const lottieSlug = getLottieIconSlug(condition, isDay);
-  const [failedSlug, setFailedSlug] = useState<string | null>(null);
-  const lottieAvailable = Boolean(lottieSlug) && lottieSlug !== failedSlug;
+  // Ikon "hero" Lottie -- di-import statis dari npm package @meteocons/lottie
+  // (offline-safe, tanpa network request).
 
   const raindrops = useMemo(
     () =>
@@ -252,27 +245,21 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
       aria-hidden="true"
       className={`pointer-events-none absolute inset-0 overflow-hidden rounded-3xl bg-gradient-to-br ${theme.gradientClass}`}
     >
-      {/* Kilau matahari samar di balik awan -- hanya cerah berawan siang hari,
-          dan hanya saat pakai render SVG fallback (ikon Lottie
-          partly-cloudy-day sudah menggambar cahaya mataharinya sendiri) */}
-      {sunRimEnabled && !lottieAvailable && (
+      {/* Kilau matahari samar di balik awan -- hanya cerah berawan siang hari */}
+      {sunRimEnabled && (
         <div className="weather-sun-glow absolute -top-10 right-8 w-32 h-32 rounded-full bg-amber-300/25 blur-3xl" />
       )}
 
-      {/* Ikon "hero" Lottie -- hand-animated, jauh lebih detail daripada
-          render SVG generative kita. Kalau gagal dimuat (lihat komentar di
-          atas), otomatis lewat ke blok showClouds di bawah. */}
-      {lottieAvailable && lottieSlug && (
-        <LottieWeatherIcon
-          key={lottieSlug}
-          slug={lottieSlug}
-          size={132}
-          className="absolute top-1/2 right-3 md:right-8 -translate-y-1/2 opacity-90 drop-shadow-[0_10px_16px_rgba(0,0,0,0.35)]"
-          onError={() => setFailedSlug(lottieSlug)}
-        />
-      )}
+      {/* Ikon "hero" Lottie -- hand-animated dari @meteocons/lottie (npm,
+          offline-safe, tanpa network request). */}
+      <WeatherLottie
+        condition={condition}
+        isDay={isDay}
+        size={132}
+        className="absolute top-1/2 right-3 md:right-8 -translate-y-1/2 opacity-90 drop-shadow-[0_10px_16px_rgba(0,0,0,0.35)]"
+      />
 
-      {showClouds && !lottieAvailable && (
+      {showClouds && (
         <div className={`absolute inset-0 ${showThunder ? "weather-sheet-flash" : ""}`}>
           {clouds.map((c, i) => (
             <div
@@ -369,7 +356,7 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
         </>
       )}
 
-      {theme.particle === "stars" && !lottieAvailable && (
+      {theme.particle === "stars" && (
         <>
           {stars.map((s, i) => (
             <span
@@ -402,7 +389,7 @@ export const DashboardWeatherLayer: React.FC<DashboardWeatherLayerProps> = ({ co
         </>
       )}
 
-      {theme.particle === "sun" && !lottieAvailable && (
+      {theme.particle === "sun" && (
         <div className="weather-sun-glow absolute -top-6 right-6 w-28 h-28 rounded-full bg-amber-300/30 blur-2xl" />
       )}
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import lottie, { AnimationItem } from "lottie-web";
+import lottie from "lottie-web";
 import { WeatherCondition } from "../hooks/useWeather";
 
 // Animasi resmi dari paket npm @meteocons/lottie (Bas Milius, MIT license:
@@ -7,16 +7,10 @@ import { WeatherCondition } from "../hooks/useWeather";
 // (bukan hotlink CDN) supaya offline-safe & versinya terkunci oleh
 // package.json, konsisten dengan cara resmi yang didokumentasikan di
 // https://meteocons.com/docs/getting-started.
-//
-// CATATAN: hanya slug yang sudah dipastikan tersedia di paket yang di-import
-// statis di sini (menghindari resiko build gagal kalau nama file berbeda).
-// Kalau setelah `npm install` Anda ingin varian malam yang lebih akurat
-// untuk "partly_cloudy" & "thunderstorm" (lihat 2 TODO di getAnimationData
-// di bawah), cek daftar slug resmi di https://meteocons.com/icons lalu
-// tambahkan importnya di sini.
 import clearDayAnim from "@meteocons/lottie/fill/clear-day.json";
 import clearNightAnim from "@meteocons/lottie/fill/clear-night.json";
 import partlyCloudyDayAnim from "@meteocons/lottie/fill/partly-cloudy-day.json";
+import partlyCloudyNightAnim from "@meteocons/lottie/fill/partly-cloudy-night.json";
 import cloudyAnim from "@meteocons/lottie/fill/cloudy.json";
 import fogDayAnim from "@meteocons/lottie/fill/fog-day.json";
 import fogNightAnim from "@meteocons/lottie/fill/fog-night.json";
@@ -24,16 +18,14 @@ import drizzleAnim from "@meteocons/lottie/fill/drizzle.json";
 import rainAnim from "@meteocons/lottie/fill/rain.json";
 import snowAnim from "@meteocons/lottie/fill/snow.json";
 import thunderstormsDayRainAnim from "@meteocons/lottie/fill/thunderstorms-day-rain.json";
+import thunderstormsNightRainAnim from "@meteocons/lottie/fill/thunderstorms-night-rain.json";
 
 function getAnimationData(condition: WeatherCondition, isDay: boolean) {
   switch (condition) {
     case "clear":
       return isDay ? clearDayAnim : clearNightAnim;
     case "partly_cloudy":
-      // TODO: ganti ke slug "partly-cloudy-night" resmi setelah dipastikan
-      // ada di paket terinstall -- untuk sekarang malam jatuh ke "cloudy"
-      // supaya tidak ada resiko import gagal.
-      return isDay ? partlyCloudyDayAnim : cloudyAnim;
+      return isDay ? partlyCloudyDayAnim : partlyCloudyNightAnim;
     case "cloudy":
       return cloudyAnim;
     case "fog":
@@ -45,9 +37,7 @@ function getAnimationData(condition: WeatherCondition, isDay: boolean) {
     case "snow":
       return snowAnim;
     case "thunderstorm":
-      // TODO: ganti ke slug "thunderstorms-night-rain" resmi setelah
-      // dipastikan ada di paket terinstall.
-      return thunderstormsDayRainAnim;
+      return isDay ? thunderstormsDayRainAnim : thunderstormsNightRainAnim;
     default:
       return cloudyAnim;
   }
@@ -67,7 +57,7 @@ interface WeatherLottieProps {
  */
 export const WeatherLottie: React.FC<WeatherLottieProps> = ({ condition, isDay, size = 176, className }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const animRef = useRef<AnimationItem | null>(null);
+  const animRef = useRef<ReturnType<typeof lottie.loadAnimation> | null>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
