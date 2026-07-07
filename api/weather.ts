@@ -225,9 +225,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const weatherData = await weatherResp.json();
     const current = weatherData.current;
 
-    // Cache di edge/CDN 10 menit -- cukup "real-time" untuk widget dashboard,
-    // tapi menghindari pemborosan kuota API gratis kalau user buka-tutup app.
-    res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=300');
+    // PENTING: cache di edge/CDN HANYA untuk cabang GPS (hasCoords). URL-nya
+    // punya lat/lon presisi tinggi jadi cache key otomatis unik per lokasi
+    // nyata, aman di-cache 10 menit.
+    //
+    // Cabang IP-based (tanpa lat/lon) TIDAK BOLEH di-cache di CDN: URL-nya
+    // sama persis untuk SEMUA user yang fallback ke IP (tidak ada query
+    // pembeda), padahal hasilnya beda-beda tergantung IP client. Kalau
+    // di-cache, user A bisa saja disajikan lokasi hasil resolve IP milik
+    // user B yang lebih dulu hit edge node yang sama -- ini juga akar
+    // penyebab lokasi terasa "macet"/salah karena geolocation browser
+    // sempat diblokir oleh Permissions-Policy sehingga SELALU fallback ke
+    // cabang IP ini.
+    if (hasCoords) {
+      res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate=300');
+    } else {
+      res.setHeader('Cache-Control', 'private, no-store');
+    }
 
     return res.status(200).json({
       location,
