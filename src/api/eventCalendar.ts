@@ -459,7 +459,7 @@ function isInRange(
   start: { month: number; day: number },
   end: { month: number; day: number }
 ): boolean {
-  const today = date.getMonth() * 100 + date.getDate();
+  const today = (date.getMonth() + 1) * 100 + date.getDate();
   const s = start.month * 100 + start.day;
   const e = end.month * 100 + end.day;
   return today >= s && today <= e;
