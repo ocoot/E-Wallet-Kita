@@ -1,11 +1,53 @@
-import { useEffect, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useEffect, useState } from 'react';
 
-gsap.registerPlugin(ScrollTrigger);
+let gsapPromise: Promise<any> | null = null;
+let gsapLoaded = false;
 
-export function useGsapTextReveal(ref: { current: HTMLElement | null }, options?: { stagger?: number; delay?: number }) {
+function ensureGsap(): Promise<void> {
+  if (gsapLoaded) return Promise.resolve();
+  if (!gsapPromise) {
+    gsapPromise = (async () => {
+      try {
+        const gsapModule = await import('gsap');
+        const gsap = gsapModule.default;
+        const stModule = await import('gsap/ScrollTrigger');
+        const ScrollTrigger = stModule.ScrollTrigger;
+        gsap.registerPlugin(ScrollTrigger);
+        (window as any).__GSAP = gsap;
+        (window as any).__GSAP_ST = ScrollTrigger;
+        gsapLoaded = true;
+      } catch {
+        console.warn('[GSAP] failed to load – scroll animations disabled');
+      }
+    })();
+  }
+  return gsapPromise;
+}
+
+function getGsap() {
+  return (window as any).__GSAP as any;
+}
+
+function getSt() {
+  return (window as any).__GSAP_ST as any;
+}
+
+function useGsapReady() {
+  const [ready, setReady] = useState(gsapLoaded);
   useEffect(() => {
+    if (gsapLoaded) { setReady(true); return; }
+    ensureGsap().then(() => setReady(true));
+  }, []);
+  return ready;
+}
+
+export function useGsapTextReveal(ref: { current: HTMLElement | null }, options?: { stagger?: number }) {
+  const ready = useGsapReady();
+  useEffect(() => {
+    if (!ready) return;
+    const gsap = getGsap();
+    const ScrollTrigger = getSt();
+    if (!gsap || !ScrollTrigger) return;
     const el = ref.current;
     if (!el) return;
     const words = el.querySelectorAll('.reveal-word');
@@ -29,17 +71,22 @@ export function useGsapTextReveal(ref: { current: HTMLElement | null }, options?
       );
     }, el);
     return () => ctx.revert();
-  }, [ref, options?.stagger, options?.delay]);
+  }, [ref, options?.stagger, ready]);
 }
 
 export function useGsapImageScale(ref: { current: HTMLElement | null }) {
+  const ready = useGsapReady();
   useEffect(() => {
+    if (!ready) return;
+    const gsap = getGsap();
+    const ScrollTrigger = getSt();
+    if (!gsap || !ScrollTrigger) return;
     const el = ref.current;
     if (!el) return;
     const images = el.querySelectorAll('.scale-image');
     if (!images.length) return;
     const ctx = gsap.context(() => {
-      images.forEach((img) => {
+      images.forEach((img: Element) => {
         gsap.fromTo(img,
           { scale: 0.8, opacity: 0.4 },
           {
@@ -66,59 +113,16 @@ export function useGsapImageScale(ref: { current: HTMLElement | null }) {
       });
     }, el);
     return () => ctx.revert();
-  }, [ref]);
-}
-
-export function useGsapPinSidebar(ref: { current: HTMLElement | null }, galleryRef: { current: HTMLElement | null }) {
-  useEffect(() => {
-    const el = ref.current;
-    const gallery = galleryRef?.current;
-    if (!el || !gallery) return;
-    const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: el.parentElement,
-        start: 'top 10%',
-        end: () => `+=${gallery.scrollHeight - window.innerHeight + 200}`,
-        pin: el,
-        pinSpacing: true,
-        anticipatePin: 1,
-      });
-    }, el);
-    return () => ctx.revert();
-  }, [ref, galleryRef]);
-}
-
-export function useGsapCardStack(ref: { current: HTMLElement | null }) {
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const cards = el.querySelectorAll('.stack-card');
-    if (!cards.length) return;
-    const ctx = gsap.context(() => {
-      cards.forEach((card, i) => {
-        if (i === 0) return;
-        gsap.fromTo(card,
-          { y: 120, scale: 0.92, opacity: 0.6 },
-          {
-            y: 0,
-            scale: 1,
-            opacity: 1,
-            scrollTrigger: {
-              trigger: card,
-              start: 'top 90%',
-              end: 'top 40%',
-              scrub: 1.2,
-            },
-          }
-        );
-      });
-    }, el);
-    return () => ctx.revert();
-  }, [ref]);
+  }, [ref, ready]);
 }
 
 export function useGsapScrollFade(ref: { current: HTMLElement | null }) {
+  const ready = useGsapReady();
   useEffect(() => {
+    if (!ready) return;
+    const gsap = getGsap();
+    const ScrollTrigger = getSt();
+    if (!gsap || !ScrollTrigger) return;
     const el = ref.current;
     if (!el) return;
     const ctx = gsap.context(() => {
@@ -137,5 +141,5 @@ export function useGsapScrollFade(ref: { current: HTMLElement | null }) {
       );
     }, el);
     return () => ctx.revert();
-  }, [ref]);
+  }, [ref, ready]);
 }
