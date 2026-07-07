@@ -131,7 +131,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
         <div className="mt-3 flex items-center gap-1.5 pl-[3.4rem]">
           <Layers size={12} className="text-slate-500" />
           <span className="text-[11px] text-slate-500">{t("dashboard.accumulated_balance_label")}</span>
-          <span className={`text-xs font-bold ${isPositive ? "text-slate-300 light_sakura:text-slate-700" : "text-red-400"}`}>
+          <span className={`text-xs font-bold whitespace-nowrap tabular-nums ${isPositive ? "text-slate-300 light_sakura:text-slate-700" : "text-red-400"}`}>
             {formatIDR(netWorth)}
           </span>
           <InfoTooltip text={t("dashboard.net_worth_tooltip")} align="left" />
@@ -192,7 +192,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                       </div>
                       <div className="min-w-0">
                         <p className="text-[10px] text-slate-500 uppercase font-semibold">{t("dashboard.total_savings_label")}</p>
-                        <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 truncate">{formatIDR(savedAmount)}</p>
+                        <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(savedAmount)}</p>
                       </div>
                     </div>
                   )}
@@ -206,7 +206,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                           {t("dashboard.total_gold_label")}
                           <InfoTooltip text={t("dashboard.total_gold_tooltip")} align="right" />
                         </p>
-                        <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 truncate">{formatIDR(goldMarketValue)}</p>
+                        <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(goldMarketValue)}</p>
                         <p className={`text-[9.5px] font-semibold ${goldGainLoss >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                           {goldGainLoss >= 0 ? "▲" : "▼"} {formatIDR(Math.abs(goldGainLoss))}
                         </p>
@@ -219,7 +219,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                     </div>
                     <div className="min-w-0">
                       <p className="text-[10px] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_income_label")}</p>
-                      <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 truncate">{formatIDR(data.income_total)}</p>
+                      <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(data.income_total)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2.5 rounded-2xl border border-slate-800/60 bg-slate-950/20 px-3.5 py-2.5 light_sakura:bg-slate-50 light_sakura:border-slate-200">
@@ -228,7 +228,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                     </div>
                     <div className="min-w-0">
                       <p className="text-[10px] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_expense_label")}</p>
-                      <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 truncate">{formatIDR(data.expense_total)}</p>
+                      <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(data.expense_total)}</p>
                     </div>
                   </div>
                 </div>

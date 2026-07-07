@@ -116,7 +116,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
                 <div className="text-right">
                   <div className={`font-mono font-bold text-sm flex items-center gap-1 justify-end ${isExpense ? "text-red-400 light_sakura:text-red-600" : "text-emerald-400 light_sakura:text-emerald-600"}`}>
                     <span>{isExpense ? "-" : "+"}</span>
-                    <span>{formatIDR(tx.amount)}</span>
+                    <span className="whitespace-nowrap tabular-nums">{formatIDR(tx.amount)}</span>
                   </div>
                   <div className="text-[9px] text-slate-500 light_sakura:text-slate-400 font-sans mt-0.5">
                     {isExpense ? t("transaction.expense") : t("transaction.income")}

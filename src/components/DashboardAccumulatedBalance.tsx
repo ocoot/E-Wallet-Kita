@@ -126,7 +126,7 @@ export const DashboardAccumulatedBalance: React.FC<DashboardAccumulatedBalancePr
                 {t("dashboard.available_balance_label")}
                 <InfoTooltip text={t("dashboard.available_balance_tooltip")} align="left" />
               </p>
-              <p className="text-sm font-bold text-slate-100 light_sakura:text-slate-800 truncate">{formatIDR(availableBalance)}</p>
+              <p className="text-sm font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(availableBalance)}</p>
             </div>
           </div>
           <div className="flex-1 flex items-center gap-2.5 rounded-2xl border border-emerald-500/15 bg-emerald-500/5 px-4 py-2.5 light_sakura:bg-emerald-50/40 light_sakura:border-emerald-100">
@@ -135,7 +135,7 @@ export const DashboardAccumulatedBalance: React.FC<DashboardAccumulatedBalancePr
             </div>
             <div className="min-w-0">
               <p className="text-[10px] text-slate-500 uppercase font-semibold">{t("dashboard.total_savings_label")}</p>
-              <p className="text-sm font-bold text-slate-100 light_sakura:text-slate-800 truncate">{formatIDR(savings!.total_saved)}</p>
+              <p className="text-sm font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(savings!.total_saved)}</p>
             </div>
           </div>
         </div>
