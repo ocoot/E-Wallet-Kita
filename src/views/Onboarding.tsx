@@ -331,7 +331,7 @@ export const Onboarding: React.FC = () => {
                       <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
                         {t("onboarding.history_practice_title")}
                       </h3>
-                      <p className="text-[10px] sm:text-xs text-slate-500 light_sakura:text-slate-600">
+                      <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs text-slate-500 light_sakura:text-slate-600">
                         {t("onboarding.history_practice_desc")}
                       </p>
                     </div>
@@ -391,7 +391,7 @@ export const Onboarding: React.FC = () => {
 
                   {/* Simulated ledger rows */}
                   <div className="border border-slate-800/80 rounded-xl overflow-hidden light_sakura:border-rose-100">
-                    <div className="grid grid-cols-4 gap-2 px-3 py-2 bg-slate-900/80 text-[10px] font-bold text-slate-400 uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:text-slate-600">
+                    <div className="grid grid-cols-4 gap-2 px-3 py-2 bg-slate-900/80 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:text-slate-600">
                       <span>{t("history.col_date")}</span>
                       <span className="col-span-2">{t("history.search_label")}</span>
                       <span className="text-right">{t("history.col_amount")}</span>
@@ -404,10 +404,10 @@ export const Onboarding: React.FC = () => {
                             key={tx.id}
                             className="grid grid-cols-4 gap-2 px-3 py-2.5 items-center text-xs text-slate-300 light_sakura:text-slate-800"
                           >
-                            <span className="text-slate-500 font-mono text-[10px]">{tx.date}</span>
+                            <span className="text-slate-500 font-mono text-[clamp(0.5625rem,2.6vw,0.625rem)]">{tx.date}</span>
                             <div className="col-span-2 flex flex-col min-w-0">
                               <span className="font-semibold truncate">{tx.note}</span>
-                              <span className="text-[10px] text-slate-500">
+                              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500">
                                 {t(`categories.${tx.category}`)}
                               </span>
                             </div>
@@ -480,7 +480,7 @@ export const Onboarding: React.FC = () => {
                           className="h-full bg-gradient-to-r from-orange-500 to-rose-500" 
                         />
                       </div>
-                      <div className="flex justify-between items-center mt-2 text-[10px] text-slate-500">
+                      <div className="flex justify-between items-center mt-2 text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500">
                         <span>Rp850.000</span>
                         <span>Limit: Rp1.000.000</span>
                       </div>
@@ -531,7 +531,7 @@ export const Onboarding: React.FC = () => {
 
                   <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-2">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 light_sakura:bg-rose-50 light_sakura:text-rose-600">
+                      <span className="px-2 py-0.5 rounded text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold bg-rose-500/20 text-rose-400 light_sakura:bg-rose-50 light_sakura:text-rose-600">
                         {t("bill_reminders.status_due_soon")}
                       </span>
                     </div>
@@ -542,13 +542,13 @@ export const Onboarding: React.FC = () => {
                       </div>
                       <div>
                         <h4 className="text-sm font-bold text-white light_sakura:text-slate-800">PLN Pasca Bayar</h4>
-                        <p className="text-[10px] text-slate-500">{t("bill_reminders.due_day_label", { day: 20 })}</p>
+                        <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500">{t("bill_reminders.due_day_label", { day: 20 })}</p>
                       </div>
                     </div>
 
                     <div className="flex items-end justify-between">
                       <div>
-                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">{t("bill_reminders.amount_label")}</p>
+                        <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase tracking-wider">{t("bill_reminders.amount_label")}</p>
                         <p className="text-sm font-mono font-bold text-white light_sakura:text-slate-800">Rp350.000</p>
                       </div>
                       <button 
@@ -557,7 +557,7 @@ export const Onboarding: React.FC = () => {
                           playSuccess();
                           showToast(t("bill_reminders.marked_paid"), "success");
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-[10px] font-bold transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                        className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
                       >
                         {t("bill_reminders.mark_paid")}
                       </button>

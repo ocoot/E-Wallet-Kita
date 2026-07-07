@@ -57,7 +57,7 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
     <div className="space-y-5">
       {groups.map(([date, txs]) => (
         <div key={date}>
-          <div className="text-[10.5px] font-bold uppercase tracking-widest text-slate-500 mb-2 px-1">
+          <div className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-bold uppercase tracking-widest text-slate-500 mb-2 px-1">
             {formatDateLabel(date)}
           </div>
           <div className="rounded-2xl border border-slate-800/80 bg-slate-950/40 overflow-hidden divide-y divide-slate-800/50 light_sakura:border-rose-100/50 light_sakura:bg-rose-50/10 light_sakura:divide-rose-100/40">
@@ -85,7 +85,7 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
                       <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">
                         {getCategoryLabel(tx.category)}
                       </p>
-                      <p className="text-[10.5px] text-slate-500 mt-0.5 truncate flex items-center gap-1">
+                      <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] text-slate-500 mt-0.5 truncate flex items-center gap-1">
                         {tx.source === "telegram" && (
                           <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-sm bg-[#0088cc]/20 text-[#0088cc] shrink-0">
                             <Send size={8} className="-translate-x-0.5 translate-y-0.5 rotate-45" />

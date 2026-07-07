@@ -273,7 +273,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                 <img src={tx.qris_url} alt="QRIS" className="w-48 h-48" />
               </div>
               <p className="text-2xl font-bold text-white mt-4">Rp {tx.total_amount.toLocaleString("id-ID")}</p>
-              <p className="text-[11px] text-amber-400 mt-1">{t("premium.unique_code_note")}</p>
+              <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-amber-400 mt-1">{t("premium.unique_code_note")}</p>
               <div className="flex items-center justify-center gap-2 mt-3 text-sm text-slate-400">
                 <Clock size={14} />
                 <span>{t("premium.expires_in", { time: `${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, "0")}` })}</span>
@@ -282,8 +282,8 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                 <Loader2 size={13} className="animate-spin" />
                 <span>{t("premium.waiting_payment")}</span>
               </div>
-              {isSandboxMode() && <p className="text-[10px] text-slate-500 mt-3">{t("premium.sandbox_notice")}</p>}
-              {!isSandboxMode() && tx.is_sandbox && <p className="text-[10px] text-slate-500 mt-3">{t("premium.dummy_qris_notice")}</p>}
+              {isSandboxMode() && <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-3">{t("premium.sandbox_notice")}</p>}
+              {!isSandboxMode() && tx.is_sandbox && <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-3">{t("premium.dummy_qris_notice")}</p>}
               
               <button
                 onClick={() => setShowCancelConfirm(true)}

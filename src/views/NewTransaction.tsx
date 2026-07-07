@@ -298,10 +298,10 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
               {/* Today mini-summary pill */}
               {todaySummary && (
                 <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/60 border border-slate-700/50 light_sakura:bg-slate-50 light_sakura:border-rose-100">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Hari ini</span>
-                  <span className="text-[11px] font-bold text-red-400">−{formatIDR(todaySummary.expense)}</span>
+                  <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-wider">Hari ini</span>
+                  <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-red-400">−{formatIDR(todaySummary.expense)}</span>
                   {todaySummary.income > 0 && (
-                    <span className="text-[11px] font-bold text-emerald-400">+{formatIDR(todaySummary.income)}</span>
+                    <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-emerald-400">+{formatIDR(todaySummary.income)}</span>
                   )}
                 </div>
               )}
@@ -347,7 +347,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
                 {/* 1 ── Type toggle ─────────────────────────────────────── */}
                 <div className="space-y-2">
-                  <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                  <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
                     {t("transaction.label_type")}
                   </label>
                   <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-slate-950/60 border border-slate-800/50 light_sakura:bg-rose-50/30 light_sakura:border-rose-100">
@@ -380,7 +380,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
                 {/* 2 ── Nominal big display ─────────────────────────────── */}
                 <div className="space-y-2">
-                  <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                  <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
                     {t("transaction.label_amount")}
                   </label>
                   <div className={`rounded-2xl border transition-colors duration-200 px-5 py-4 space-y-2 ${
@@ -429,7 +429,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
                 {/* 3 ── Category pills ──────────────────────────────────── */}
                 <div className="space-y-2">
-                  <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                  <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
                     {t("transaction.label_category")}
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -463,7 +463,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                 {/* 4 ── Date + Note ─────────────────────────────────────── */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                    <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
                       {t("transaction.label_date")}
                     </label>
                     <input
@@ -477,7 +477,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="font-sans text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                    <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
                       {t("transaction.label_note")}
                     </label>
                     <input

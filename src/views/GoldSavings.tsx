@@ -270,19 +270,19 @@ export const GoldSavings: React.FC = () => {
             >
               <div className="relative z-[1] flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="font-sans font-bold text-[13px] text-amber-950 truncate">{p.name}</p>
-                  <p className="text-[8.5px] font-bold uppercase tracking-wide text-amber-900/70">{t(`gold.brand_${p.brand}`)}</p>
+                  <p className="font-sans font-bold text-[clamp(0.7313rem,3.38vw,0.8125rem)] text-amber-950 truncate">{p.name}</p>
+                  <p className="text-[clamp(0.4781rem,2.21vw,0.5312rem)] font-bold uppercase tracking-wide text-amber-900/70">{t(`gold.brand_${p.brand}`)}</p>
                 </div>
                 {p.is_archived && (
-                  <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-md text-[8px] font-bold bg-black/20 text-white">
+                  <span className="shrink-0 inline-flex items-center px-1.5 py-0.5 rounded-md text-[clamp(0.45rem,2.08vw,0.5rem)] font-bold bg-black/20 text-white">
                     {t("gold.archived_badge")}
                   </span>
                 )}
               </div>
 
               <div className="relative z-[1]">
-                <p className="font-black text-[22px] leading-none text-amber-950 tracking-tight">{formatGrams(p.grams_owned)}</p>
-                {p.notes && <p className="text-[9px] text-amber-900/70 italic truncate mt-1">{p.notes}</p>}
+                <p className="font-black text-[clamp(1.2375rem,5.72vw,1.375rem)] leading-none text-amber-950 tracking-tight">{formatGrams(p.grams_owned)}</p>
+                {p.notes && <p className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-amber-900/70 italic truncate mt-1">{p.notes}</p>}
               </div>
 
               <div className="relative z-[1] flex items-end justify-between gap-1.5">
@@ -290,13 +290,13 @@ export const GoldSavings: React.FC = () => {
                   <p className="text-[10px] font-bold text-amber-950 leading-tight whitespace-nowrap tabular-nums tracking-tight">
                     {marketValue != null ? formatIDR(marketValue) : t("gold.price_unavailable_short")}
                   </p>
-                  {isEstimated && <p className="text-[8px] text-amber-900/60 truncate">{t("gold.est_from_sell_price_note")}</p>}
+                  {isEstimated && <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-amber-900/60 truncate">{t("gold.est_from_sell_price_note")}</p>}
                   {p.cash_locked_amount === 0 && p.grams_owned > 0 && (
-                    <p className="text-[8px] text-amber-900/60 truncate">{t("gold.no_cost_basis_note")}</p>
+                    <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-amber-900/60 truncate">{t("gold.no_cost_basis_note")}</p>
                   )}
                 </div>
                 {gainLoss != null && p.grams_owned > 0 && p.cash_locked_amount > 0 && (
-                  <span className={`relative shrink-0 whitespace-nowrap inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9.5px] font-bold ${gainLoss >= 0 ? "bg-black/15 text-emerald-950" : "bg-black/25 text-red-950"}`}>
+                  <span className={`relative shrink-0 whitespace-nowrap inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[clamp(0.5344rem,2.47vw,0.5938rem)] font-bold ${gainLoss >= 0 ? "bg-black/15 text-emerald-950" : "bg-black/25 text-red-950"}`}>
                     {gainLoss >= 0 ? "▲" : "▼"} {formatIDR(Math.abs(gainLoss))}
                     <span onClick={(e) => e.stopPropagation()} className="text-black/50">
                       <InfoTooltip text={t("gold.unrealized_tooltip")} align="left" />
@@ -318,39 +318,39 @@ export const GoldSavings: React.FC = () => {
             >
               <div className="grid grid-cols-2 gap-1.5 h-full content-center">
                 <button onClick={(e) => { e.stopPropagation(); openMove(p, "buy"); }} disabled={busyId === p.id || p.is_archived} tabIndex={isFlipped ? 0 : -1}
-                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
+                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
                   <ArrowDownCircle size={12} /> {t("gold.buy_button")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); openMove(p, "sell"); }} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0 || !price?.buyback_price_per_gram} tabIndex={isFlipped ? 0 : -1}
                   title={!price?.buyback_price_per_gram ? t("gold.buyback_unavailable_hint") : undefined}
-                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
+                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
                   <ArrowUpCircle size={12} /> {t("gold.sell_button")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); openMove(p, "manual_add"); }} disabled={busyId === p.id || p.is_archived} tabIndex={isFlipped ? 0 : -1}
-                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-sky-500/15 text-sky-400 hover:bg-sky-500/25">
+                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-sky-500/15 text-sky-400 hover:bg-sky-500/25">
                   <PackagePlus size={12} /> {t("gold.manual_add_button_short")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); openMove(p, "manual_remove"); }} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0} tabIndex={isFlipped ? 0 : -1}
-                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-slate-700/40 text-slate-400 hover:bg-slate-700/60">
+                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-slate-700/40 text-slate-400 hover:bg-slate-700/60">
                   <PackageMinus size={12} /> {t("gold.manual_remove_button_short")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); audioFeedback.playClick(); openEditForm(p); }} tabIndex={isFlipped ? 0 : -1}
-                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer bg-slate-700/40 text-slate-300 hover:bg-slate-700/60 light_sakura:bg-slate-100 light_sakura:text-slate-600">
+                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer bg-slate-700/40 text-slate-300 hover:bg-slate-700/60 light_sakura:bg-slate-100 light_sakura:text-slate-600">
                   <Edit2 size={12} /> {t("common.edit")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); toggleArchive(p); }} disabled={busyId === p.id} tabIndex={isFlipped ? 0 : -1}
-                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20">
+                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20">
                   {p.is_archived ? <ArchiveRestore size={12} /> : <Archive size={12} />} {t(p.is_archived ? "gold.unarchive_button" : "gold.archive_button")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); audioFeedback.playClick(); setDeleteTarget(p); }} tabIndex={isFlipped ? 0 : -1}
-                  className="col-span-2 flex items-center justify-center gap-1 py-2 rounded-xl text-[10.5px] font-semibold transition-colors cursor-pointer bg-red-500/10 text-red-500 hover:bg-red-500/20 light_sakura:bg-red-50 light_sakura:text-red-400">
+                  className="col-span-2 flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer bg-red-500/10 text-red-500 hover:bg-red-500/20 light_sakura:bg-red-50 light_sakura:text-red-400">
                   <Trash2 size={12} /> {t("common.delete")}
                 </button>
               </div>
             </div>
           </div>
         </div>
-        <p className="text-center text-[9px] text-slate-500 mt-1.5 select-none">
+        <p className="text-center text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-500 mt-1.5 select-none">
           {t(isFlipped ? "gold.card_tap_hint_front" : "gold.card_tap_hint_actions")}
         </p>
       </motion.div>
@@ -397,21 +397,21 @@ export const GoldSavings: React.FC = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="rounded-2xl bg-amber-500/8 border border-amber-500/15 px-3 py-3 light_sakura:bg-amber-50/60 light_sakura:border-amber-100">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_total_grams")}</span>
+              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_total_grams")}</span>
               <p className="font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight text-amber-400 light_sakura:text-amber-600">{formatGrams(summary.total_grams)}</p>
             </div>
             <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-3 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_market_value")}</span>
+              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_market_value")}</span>
               <p className="font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight text-indigo-400 light_sakura:text-indigo-600">{formatIDR(summary.total_market_value)}</p>
             </div>
             <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-3 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_cash_locked")}</span>
+              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_cash_locked")}</span>
               <p className="font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight text-slate-200 light_sakura:text-slate-700">{formatIDR(summary.total_cash_locked)}</p>
             </div>
             <div className={`rounded-2xl border px-3 py-3 ${summary.unrealized_gain_loss >= 0
               ? "bg-emerald-500/8 border-emerald-500/15 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100"
               : "bg-red-500/8 border-red-500/15 light_sakura:bg-red-50/60 light_sakura:border-red-100"}`}>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_gain_loss")}</span>
+              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_gain_loss")}</span>
               <p className={`font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight ${summary.unrealized_gain_loss >= 0 ? "text-emerald-400 light_sakura:text-emerald-600" : "text-red-400 light_sakura:text-red-500"}`}>
                 {summary.unrealized_gain_loss >= 0 ? "+" : ""}{formatIDR(summary.unrealized_gain_loss)}
               </p>
@@ -421,13 +421,13 @@ export const GoldSavings: React.FC = () => {
           {summary.stale_pocket_count > 0 && (
             <div className="flex items-start gap-2.5 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-4 py-3">
               <AlertTriangle size={14} className="text-amber-400 shrink-0 mt-0.5" />
-              <p className="text-[11px] leading-relaxed text-amber-300">{t("gold.stale_price_warning")}</p>
+              <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed text-amber-300">{t("gold.stale_price_warning")}</p>
             </div>
           )}
 
           <div className="flex items-start gap-2.5 rounded-2xl border border-indigo-500/15 bg-indigo-500/5 px-4 py-3 light_sakura:bg-indigo-50/40 light_sakura:border-indigo-100">
             <Info size={14} className="text-indigo-400 light_sakura:text-indigo-500 shrink-0 mt-0.5" />
-            <p className="text-[11px] leading-relaxed text-slate-400 light_sakura:text-slate-600">{t("gold.info_banner_text")}</p>
+            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed text-slate-400 light_sakura:text-slate-600">{t("gold.info_banner_text")}</p>
           </div>
 
           {/* Ticker harga pasar -- auto-scroll (Konsep D), berhenti sebentar
@@ -435,7 +435,7 @@ export const GoldSavings: React.FC = () => {
               Konten di-duplikasi 2x supaya loop-nya mulus (lihat .gold-marquee-track). */}
           {prices.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[10.5px] font-semibold text-slate-500 light_sakura:text-slate-500 px-1">
+              <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold text-slate-500 light_sakura:text-slate-500 px-1">
                 {t(priceDatesMismatch ? "gold.prices_updated_mismatch" : "gold.prices_updated_as_of", {
                   date: formatPriceDateLong(latestPriceDate as string, locale),
                 })}
@@ -450,12 +450,12 @@ export const GoldSavings: React.FC = () => {
                         title={isStaleVsOthers ? t("gold.price_stale_brand_hint") : undefined}
                         className={`shrink-0 px-4 py-0.5 border-r border-slate-800/60 light_sakura:border-slate-200 ${isStaleVsOthers ? "bg-amber-500/5" : ""}`}
                       >
-                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap">{t(`gold.brand_${pr.brand}`)}</p>
-                        <p className="text-[11px] font-bold text-amber-400 light_sakura:text-amber-600 flex items-center gap-1 whitespace-nowrap">
+                        <p className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap">{t(`gold.brand_${pr.brand}`)}</p>
+                        <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-amber-400 light_sakura:text-amber-600 flex items-center gap-1 whitespace-nowrap">
                           {formatIDR(pr.sell_price_per_gram)}
                           {renderPriceDelta(pr.sell_price_per_gram, pr.prev_sell_price_per_gram, t)}
                         </p>
-                        <p className="text-[9px] text-slate-500 flex items-center gap-1 whitespace-nowrap">
+                        <p className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-500 flex items-center gap-1 whitespace-nowrap">
                           {t("gold.buyback_short")} {formatIDR(pr.buyback_price_per_gram)}
                           {renderPriceDelta(pr.buyback_price_per_gram, pr.prev_buyback_price_per_gram, t)}
                           {isStaleVsOthers && <AlertTriangle size={8} className="shrink-0 text-amber-400 ml-0.5" />}
@@ -499,20 +499,20 @@ export const GoldSavings: React.FC = () => {
                   {editTarget ? t("gold.edit_title") : t("gold.add_title")}
                 </h2>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_name")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_name")}</label>
                   <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={t("gold.form_name_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-amber-500 placeholder:text-slate-500 transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_brand")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_brand")}</label>
                   <select value={form.brand} disabled={!!editTarget} onChange={e => setForm(f => ({ ...f, brand: e.target.value as GoldBrand }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-amber-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                     {formBrandOptions.map(b => <option key={b} value={b}>{t(`gold.brand_${b}`)}</option>)}
                   </select>
-                  <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">
+                  <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5 leading-relaxed">
                     {editTarget ? t("gold.form_brand_locked_hint") : t("gold.form_brand_hint")}
                   </p>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_notes")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_notes")}</label>
                   <input type="text" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder={t("gold.form_notes_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-amber-500 placeholder:text-slate-500 transition-colors" />
                 </div>
                 <div className="flex gap-3 pt-1">
@@ -542,16 +542,16 @@ export const GoldSavings: React.FC = () => {
                   <p className="text-xs text-slate-400 mt-1">{t(copy.desc)}</p>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
                     {isGramInput ? t("gold.form_grams") : t("gold.form_idr_amount")}
                   </label>
                   <input type="number" value={moveValue} onChange={e => setMoveValue(e.target.value)} placeholder={isGramInput ? t("gold.form_grams_placeholder") : t("gold.form_idr_amount_placeholder")} min={0} step={isGramInput ? "0.0001" : "1000"} autoFocus className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-amber-500 placeholder:text-slate-500 transition-colors" />
                   {(moveTarget.direction === "sell" || moveTarget.direction === "manual_remove") && (
-                    <p className="text-[11px] text-slate-500 mt-1.5">{t("gold.owned_grams_hint", { amount: formatGrams(moveTarget.pocket.grams_owned) })}</p>
+                    <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5">{t("gold.owned_grams_hint", { amount: formatGrams(moveTarget.pocket.grams_owned) })}</p>
                   )}
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_entry_note")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_entry_note")}</label>
                   <input type="text" value={moveNote} onChange={e => setMoveNote(e.target.value)} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-amber-500 transition-colors" />
                 </div>
                 <div className="flex gap-3 pt-1">

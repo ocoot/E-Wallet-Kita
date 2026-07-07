@@ -273,7 +273,7 @@ export const AdminMaintenance: React.FC = () => {
                     {getFeatureLabel(feature.feature_key)}
                   </p>
                   <p className="text-xs text-slate-400 light_sakura:text-slate-500 mt-0.5">
-                    <code className="text-slate-500 light_sakura:text-slate-400 text-[10px]">
+                    <code className="text-slate-500 light_sakura:text-slate-400 text-[clamp(0.5625rem,2.6vw,0.625rem)]">
                       {feature.feature_key}
                     </code>
                   </p>

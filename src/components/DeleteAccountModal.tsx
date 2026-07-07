@@ -89,7 +89,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
               <li>{t("settings.privacy_delete_point_3")}</li>
             </ul>
 
-            <label className="block text-[10px] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider mb-1.5">
+            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider mb-1.5">
               {t("settings.privacy_delete_type_prompt")} <span className="text-red-400">{confirmPhrase}</span>
             </label>
             <input

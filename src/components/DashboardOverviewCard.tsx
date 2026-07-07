@@ -117,7 +117,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
             <Wallet size={20} />
           </div>
           <div className="min-w-0">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500 flex items-center gap-1.5">
+            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500 flex items-center gap-1.5">
               {t("dashboard.available_balance_label")}
               <InfoTooltip text={t("dashboard.available_balance_tooltip")} align="left" />
             </p>
@@ -130,7 +130,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
         {/* Total Kekayaan -- sekunder */}
         <div className="mt-3 flex items-center gap-1.5 pl-[3.4rem]">
           <Layers size={12} className="text-slate-500" />
-          <span className="text-[11px] text-slate-500">{t("dashboard.accumulated_balance_label")}</span>
+          <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500">{t("dashboard.accumulated_balance_label")}</span>
           <span className={`text-xs font-bold whitespace-nowrap tabular-nums ${isPositive ? "text-slate-300 light_sakura:text-slate-700" : "text-red-400"}`}>
             {formatIDR(netWorth)}
           </span>
@@ -141,7 +141,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
       {/* Strip Bulan Ini */}
       <div className="px-5 sm:px-6 pb-4">
         <div className="rounded-2xl border border-slate-800/60 bg-slate-950/30 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30 px-4 py-3 flex items-center justify-between gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 shrink-0">
+          <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 shrink-0">
             {t("dashboard.this_month")}
           </span>
           <div className="flex items-center gap-4 overflow-x-auto">
@@ -154,7 +154,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
               <span className="text-xs font-bold text-red-400 whitespace-nowrap">{formatIDR(monthlySummary.expense)}</span>
             </div>
             <div className="flex items-center gap-1.5 pl-3 border-l border-slate-800 light_sakura:border-rose-100">
-              <span className="text-[10px] text-slate-500 shrink-0">{t("dashboard.balance")}</span>
+              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 shrink-0">{t("dashboard.balance")}</span>
               <span className={`text-xs font-bold whitespace-nowrap ${monthlySummary.balance >= 0 ? "text-teal-400 light_sakura:text-rose-500" : "text-red-400"}`}>
                 {formatIDR(monthlySummary.balance)}
               </span>
@@ -170,7 +170,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
             onClick={() => { audioFeedback.playClick(); setShowDetails(v => !v); }}
             className="w-full flex items-center justify-between py-2 cursor-pointer group"
           >
-            <span className="text-[11px] font-bold text-slate-400 group-hover:text-slate-300 light_sakura:text-slate-500 light_sakura:group-hover:text-slate-700 transition-colors">
+            <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-slate-400 group-hover:text-slate-300 light_sakura:text-slate-500 light_sakura:group-hover:text-slate-700 transition-colors">
               {t("dashboard.asset_breakdown_label")}
             </span>
             <ChevronDown size={14} className={`text-slate-500 transition-transform ${showDetails ? "rotate-180" : ""}`} />
@@ -191,7 +191,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                         <Vault size={13} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[10px] text-slate-500 uppercase font-semibold">{t("dashboard.total_savings_label")}</p>
+                        <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold">{t("dashboard.total_savings_label")}</p>
                         <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(savedAmount)}</p>
                       </div>
                     </div>
@@ -202,12 +202,12 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                         <Coins size={13} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1">
+                        <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold flex items-center gap-1">
                           {t("dashboard.total_gold_label")}
                           <InfoTooltip text={t("dashboard.total_gold_tooltip")} align="right" />
                         </p>
                         <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(goldMarketValue)}</p>
-                        <p className={`text-[9.5px] font-semibold ${goldGainLoss >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                        <p className={`text-[clamp(0.5344rem,2.47vw,0.5938rem)] font-semibold ${goldGainLoss >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                           {goldGainLoss >= 0 ? "▲" : "▼"} {formatIDR(Math.abs(goldGainLoss))}
                         </p>
                       </div>
@@ -218,7 +218,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                       <TrendingUp size={13} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_income_label")}</p>
+                      <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_income_label")}</p>
                       <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(data.income_total)}</p>
                     </div>
                   </div>
@@ -227,13 +227,13 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                       <TrendingDown size={13} />
                     </div>
                     <div className="min-w-0">
-                      <p className="text-[10px] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_expense_label")}</p>
+                      <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_expense_label")}</p>
                       <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(data.expense_total)}</p>
                     </div>
                   </div>
                 </div>
                 {gold && gold.stale_pocket_count > 0 && (
-                  <p className="text-[10.5px] text-amber-400/90 pb-2 leading-relaxed">{t("dashboard.gold_stale_note")}</p>
+                  <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] text-amber-400/90 pb-2 leading-relaxed">{t("dashboard.gold_stale_note")}</p>
                 )}
               </motion.div>
             )}
@@ -241,7 +241,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
         </div>
       )}
 
-      <p className="px-5 sm:px-6 pb-4 -mt-1 text-[11px] text-slate-500 leading-relaxed">
+      <p className="px-5 sm:px-6 pb-4 -mt-1 text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 leading-relaxed">
         {hasAssets ? t("dashboard.savings_breakdown_hint") : t("dashboard.accumulated_balance_hint")}
       </p>
     </motion.div>

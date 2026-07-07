@@ -165,7 +165,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Merchant Name */}
             <div className="space-y-1">
-              <label className="text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
                 <Store size={10} />
                 <span>{t("transaction.merchant_label")}</span>
               </label>
@@ -179,7 +179,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
 
             {/* Date */}
             <div className="space-y-1">
-              <label className="text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
                 <Calendar size={10} />
                 <span>{t("transaction.date_label")}</span>
               </label>
@@ -195,7 +195,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {/* Category selection */}
             <div className="space-y-1">
-              <label className="text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
                 <Tag size={10} />
                 <span>{t("transaction.category_label")}</span>
               </label>
@@ -214,7 +214,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
 
             {/* Dynamic Total Amount */}
             <div className="space-y-1">
-              <label className="text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
                 <CreditCard size={10} />
                 <span>{t("transaction.amount_label")}</span>
               </label>
@@ -229,7 +229,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
 
           {/* Custom Note description */}
           <div className="space-y-1">
-            <label className="text-[10px] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
+            <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase tracking-widest flex items-center gap-1.5 font-bold">
               <span>{t("transaction.note_label")}</span>
             </label>
             <input
@@ -246,7 +246,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
         <div className="border-t border-dashed border-slate-800 my-4 light_sakura:border-rose-200/70" />
 
         {/* Item Roster heading */}
-        <div className="flex items-center justify-between text-slate-400 light_sakura:text-slate-500 text-[10px] uppercase font-bold tracking-wider mb-2">
+        <div className="flex items-center justify-between text-slate-400 light_sakura:text-slate-500 text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-bold tracking-wider mb-2">
           <span>{t("transaction.items_heading")}</span>
           <button
             onClick={() => {
@@ -263,7 +263,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
         {/* Items List */}
         <div className="space-y-2 max-h-[220px] overflow-y-auto pr-1">
           {items.length === 0 ? (
-            <p className="text-slate-500 italic text-[11px] text-center py-2">
+            <p className="text-slate-500 italic text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-center py-2">
               {t("transaction.no_items")}
             </p>
           ) : (
@@ -276,26 +276,26 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                       type="text"
                       value={item.name}
                       onChange={(e) => handleUpdateItem(idx, "name", e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-white outline-none light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 text-[11px]"
+                      className="w-full bg-slate-950 border border-slate-800 rounded px-2 py-1 text-white outline-none light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 text-[clamp(0.6188rem,2.86vw,0.6875rem)]"
                     />
                     {/* Item Math details */}
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1 w-2/5">
-                        <span className="text-[10px] text-slate-500">Qty:</span>
+                        <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500">Qty:</span>
                         <input
                           type="number"
                           value={item.qty}
                           onChange={(e) => handleUpdateItem(idx, "qty", parseInt(e.target.value) || 1)}
-                          className="w-full bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-white outline-none text-center text-[11px] light_sakura:bg-slate-50"
+                          className="w-full bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-white outline-none text-center text-[clamp(0.6188rem,2.86vw,0.6875rem)] light_sakura:bg-slate-50"
                         />
                       </div>
                       <div className="flex items-center gap-1 w-3/5">
-                        <span className="text-[10px] text-slate-500">Price:</span>
+                        <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500">Price:</span>
                         <input
                           type="number"
                           value={item.unit_price}
                           onChange={(e) => handleUpdateItem(idx, "unit_price", parseInt(e.target.value) || 0)}
-                          className="w-full bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-white outline-none text-right text-[11px] light_sakura:bg-slate-50"
+                          className="w-full bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-white outline-none text-right text-[clamp(0.6188rem,2.86vw,0.6875rem)] light_sakura:bg-slate-50"
                         />
                       </div>
                       <button
@@ -308,12 +308,12 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                     </div>
                   </div>
                 ) : (
-                  <div className="flex items-start justify-between text-[11px]">
+                  <div className="flex items-start justify-between text-[clamp(0.6188rem,2.86vw,0.6875rem)]">
                     <div className="space-y-0.5 max-w-[70%]">
                       <p className="text-slate-200 light_sakura:text-slate-800 font-bold truncate">
                         {item.name}
                       </p>
-                      <p className="text-slate-500 light_sakura:text-slate-400 text-[10px]">
+                      <p className="text-slate-500 light_sakura:text-slate-400 text-[clamp(0.5625rem,2.6vw,0.625rem)]">
                         {item.qty} pcs x {formatIDR(item.unit_price)}
                       </p>
                     </div>

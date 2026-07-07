@@ -267,7 +267,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
           <p className="font-sans text-xs font-bold text-amber-300">
             {t("maintenance.feature_locked_title")}
           </p>
-          <p className="font-sans text-[11px] text-amber-300/70 max-w-sm px-4 leading-relaxed mt-1">
+          <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-amber-300/70 max-w-sm px-4 leading-relaxed mt-1">
             {t("maintenance.feature_locked_desc")}
           </p>
         </div>
@@ -313,7 +313,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
                 <p className="font-sans text-xs font-bold text-white light_sakura:text-slate-800">
                   {t("dashboard.ocr_loading")}
                 </p>
-                <p className="font-sans text-[11px] text-slate-400 max-w-sm px-4 leading-relaxed">
+                <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 max-w-sm px-4 leading-relaxed">
                   {t("dashboard.ocr_processing")}
                 </p>
               </div>
@@ -339,7 +339,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
                   {isOcrLocked && <Lock size={12} className="text-amber-400 light_sakura:text-rose-500" />}
                   <span>{t("dashboard.ocr_drag_drop")}</span>
                 </p>
-                <p className="font-sans text-[11px] text-slate-500 light_sakura:text-slate-400">
+                <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 light_sakura:text-slate-400">
                   {isOcrLocked
                     ? (locale === "id" ? "Fitur khusus Pengguna Premium" : "Exclusive Premium Feature")
                     : t("dashboard.ocr_supported")
@@ -363,7 +363,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
             <p className="font-sans text-xs font-bold">
               {"id" === "id" ? "Gagal Membaca Struk" : "Receipt Parsing Failed"}
             </p>
-            <p className="font-sans text-[11px] leading-relaxed text-red-300/85">
+            <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed text-red-300/85">
               {uploadError}
             </p>
           </div>

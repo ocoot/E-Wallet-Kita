@@ -77,7 +77,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
 
             <div className="grid grid-cols-2 gap-3 mb-2">
               <div className="space-y-1.5">
-                <label className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
+                <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
                   {t("export.from_month")}
                 </label>
                 <select
@@ -94,7 +94,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
+                <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
                   {t("export.to_month")}
                 </label>
                 <select

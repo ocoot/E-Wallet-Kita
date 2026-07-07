@@ -80,7 +80,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
+              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
                 {t("transaction.label_category")}
               </label>
               <select
@@ -97,7 +97,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
+              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
                 {t("transaction.label_date")}
               </label>
               <input
@@ -110,7 +110,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
+              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
                 {t("transaction.label_amount")}
               </label>
               <input

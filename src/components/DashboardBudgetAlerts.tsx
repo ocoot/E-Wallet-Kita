@@ -50,7 +50,7 @@ export const DashboardBudgetAlerts: React.FC = () => {
             audioFeedback.playClick();
             navigate("/budget");
           }}
-          className="flex items-center gap-1 text-[11px] font-semibold text-amber-400 hover:text-amber-300 light_sakura:text-amber-600 cursor-pointer"
+          className="flex items-center gap-1 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold text-amber-400 hover:text-amber-300 light_sakura:text-amber-600 cursor-pointer"
         >
           {t("budget.dashboard_alert_cta")}
           <ChevronRight size={12} />

@@ -45,7 +45,7 @@ export const DashboardBudgetSummary: React.FC = () => {
             <h3 className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900">
               {t("budget.page_title")}
             </h3>
-            <p className="text-[10px] text-slate-500 light_sakura:text-slate-500 uppercase tracking-widest font-bold">
+            <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 light_sakura:text-slate-500 uppercase tracking-widest font-bold">
               {t("budget.summary_subtitle", "Monthly Spending Limits")}
             </p>
           </div>
@@ -74,7 +74,7 @@ export const DashboardBudgetSummary: React.FC = () => {
                   <span className={`font-bold tabular-nums ${isDanger ? 'text-red-400' : isWarning ? 'text-amber-400' : 'text-emerald-400'}`}>
                     {Math.round(b.percent)}%
                   </span>
-                  <span className="text-slate-500 text-[10px]">{formatIDR(b.spent)} / {formatIDR(b.monthly_limit)}</span>
+                  <span className="text-slate-500 text-[clamp(0.5625rem,2.6vw,0.625rem)]">{formatIDR(b.spent)} / {formatIDR(b.monthly_limit)}</span>
                 </div>
               </div>
               <div className="h-1.5 w-full bg-slate-800/50 rounded-full overflow-hidden light_sakura:bg-rose-100/40">
@@ -99,7 +99,7 @@ export const DashboardBudgetSummary: React.FC = () => {
       <div className="mt-6 pt-5 border-t border-slate-800/50 light_sakura:border-rose-100/30">
         <button
           onClick={() => navigate("/budget")}
-          className="w-full flex items-center justify-center gap-2 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 light_sakura:text-rose-500 light_sakura:hover:text-rose-600 transition-colors cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-indigo-400 hover:text-indigo-300 light_sakura:text-rose-500 light_sakura:hover:text-rose-600 transition-colors cursor-pointer"
         >
           <TrendingUp size={14} />
           {t("budget.view_all_budgets", "Manage All Budgets")}

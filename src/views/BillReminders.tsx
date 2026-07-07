@@ -201,17 +201,17 @@ export const BillReminders: React.FC = () => {
               <div className="shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl bg-red-500/8 border border-red-500/15 light_sakura:bg-red-50/60 light_sakura:border-red-100">
                 <AlertCircle size={13} className="text-red-400" />
                 <span className="font-bold text-lg text-red-400 light_sakura:text-red-600 leading-none">{overdueCount}</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 leading-none">Terlambat</span>
+                <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 leading-none">Terlambat</span>
               </div>
               <div className="shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl bg-amber-500/8 border border-amber-500/15 light_sakura:bg-amber-50/60 light_sakura:border-amber-100">
                 <AlertTriangle size={13} className="text-amber-400" />
                 <span className="font-bold text-lg text-amber-400 light_sakura:text-amber-600 leading-none">{dueSoonCount}</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 leading-none">Segera</span>
+                <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 leading-none">Segera</span>
               </div>
               <div className="shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl bg-emerald-500/8 border border-emerald-500/15 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
                 <CheckCircle2 size={13} className="text-emerald-400" />
                 <span className="font-bold text-lg text-emerald-400 light_sakura:text-emerald-600 leading-none">{paidCount}</span>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 leading-none">Lunas</span>
+                <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 leading-none">Lunas</span>
               </div>
             </div>
           )}
@@ -219,11 +219,11 @@ export const BillReminders: React.FC = () => {
           {/* Telegram reminder hour */}
           {isTelegramLinked ? (
             <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30 space-y-3">
-              <h4 className="font-sans font-bold text-[10px] text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+              <h4 className="font-sans font-bold text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                 <Send size={12} className="text-indigo-400 -translate-x-0.5 rotate-45" />
                 {t("settings.reminder_hour_title")}
               </h4>
-              <p className="text-[11px] text-slate-400 light_sakura:text-slate-600">{t("settings.reminder_hour_desc")}</p>
+              <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 light_sakura:text-slate-600">{t("settings.reminder_hour_desc")}</p>
               <div className="flex flex-wrap gap-2">
                 {REMINDER_HOUR_OPTIONS.map(hour => (
                   <motion.button key={hour} whileTap={{ scale: 0.95 }} type="button" disabled={isSavingReminderHour}
@@ -237,7 +237,7 @@ export const BillReminders: React.FC = () => {
           ) : (
             <div className="flex items-start gap-2.5 p-4 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30">
               <Info size={14} className="text-indigo-400 shrink-0 mt-0.5" />
-              <p className="text-[11px] text-slate-400 light_sakura:text-slate-600">{t("bill_reminders.connect_telegram_hint")}</p>
+              <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 light_sakura:text-slate-600">{t("bill_reminders.connect_telegram_hint")}</p>
             </div>
           )}
 
@@ -266,7 +266,7 @@ export const BillReminders: React.FC = () => {
                     return (
                       <React.Fragment key={r.id}>
                         {groupLabel && (
-                          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-5 first:mt-0">{groupLabel}</div>
+                          <div className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-5 first:mt-0">{groupLabel}</div>
                         )}
                         <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }}
                           className="relative mb-3">
@@ -278,19 +278,19 @@ export const BillReminders: React.FC = () => {
                               <div className="flex items-start justify-between gap-2">
                                 <div className="min-w-0">
                                   <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{r.name}</p>
-                                  <p className="text-[11px] text-slate-500 mt-0.5">{getCategoryLabel(r.category_key)} · {recurrenceLabel(r.recurrence_type)} · {dueDateLabel(r)}</p>
+                                  <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">{getCategoryLabel(r.category_key)} · {recurrenceLabel(r.recurrence_type)} · {dueDateLabel(r)}</p>
                                 </div>
                                 <span className="font-mono font-bold text-sm text-slate-200 light_sakura:text-slate-700 shrink-0">{formatIDR(r.amount)}</span>
                               </div>
 
                               {/* Status + days left */}
                               <div className="flex items-center justify-between">
-                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0 ${cfg.badge}`}>{cfg.icon}{cfg.label}</span>
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold shrink-0 ${cfg.badge}`}>{cfg.icon}{cfg.label}</span>
                                 {!r.is_paid && r.urgency !== "overdue" && (
-                                  <span className="text-[11px] text-slate-400 light_sakura:text-slate-500">{t("bill_reminders.days_left", { days: r.daysUntilDue })}</span>
+                                  <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 light_sakura:text-slate-500">{t("bill_reminders.days_left", { days: r.daysUntilDue })}</span>
                                 )}
                               </div>
-                              {r.notes && <p className="text-[11px] text-slate-500 italic truncate">{r.notes}</p>}
+                              {r.notes && <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 italic truncate">{r.notes}</p>}
 
                               {/* Actions */}
                               <div className="flex items-center gap-2 pt-1">
@@ -328,24 +328,24 @@ export const BillReminders: React.FC = () => {
                 </h2>
                 {/* Name */}
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_name")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_name")}</label>
                   <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={t("bill_reminders.form_name_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 placeholder:text-slate-500 transition-colors" />
                 </div>
                 {/* Category */}
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_category")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_category")}</label>
                   <select value={form.category_key} onChange={e => setForm(f => ({ ...f, category_key: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer">
                     {expenseCategories.map(c => <option key={c.key} value={c.key}>{locale === "id" ? c.label_id || c.key : c.label_en || c.key}</option>)}
                   </select>
                 </div>
                 {/* Amount */}
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_amount")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_amount")}</label>
                   <input type="number" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder={t("bill_reminders.form_amount_placeholder")} min={0} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
                 </div>
                 {/* Recurrence */}
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_recurrence")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_recurrence")}</label>
                   <div className="flex gap-2">
                     {(["monthly", "yearly", "one_time"] as RecurrenceType[]).map(type => (
                       <button key={type} onClick={() => setForm(f => ({ ...f, recurrence_type: type }))} className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${form.recurrence_type === type ? "bg-emerald-500 text-white light_sakura:bg-rose-500" : "bg-slate-800 text-slate-400 hover:bg-slate-700 light_sakura:bg-slate-100 light_sakura:text-slate-600"}`}>
@@ -357,18 +357,18 @@ export const BillReminders: React.FC = () => {
                 {/* Due day/date */}
                 {form.recurrence_type === "monthly" ? (
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_due_day")}</label>
+                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_due_day")}</label>
                     <input type="number" value={form.due_day} onChange={e => setForm(f => ({ ...f, due_day: e.target.value }))} min={1} max={31} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_due_date")}</label>
+                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_due_date")}</label>
                     <input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
                   </div>
                 )}
                 {/* Notes */}
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_notes")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_notes")}</label>
                   <input type="text" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder={t("bill_reminders.form_notes_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
                 </div>
                 {/* Actions */}

@@ -337,7 +337,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
           <p className="font-sans text-xs font-bold text-amber-300">
             {t("maintenance.feature_locked_title")}
           </p>
-          <p className="font-sans text-[11px] text-amber-300/70 max-w-sm px-4 leading-relaxed mt-1">
+          <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-amber-300/70 max-w-sm px-4 leading-relaxed mt-1">
             {t("maintenance.feature_locked_desc")}
           </p>
         </div>
@@ -369,7 +369,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
                   <p className="font-sans text-xs font-bold text-red-400 tabular-nums">
                     {formatTimer(seconds)} / {formatTimer(MAX_DURATION_SECONDS)}
                   </p>
-                  <p className="font-sans text-[11px] text-slate-400">
+                  <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400">
                     {t("dashboard.voice_recording")}
                   </p>
                 </div>
@@ -397,7 +397,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
                     {isVoiceLocked && <Lock size={12} className="text-amber-400 light_sakura:text-rose-500" />}
                     <span>{t("dashboard.voice_tap_to_record")}</span>
                   </p>
-                  <p className="font-sans text-[11px] text-slate-500 light_sakura:text-slate-400">
+                  <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 light_sakura:text-slate-400">
                     {isVoiceLocked
                       ? (locale === "id" ? "Fitur khusus Pengguna Premium" : "Exclusive Premium Feature")
                       : t("dashboard.voice_supported")

@@ -60,7 +60,7 @@ export const WeatherDebugToggle: React.FC<WeatherDebugToggleProps> = ({ value, o
       {open && (
         <div className="absolute left-0 top-full mt-2 w-56 max-h-72 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/95 backdrop-blur-md shadow-xl p-2 flex flex-col gap-1">
           <div className="flex items-center justify-between px-1 pb-1">
-            <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+            <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold uppercase tracking-wide text-slate-500">
               Preview Cuaca (Dev)
             </span>
             <button

@@ -54,13 +54,13 @@ export const UpdatePrompt: React.FC = () => {
               <p className="text-xs font-bold truncate">
                 {t("pwa.update_title")}
               </p>
-              <p className="text-[11px] text-slate-400 light_sakura:text-slate-500 truncate">
+              <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 light_sakura:text-slate-500 truncate">
                 {t("pwa.update_desc")}
               </p>
             </div>
             <button
               onClick={handleUpdate}
-              className="shrink-0 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[11px] font-bold transition-colors cursor-pointer light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+              className="shrink-0 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold transition-colors cursor-pointer light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
             >
               {t("pwa.update_btn")}
             </button>

@@ -197,7 +197,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
 
               {/* Transkrip asli dari suara pengguna */}
               <div className="mb-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/60 light_sakura:bg-rose-50/40 light_sakura:border-rose-100/50">
-                <p className="text-[10px] uppercase tracking-widest font-bold opacity-50 mb-1">
+                <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest font-bold opacity-50 mb-1">
                   {t("dashboard.voice_transcript_label")}
                 </p>
                 <p className="font-sans text-xs italic opacity-80">"{draft.original_text}"</p>
@@ -205,7 +205,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
 
               {/* Toggle Income / Expense */}
               <div className="mb-4">
-                <label className="text-[10px] uppercase tracking-widest font-bold opacity-50 block mb-1.5">
+                <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest font-bold opacity-50 block mb-1.5">
                   {t("dashboard.voice_type_label")}
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -239,7 +239,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               {/* Nominal & Kategori (editable) */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-widest font-bold opacity-50 block">
+                  <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest font-bold opacity-50 block">
                     {t("transaction.amount_label")}
                   </label>
                   <input
@@ -248,10 +248,10 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
                     onChange={(e) => setAmount(Number(e.target.value) || 0)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 font-bold text-emerald-400 focus:border-indigo-500 outline-none light_sakura:bg-white light_sakura:border-rose-200/60"
                   />
-                  <p className="text-[10px] opacity-50 font-mono">{formatIDR(amount)}</p>
+                  <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] opacity-50 font-mono">{formatIDR(amount)}</p>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-[10px] uppercase tracking-widest font-bold opacity-50 block">
+                  <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest font-bold opacity-50 block">
                     {t("transaction.category_label")}
                   </label>
                   <select
@@ -270,7 +270,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
 
               {/* Catatan (editable) */}
               <div className="space-y-1 mb-6">
-                <label className="text-[10px] uppercase tracking-widest font-bold opacity-50 block">
+                <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest font-bold opacity-50 block">
                   {t("transaction.note_label")}
                 </label>
                 <input

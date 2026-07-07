@@ -174,20 +174,20 @@ export const Budget: React.FC = () => {
   const statusBadge = (status: "safe" | "warning" | "danger") => {
     if (status === "danger") {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-600">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-600">
           <AlertTriangle size={12} /> {t("budget.status_danger")}
         </span>
       );
     }
     if (status === "warning") {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-500/15 text-amber-400 light_sakura:bg-amber-50 light_sakura:text-amber-600">
+        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-amber-500/15 text-amber-400 light_sakura:bg-amber-50 light_sakura:text-amber-600">
           <AlertTriangle size={12} /> {t("budget.status_warning")}
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-600">
+      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-600">
         <CheckCircle2 size={12} /> {t("budget.status_safe")}
       </span>
     );
@@ -264,7 +264,7 @@ export const Budget: React.FC = () => {
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[10px] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
+                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
                       {t("budget.monthly_limit_label")}
                     </label>
                     <input
@@ -277,7 +277,7 @@ export const Budget: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
+                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
                       {t("budget.alert_threshold_label")}
                     </label>
                     <input
@@ -352,7 +352,7 @@ export const Budget: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-[11px] font-medium text-slate-400 light_sakura:text-slate-500 block mb-1.5">
+                  <label className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-medium text-slate-400 light_sakura:text-slate-500 block mb-1.5">
                     {t("budget.select_category_label")}
                   </label>
                   <select
@@ -373,7 +373,7 @@ export const Budget: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
+                    <label className="block text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
                       {t("budget.monthly_limit_label")}
                     </label>
                     <input
@@ -386,7 +386,7 @@ export const Budget: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
+                    <label className="block text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
                       {t("budget.alert_threshold_label")}
                     </label>
                     <input

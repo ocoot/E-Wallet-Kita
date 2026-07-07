@@ -107,7 +107,7 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
                   >
                     <span>{t("history.export_summary_pdf")}</span>
                     {!isPremium && (
-                      <span className="text-[10px] text-amber-400 font-bold bg-amber-400/10 px-1.5 py-0.5 rounded">
+                      <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-amber-400 font-bold bg-amber-400/10 px-1.5 py-0.5 rounded">
                         PRO
                       </span>
                     )}
@@ -126,7 +126,7 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
                   >
                     <span>{t("history.export_full_pdf")}</span>
                     {!isPremium && (
-                      <span className="text-[10px] text-amber-400 font-bold bg-amber-400/10 px-1.5 py-0.5 rounded">
+                      <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-amber-400 font-bold bg-amber-400/10 px-1.5 py-0.5 rounded">
                         PRO
                       </span>
                     )}

@@ -508,7 +508,7 @@ export const AdminPanel: React.FC = () => {
           <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 shadow-sm light_sakura:bg-rose-100/10 light_sakura:border-rose-200 space-y-2">
-                <p className="font-sans text-[10px] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600">
+                <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600">
                   {t("admin.metrics.total")}
                 </p>
                 <h2 className="font-sans font-black text-2xl text-slate-100 light_sakura:text-slate-900">
@@ -520,7 +520,7 @@ export const AdminPanel: React.FC = () => {
               </div>
 
               <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm light_sakura:bg-amber-100/30 light_sakura:border-amber-200 space-y-2">
-                <p className="font-sans text-[10px] uppercase font-black tracking-wider text-amber-400/80 light_sakura:text-amber-600">
+                <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-amber-400/80 light_sakura:text-amber-600">
                   {t("admin.metrics.premium")}
                 </p>
                 <h2 className="font-sans font-black text-2xl text-amber-400 light_sakura:text-amber-600">
@@ -530,13 +530,13 @@ export const AdminPanel: React.FC = () => {
                   <div className="h-full rounded-full bg-amber-500 transition-all duration-700"
                     style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.premiumUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
                 </div>
-                <p className="text-[10px] text-amber-400/60">
+                <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-amber-400/60">
                   {metrics.totalUsers > 0 ? `${Math.round((metrics.premiumUsers / metrics.totalUsers) * 100)}% dari total` : "—"}
                 </p>
               </div>
 
               <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-4 shadow-sm light_sakura:bg-teal-100/30 light_sakura:border-teal-200 space-y-2">
-                <p className="font-sans text-[10px] uppercase font-black tracking-wider text-teal-400/80 light_sakura:text-teal-600">
+                <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-teal-400/80 light_sakura:text-teal-600">
                   {t("admin.metrics.admin")}
                 </p>
                 <h2 className="font-sans font-black text-2xl text-teal-400 light_sakura:text-teal-600">
@@ -549,7 +549,7 @@ export const AdminPanel: React.FC = () => {
               </div>
 
               <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 shadow-sm light_sakura:bg-red-100/30 light_sakura:border-red-200 space-y-2">
-                <p className="font-sans text-[10px] uppercase font-black tracking-wider text-red-400/80 light_sakura:text-red-600">
+                <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-red-400/80 light_sakura:text-red-600">
                   {t("admin.metrics.suspended")}
                 </p>
                 <h2 className="font-sans font-black text-2xl text-red-400/80 light_sakura:text-red-600">
@@ -633,14 +633,14 @@ export const AdminPanel: React.FC = () => {
                     key={action}
                     disabled={bulkLoading}
                     onClick={() => handleBulkAction(action)}
-                    className={`px-3 py-1.5 text-[10px] font-black uppercase rounded-xl border cursor-pointer transition-colors disabled:opacity-50 ${color}`}
+                    className={`px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase rounded-xl border cursor-pointer transition-colors disabled:opacity-50 ${color}`}
                   >
                     {label}
                   </button>
                 ))}
                 <button
                   onClick={() => setSelectedIds(new Set())}
-                  className="px-3 py-1.5 text-[10px] font-black uppercase rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200"
+                  className="px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200"
                 >
                   {t("admin.clear_selection")}
                 </button>
@@ -667,7 +667,7 @@ export const AdminPanel: React.FC = () => {
                 <ScrollableTableWrapper>
                 <table className="w-full text-left border-collapse table-auto min-w-[900px]">
                   <thead>
-                    <tr className="border-b border-slate-800 bg-slate-800/60 text-[10px] font-bold text-slate-400 uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:border-rose-200 light_sakura:text-slate-600">
+                    <tr className="border-b border-slate-800 bg-slate-800/60 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:border-rose-200 light_sakura:text-slate-600">
                       <th className="px-4 py-4 w-10">
                         <input
                            type="checkbox"
@@ -715,7 +715,7 @@ export const AdminPanel: React.FC = () => {
                                 <span className="font-sans font-bold text-xs text-white light_sakura:text-slate-800 block">
                                   {user.display_name} {isSelf && t("admin.self_label")}
                                 </span>
-                                <span className="font-mono text-[9px] text-slate-400 block">
+                                <span className="font-mono text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-400 block">
                                   ID: {user.id.slice(0, 8)}...
                                 </span>
                               </div>
@@ -739,11 +739,11 @@ export const AdminPanel: React.FC = () => {
                               title={t("admin.refresh")}
                             >
                               {user.is_premium ? (
-                                <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-lg flex items-center gap-1 inline-flex hover:bg-amber-500/25 light_sakura:bg-amber-100 light_sakura:text-amber-700 light_sakura:border-amber-200">
+                                <span className="px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-lg flex items-center gap-1 inline-flex hover:bg-amber-500/25 light_sakura:bg-amber-100 light_sakura:text-amber-700 light_sakura:border-amber-200">
                                   👑 {t("admin.premium_active")}
                                 </span>
                               ) : (
-                                <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-slate-800 text-slate-400 border border-slate-700 rounded-lg hover:bg-slate-700/50 inline-flex light_sakura:bg-slate-100 light_sakura:text-slate-600 light_sakura:border-slate-200">
+                                <span className="px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-slate-800 text-slate-400 border border-slate-700 rounded-lg hover:bg-slate-700/50 inline-flex light_sakura:bg-slate-100 light_sakura:text-slate-600 light_sakura:border-slate-200">
                                   {t("admin.premium_lite")}
                                 </span>
                               )}
@@ -753,7 +753,7 @@ export const AdminPanel: React.FC = () => {
                           {/* Role column */}
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
-                              <span className={`px-2 py-1 text-[9px] font-extrabold tracking-wider rounded-lg uppercase border
+                              <span className={`px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider rounded-lg uppercase border
                                 ${user.role === "owner" ? "bg-red-500/10 text-red-400 border-red-500/20 light_sakura:bg-red-100 light_sakura:text-red-700 light_sakura:border-red-200" :
                                   user.role === "admin" ? "bg-teal-500/10 text-teal-400 border-teal-500/20 light_sakura:bg-teal-100 light_sakura:text-teal-700 light_sakura:border-teal-200" : 
                                   "bg-slate-800 text-slate-400 border-slate-700 light_sakura:bg-slate-100 light_sakura:text-slate-600 light_sakura:border-slate-200"}`}>
@@ -765,12 +765,12 @@ export const AdminPanel: React.FC = () => {
                           {/* Suspend Status */}
                           <td className="px-6 py-4">
                             {user.is_banned ? (
-                              <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-red-500/15 text-red-500 border border-red-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-red-100 light_sakura:text-red-700 light_sakura:border-red-200">
+                              <span className="px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-red-500/15 text-red-500 border border-red-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-red-100 light_sakura:text-red-700 light_sakura:border-red-200">
                                 <XCircle size={10} />
                                 {t("admin.status_suspended")}
                               </span>
                             ) : (
-                              <span className="px-2 py-1 text-[9px] font-extrabold tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-emerald-100 light_sakura:text-emerald-700 light_sakura:border-emerald-200">
+                              <span className="px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-emerald-100 light_sakura:text-emerald-700 light_sakura:border-emerald-200">
                                 <CheckCircle size={10} />
                                 {t("admin.status_active")}
                               </span>
@@ -786,7 +786,7 @@ export const AdminPanel: React.FC = () => {
                                   audioFeedback.playClick();
                                   setDetailUser(user);
                                 }}
-                                className="p-1 px-2.5 text-[10px] font-bold text-slate-300 border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                                className="p-1 px-2.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-300 border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
                                 title={t("admin.user_detail_title")}
                               >
                                 <User size={10} />
@@ -797,7 +797,7 @@ export const AdminPanel: React.FC = () => {
                               <button
                                 disabled={isSelf || user.role === "owner" || !isOwner}
                                 onClick={() => handleToggleRole(user)}
-                                className="p-1 px-2.5 text-[10px] font-bold text-slate-300 border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                                className="p-1 px-2.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-300 border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
                                 title={t("admin.role_title")}
                               >
                                 <Shield size={10} />

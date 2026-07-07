@@ -39,7 +39,7 @@ export const DashboardInstallments: React.FC = () => {
         </div>
         <button
           onClick={() => { audioFeedback.playClick(); navigate("/installments"); }}
-          className="flex items-center gap-1 text-[11px] font-semibold text-slate-400 hover:text-slate-200 light_sakura:text-slate-500 light_sakura:hover:text-slate-700 transition-colors cursor-pointer"
+          className="flex items-center gap-1 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold text-slate-400 hover:text-slate-200 light_sakura:text-slate-500 light_sakura:hover:text-slate-700 transition-colors cursor-pointer"
         >
           {t("installments.dashboard_widget_cta")} <ChevronRight size={12} />
         </button>

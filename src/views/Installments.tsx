@@ -196,15 +196,15 @@ export const Installments: React.FC = () => {
           {installments.length > 0 && (
             <div className="grid grid-cols-3 gap-2">
               <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-3 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_active")}</span>
+                <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_active")}</span>
                 <p className="font-bold text-2xl text-indigo-400 light_sakura:text-indigo-600">{activeCount}</p>
               </div>
               <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-3 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_completed")}</span>
+                <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_completed")}</span>
                 <p className="font-bold text-2xl text-emerald-400 light_sakura:text-emerald-600">{completedCount}</p>
               </div>
               <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-3 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_monthly_commitment")}</span>
+                <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_monthly_commitment")}</span>
                 <p className="font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight text-slate-200 light_sakura:text-slate-700">{formatIDR(totalMonthlyCommitment)}</p>
               </div>
             </div>
@@ -232,7 +232,7 @@ export const Installments: React.FC = () => {
                             ? "bg-gradient-to-br from-emerald-600 to-emerald-800 text-white"
                             : "bg-gradient-to-br from-indigo-600 to-violet-800 text-white light_sakura:from-rose-500 light_sakura:to-rose-700"
                         } ${isActive ? "ring-2 ring-offset-2 ring-offset-slate-900 ring-white/70 light_sakura:ring-offset-white" : "opacity-80"}`}>
-                        <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider opacity-80">
+                        <div className="flex items-center justify-between text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider opacity-80">
                           <span className="truncate">{getCategoryLabel(i.category_key)}</span>
                           <span>{i.progressPercent}%</span>
                         </div>
@@ -241,7 +241,7 @@ export const Installments: React.FC = () => {
                         <div className="h-1.5 w-full rounded-full bg-white/25 overflow-hidden mt-4">
                           <div className="h-full rounded-full bg-white" style={{ width: `${i.progressPercent}%` }} />
                         </div>
-                        <p className="text-[10px] opacity-70 mt-1.5">{i.months_paid} dari {i.total_months} bulan</p>
+                        <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] opacity-70 mt-1.5">{i.months_paid} dari {i.total_months} bulan</p>
                       </motion.button>
                     );
                   })}
@@ -255,17 +255,17 @@ export const Installments: React.FC = () => {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{i.name}</p>
-                        <p className="text-[11px] text-slate-500 mt-0.5">{getCategoryLabel(i.category_key)}</p>
+                        <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">{getCategoryLabel(i.category_key)}</p>
                       </div>
                       {i.is_completed && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0 bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-600">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold shrink-0 bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-600">
                           <PartyPopper size={11} />{t("installments.status_completed")}
                         </span>
                       )}
                     </div>
 
                     <div className="space-y-1.5">
-                      <div className="flex items-center justify-between text-[11px]">
+                      <div className="flex items-center justify-between text-[clamp(0.6188rem,2.86vw,0.6875rem)]">
                         <span className="text-slate-400 font-semibold">
                           {t("installments.progress_label", { paid: i.months_paid, total: i.total_months })}
                         </span>
@@ -296,7 +296,7 @@ export const Installments: React.FC = () => {
                           <span className="text-slate-300 light_sakura:text-slate-600">{t("installments.months_remaining_value", { count: i.monthsRemaining })}</span>
                         </div>
                       )}
-                      {i.notes && <p className="text-[11px] text-slate-500 italic truncate">{i.notes}</p>}
+                      {i.notes && <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 italic truncate">{i.notes}</p>}
                     </div>
 
                     <div className="flex items-center gap-2 pt-1">
@@ -338,35 +338,35 @@ export const Installments: React.FC = () => {
                   {editTarget ? t("installments.edit_title") : t("installments.add_title")}
                 </h2>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_name")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_name")}</label>
                   <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={t("installments.form_name_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_category")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_category")}</label>
                   <select value={form.category_key} onChange={e => setForm(f => ({ ...f, category_key: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer">
                     {expenseCategories.map(c => <option key={c.key} value={c.key}>{locale === "id" ? c.label_id || c.key : c.label_en || c.key}</option>)}
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_monthly_amount")}</label>
+                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_monthly_amount")}</label>
                     <input type="number" value={form.monthly_amount} onChange={e => setForm(f => ({ ...f, monthly_amount: e.target.value }))} placeholder={t("installments.form_monthly_amount_placeholder")} min={0} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_total_months")}</label>
+                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_total_months")}</label>
                     <input type="number" value={form.total_months} onChange={e => setForm(f => ({ ...f, total_months: e.target.value }))} min={1} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_principal")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_principal")}</label>
                   <input type="number" value={form.principal_amount} onChange={e => setForm(f => ({ ...f, principal_amount: e.target.value }))} placeholder={t("installments.form_principal_placeholder")} min={0} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_start_date")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_start_date")}</label>
                   <input type="date" value={form.start_date} onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_notes")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_notes")}</label>
                   <input type="text" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder={t("installments.form_notes_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
                 </div>
                 <div className="flex gap-3 pt-1">

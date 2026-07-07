@@ -85,7 +85,7 @@ const StatChip: React.FC<{ label: string; value: string; delay?: number }> = ({ 
                light_sakura:bg-rose-900/10 light_sakura:border-rose-200/30"
   >
     <span className="text-[10px] font-semibold text-indigo-300 tabular-nums light_sakura:text-rose-400">{value}</span>
-    <span className="text-[10px] text-white/60 light_sakura:text-rose-900/60">{label}</span>
+    <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-white/60 light_sakura:text-rose-900/60">{label}</span>
   </motion.div>
 );
 
@@ -110,7 +110,7 @@ const InputField: React.FC<InputFieldProps> = ({
   disabled, required, minLength, rightAddon, autoComplete
 }) => (
   <div className="space-y-1.5">
-    <label className="block text-[10px] font-bold tracking-[0.12em] uppercase
+    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold tracking-[0.12em] uppercase
                       text-slate-400 light_sakura:text-slate-500">
       {label}
     </label>
@@ -647,7 +647,7 @@ export const Login: React.FC = () => {
 
                     <div className="space-y-1.5">
                       <div className="flex justify-between items-center">
-                        <label className="text-[10px] font-bold tracking-[0.12em] uppercase
+                        <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold tracking-[0.12em] uppercase
                                           text-slate-400 light_sakura:text-slate-500">
                           {t("auth.label_password")}
                         </label>
@@ -656,7 +656,7 @@ export const Login: React.FC = () => {
                             type="button"
                             onClick={() => { audioFeedback.playClick(); setIsForgotPassword(true); }}
                             disabled={isLoading}
-                            className="text-[10px] text-indigo-400 hover:underline cursor-pointer
+                            className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-indigo-400 hover:underline cursor-pointer
                                        light_sakura:text-rose-500"
                           >
                             {t("auth.forgot_password")}
@@ -723,7 +723,7 @@ export const Login: React.FC = () => {
                 {/* Divider */}
                 <div className="relative my-5 flex items-center">
                   <div className="flex-1 h-px bg-slate-800 light_sakura:bg-rose-100" />
-                  <span className="px-3 text-[10px] font-semibold uppercase tracking-widest
+                  <span className="px-3 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold uppercase tracking-widest
                                    text-slate-500 light_sakura:text-slate-400">
                     {t("auth.or_divider_instant")}
                   </span>
@@ -771,7 +771,7 @@ export const Login: React.FC = () => {
 
                 {/* Guest disclaimer */}
                 <div className="mt-5 flex gap-2 p-3 rounded-xl
-                                bg-amber-500/5 border border-amber-500/15 text-[10px]
+                                bg-amber-500/5 border border-amber-500/15 text-[clamp(0.5625rem,2.6vw,0.625rem)]
                                 text-slate-400 leading-relaxed
                                 light_sakura:bg-rose-50 light_sakura:border-rose-200/60
                                 light_sakura:text-slate-500">

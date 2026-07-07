@@ -198,7 +198,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               {/* Profile widget summary */}
               <div className="p-4 rounded-xl border bg-slate-950/40 border-slate-800 light_sakura:bg-rose-100/50 light_sakura:border-rose-200">
-                <p className="font-mono text-[10px] text-slate-400 light_sakura:text-rose-600 uppercase tracking-widest">
+                <p className="font-mono text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-400 light_sakura:text-rose-600 uppercase tracking-widest">
                   {isGuest ? t("history.status_guest") : t("history.status_verified")}
                 </p>
                 <div className="flex items-center gap-2.5 mt-1">
@@ -247,21 +247,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className="grid grid-cols-3 gap-1.5">
                   <button
                     onClick={toggleLanguage}
-                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
                   >
                     <Globe size={13} className="mb-0.5" />
                     <span>{locale.toUpperCase()}</span>
                   </button>
                   <button
                     onClick={toggleTheme}
-                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
                   >
                     <SunMoon size={13} className="mb-0.5" />
                     <span>{theme === "dark_obsidian" ? t("common.dark") : t("common.light")}</span>
                   </button>
                   <button
                     onClick={toggleMute}
-                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-[10px] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100 animate-fade-in"
+                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100 animate-fade-in"
                     title="Mute / Unmute"
                   >
                     {isMuted ? (
@@ -341,7 +341,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             
             <div className={`transition-all duration-300 flex flex-col min-w-0 overflow-hidden ${isCollapsed ? "w-0 opacity-0 -translate-x-4" : "w-full opacity-100 translate-x-0"}`}>
-              <p className="font-mono text-[9px] text-slate-400 light_sakura:text-rose-500 uppercase tracking-widest leading-none whitespace-nowrap">
+              <p className="font-mono text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-400 light_sakura:text-rose-500 uppercase tracking-widest leading-none whitespace-nowrap">
                 {isGuest ? t("history.status_guest") : t("history.status_verified")}
               </p>
               <div className="flex items-center gap-1.5 mt-1">
@@ -396,7 +396,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={toggleLanguage}
                 title={t("settings.language")}
-                className="flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[10px] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                className="flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
               >
                 <Globe size={11} className="mb-0.5" />
                 <span>{locale.toUpperCase()}</span>
@@ -404,7 +404,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={toggleTheme}
                 title={t("settings.theme")}
-                className="flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[10px] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                className="flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
               >
                 <SunMoon size={11} className="mb-0.5" />
                 <span>{theme === "dark_obsidian" ? t("common.dark") : t("common.light")}</span>
@@ -412,7 +412,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={toggleMute}
                 title="Toggle Effects Sound"
-                className="flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[10px] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                className="flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
               >
                 {isMuted ? (
                   <VolumeX size={11} className="text-red-400 light_sakura:text-red-500 mb-0.5" />

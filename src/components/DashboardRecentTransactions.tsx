@@ -67,7 +67,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
             audioFeedback.playClick();
             onNavigateToHistory();
           }}
-          className="cursor-pointer px-3.5 py-2 hover:bg-slate-800 rounded-xl text-[11px] font-bold text-indigo-400 light_sakura:text-rose-500 light_sakura:hover:bg-rose-50 flex items-center gap-1.5 transition-colors"
+          className="cursor-pointer px-3.5 py-2 hover:bg-slate-800 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-indigo-400 light_sakura:text-rose-500 light_sakura:hover:bg-rose-50 flex items-center gap-1.5 transition-colors"
         >
           <span>{t("history.show_all")}</span>
           <ArrowRight size={13} />
@@ -99,7 +99,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
                         return locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key);
                       })()}
                     </div>
-                    <div className="font-sans text-[10px] text-slate-400 light_sakura:text-slate-500 mt-0.5 flex items-center gap-1.5">
+                    <div className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-400 light_sakura:text-slate-500 mt-0.5 flex items-center gap-1.5">
                       <span>{formatDateLabel(tx.transaction_date)}</span>
                       <span className="w-1 h-1 rounded-full bg-slate-700 light_sakura:bg-rose-100" />
                       <span className="font-semibold text-slate-300 light_sakura:text-slate-600">
@@ -118,7 +118,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
                     <span>{isExpense ? "-" : "+"}</span>
                     <span className="whitespace-nowrap tabular-nums">{formatIDR(tx.amount)}</span>
                   </div>
-                  <div className="text-[9px] text-slate-500 light_sakura:text-slate-400 font-sans mt-0.5">
+                  <div className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-500 light_sakura:text-slate-400 font-sans mt-0.5">
                     {isExpense ? t("transaction.expense") : t("transaction.income")}
                   </div>
                 </div>

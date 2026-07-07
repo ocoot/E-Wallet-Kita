@@ -121,7 +121,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
               left: coords?.left ?? -9999,
               visibility: coords ? "visible" : "hidden",
             }}
-            className="z-[999] w-56 max-w-[calc(100vw-2rem)] p-2.5 rounded-xl bg-slate-800 border border-slate-700 shadow-xl text-[11px] leading-relaxed font-normal normal-case tracking-normal text-slate-200 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-700"
+            className="z-[999] w-56 max-w-[calc(100vw-2rem)] p-2.5 rounded-xl bg-slate-800 border border-slate-700 shadow-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed font-normal normal-case tracking-normal text-slate-200 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-700"
           >
             {text}
           </div>,

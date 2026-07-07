@@ -51,7 +51,7 @@ export const DashboardBillReminders: React.FC = () => {
             audioFeedback.playClick();
             navigate("/bill-reminders");
           }}
-          className={`flex items-center gap-1 text-[11px] font-semibold cursor-pointer ${
+          className={`flex items-center gap-1 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold cursor-pointer ${
             hasOverdue
               ? "text-red-400 hover:text-red-300 light_sakura:text-red-600"
               : "text-orange-400 hover:text-orange-300 light_sakura:text-orange-600"

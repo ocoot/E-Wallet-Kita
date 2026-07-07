@@ -289,7 +289,7 @@ export const AdminAiMonitor: React.FC = () => {
                           className="hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50 transition-colors"
                         >
                           <td className="px-6 py-4">
-                            <span className="px-2 py-1 rounded-lg text-[10px] font-semibold bg-indigo-950/50 light_sakura:bg-indigo-50 text-indigo-300 light_sakura:text-indigo-600 uppercase mr-2">
+                            <span className="px-2 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold bg-indigo-950/50 light_sakura:bg-indigo-50 text-indigo-300 light_sakura:text-indigo-600 uppercase mr-2">
                               {k.provider}
                             </span>
                             <span className="font-mono text-xs text-slate-200 light_sakura:text-slate-700">

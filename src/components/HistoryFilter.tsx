@@ -35,7 +35,7 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
     <div id="history-controls-row" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30">
       {/* 1. Month Selector dropdown */}
       <div className="space-y-1.5">
-        <label className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
+        <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
           {t("history.filter_month")}
         </label>
         <div className="relative">
@@ -58,7 +58,7 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
 
       {/* 2. Category Filter */}
       <div className="space-y-1.5">
-        <label className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500 flex items-center gap-1.5">
+        <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500 flex items-center gap-1.5">
           <Filter size={10} />
           <span>{t("transaction.label_category")}</span>
         </label>
@@ -81,7 +81,7 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
 
       {/* 3. Text Filter search bar */}
       <div className="space-y-1.5">
-        <label className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
+        <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
           {t("history.search_label")}
         </label>
         <div className="relative">
@@ -105,7 +105,7 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
 
       {/* 4. Dynamic page sizing selector */}
       <div className="space-y-1.5">
-        <label className="font-sans text-[10px] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
+        <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
           {t("history.page_size")}
         </label>
         <select

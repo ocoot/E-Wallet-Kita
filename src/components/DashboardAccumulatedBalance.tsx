@@ -83,7 +83,7 @@ export const DashboardAccumulatedBalance: React.FC<DashboardAccumulatedBalancePr
             <Layers size={20} />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500 flex items-center gap-1.5">
+            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500 flex items-center gap-1.5">
               {t("dashboard.accumulated_balance_label")}
               <InfoTooltip text={t("dashboard.accumulated_balance_tooltip")} align="left" />
             </p>
@@ -99,7 +99,7 @@ export const DashboardAccumulatedBalance: React.FC<DashboardAccumulatedBalancePr
               <TrendingUp size={13} />
             </div>
             <div>
-              <p className="text-[10px] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_income_label")}</p>
+              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_income_label")}</p>
               <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700">{formatIDR(data.income_total)}</p>
             </div>
           </div>
@@ -108,7 +108,7 @@ export const DashboardAccumulatedBalance: React.FC<DashboardAccumulatedBalancePr
               <TrendingDown size={13} />
             </div>
             <div>
-              <p className="text-[10px] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_expense_label")}</p>
+              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_expense_label")}</p>
               <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700">{formatIDR(data.expense_total)}</p>
             </div>
           </div>
@@ -122,7 +122,7 @@ export const DashboardAccumulatedBalance: React.FC<DashboardAccumulatedBalancePr
               <Wallet size={13} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] text-slate-500 uppercase font-semibold flex items-center gap-1">
+              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold flex items-center gap-1">
                 {t("dashboard.available_balance_label")}
                 <InfoTooltip text={t("dashboard.available_balance_tooltip")} align="left" />
               </p>
@@ -134,14 +134,14 @@ export const DashboardAccumulatedBalance: React.FC<DashboardAccumulatedBalancePr
               <Vault size={13} />
             </div>
             <div className="min-w-0">
-              <p className="text-[10px] text-slate-500 uppercase font-semibold">{t("dashboard.total_savings_label")}</p>
+              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold">{t("dashboard.total_savings_label")}</p>
               <p className="text-sm font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(savings!.total_saved)}</p>
             </div>
           </div>
         </div>
       )}
 
-      <p className="px-5 sm:px-6 pb-4 -mt-1 text-[11px] text-slate-500 leading-relaxed">
+      <p className="px-5 sm:px-6 pb-4 -mt-1 text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 leading-relaxed">
         {hasSavings ? t("dashboard.savings_breakdown_hint") : t("dashboard.accumulated_balance_hint")}
       </p>
     </motion.div>

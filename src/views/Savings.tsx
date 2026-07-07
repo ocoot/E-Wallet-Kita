@@ -205,11 +205,11 @@ export const Savings: React.FC = () => {
             >
               <div className="w-[62px] h-[62px] rounded-full bg-slate-900 light_sakura:bg-white flex flex-col items-center justify-center">
                 <Icon size={16} className={colorClasses.split(" ")[0]} />
-                {pct != null && <span className="text-[10px] font-bold text-slate-300 light_sakura:text-slate-600 mt-0.5">{pct}%</span>}
+                {pct != null && <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-300 light_sakura:text-slate-600 mt-0.5">{pct}%</span>}
               </div>
             </div>
             {p.is_archived && (
-              <span className="absolute -top-1 -right-1 inline-flex items-center px-1.5 py-0.5 rounded-md text-[8px] font-bold bg-slate-700/70 text-slate-300">
+              <span className="absolute -top-1 -right-1 inline-flex items-center px-1.5 py-0.5 rounded-md text-[clamp(0.45rem,2.08vw,0.5rem)] font-bold bg-slate-700/70 text-slate-300">
                 {t("savings.archived_badge")}
               </span>
             )}
@@ -217,24 +217,24 @@ export const Savings: React.FC = () => {
 
           <div>
             <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{p.name}</p>
-            <p className="text-[10.5px] text-slate-500 mt-0.5">{t(`savings.pocket_type_${p.pocket_type}`)}</p>
+            <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] text-slate-500 mt-0.5">{t(`savings.pocket_type_${p.pocket_type}`)}</p>
           </div>
 
           {p.target_amount != null ? (
-            <p className="text-[11px] font-semibold text-slate-300 light_sakura:text-slate-600">{formatIDR(p.current_amount)} <span className="text-slate-500 font-normal">/ {formatIDR(p.target_amount)}</span></p>
+            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold text-slate-300 light_sakura:text-slate-600">{formatIDR(p.current_amount)} <span className="text-slate-500 font-normal">/ {formatIDR(p.target_amount)}</span></p>
           ) : (
-            <p className="text-[11px] font-bold text-slate-200 light_sakura:text-slate-700">{formatIDR(p.current_amount)}</p>
+            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-slate-200 light_sakura:text-slate-700">{formatIDR(p.current_amount)}</p>
           )}
 
-          {p.notes && <p className="text-[10.5px] text-slate-500 italic truncate">{p.notes}</p>}
+          {p.notes && <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] text-slate-500 italic truncate">{p.notes}</p>}
 
           <div className="grid grid-cols-2 gap-1.5 pt-1">
             <button onClick={() => openMove(p, "deposit")} disabled={busyId === p.id || p.is_archived}
-              className="flex items-center justify-center gap-1 py-2 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
+              className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
               <ArrowDownCircle size={12} /> {t("savings.deposit_button")}
             </button>
             <button onClick={() => openMove(p, "withdraw")} disabled={busyId === p.id || p.is_archived || p.current_amount <= 0}
-              className="flex items-center justify-center gap-1 py-2 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
+              className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
               <ArrowUpCircle size={12} /> {t("savings.withdraw_button")}
             </button>
           </div>
@@ -276,22 +276,22 @@ export const Savings: React.FC = () => {
 
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-3 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_total_saved")}</span>
+              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_total_saved")}</span>
               <p className="font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight text-emerald-400 light_sakura:text-emerald-600">{formatIDR(summary.total_saved)}</p>
             </div>
             <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-3 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_available_balance")}</span>
+              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_available_balance")}</span>
               <p className="font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight text-indigo-400 light_sakura:text-indigo-600">{availableBalance != null ? formatIDR(availableBalance) : "-"}</p>
             </div>
             <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-3 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_pocket_count")}</span>
+              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_pocket_count")}</span>
               <p className="font-bold text-2xl text-slate-200 light_sakura:text-slate-700">{summary.pocket_count}</p>
             </div>
           </div>
 
           <div className="flex items-start gap-2.5 rounded-2xl border border-indigo-500/15 bg-indigo-500/5 px-4 py-3 light_sakura:bg-indigo-50/40 light_sakura:border-indigo-100">
             <Info size={14} className="text-indigo-400 light_sakura:text-indigo-500 shrink-0 mt-0.5" />
-            <p className="text-[11px] leading-relaxed text-slate-400 light_sakura:text-slate-600">{t("savings.info_banner_text")}</p>
+            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed text-slate-400 light_sakura:text-slate-600">{t("savings.info_banner_text")}</p>
           </div>
 
           {loading ? (
@@ -325,28 +325,28 @@ export const Savings: React.FC = () => {
                   {editTarget ? t("savings.edit_title") : t("savings.add_title")}
                 </h2>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_name")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_name")}</label>
                   <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={t("savings.form_name_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_type")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_type")}</label>
                   <select value={form.pocket_type} onChange={e => setForm(f => ({ ...f, pocket_type: e.target.value as SavingsPocketType }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer">
                     {POCKET_TYPES.map(pt => <option key={pt} value={pt}>{t(`savings.pocket_type_${pt}`)}</option>)}
                   </select>
-                  <p className="text-[11px] text-slate-500 mt-1.5 leading-relaxed">{t(`savings.pocket_type_${form.pocket_type}_desc`)}</p>
+                  <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5 leading-relaxed">{t(`savings.pocket_type_${form.pocket_type}_desc`)}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_target_amount")}</label>
+                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_target_amount")}</label>
                     <input type="number" value={form.target_amount} onChange={e => setForm(f => ({ ...f, target_amount: e.target.value }))} placeholder={t("savings.form_target_amount_placeholder")} min={0} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_target_date")}</label>
+                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_target_date")}</label>
                     <input type="date" value={form.target_date} onChange={e => setForm(f => ({ ...f, target_date: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_notes")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_notes")}</label>
                   <input type="text" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder={t("savings.form_notes_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
                 </div>
                 <div className="flex gap-3 pt-1">
@@ -378,21 +378,21 @@ export const Savings: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_amount")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_amount")}</label>
                   <input type="number" value={moveAmount} onChange={e => setMoveAmount(e.target.value)} placeholder={t("savings.form_amount_placeholder")} min={0} autoFocus className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
                   {moveTarget.direction === "deposit" && availableBalance != null && (
-                    <p className="text-[11px] text-slate-500 mt-1.5">{t("savings.available_balance_hint", { amount: formatIDR(availableBalance) })}</p>
+                    <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5">{t("savings.available_balance_hint", { amount: formatIDR(availableBalance) })}</p>
                   )}
                   {moveTarget.direction === "withdraw" && (
-                    <p className="text-[11px] text-slate-500 mt-1.5">{t("savings.pocket_balance_hint", { amount: formatIDR(moveTarget.pocket.current_amount) })}</p>
+                    <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5">{t("savings.pocket_balance_hint", { amount: formatIDR(moveTarget.pocket.current_amount) })}</p>
                   )}
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_entry_date")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_entry_date")}</label>
                   <input type="date" value={moveDate} onChange={e => setMoveDate(e.target.value)} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_entry_note")}</label>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_entry_note")}</label>
                   <input type="text" value={moveNote} onChange={e => setMoveNote(e.target.value)} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
                 </div>
                 <div className="flex gap-3 pt-1">

@@ -230,7 +230,7 @@ export const AdminPremiumMonitor: React.FC = () => {
                 {dummyQrisEnabled ? t("admin.dummy_qris_status_on") : t("admin.dummy_qris_status_off")}
               </p>
               {metrics && metrics.sandboxCount > 0 && (
-                <p className="text-[11px] text-slate-500 mt-1">
+                <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1">
                   {t("admin.dummy_qris_sandbox_count", { count: metrics.sandboxCount })}
                 </p>
               )}

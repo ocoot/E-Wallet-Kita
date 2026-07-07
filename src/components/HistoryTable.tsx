@@ -87,7 +87,7 @@ export const HistoryTable: React.FC<HistoryTableProps> = ({
 
                       {/* Cashflow Type badge */}
                       <td className="p-4">
-                        <span className={`inline-flex px-2 py-1 rounded-md font-bold text-[9px] uppercase tracking-wider
+                        <span className={`inline-flex px-2 py-1 rounded-md font-bold text-[clamp(0.5062rem,2.34vw,0.5625rem)] uppercase tracking-wider
                           ${isExpense 
                             ? "bg-red-500/10 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500" 
                             : "bg-emerald-500/10 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-500"

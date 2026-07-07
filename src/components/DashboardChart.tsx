@@ -95,7 +95,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
                 audioFeedback.playClick();
                 setChartType("cumulative");
               }}
-              className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer ${
                 chartType === "cumulative"
                   ? "bg-slate-900 text-indigo-400 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
                   : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500"
@@ -108,7 +108,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
                 audioFeedback.playClick();
                 setChartType("daily");
               }}
-              className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer ${
                 chartType === "daily"
                   ? "bg-slate-900 text-indigo-400 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
                   : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500"
@@ -125,7 +125,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
                 audioFeedback.playClick();
                 setChartMode("area");
               }}
-              className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer ${
                 chartMode === "area"
                   ? "bg-slate-900 text-indigo-300 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
                   : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500"
@@ -138,7 +138,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
                 audioFeedback.playClick();
                 setChartMode("line");
               }}
-              className={`px-3 py-1.5 text-[10px] font-bold rounded-lg transition-all cursor-pointer ${
+              className={`px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer ${
                 chartMode === "line"
                   ? "bg-slate-900 text-indigo-300 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
                   : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500"
@@ -182,7 +182,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
                   fontSize={10} 
                   tickLine={false} 
                   axisLine={false} 
-                  className="font-mono text-[9px]"
+                  className="font-mono text-[clamp(0.5062rem,2.34vw,0.5625rem)]"
                 />
                 <YAxis 
                   stroke="#71717a" 
@@ -243,7 +243,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
                   fontSize={10} 
                   tickLine={false} 
                   axisLine={false}
-                  className="font-mono text-[9px]"
+                  className="font-mono text-[clamp(0.5062rem,2.34vw,0.5625rem)]"
                 />
                 <YAxis 
                   stroke="#71717a" 
@@ -299,7 +299,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
 
       {/* Small Elegant Secondary Panel explaining Category analysis context */}
       {transactions.length > 0 && (
-        <div className="flex flex-wrap gap-4 items-center justify-between text-[11px] text-slate-500 border-t border-slate-800/40 pt-4 progress-legend light_sakura:border-rose-100/30 light_sakura:text-slate-400">
+        <div className="flex flex-wrap gap-4 items-center justify-between text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 border-t border-slate-800/40 pt-4 progress-legend light_sakura:border-rose-100/30 light_sakura:text-slate-400">
           <span className="flex items-center gap-1.5 font-sans font-medium">
             <Activity size={12} className="text-zinc-400" />
             {t("dashboard.chart_instruction")}
