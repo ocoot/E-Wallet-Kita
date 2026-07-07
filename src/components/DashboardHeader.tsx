@@ -9,6 +9,7 @@ import { useBudgets } from "../hooks/useBudgets";
 import { getWeatherTheme } from "../lib/weatherTheme";
 import { DashboardWeatherLayer } from "./DashboardWeatherLayer";
 import { WeatherDebugToggle, WeatherDebugOverride } from "./WeatherDebugToggle";
+import { EventOverlay } from "./EventOverlay";
 import { getActiveEvent, fetchAllEvents } from "../api/eventCalendar";
 import type { NagerHoliday, SportsDbEvent } from "../api/eventCalendar";
 import type { OverlayType } from "../api/eventCalendar";
@@ -149,8 +150,16 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         <DashboardWeatherLayer
           condition={effectiveWeather.condition}
           isDay={effectiveWeather.isDay}
-          eventOverlay={eventOverlay}
         />
+      )}
+
+      {/* Overlay event/liburan (confetti Piala Dunia, dll) -- sengaja dirender
+          TERPISAH dari DashboardWeatherLayer supaya tetap muncul walau data
+          cuaca gagal/loading (geolocation ditolak, /api/weather down, dst).
+          Sebelumnya overlay ini "menumpang" di dalam weather layer sehingga
+          tidak pernah terlihat ketika cuaca gagal dimuat. */}
+      {eventOverlay && (
+        <EventOverlay type={eventOverlay} />
       )}
 
       <div className="relative z-10 flex items-center gap-4">
