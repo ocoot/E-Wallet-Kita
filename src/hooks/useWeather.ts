@@ -73,30 +73,31 @@ async function fetchWeather(lat?: number, lon?: number): Promise<WeatherData> {
  *  2. Kalau ditolak/timeout/tidak didukung, fallback otomatis ke IP-based
  *     location (endpoint /api/weather tanpa lat/lon akan resolve dari IP).
  *  3. Hasil di-cache di sessionStorage 10 menit supaya berpindah halaman
- *     tidak memicu request baru terus-menerus.
+ *     dalam rentang waktu itu tidak memicu request baru terus-menerus.
+ *
+ *  4. PENTING: lokasi & cuaca di-refresh OTOMATIS setiap 10 menit selama
+ *     komponen ini tetap ter-mount (mis. Dashboard dibiarkan terbuka lama),
+ *     dan juga saat tab/app kembali aktif (Page Visibility) setelah lama
+ *     di-background -- supaya kalau user berpindah tempat sementara app
+ *     tetap terbuka, lokasi ikut ter-update tanpa perlu reload halaman.
+ *     (Versi sebelumnya cuma fetch SEKALI seumur hidup komponen -- itu
+ *     sebabnya lokasi terasa "macet" di tempat pertama.)
  */
 export function useWeather(): UseWeatherResult {
   const [weather, setWeather] = useState<WeatherData | null>(() => readCache());
   const [loading, setLoading] = useState<boolean>(() => readCache() === null);
   const [error, setError] = useState<string | null>(null);
-  const hasFetched = useRef(false);
+
+  const lastFetchedAt = useRef<number>(0);
+  const inFlight = useRef(false);
 
   useEffect(() => {
-    if (hasFetched.current) return;
-    hasFetched.current = true;
-
-    const cached = readCache();
-    if (cached) {
-      setWeather(cached);
-      setLoading(false);
-      return;
-    }
-
     let cancelled = false;
 
     const finish = (data: WeatherData) => {
       if (cancelled) return;
       writeCache(data);
+      lastFetchedAt.current = Date.now();
       setWeather(data);
       setLoading(false);
       setError(null);
@@ -112,7 +113,7 @@ export function useWeather(): UseWeatherResult {
       if (previousError) {
         console.warn(`[useWeather] GPS fetch failed, trying IP-based location:`, previousError.message);
       }
-      fetchWeather()
+      return fetchWeather()
         .then(finish)
         .catch((err) => {
           const msg = err.message || "Gagal memuat data cuaca.";
@@ -121,33 +122,80 @@ export function useWeather(): UseWeatherResult {
         });
     };
 
-    if (!("geolocation" in navigator)) {
-      console.warn("[useWeather] Geolocation not supported in navigator, using IP-based fallback");
-      fallbackToIp();
-      return;
+    /**
+     * Minta lokasi + cuaca terbaru. `forceFreshGps` = true dipakai untuk
+     * refresh periodik/visibility -- maximumAge di-set 0 supaya browser
+     * benar-benar minta posisi GPS baru (bukan reuse posisi lama), karena
+     * tujuan refresh ini justru untuk mendeteksi kalau user sudah pindah.
+     */
+    const requestLocationAndWeather = (forceFreshGps: boolean) => {
+      if (inFlight.current) return;
+      inFlight.current = true;
+
+      const done = () => {
+        inFlight.current = false;
+      };
+
+      if (!("geolocation" in navigator)) {
+        console.warn("[useWeather] Geolocation not supported in navigator, using IP-based fallback");
+        fallbackToIp().finally(done);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          console.log(`[useWeather] GPS location obtained: ${pos.coords.latitude}, ${pos.coords.longitude}`);
+          fetchWeather(pos.coords.latitude, pos.coords.longitude)
+            .then(finish)
+            .catch((err) => {
+              console.warn(`[useWeather] GPS-based weather fetch failed:`, err.message);
+              return fallbackToIp(err);
+            })
+            .finally(done);
+        },
+        (geoError) => {
+          // Izin ditolak, timeout, atau posisi tidak tersedia -> fallback IP
+          const geoMsg = geoError.code === 1 ? "Izin geolocation ditolak" : geoError.message || "Geolocation timeout/unavailable";
+          console.warn(`[useWeather] Geolocation error: ${geoMsg}, falling back to IP`, geoError);
+          fallbackToIp().finally(done);
+        },
+        { enableHighAccuracy: false, timeout: 8000, maximumAge: forceFreshGps ? 0 : 10 * 60 * 1000 }
+      );
+    };
+
+    // Mount pertama: pakai cache kalau masih segar (biar tidak ada delay
+    // loading tiap pindah halaman), baru minta lokasi asli kalau cache
+    // sudah basi/belum ada sama sekali.
+    const cached = readCache();
+    if (cached) {
+      setWeather(cached);
+      setLoading(false);
+      lastFetchedAt.current = Date.now();
+    } else {
+      requestLocationAndWeather(false);
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        console.log(`[useWeather] GPS location obtained: ${pos.coords.latitude}, ${pos.coords.longitude}`);
-        fetchWeather(pos.coords.latitude, pos.coords.longitude)
-          .then(finish)
-          .catch((err) => {
-            console.warn(`[useWeather] GPS-based weather fetch failed:`, err.message);
-            fallbackToIp(err);
-          });
-      },
-      (geoError) => {
-        // Izin ditolak, timeout, atau posisi tidak tersedia -> fallback IP
-        const geoMsg = geoError.code === 1 ? "Izin geolocation ditolak" : geoError.message || "Geolocation timeout/unavailable";
-        console.warn(`[useWeather] Geolocation error: ${geoMsg}, falling back to IP`, geoError);
-        fallbackToIp();
-      },
-      { enableHighAccuracy: false, timeout: 8000, maximumAge: 10 * 60 * 1000 }
-    );
+    // Refresh otomatis tiap CACHE_TTL_MS selama komponen tetap ter-mount --
+    // inilah fix utamanya, supaya lokasi tidak "macet" selamanya di fetch
+    // pertama kalau Dashboard dibiarkan terbuka lama.
+    const intervalId = setInterval(() => {
+      requestLocationAndWeather(true);
+    }, CACHE_TTL_MS);
+
+    // Refresh tambahan saat app/tab kembali aktif (mis. user switch app lalu
+    // balik lagi) kalau data terakhir sudah lebih tua dari TTL -- berguna di
+    // mobile PWA di mana tab jarang benar-benar di-reload.
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible" && Date.now() - lastFetchedAt.current > CACHE_TTL_MS) {
+        requestLocationAndWeather(true);
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
       cancelled = true;
+      clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
 
