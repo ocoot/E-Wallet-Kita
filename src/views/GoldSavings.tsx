@@ -40,6 +40,8 @@ const formatPriceDateLong = (dateStr: string, locale: string): string =>
 // pembanding belum ada atau harganya persis sama -- supaya tidak menampilkan
 // panah yang menyesatkan saat sebenarnya tidak ada perubahan atau memang
 // belum ada histori 2 hari.
+// Ditampilkan dalam bentuk NOMINAL rupiah (bukan persen lagi) supaya user
+// langsung tahu berapa besar pergerakan harganya dalam Rupiah per gram.
 const renderPriceDelta = (
   current: number | null | undefined,
   prev: number | null | undefined,
@@ -49,17 +51,13 @@ const renderPriceDelta = (
   const diff = current - prev;
   if (diff === 0) return null;
   const isUp = diff > 0;
-  const pct = (Math.abs(diff) / prev) * 100;
-  // Persentase super kecil (misal Rp1 dari harga jutaan) tetap dibulatkan ke
-  // 1 desimal -- kalau hasilnya "0.0%" itu artinya memang nyaris tidak
-  // bergerak, bukan bug. Arrow tetap tampil karena diff != 0 di atas.
-  const pctLabel = pct < 0.05 ? "<0.1" : pct.toFixed(1);
+  const diffLabel = formatIDR(Math.abs(diff));
   return (
     <span
       className={`inline-flex items-center gap-0.5 whitespace-nowrap ${isUp ? "text-emerald-400" : "text-red-400"}`}
-      title={t(isUp ? "gold.price_up_hint" : "gold.price_down_hint", { pct: pctLabel })}
+      title={t(isUp ? "gold.price_up_hint" : "gold.price_down_hint", { amount: diffLabel })}
     >
-      {isUp ? "▲" : "▼"} {pctLabel}%
+      {isUp ? "▲" : "▼"} {diffLabel}
     </span>
   );
 };
@@ -250,23 +248,29 @@ export const GoldSavings: React.FC = () => {
 
     return (
       <motion.div key={p.id} initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }} className={isFlipped ? "relative z-50" : "relative"}>
-        <div className="[perspective:1200px] h-48">
+        {/* Tinggi kartu SENGAJA tidak di-fix (dulu h-48 tetap) -- kartu jadi
+            "min-height" saja dan boleh tumbuh mengikuti konten (nominal
+            untung/rugi, catatan, dsb). Sisi depan tetap di alur normal
+            (bukan absolute) supaya tingginya menentukan tinggi wrapper;
+            sisi belakang absolute inset-0 mengikuti tinggi itu. Ini supaya
+            teks nominal yang panjang tidak pernah terpotong / bertabrakan
+            dengan elemen lain, apa pun panjang angkanya. */}
+        <div className="[perspective:1200px]">
           <div
-            className={`relative w-full h-full transition-transform duration-500 [transform-style:preserve-3d] rounded-2xl ${isFlipped ? "[transform:rotateY(180deg)]" : ""}`}
+            className={`relative w-full min-h-48 transition-transform duration-500 [transform-style:preserve-3d] rounded-2xl ${isFlipped ? "[transform:rotateY(180deg)]" : ""}`}
           >
             {/* ===== SISI DEPAN: kartu emas fisik (tap untuk buka aksi) =====
                 pointer-events-none saat isFlipped: backface-visibility:hidden
                 SAJA tidak cukup di beberapa browser mobile -- elemen yang
                 "tersembunyi" secara visual kadang masih ke-hit-test dan
-                mencegat tap yang seharusnya kena tombol di sisi belakang.
-                Inilah akar dari laporan "tombolnya kadang susah diklik". */}
+                mencegat tap yang seharusnya kena tombol di sisi belakang. */}
             <div
               role="button"
               tabIndex={isFlipped ? -1 : 0}
               aria-label={t("gold.card_show_actions")}
               onClick={() => !isFlipped && toggleFlip(p.id)}
               onKeyDown={(e) => { if (!isFlipped && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); toggleFlip(p.id); } }}
-              className={`absolute inset-0 rounded-2xl p-3.5 flex flex-col justify-between [backface-visibility:hidden] shadow-lg gold-card-shine cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${p.is_archived ? "is-archived" : ""} ${isFlipped ? "pointer-events-none" : ""}`}
+              className={`relative w-full min-h-48 rounded-2xl p-3.5 flex flex-col justify-between gap-2 [backface-visibility:hidden] shadow-lg gold-card-shine cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-amber-400 ${p.is_archived ? "is-archived" : ""} ${isFlipped ? "pointer-events-none" : ""}`}
             >
               <div className="relative z-[1] flex items-start justify-between gap-2">
                 <div className="min-w-0">
@@ -285,18 +289,21 @@ export const GoldSavings: React.FC = () => {
                 {p.notes && <p className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-amber-900/70 italic truncate mt-1">{p.notes}</p>}
               </div>
 
-              <div className="relative z-[1] flex items-end justify-between gap-1.5">
-                <div className="min-w-0">
-                  <p className="text-[10px] font-bold text-amber-950 leading-tight whitespace-nowrap tabular-nums tracking-tight">
-                    {marketValue != null ? formatIDR(marketValue) : t("gold.price_unavailable_short")}
-                  </p>
-                  {isEstimated && <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-amber-900/60 truncate">{t("gold.est_from_sell_price_note")}</p>}
-                  {p.cash_locked_amount === 0 && p.grams_owned > 0 && (
-                    <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-amber-900/60 truncate">{t("gold.no_cost_basis_note")}</p>
-                  )}
-                </div>
+              {/* Nominal nilai pasar & badge untung/rugi ditumpuk VERTIKAL
+                  (bukan bersebelahan seperti sebelumnya) supaya keduanya
+                  tidak pernah berebut ruang horizontal di kartu yang
+                  sempit -- itulah penyebab teks yang tadinya bertabrakan/
+                  saling tumpang tindih. */}
+              <div className="relative z-[1] flex flex-col gap-1">
+                <p className="text-[10px] font-bold text-amber-950 leading-tight tabular-nums tracking-tight break-words">
+                  {marketValue != null ? formatIDR(marketValue) : t("gold.price_unavailable_short")}
+                </p>
+                {isEstimated && <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-amber-900/60 leading-snug">{t("gold.est_from_sell_price_note")}</p>}
+                {p.cash_locked_amount === 0 && p.grams_owned > 0 && (
+                  <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-amber-900/60 leading-snug">{t("gold.no_cost_basis_note")}</p>
+                )}
                 {gainLoss != null && p.grams_owned > 0 && p.cash_locked_amount > 0 && (
-                  <span className={`relative shrink-0 whitespace-nowrap inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[clamp(0.5344rem,2.47vw,0.5938rem)] font-bold ${gainLoss >= 0 ? "bg-black/15 text-emerald-950" : "bg-black/25 text-red-950"}`}>
+                  <span className={`relative self-start inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[clamp(0.5344rem,2.47vw,0.5938rem)] font-bold ${gainLoss >= 0 ? "bg-black/15 text-emerald-950" : "bg-black/25 text-red-950"}`}>
                     {gainLoss >= 0 ? "▲" : "▼"} {formatIDR(Math.abs(gainLoss))}
                     <span onClick={(e) => e.stopPropagation()} className="text-black/50">
                       <InfoTooltip text={t("gold.unrealized_tooltip")} align="left" />
