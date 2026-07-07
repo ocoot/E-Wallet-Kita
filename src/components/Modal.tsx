@@ -12,6 +12,7 @@ interface ModalProps {
   onConfirm: () => void | Promise<void>;
   onCancel: () => void;
   confirmDisabled?: boolean;
+  zIndex?: number;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -23,28 +24,29 @@ export const Modal: React.FC<ModalProps> = ({
   cancelLabel,
   onConfirm,
   onCancel,
-  confirmDisabled = false
+  confirmDisabled = false,
+  zIndex = 50
 }) => {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Overlay background */}
+        <>
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onCancel}
             className="fixed inset-0 bg-black/60 backdrop-blur-xs"
+            style={{ zIndex: zIndex - 1 }}
           />
-
+          <div className="fixed inset-0 flex items-center justify-center p-4" style={{ zIndex }}>
           {/* Modal core window */}
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 15 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className={`relative z-10 w-full max-w-md overflow-hidden rounded-2xl border p-6 shadow-2xl transition-colors duration-300
+            className={`w-full max-w-md overflow-hidden rounded-2xl border p-6 shadow-2xl transition-colors duration-300
               ${type === "danger" 
                 ? "bg-slate-900 border-red-500/30 text-white dark_obsidian:bg-slate-900 light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-red-200" 
                 : "bg-slate-900 border-indigo-500/20 text-white dark_obsidian:bg-slate-900 light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
@@ -110,6 +112,7 @@ export const Modal: React.FC<ModalProps> = ({
             </div>
           </motion.div>
         </div>
+      </>
       )}
     </AnimatePresence>
   );

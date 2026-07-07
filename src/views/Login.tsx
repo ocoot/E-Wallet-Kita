@@ -696,6 +696,7 @@ function AuthSlideOver({ isOpen, onClose }: { isOpen: boolean; onClose: () => vo
             cancelLabel={t("common.cancel")}
             onConfirm={confirmModal.onConfirm}
             onCancel={() => { audioFeedback.playClick(); setConfirmModal((p) => ({ ...p, isOpen: false })); }}
+            zIndex={90}
           />
 
           <AnimatePresence>
