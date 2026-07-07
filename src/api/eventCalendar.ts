@@ -394,7 +394,11 @@ export async function fetchFootballMatches(dateStr: string): Promise<SportsDbEve
 
     return allEvents;
   } catch (err) {
-    console.warn(`[eventCalendar] Gagal fetch pertandingan ${dateStr}:`, err);
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      // offline — silent, wajar
+    } else {
+      console.debug(`[eventCalendar] Gagal fetch pertandingan ${dateStr}:`, err);
+    }
     return [];
   }
 }
