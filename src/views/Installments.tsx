@@ -205,7 +205,7 @@ export const Installments: React.FC = () => {
               </div>
               <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-3 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_monthly_commitment")}</span>
-                <p className="font-bold text-[13px] leading-tight break-words text-slate-200 light_sakura:text-slate-700">{formatIDR(totalMonthlyCommitment)}</p>
+                <p className="font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight text-slate-200 light_sakura:text-slate-700">{formatIDR(totalMonthlyCommitment)}</p>
               </div>
             </div>
           )}

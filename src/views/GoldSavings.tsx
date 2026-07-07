@@ -287,7 +287,7 @@ export const GoldSavings: React.FC = () => {
 
               <div className="relative z-[1] flex items-end justify-between gap-1.5">
                 <div className="min-w-0">
-                  <p className="text-[10.5px] font-bold text-amber-950 leading-tight break-words">
+                  <p className="text-[10px] font-bold text-amber-950 leading-tight whitespace-nowrap tabular-nums tracking-tight">
                     {marketValue != null ? formatIDR(marketValue) : t("gold.price_unavailable_short")}
                   </p>
                   {isEstimated && <p className="text-[8px] text-amber-900/60 truncate">{t("gold.est_from_sell_price_note")}</p>}
@@ -398,21 +398,21 @@ export const GoldSavings: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="rounded-2xl bg-amber-500/8 border border-amber-500/15 px-3 py-3 light_sakura:bg-amber-50/60 light_sakura:border-amber-100">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_total_grams")}</span>
-              <p className="font-bold text-sm sm:text-lg leading-tight break-words text-amber-400 light_sakura:text-amber-600">{formatGrams(summary.total_grams)}</p>
+              <p className="font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight text-amber-400 light_sakura:text-amber-600">{formatGrams(summary.total_grams)}</p>
             </div>
             <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-3 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_market_value")}</span>
-              <p className="font-bold text-sm sm:text-lg leading-tight break-words text-indigo-400 light_sakura:text-indigo-600">{formatIDR(summary.total_market_value)}</p>
+              <p className="font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight text-indigo-400 light_sakura:text-indigo-600">{formatIDR(summary.total_market_value)}</p>
             </div>
             <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-3 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_cash_locked")}</span>
-              <p className="font-bold text-sm sm:text-lg leading-tight break-words text-slate-200 light_sakura:text-slate-700">{formatIDR(summary.total_cash_locked)}</p>
+              <p className="font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight text-slate-200 light_sakura:text-slate-700">{formatIDR(summary.total_cash_locked)}</p>
             </div>
             <div className={`rounded-2xl border px-3 py-3 ${summary.unrealized_gain_loss >= 0
               ? "bg-emerald-500/8 border-emerald-500/15 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100"
               : "bg-red-500/8 border-red-500/15 light_sakura:bg-red-50/60 light_sakura:border-red-100"}`}>
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_gain_loss")}</span>
-              <p className={`font-bold text-sm sm:text-lg leading-tight break-words ${summary.unrealized_gain_loss >= 0 ? "text-emerald-400 light_sakura:text-emerald-600" : "text-red-400 light_sakura:text-red-500"}`}>
+              <p className={`font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight ${summary.unrealized_gain_loss >= 0 ? "text-emerald-400 light_sakura:text-emerald-600" : "text-red-400 light_sakura:text-red-500"}`}>
                 {summary.unrealized_gain_loss >= 0 ? "+" : ""}{formatIDR(summary.unrealized_gain_loss)}
               </p>
             </div>
