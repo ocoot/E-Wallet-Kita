@@ -9,8 +9,8 @@ import { useBudgets } from "../hooks/useBudgets";
 import { getWeatherTheme } from "../lib/weatherTheme";
 import { DashboardWeatherLayer } from "./DashboardWeatherLayer";
 import { WeatherDebugToggle, WeatherDebugOverride } from "./WeatherDebugToggle";
-import { getActiveEvent, fetchAllHolidays } from "../api/eventCalendar";
-import type { NagerHoliday } from "../api/eventCalendar";
+import { getActiveEvent, fetchAllEvents } from "../api/eventCalendar";
+import type { NagerHoliday, SportsDbEvent } from "../api/eventCalendar";
 import type { OverlayType } from "../api/eventCalendar";
 
 interface DashboardHeaderProps {
@@ -31,18 +31,22 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   // preview visual (tidak mengubah/menyimpan apa pun).
   const [debugOverride, setDebugOverride] = useState<WeatherDebugOverride | null>(null);
 
-  // ── Deteksi event/liburan aktif ──
+  // ── Deteksi event/liburan & sepakbola aktif ──
   const [holidays, setHolidays] = useState<NagerHoliday[] | null>(null);
+  const [footballMatches, setFootballMatches] = useState<SportsDbEvent[] | null>(null);
 
   useEffect(() => {
     let cancelled = false;
-    fetchAllHolidays().then((data) => {
-      if (!cancelled) setHolidays(data);
+    fetchAllEvents().then((data) => {
+      if (!cancelled) {
+        setHolidays(data.holidays);
+        setFootballMatches(data.footballMatches);
+      }
     });
     return () => { cancelled = true; };
   }, []);
 
-  const activeEvent = holidays ? getActiveEvent(new Date(), holidays) : null;
+  const activeEvent = getActiveEvent(new Date(), holidays, footballMatches);
   const eventOverlay: OverlayType | null = activeEvent?.event.overlay.type ?? null;
 
   const effectiveWeather: { condition: WeatherDebugOverride["condition"]; isDay: boolean } | null = debugOverride

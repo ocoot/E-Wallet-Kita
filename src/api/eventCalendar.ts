@@ -4,8 +4,8 @@
  * Piala Dunia, dll) untuk overlay dekoratif di Dashboard.
  *
  * API: https://date.nager.at (gratis, tanpa API key)
- * Fallback: data statis untuk hari libur utama (agar tetap berfungsi saat
- * offline / koneksi lambat / API sedang down).
+ * API: https://thesportsdb.com (gratis, tanpa API key — jadwal sepakbola)
+ * Fallback: data statis untuk hari libur & event olahraga utama.
  *
  * Cache: hasil fetch API disimpan di localStorage 24 jam.
  */
@@ -105,6 +105,44 @@ const MANUAL_EVENTS: CalendarEvent[] = [
 ];
 
 /* ──────────────────────────────────────────────────────
+ * Event sepakbola — turnamen besar (tanggal tetap)
+ * ────────────────────────────────────────────────────── */
+const SPORTS_EVENTS: CalendarEvent[] = [
+  {
+    id: "fifa-world-cup",
+    name: { id: "Piala Dunia FIFA", en: "FIFA World Cup" },
+    // Piala Dunia 2026: 11 Juni – 19 Juli (host USA/Kanada/Meksiko)
+    range: { start: { month: 6, day: 11 }, end: { month: 7, day: 19 } },
+    overlay: { type: "confetti", emoji: "⚽" },
+    countryCode: "*",
+  },
+  {
+    id: "uefa-champions-league",
+    name: { id: "Liga Champions UEFA", en: "UEFA Champions League" },
+    // Final UCL biasanya akhir Mei/awal Juni
+    range: { start: { month: 5, day: 25 }, end: { month: 6, day: 3 } },
+    overlay: { type: "sparkles", emoji: "🏆" },
+    countryCode: "*",
+  },
+  {
+    id: "uefa-euro",
+    name: { id: "Piala Eropa UEFA", en: "UEFA Euro" },
+    // Euro 2028: tbd, tapi kita pakai range perkiraan Juni-Juli tahun genap
+    range: { start: { month: 6, day: 14 }, end: { month: 7, day: 14 } },
+    overlay: { type: "confetti", emoji: "🇪🇺" },
+    countryCode: "*",
+  },
+  {
+    id: "olympic-football",
+    name: { id: "Sepakbola Olimpiade", en: "Olympic Football" },
+    // Olimpiade 2028 Los Angeles: Juli-Agustus
+    range: { start: { month: 7, day: 20 }, end: { month: 8, day: 10 } },
+    overlay: { type: "confetti", emoji: "🥇" },
+    countryCode: "*",
+  },
+];
+
+/* ──────────────────────────────────────────────────────
  * Pemetaan hari libur Nager.Date → overlay & emoji
  * ────────────────────────────────────────────────────── */
 interface HolidayMapEntry {
@@ -145,7 +183,7 @@ const HOLIDAY_OVERLAY_MAP: Record<string, HolidayMapEntry> = {
 };
 
 /* ──────────────────────────────────────────────────────
- * API Nager.Date
+ * API Nager.Date — hari libur nasional
  * ────────────────────────────────────────────────────── */
 
 export interface NagerHoliday {
@@ -256,7 +294,149 @@ const STATIC_HOLIDAYS_2026_US: NagerHoliday[] = [
 ];
 
 /* ──────────────────────────────────────────────────────
- * Deteksi event aktif
+ * API TheSportsDB — jadwal pertandingan sepakbola
+ * ────────────────────────────────────────────────────── */
+
+/**
+ * Liga-liga top yang kita pantau.
+ * Key = idLeague, Value = nama singkat (untuk log & matching).
+ *
+ * TheSportsDB free tier v3 mencakup liga-liga ini. FIFA World Cup juga
+ * muncul di eventsday.php saat pertandingan sedang berlangsung.
+ */
+const TRACKED_LEAGUES: Record<string, string> = {
+  "4328": "English Premier League",
+  "4331": "German Bundesliga",
+  "4332": "Italian Serie A",
+  "4335": "Spanish La Liga",
+};
+
+export interface SportsDbEvent {
+  idEvent: string;
+  idLeague?: string;
+  strEvent: string;
+  strLeague: string;
+  strSeason: string;
+  dateEvent: string;
+  strTime: string;
+  strHomeTeam: string;
+  strAwayTeam: string;
+  strStatus: string;
+  strThumb?: string;
+}
+
+const SPORTS_CACHE_KEY = "ewk_sports_cache_v1";
+const SPORTS_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 jam
+
+interface SportsCache {
+  fetchedAt: number;
+  events: { date: string; leagueId: string; data: SportsDbEvent[] }[];
+}
+
+function readSportsCache(): SportsCache | null {
+  try {
+    const raw = localStorage.getItem(SPORTS_CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as SportsCache;
+    if (Date.now() - parsed.fetchedAt > SPORTS_CACHE_TTL_MS) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeSportsCache(events: SportsCache["events"]) {
+  try {
+    localStorage.setItem(
+      SPORTS_CACHE_KEY,
+      JSON.stringify({ fetchedAt: Date.now(), events })
+    );
+  } catch {
+    // abaikan
+  }
+}
+
+/**
+ * Fetch pertandingan sepakbola dari TheSportsDB untuk tanggal tertentu.
+ * Otomatis coba semua liga yang di-track.
+ */
+export async function fetchFootballMatches(dateStr: string): Promise<SportsDbEvent[]> {
+  const cached = readSportsCache();
+  const cacheKey = { date: dateStr, leagueId: "all" };
+
+  if (cached) {
+    const hit = cached.events.find((e) => e.date === dateStr && e.leagueId === "all");
+    if (hit) return hit.data;
+  }
+
+  try {
+    const resp = await fetch(
+      `https://www.thesportsdb.com/api/v1/json/3/eventsday.php?d=${dateStr}&s=Soccer`,
+      { signal: AbortSignal.timeout(8000) }
+    );
+    if (!resp.ok) throw new Error(`TheSportsDB responded ${resp.status}`);
+
+    const data = await resp.json();
+    const allEvents: SportsDbEvent[] = (data?.events || []).filter(
+      (e: SportsDbEvent) =>
+        e.strLeague &&
+        (Object.keys(TRACKED_LEAGUES).includes(e.idLeague) ||
+         e.strLeague === "FIFA World Cup")
+    );
+
+    // Simpan ke cache
+    const existing = readSportsCache();
+    const newEvents = [
+      ...(existing?.events || []).filter((e) => !(e.date === dateStr && e.leagueId === "all")),
+      { date: dateStr, leagueId: "all", data: allEvents },
+    ];
+    writeSportsCache(newEvents);
+
+    return allEvents;
+  } catch (err) {
+    console.warn(`[eventCalendar] Gagal fetch pertandingan ${dateStr}:`, err);
+    return [];
+  }
+}
+
+/**
+ * Cek apakah ada pertandingan dari liga top pada hari ini.
+ * Kalau ada, trigger overlay confetti ringan dengan emoji ⚽.
+ */
+function matchFootballMatchday(today: Date, matches: SportsDbEvent[]): CalendarEvent | null {
+  if (!matches || matches.length === 0) return null;
+
+  // Minimal 3 pertandingan dari liga top = matchday (bukan cuma 1-2)
+  const topLeagueCount = matches.filter((m) =>
+    Object.keys(TRACKED_LEAGUES).includes(
+      // cari idLeague dari match — sayangnya response eventsday tidak
+      // selalu menyertakan idLeague di semua versi, fallback ke strLeague
+      (m as any).idLeague ?? ""
+    )
+  ).length;
+
+  if (topLeagueCount < 3) return null;
+
+  return {
+    id: `football-matchday-${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`,
+    name: { id: "Matchday Sepakbola", en: "Football Matchday" },
+    overlay: { type: "confetti", emoji: "⚽" },
+    countryCode: "*",
+  };
+}
+
+/**
+ * Ambil semua data sepakbola untuk hari ini — dari cache kalau ada,
+ * dari API kalau belum. Panggil sekali di DashboardHeader.
+ */
+export async function fetchTodayFootball(): Promise<SportsDbEvent[]> {
+  const today = new Date();
+  const dateStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  return fetchFootballMatches(dateStr);
+}
+
+/* ──────────────────────────────────────────────────────
+ * Deteksi event aktif (gabungan)
  * ────────────────────────────────────────────────────── */
 
 function dateToKey(date: Date): string {
@@ -344,30 +524,37 @@ function matchHoliday(
  */
 export interface ActiveEventResult {
   event: CalendarEvent;
-  source: "manual" | "api" | "static-fallback";
+  source: "manual" | "api" | "static-fallback" | "sports";
 }
 
 /**
  * Cari event yang aktif untuk tanggal tertentu.
  *
  * Prioritas:
- *  1. Manual events (Valentine, dll) — paling spesifik
+ *  1. Manual events & sports events (Valentine, Piala Dunia, dll) — paling spesifik
  *  2. API Nager.Data holidays (kalau sudah di-fetch & cocok)
  *  3. Fallback statis (kalau API gagal)
+ *  4. Matchday sepakbola dari liga top (kalau ada pertandingan hari ini)
  *
  * @param holidaysFromApi Hasil fetch dari Nager.Date (opsional — bisa null
- *   kalau belum di-fetch / masih loading). Fungsi ini tetap butuh data array
- *   untuk melakukan pengecekan.
+ *   kalau belum di-fetch / masih loading).
+ * @param footballMatches Hasil fetch dari TheSportsDB (opsional — null kalau
+ *   belum di-fetch).
  */
 export function getActiveEvent(
   today: Date,
-  holidaysFromApi: NagerHoliday[] | null
+  holidaysFromApi: NagerHoliday[] | null,
+  footballMatches?: SportsDbEvent[] | null
 ): ActiveEventResult | null {
   // 1. Cek manual events dulu — override prioritas
   const manual = matchManualEvent(MANUAL_EVENTS, today);
   if (manual) return { event: manual, source: "manual" };
 
-  // 2. Cek dari API / fallback statis
+  // 2. Cek sports events (Piala Dunia, UCL, Euro, Olimpiade) — override juga
+  const sports = matchManualEvent(SPORTS_EVENTS, today);
+  if (sports) return { event: sports, source: "sports" };
+
+  // 3. Cek dari API / fallback statis
   let holidays = holidaysFromApi;
   if (!holidays || holidays.length === 0) {
     // Fallback ke data statis berdasarkan tahun
@@ -382,20 +569,35 @@ export function getActiveEvent(
   const matched = matchHoliday(today, holidays);
   if (matched) return { event: matched, source: holidaysFromApi ? "api" : "static-fallback" };
 
+  // 4. Cek matchday sepakbola dari liga top
+  if (footballMatches) {
+    const matchday = matchFootballMatchday(today, footballMatches);
+    if (matchday) return { event: matchday, source: "sports" };
+  }
+
   return null;
 }
 
 /**
- * Hook-friendly helper: ambil data holiday dari API untuk kedua negara.
+ * Hook-friendly helper: ambil data holiday + sepakbola dari API.
  * Panggil sekali di komponen DashboardHeader.
+ *
+ * Returns: { holidays, footballMatches }
  */
-export async function fetchAllHolidays(): Promise<NagerHoliday[]> {
+export async function fetchAllEvents(): Promise<{
+  holidays: NagerHoliday[];
+  footballMatches: SportsDbEvent[];
+}> {
   const year = new Date().getFullYear();
 
-  const [idHolidays, usHolidays] = await Promise.all([
+  const [idHolidays, usHolidays, footballMatches] = await Promise.all([
     fetchHolidays("ID", year),
     fetchHolidays("US", year),
+    fetchTodayFootball(),
   ]);
 
-  return [...idHolidays, ...usHolidays];
+  return {
+    holidays: [...idHolidays, ...usHolidays],
+    footballMatches,
+  };
 }
