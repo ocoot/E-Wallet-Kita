@@ -275,7 +275,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
         {/* Running text maintenance banner, shown globally above all pages */}
         <MaintenanceBanner />
 
-        <div className="p-4 sm:p-6 lg:p-8">
+        <div className="p-4 sm:p-6 lg:p-8 pb-40">
           <div className="max-w-7xl mx-auto w-full">
             <Breadcrumbs />
             <AnimatePresence mode="wait">

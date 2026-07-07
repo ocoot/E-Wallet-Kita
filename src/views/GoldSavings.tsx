@@ -285,9 +285,9 @@ export const GoldSavings: React.FC = () => {
                 {p.notes && <p className="text-[9px] text-amber-900/70 italic truncate mt-1">{p.notes}</p>}
               </div>
 
-              <div className="relative z-[1] flex items-end justify-between gap-2">
+              <div className="relative z-[1] flex items-end justify-between gap-1.5">
                 <div className="min-w-0">
-                  <p className="text-[10.5px] font-bold text-amber-950 truncate">
+                  <p className="text-[10.5px] font-bold text-amber-950 leading-tight break-words">
                     {marketValue != null ? formatIDR(marketValue) : t("gold.price_unavailable_short")}
                   </p>
                   {isEstimated && <p className="text-[8px] text-amber-900/60 truncate">{t("gold.est_from_sell_price_note")}</p>}
@@ -296,7 +296,7 @@ export const GoldSavings: React.FC = () => {
                   )}
                 </div>
                 {gainLoss != null && p.grams_owned > 0 && p.cash_locked_amount > 0 && (
-                  <span className={`relative shrink-0 inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9.5px] font-bold ${gainLoss >= 0 ? "bg-black/15 text-emerald-950" : "bg-black/25 text-red-950"}`}>
+                  <span className={`relative shrink-0 whitespace-nowrap inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[9.5px] font-bold ${gainLoss >= 0 ? "bg-black/15 text-emerald-950" : "bg-black/25 text-red-950"}`}>
                     {gainLoss >= 0 ? "▲" : "▼"} {formatIDR(Math.abs(gainLoss))}
                     <span onClick={(e) => e.stopPropagation()} className="text-black/50">
                       <InfoTooltip text={t("gold.unrealized_tooltip")} align="left" />
@@ -396,23 +396,23 @@ export const GoldSavings: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="rounded-2xl bg-amber-500/8 border border-amber-500/15 px-4 py-3 light_sakura:bg-amber-50/60 light_sakura:border-amber-100">
+            <div className="rounded-2xl bg-amber-500/8 border border-amber-500/15 px-3 py-3 light_sakura:bg-amber-50/60 light_sakura:border-amber-100">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_total_grams")}</span>
-              <p className="font-bold text-sm sm:text-lg text-amber-400 light_sakura:text-amber-600 truncate">{formatGrams(summary.total_grams)}</p>
+              <p className="font-bold text-sm sm:text-lg leading-tight break-words text-amber-400 light_sakura:text-amber-600">{formatGrams(summary.total_grams)}</p>
             </div>
-            <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-4 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
+            <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-3 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_market_value")}</span>
-              <p className="font-bold text-sm sm:text-lg text-indigo-400 light_sakura:text-indigo-600 truncate">{formatIDR(summary.total_market_value)}</p>
+              <p className="font-bold text-sm sm:text-lg leading-tight break-words text-indigo-400 light_sakura:text-indigo-600">{formatIDR(summary.total_market_value)}</p>
             </div>
-            <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-4 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
+            <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-3 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_cash_locked")}</span>
-              <p className="font-bold text-sm sm:text-lg text-slate-200 light_sakura:text-slate-700 truncate">{formatIDR(summary.total_cash_locked)}</p>
+              <p className="font-bold text-sm sm:text-lg leading-tight break-words text-slate-200 light_sakura:text-slate-700">{formatIDR(summary.total_cash_locked)}</p>
             </div>
-            <div className={`rounded-2xl border px-4 py-3 ${summary.unrealized_gain_loss >= 0
+            <div className={`rounded-2xl border px-3 py-3 ${summary.unrealized_gain_loss >= 0
               ? "bg-emerald-500/8 border-emerald-500/15 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100"
               : "bg-red-500/8 border-red-500/15 light_sakura:bg-red-50/60 light_sakura:border-red-100"}`}>
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_gain_loss")}</span>
-              <p className={`font-bold text-sm sm:text-lg truncate ${summary.unrealized_gain_loss >= 0 ? "text-emerald-400 light_sakura:text-emerald-600" : "text-red-400 light_sakura:text-red-500"}`}>
+              <p className={`font-bold text-sm sm:text-lg leading-tight break-words ${summary.unrealized_gain_loss >= 0 ? "text-emerald-400 light_sakura:text-emerald-600" : "text-red-400 light_sakura:text-red-500"}`}>
                 {summary.unrealized_gain_loss >= 0 ? "+" : ""}{formatIDR(summary.unrealized_gain_loss)}
               </p>
             </div>

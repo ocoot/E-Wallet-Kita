@@ -7,6 +7,7 @@ import { useCategories } from "../hooks/useCategories";
 import { useInstallments, InstallmentWithProgress } from "../hooks/useInstallments";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
+import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import {
@@ -193,18 +194,18 @@ export const Installments: React.FC = () => {
 
           {/* Summary */}
           {installments.length > 0 && (
-            <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-4 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-3 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_active")}</span>
                 <p className="font-bold text-2xl text-indigo-400 light_sakura:text-indigo-600">{activeCount}</p>
               </div>
-              <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-4 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
+              <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-3 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_completed")}</span>
                 <p className="font-bold text-2xl text-emerald-400 light_sakura:text-emerald-600">{completedCount}</p>
               </div>
-              <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-4 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
+              <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-3 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_monthly_commitment")}</span>
-                <p className="font-bold text-sm sm:text-lg text-slate-200 light_sakura:text-slate-700 truncate">{formatIDR(totalMonthlyCommitment)}</p>
+                <p className="font-bold text-[13px] leading-tight break-words text-slate-200 light_sakura:text-slate-700">{formatIDR(totalMonthlyCommitment)}</p>
               </div>
             </div>
           )}
@@ -220,7 +221,7 @@ export const Installments: React.FC = () => {
             <div className="space-y-4">
               {/* ── Formasi carousel: geser kartu, ketuk untuk pilih ─────── */}
               <AnimatePresence>
-                <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
+                <ScrollableTableWrapper className="flex gap-3 pb-2 -mx-1 px-1 snap-x snap-mandatory">
                   {installments.map(i => {
                     const isActive = i.id === activeInstallmentId;
                     return (
@@ -244,7 +245,7 @@ export const Installments: React.FC = () => {
                       </motion.button>
                     );
                   })}
-                </div>
+                </ScrollableTableWrapper>
               </AnimatePresence>
 
               {/* ── Panel detail kartu terpilih ───────────────────────────── */}

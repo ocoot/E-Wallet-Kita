@@ -260,41 +260,41 @@ export const History: React.FC<HistoryProps> = ({
 
           {/* ── Stat bar ────────────────────────────────────────────── */}
           {transactions.length > 0 && (
-            <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-2xl bg-red-500/8 border border-red-500/15 px-4 py-3 light_sakura:bg-red-50/60 light_sakura:border-red-100">
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-2xl bg-red-500/8 border border-red-500/15 px-3 py-3 light_sakura:bg-red-50/60 light_sakura:border-red-100">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <TrendingDown size={12} className="text-red-400" />
+                  <TrendingDown size={12} className="text-red-400 shrink-0" />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 light_sakura:text-slate-400">
                     {t("dashboard.expense")}
                   </span>
                 </div>
-                <p className="font-mono font-bold text-sm text-red-400 light_sakura:text-red-600 truncate">
+                <p className="font-bold text-[13px] leading-tight break-words text-red-400 light_sakura:text-red-600">
                   −{formatIDR(stats.expense)}
                 </p>
               </div>
-              <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-4 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
+              <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-3 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
                 <div className="flex items-center gap-1.5 mb-1">
-                  <TrendingUp size={12} className="text-emerald-400" />
+                  <TrendingUp size={12} className="text-emerald-400 shrink-0" />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 light_sakura:text-slate-400">
                     {t("dashboard.income")}
                   </span>
                 </div>
-                <p className="font-mono font-bold text-sm text-emerald-400 light_sakura:text-emerald-600 truncate">
+                <p className="font-bold text-[13px] leading-tight break-words text-emerald-400 light_sakura:text-emerald-600">
                   +{formatIDR(stats.income)}
                 </p>
               </div>
-              <div className={`rounded-2xl px-4 py-3 border ${
+              <div className={`rounded-2xl px-3 py-3 border ${
                 stats.net >= 0
                   ? "bg-indigo-500/8 border-indigo-500/15 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100"
                   : "bg-orange-500/8 border-orange-500/15 light_sakura:bg-orange-50/60 light_sakura:border-orange-100"
               }`}>
                 <div className="flex items-center gap-1.5 mb-1">
-                  <Wallet size={12} className={stats.net >= 0 ? "text-indigo-400" : "text-orange-400"} />
+                  <Wallet size={12} className={`shrink-0 ${stats.net >= 0 ? "text-indigo-400" : "text-orange-400"}`} />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 light_sakura:text-slate-400">
                     {t("dashboard.balance")}
                   </span>
                 </div>
-                <p className={`font-mono font-bold text-sm truncate ${
+                <p className={`font-bold text-[13px] leading-tight break-words ${
                   stats.net >= 0 ? "text-indigo-400 light_sakura:text-indigo-600" : "text-orange-400 light_sakura:text-orange-600"
                 }`}>
                   {stats.net >= 0 ? "+" : ""}{formatIDR(stats.net)}

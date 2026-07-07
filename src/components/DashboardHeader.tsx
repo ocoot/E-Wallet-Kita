@@ -165,25 +165,25 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
         >
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-slate-300 light_sakura:bg-rose-50 light_sakura:border-rose-100/50 light_sakura:text-rose-600 transition-colors duration-300">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium text-slate-300 shrink-0 whitespace-nowrap light_sakura:bg-rose-50 light_sakura:border-rose-100/50 light_sakura:text-rose-600 transition-colors duration-300">
               <Calendar size={12} className="shrink-0" />
               <span>{formattedDate}</span>
             </div>
 
             {weatherLoading && !debugOverride && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-slate-500 animate-pulse">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium text-slate-500 shrink-0 whitespace-nowrap animate-pulse">
                 <span>{t("dashboard.weather_loading")}</span>
               </div>
             )}
 
             {effectiveWeather && weatherTheme && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/5 border border-white/10 rounded-full text-xs font-medium text-slate-300 light_sakura:bg-rose-50 light_sakura:border-rose-100/50 light_sakura:text-rose-600 transition-colors duration-300">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium text-slate-300 shrink-0 whitespace-nowrap light_sakura:bg-rose-50 light_sakura:border-rose-100/50 light_sakura:text-rose-600 transition-colors duration-300">
                 <weatherTheme.icon size={12} className={`shrink-0 ${weatherTheme.accentClass}`} />
                 <span>{locale === "id" ? weatherTheme.labelId : weatherTheme.labelEn}</span>
                 {!debugOverride && weather && (
                   <>
                     <span>· {weather.current.temperatureC}°C</span>
-                    <span className="w-px h-3 bg-white/10 mx-0.5" />
+                    <span className="w-px h-3 bg-white/10 mx-0.5 shrink-0" />
                     <MapPin size={11} className="shrink-0 opacity-70" />
                     <span className="max-w-[9rem] truncate">{weather.location.city}</span>
                   </>

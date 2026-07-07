@@ -274,16 +274,16 @@ export const Savings: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-4 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
+          <div className="grid grid-cols-3 gap-2">
+            <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-3 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_total_saved")}</span>
-              <p className="font-bold text-sm sm:text-lg text-emerald-400 light_sakura:text-emerald-600 truncate">{formatIDR(summary.total_saved)}</p>
+              <p className="font-bold text-[13px] leading-tight break-words text-emerald-400 light_sakura:text-emerald-600">{formatIDR(summary.total_saved)}</p>
             </div>
-            <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-4 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
+            <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-3 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_available_balance")}</span>
-              <p className="font-bold text-sm sm:text-lg text-indigo-400 light_sakura:text-indigo-600 truncate">{availableBalance != null ? formatIDR(availableBalance) : "-"}</p>
+              <p className="font-bold text-[13px] leading-tight break-words text-indigo-400 light_sakura:text-indigo-600">{availableBalance != null ? formatIDR(availableBalance) : "-"}</p>
             </div>
-            <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-4 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
+            <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-3 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_pocket_count")}</span>
               <p className="font-bold text-2xl text-slate-200 light_sakura:text-slate-700">{summary.pocket_count}</p>
             </div>
