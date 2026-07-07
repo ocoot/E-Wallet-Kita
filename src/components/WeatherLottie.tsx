@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import lottie from "lottie-web";
-import type { AnimationItem } from "lottie-web";
+import lottie, { AnimationItem } from "lottie-web";
 import { WeatherCondition } from "../hooks/useWeather";
 
 // Animasi resmi dari paket npm @meteocons/lottie (Bas Milius, MIT license:

@@ -31,11 +31,5 @@ declare module "lottie-web" {
   }
 
   const lottie: LottiePlayer;
-  export { AnimationItem };
   export default lottie;
-}
-
-declare module "@meteocons/lottie/fill/*.json" {
-  const data: object;
-  export default data;
 }

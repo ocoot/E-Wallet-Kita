@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { dbService } from "../lib/db";
 import { supabase } from "../lib/supabase";
@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import { Plus, BookOpen, X, Layers } from "lucide-react";
 import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
-import { useGsapScrollFade } from "../hooks/useGsapAnimations";
 
 import { DashboardHeader } from "../components/DashboardHeader";
 import { DashboardChart } from "../components/DashboardChart";
@@ -220,18 +219,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const chartData = getChartData();
 
-  const overviewRef = useRef<HTMLDivElement>(null);
-  const budgetRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<HTMLDivElement>(null);
-  const recentRef = useRef<HTMLDivElement>(null);
-
-  useGsapScrollFade(overviewRef);
-  useGsapScrollFade(budgetRef);
-  useGsapScrollFade(chartRef);
-  useGsapScrollFade(recentRef);
-
   return (
-    <div className="space-y-6 pb-24 relative overflow-x-hidden w-full max-w-full">
+    <div className="space-y-6 pb-24 relative">
       {/* 1. Welcome Message Banner */}
       <DashboardHeader 
         currentUser={currentUser} 
@@ -247,13 +236,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
           {t("dashboard.overall_summary_label")}
         </h3>
       </div>
-      <div ref={overviewRef}>
-        <DashboardOverviewCard
-          refreshTrigger={transactionsUpdatedTrigger}
-          formatIDR={formatIDR}
-          monthlySummary={summary}
-        />
-      </div>
+      <DashboardOverviewCard
+        refreshTrigger={transactionsUpdatedTrigger}
+        formatIDR={formatIDR}
+        monthlySummary={summary}
+      />
 
       {/* Onboarding Interactive Banner for new users */}
       {showOnboardingBanner && (
@@ -304,7 +291,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           (strip "Bulan Ini") supaya tidak ada 2 grup kartu saldo terpisah. */}
 
       {/* 2b. Budget Summary & Bill Reminders */}
-      <div ref={budgetRef} className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <DashboardBudgetSummary />
         <DashboardBillReminders />
         <DashboardInstallments />
@@ -314,7 +301,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <DashboardBudgetAlerts />
 
       {/* 3. Graphic Chart Trends */}
-      <div ref={chartRef}>
       <DashboardChart 
         transactions={transactions}
         chartData={chartData}
@@ -327,10 +313,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         labelBalance={labelBalance}
         formatIDR={formatIDR}
       />
-      </div>
 
       {/* 4. Recent Transactions Section (Last 5 Entries) */}
-      <div ref={recentRef}>
       <DashboardRecentTransactions 
         transactions={transactions}
         formatIDR={formatIDR}
@@ -338,7 +322,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         onNavigateToHistory={() => navigate("/transactions")}
         categories={categories}
       />
-      </div>
 
       {/* 5. Modern quick add transaction floating action button */}
       <div className="fixed bottom-6 right-6 z-40 hidden sm:block">

@@ -1,11 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap') layer(fonts);
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap') layer(fonts);
 @import "tailwindcss";
 
 @theme {
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-display: "Outfit", ui-sans-serif, system-ui, sans-serif;
 
+  /*
+   * ── Skala tipografi fluid ──────────────────────────────────────────
+   * Semua ukuran text-xs..text-4xl dibuat responsif pakai clamp() alih-alih
+   * nilai tetap, supaya otomatis sedikit mengecil di layar HP yang sangat
+   * sempit (<~380px lebar) dan tetap di ukuran normal (nilai desain asli)
+   * di HP/tablet pada umumnya -- tanpa perlu breakpoint manual per komponen.
+   * Formula: min = 90% dari ukuran asli, max = ukuran asli (tidak berubah
+   * dari desain awal di layar normal/lebar).
+   */
   --text-xs: clamp(0.675rem, 3.12vw, 0.75rem);
   --text-sm: clamp(0.7875rem, 3.64vw, 0.875rem);
   --text-base: clamp(0.9rem, 4.16vw, 1rem);
@@ -14,16 +22,34 @@
   --text-2xl: clamp(1.35rem, 6.24vw, 1.5rem);
   --text-3xl: clamp(1.6875rem, 7.8vw, 1.875rem);
   --text-4xl: clamp(2.025rem, 9.36vw, 2.25rem);
-  --text-5xl: clamp(2.5rem, 6vw, 3.5rem);
-  --text-6xl: clamp(3rem, 5vw, 5.5rem);
-  --text-7xl: clamp(3.5rem, 6vw, 6.5rem);
 }
 
 @variant light_sakura (.light_sakura &);
 
+/*
+ * ── Skema z-index global ──────────────────────────────────────────
+ * Tailwind v4 tidak mendukung custom named z-index utility lewat
+ * @theme (core utility `z-*` tidak pakai namespace lookup), jadi
+ * skala ini didokumentasikan di sini dan dipakai sebagai angka biasa
+ * (z-30, z-50, z-[60], dst) secara konsisten di seluruh komponen.
+ * Saat menambah modal/overlay baru, gunakan salah satu level berikut
+ * alih-alih menebak angka baru:
+ *
+ *   z-30      -> dropdown / context menu lokal (HistoryExport, dll)
+ *   z-40      -> elemen sticky/floating non-modal (header mobile, FAB)
+ *   z-50      -> SEMUA modal/dialog overlay (Modal, ExportFullModal,
+ *                HistoryEditModal, HistoryDeleteModal, PremiumModal,
+ *                ResetPasswordModal, AdminUserDetailModal, dll)
+ *   z-[60]    -> overlay loading yang blocking (spinner proses async)
+ *   z-[70]    -> toast notification (selalu di atas modal manapun)
+ *   z-[90]    -> banner persisten (mis. prompt update PWA)
+ *   z-[100]   -> overlay sistem kritikal (mis. transisi logout)
+ */
+
+/* Base custom resets */
 html, body {
   font-family: var(--font-sans);
-  background-color: #020617;
+  background-color: #020617; /* Slate-950 by default */
   min-height: 100vh;
   margin: 0;
   padding: 0;
@@ -33,6 +59,7 @@ html, body {
   touch-action: manipulation;
 }
 
+/* Scrollbar customizations */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -51,7 +78,10 @@ html, body {
   background: rgba(99, 102, 241, 0.4);
 }
 
-.dark_obsidian {}
+/* Color theme modifications override classes */
+.dark_obsidian {
+  /* Obsidian colors are natively integrated into Tailwind utility classes of slate grid */
+}
 
 .light_sakura {
   background-color: #fff5f6 !important;
@@ -65,6 +95,12 @@ html, body {
   background: #fca5a5;
 }
 
+/* Running text (marquee) animation used by the maintenance mode banner */
+/* Teks masuk dari luar layar sebelah kanan (100vw, dijamin di luar viewport
+   apa pun ukuran container-nya) lalu meluncur ke kiri sampai benar-benar
+   keluar di sisi kiri (-100% dari lebar teks itu sendiri). Dengan begini
+   pengguna selalu melihat awal kalimat peringatan saat ia muncul dari kanan,
+   bukan langsung "nongol" di tengah lalu hilang. */
 @keyframes maintenance-marquee {
   0% { transform: translateX(100vw); }
   100% { transform: translateX(-100%); }
@@ -76,6 +112,10 @@ html, body {
   animation: maintenance-marquee linear infinite;
 }
 
+/* Progress bar tipis di toast notifikasi — mengecil dari penuh ke kosong
+   selama durasi tampil toast tersebut. Di-pause murni lewat CSS
+   (animation-play-state) saat user hover, supaya tidak perlu re-mount
+   atau hitung ulang titik animasi secara manual. */
 @keyframes toast-progress-shrink {
   from { transform: scaleX(1); }
   to { transform: scaleX(0); }
@@ -91,6 +131,13 @@ html, body {
 .toast-progress-bar.toast-progress-paused {
   animation-play-state: paused;
 }
+
+/* ── Animasi partikel cuaca dinamis (DashboardWeatherLayer) ──────────
+   Dipakai untuk mensimulasikan hujan, salju, awan bergerak, kabut, dan
+   kilat di background welcome banner Dashboard, sesuai kondisi cuaca
+   real-time dari /api/weather. Semua partikel posisi & timing-nya
+   di-generate di JS lalu dikontrol lewat CSS var per elemen supaya tidak
+   perlu banyak keyframe unik. */
 
 @keyframes weather-rain-fall {
   0%   { transform: translate(0, -20%) rotate(13deg); opacity: 0; }
@@ -128,6 +175,10 @@ html, body {
   animation-delay: var(--wx-delay, 0s);
 }
 
+/* Awan melayang satu arah kontinu (angin), bukan bolak-balik "bernapas".
+   Opacity-nya sendiri diambil dari --wx-op (nilai depth/parallax per-awan)
+   supaya bisa di-fade in/out mulus di ujung siklus tanpa kelihatan "lompat"
+   saat animasi mengulang dari awal. */
 @keyframes weather-blob-drift {
   0%   { transform: translate(calc(var(--wx-driftx, 24px) * -1), 0) rotate(var(--wx-rot-base, 0deg)); opacity: 0; }
   12%  { opacity: var(--wx-op, 0.6); }
@@ -171,6 +222,9 @@ html, body {
   pointer-events: none;
 }
 
+/* Kilat yang menerangi seluruh lapisan awan dari dalam (bukan cuma flash
+   layar penuh) -- dipakai bareng .weather-lightning agar terasa datang dari
+   balik awannya sendiri saat kondisi hujan petir. */
 @keyframes weather-sheet-flash {
   0%, 92%, 100% { filter: brightness(1) saturate(1); }
   93%           { filter: brightness(2.4) saturate(1.3); }
@@ -219,11 +273,17 @@ html, body {
   }
 }
 
+/* ── Text balance utilities ─────────────────────────────── */
 .text-balance { text-wrap: balance; }
 .text-pretty  { text-wrap: pretty; }
 
+/* ── Smooth scroll ─────────────────────────────────────── */
 html { scroll-behavior: smooth; }
 
+/* ── Grain / Noise overlay ────────────────────────────────
+   Murah CSS-only noise pakai SVG filter. Dipasang lewat
+   pseudo-element di body supaya tidak perlu pointer-events
+   atau touch-action tambahan. */
 .noise-overlay {
   position: fixed;
   inset: 0;
@@ -240,6 +300,8 @@ html { scroll-behavior: smooth; }
   html { scroll-behavior: auto; }
 }
 
+/* ── Mobile touch target sizing ──────────────────────────────────── */
+/* Ensure all interactive elements have ≥ 44px tap area on mobile */
 @media (max-width: 639px) {
   button, a[role="button"], [role="button"], input, select, textarea,
   .btn-mobile-target {
@@ -250,6 +312,7 @@ html { scroll-behavior: smooth; }
   }
 }
 
+/* ── Horizontal scroll affordance (gradient mask) ──────────────── */
 .scroll-mask-x {
   mask-image: linear-gradient(to right, black calc(100% - 32px), transparent 100%);
   -webkit-mask-image: linear-gradient(to right, black calc(100% - 32px), transparent 100%);
@@ -264,6 +327,10 @@ html { scroll-behavior: smooth; }
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 32px, black calc(100% - 32px), transparent 100%);
 }
 
+/* ── Kartu emas "fisik" (Tabungan Emas, Konsep D) ────────────────────
+   Kartu bisa di-flip (tap) untuk lihat aksi di baliknya. Depan kartu
+   pakai gradient logam + lapisan "kilau" diagonal lewat ::after supaya
+   terasa seperti kartu/lempengan emas sungguhan, bukan flat gradient. */
 .gold-card-shine {
   position: relative;
   background: linear-gradient(135deg, #fde68a 0%, #f59e0b 42%, #b45309 100%);
@@ -287,6 +354,8 @@ html { scroll-behavior: smooth; }
   filter: saturate(0.7);
 }
 
+/* Ticker harga auto-scroll (marquee) -- konten di-duplikasi 2x di JSX
+   supaya loop-nya mulus (translateX 0 -> -50% pas lebar konten asli). */
 @keyframes gold-marquee-scroll {
   from { transform: translateX(0); }
   to   { transform: translateX(-50%); }
@@ -305,61 +374,5 @@ html { scroll-behavior: smooth; }
   }
   .gold-marquee-viewport {
     overflow-x: auto;
-  }
-}
-
-.radial-glow {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(120px);
-  pointer-events: none;
-  opacity: 0.4;
-}
-
-.mesh-gradient {
-  background: radial-gradient(ellipse 80% 60% at 0% 0%, rgba(99,102,241,0.15) 0%, transparent 60%),
-              radial-gradient(ellipse 60% 50% at 100% 100%, rgba(16,185,129,0.1) 0%, transparent 60%),
-              radial-gradient(ellipse 50% 40% at 50% 100%, rgba(124,58,237,0.08) 0%, transparent 50%);
-}
-
-.glass-pill {
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(24px) saturate(1.4);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.infinite-marquee-track {
-  display: flex;
-  width: max-content;
-  animation: marquee-scroll 30s linear infinite;
-}
-
-.infinite-marquee-track:hover {
-  animation-play-state: paused;
-}
-
-@keyframes marquee-scroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
-.horizontal-accordion-slice {
-  transition: flex 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
-}
-
-.gsap-reveal {
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .infinite-marquee-track,
-  .horizontal-accordion-slice {
-    animation: none;
-    transition: none;
-  }
-  .gsap-reveal {
-    opacity: 1;
-    transform: none;
   }
 }
