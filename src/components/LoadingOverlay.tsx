@@ -28,7 +28,7 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ isOpen, message 
             transition={{ type: "spring", duration: 0.3 }}
             className="relative z-10 flex flex-col items-center gap-3 rounded-2xl border border-indigo-500/20 bg-slate-900 px-8 py-7 shadow-2xl light_sakura:bg-rose-50/90 light_sakura:border-rose-100"
           >
-            <Loader2 className="animate-spin text-teal-400 light_sakura:text-rose-500" size={30} />
+            <Loader2 className="animate-spin text-indigo-400 light_sakura:text-rose-500" size={30} />
             <p className="font-sans text-xs font-bold text-slate-200 light_sakura:text-slate-700 text-center max-w-[200px]">
               {message}
             </p>

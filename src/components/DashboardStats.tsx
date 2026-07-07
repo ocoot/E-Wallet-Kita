@@ -90,7 +90,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             />
           </div>
         </div>
-        <p className={`font-mono text-2xl font-bold tracking-tight relative z-10 ${summary.balance >= 0 ? "text-teal-400 light_sakura:text-rose-500" : "text-red-500"}`}>
+        <p className={`font-mono text-2xl font-bold tracking-tight relative z-10 ${summary.balance >= 0 ? "text-emerald-400 light_sakura:text-emerald-600" : "text-red-500"}`}>
           {formatIDR(summary.balance)}
         </p>
         <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 mt-1 light_sakura:text-slate-500 relative z-10">

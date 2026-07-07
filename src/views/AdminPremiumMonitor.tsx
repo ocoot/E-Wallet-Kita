@@ -350,7 +350,7 @@ export const AdminPremiumMonitor: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tx.is_sandbox ? "bg-purple-900/20 light_sakura:bg-purple-50 text-purple-300 light_sakura:text-purple-600" : "bg-teal-900/20 light_sakura:bg-teal-50 text-teal-300 light_sakura:text-teal-600"}`}>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tx.is_sandbox ? "bg-purple-900/20 light_sakura:bg-purple-50 text-purple-300 light_sakura:text-purple-600" : "bg-indigo-900/20 light_sakura:bg-indigo-50 text-indigo-300 light_sakura:text-indigo-600"}`}>
                           {tx.is_sandbox ? t("admin.sandbox_badge") : t("admin.live_badge")}
                         </span>
                       </td>

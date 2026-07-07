@@ -156,7 +156,7 @@ export const AdminAiMonitor: React.FC = () => {
                   onClick={() => setPeriod(d)}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer transition-colors
                     ${period === d
-                      ? "bg-slate-700 light_sakura:bg-white shadow-sm text-teal-400 light_sakura:text-indigo-600"
+                      ? "bg-slate-700 light_sakura:bg-white shadow-sm text-indigo-400 light_sakura:text-indigo-600"
                       : "text-slate-400 light_sakura:text-slate-500 hover:text-slate-200 light_sakura:hover:text-slate-700"
                     }`}
                 >

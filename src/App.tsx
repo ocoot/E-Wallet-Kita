@@ -262,6 +262,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-slate-950 text-white transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:text-slate-800">
       
+      {/*Subtle noise/grain overlay for surface texture */}
+      <div className="noise-overlay" />
+
       {/*Collapsible responsive Navigation Menu */}
       <Sidebar
         onLogoutClick={handleLogoutClick}
@@ -270,8 +273,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
         userDisplayName={userProfile?.display_name}
       />
 
-      {/* Main active subview frame */}
-      <main className={`flex-1 min-h-screen overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}>
+      {/* Main active subview frame — wrapped to prevent horizontal scroll from off-screen animations */}
+      <main className={`flex-1 min-h-screen overflow-y-auto w-full max-w-full transition-all duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}>
         {/* Running text maintenance banner, shown globally above all pages */}
         <MaintenanceBanner />
 
@@ -279,6 +282,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
           <div className="max-w-7xl mx-auto w-full">
             <Breadcrumbs />
             <AnimatePresence mode="wait">
+              <motion.div
+                key={window.location.pathname}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
               <Suspense fallback={<SkeletonByRoute />}>
                 <Routes>
                   <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} />} />
@@ -303,6 +313,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </Suspense>
+              </motion.div>
             </AnimatePresence>
 
             {/* Footer Copyright */}

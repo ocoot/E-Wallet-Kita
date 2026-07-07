@@ -376,7 +376,7 @@ export const Settings: React.FC<SettingsProps> = ({
       
       {/* Main Card */}
       <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
-        <div className="h-1.5 w-full bg-gradient-to-r from-violet-500 via-indigo-500 to-teal-400" />
+        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
         
         {/* View Header */}
@@ -457,7 +457,7 @@ export const Settings: React.FC<SettingsProps> = ({
             {/* Language selector row */}
             <div className="space-y-1.5">
               <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                <Globe size={12} className="text-teal-400 light_sakura:text-rose-500" />
+                <Globe size={12} className="text-indigo-400 light_sakura:text-rose-500" />
                 <span>{t("settings.language")}</span>
               </label>
               
@@ -498,7 +498,7 @@ export const Settings: React.FC<SettingsProps> = ({
             {/* Theme selector row */}
             <div className="space-y-1.5">
               <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                <SunMoon size={12} className="text-teal-400 light_sakura:text-rose-500" />
+                <SunMoon size={12} className="text-indigo-400 light_sakura:text-rose-500" />
                 <span>{t("settings.theme")}</span>
               </label>
               
@@ -541,7 +541,7 @@ export const Settings: React.FC<SettingsProps> = ({
           {/* Section 3: PWA Installation Block */}
           <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
             <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
-              <Smartphone size={14} className="text-teal-400 light_sakura:text-rose-500" />
+              <Smartphone size={14} className="text-indigo-400 light_sakura:text-rose-500" />
               <span>{t("settings.pwa_section")}</span>
             </h3>
 
@@ -560,7 +560,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 whileTap={{ scale: 0.98 }}
                 type="button"
                 onClick={handleInstallClick}
-                className="w-full cursor-pointer py-3 bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-xl font-sans text-xs font-bold shadow-lg shadow-teal-500/10 flex items-center justify-center gap-2 transition-all"
+                className="w-full cursor-pointer py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 transition-all"
               >
                 <Smartphone size={14} />
                 <span>{t("settings.pwa_btn_install")}</span>
@@ -577,7 +577,7 @@ export const Settings: React.FC<SettingsProps> = ({
             {/* Section 4: Privacy & Data controls (self-service export & account deletion) */}
             <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
               <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
-                <ShieldQuestion size={14} className="text-teal-400 light_sakura:text-rose-500" />
+                <ShieldQuestion size={14} className="text-indigo-400 light_sakura:text-rose-500" />
                 <span>{t("settings.privacy_section")}</span>
               </h3>
 
@@ -588,7 +588,7 @@ export const Settings: React.FC<SettingsProps> = ({
               {/* Export my data */}
               <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 space-y-2.5">
                 <div className="flex items-start gap-2.5">
-                  <Download size={14} className="text-teal-400 light_sakura:text-rose-500 mt-0.5 shrink-0" />
+                  <Download size={14} className="text-indigo-400 light_sakura:text-rose-500 mt-0.5 shrink-0" />
                   <div>
                     <p className="font-sans text-xs font-semibold text-slate-200 light_sakura:text-slate-800">
                       {t("settings.privacy_export_title")}
@@ -647,7 +647,7 @@ export const Settings: React.FC<SettingsProps> = ({
           <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
             <div className="flex items-center justify-between border-b border-slate-800/10 pb-2.5 light_sakura:border-rose-100">
               <h3 className="font-sans font-bold text-sm text-slate-200 light_sakura:text-slate-800 flex items-center gap-2">
-                <Send size={14} className="text-sky-400" />
+                <Send size={14} className="text-indigo-400" />
                 <span>{t("settings.telegram_sec")}</span>
                 {isTelegramLocked && <Lock size={12} className="text-amber-500 light_sakura:text-rose-500" />}
               </h3>
@@ -787,7 +787,7 @@ export const Settings: React.FC<SettingsProps> = ({
                       <span className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-widest">
                         {t("settings.btn_copy_link")}
                       </span>
-                      <div className="px-8 py-4 rounded-2xl bg-slate-950 shadow-xl font-mono font-bold text-3xl tracking-[0.2em] text-teal-400 light_sakura:bg-white light_sakura:text-rose-500 border border-slate-800 light_sakura:border-rose-150 flex items-center justify-center gap-4">
+                      <div className="px-8 py-4 rounded-2xl bg-slate-950 shadow-xl font-mono font-bold text-3xl tracking-[0.2em] text-indigo-400 light_sakura:bg-white light_sakura:text-rose-500 border border-slate-800 light_sakura:border-rose-150 flex items-center justify-center gap-4">
                         <span>{linkingCode}</span>
                         <motion.button
                           whileHover={{ scale: 1.1 }}

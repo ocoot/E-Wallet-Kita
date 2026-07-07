@@ -267,7 +267,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {isMuted ? (
                       <VolumeX size={13} className="text-red-400 light_sakura:text-red-500 mb-0.5 animate-pulse" />
                     ) : (
-                      <Volume2 size={13} className="text-teal-400 light_sakura:text-rose-500 mb-0.5" />
+                      <Volume2 size={13} className="text-indigo-400 light_sakura:text-rose-500 mb-0.5" />
                     )}
                     <span>{isMuted ? t("common.muted") : t("common.sound")}</span>
                   </button>
@@ -336,7 +336,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Profile widget summary and state */}
         <div className="px-4 mb-6">
           <div className={`transition-all duration-300 rounded-xl border flex items-center ${isCollapsed ? "bg-transparent border-transparent p-0 justify-center" : "p-3 bg-slate-900/40 border-slate-900 light_sakura:bg-rose-100/40 light_sakura:border-rose-100/70 gap-2.5"}`}>
-            <div className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center bg-slate-900 text-teal-400 light_sakura:bg-rose-200 light_sakura:text-rose-600 text-xs font-bold shadow-xs transition-all duration-300">
+            <div className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center bg-slate-900 text-indigo-400 light_sakura:bg-rose-200 light_sakura:text-rose-600 text-xs font-bold shadow-xs transition-all duration-300">
               {displayName.charAt(0).toUpperCase()}
             </div>
             
@@ -417,7 +417,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {isMuted ? (
                   <VolumeX size={11} className="text-red-400 light_sakura:text-red-500 mb-0.5" />
                 ) : (
-                  <Volume2 size={11} className="text-teal-400 light_sakura:text-rose-500 mb-0.5" />
+                  <Volume2 size={11} className="text-indigo-400 light_sakura:text-rose-500 mb-0.5" />
                 )}
                 <span>{isMuted ? t("common.muted") : t("common.sound")}</span>
               </button>
@@ -446,7 +446,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {isMuted ? (
                   <VolumeX size={14} className="text-red-400 light_sakura:text-red-500" />
                 ) : (
-                  <Volume2 size={14} className="text-teal-400 light_sakura:text-rose-500" />
+                  <Volume2 size={14} className="text-indigo-400 light_sakura:text-rose-500" />
                 )}
               </button>
             </div>

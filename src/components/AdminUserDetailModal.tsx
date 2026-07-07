@@ -93,7 +93,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/60 bg-slate-900/50 light_sakura:border-rose-100/60 light_sakura:bg-rose-100/20">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center font-black text-teal-400 text-lg light_sakura:bg-rose-200/50 light_sakura:border-rose-300 light_sakura:text-rose-600">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center font-black text-indigo-400 text-lg light_sakura:bg-rose-200/50 light_sakura:border-rose-300 light_sakura:text-rose-600">
               {user.display_name.charAt(0).toUpperCase()}
             </div>
             <div>
@@ -121,7 +121,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
             <div className="flex flex-wrap gap-2">
               <span className={`px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase border flex items-center gap-1
                 ${detail.role === "owner" ? "bg-red-500/10 border-red-500/20 text-red-400"
-                  : detail.role === "admin" ? "bg-teal-500/10 border-teal-500/20 text-teal-400 light_sakura:bg-rose-200/40 light_sakura:text-rose-600 light_sakura:border-rose-300"
+                  : detail.role === "admin" ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400 light_sakura:bg-rose-200/40 light_sakura:text-rose-600 light_sakura:border-rose-300"
                   : "bg-slate-800 border-slate-700 text-slate-400 light_sakura:bg-slate-200 light_sakura:border-slate-300 light_sakura:text-slate-600"}`}>
                 <Shield size={9} />
                 {detail.role}
@@ -179,11 +179,11 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
             </div>
 
             {/* Net Savings Panel */}
-            <div className="rounded-2xl bg-teal-500/5 border border-teal-500/20 p-4 text-center light_sakura:bg-rose-200/10 light_sakura:border-rose-200">
-              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase tracking-wider text-teal-400/70 mb-1 light_sakura:text-rose-600/70">
+            <div className="rounded-2xl bg-indigo-500/5 border border-indigo-500/20 p-4 text-center light_sakura:bg-rose-200/10 light_sakura:border-rose-200">
+              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase tracking-wider text-indigo-400/70 mb-1 light_sakura:text-rose-600/70">
                 {t("admin.net_balance_lifetime")}
               </p>
-              <p className="font-black text-xl text-teal-400 light_sakura:text-rose-600">
+              <p className="font-black text-xl text-indigo-400 light_sakura:text-rose-600">
                 {formatIDR((detail.totalIncome ?? 0) - (detail.totalExpense ?? 0))}
               </p>
             </div>

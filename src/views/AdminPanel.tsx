@@ -437,12 +437,12 @@ export const AdminPanel: React.FC = () => {
       
       {/* Upper header section */}
       <div className="rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm overflow-hidden bg-slate-900 light_sakura:bg-white">
-        <div className="h-1.5 w-full bg-gradient-to-r from-teal-400 via-indigo-500 to-violet-500" />
+        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
-                <Shield className="text-teal-400 light_sakura:text-rose-500" />
+                <Shield className="text-indigo-400 light_sakura:text-rose-500" />
                 <span>{t("nav.admin_panel")}</span>
               </h1>
               <p className="font-sans text-xs text-slate-400 mt-1 light_sakura:text-slate-500">
@@ -492,7 +492,7 @@ export const AdminPanel: React.FC = () => {
               }}
               className={`px-4 py-2.5 text-xs font-black whitespace-nowrap rounded-xl transition-all cursor-pointer border
                 ${activeTab === tab.key
-                  ? "bg-teal-500/10 text-teal-400 border-teal-500/20 light_sakura:bg-rose-100 light_sakura:text-rose-600 light_sakura:border-rose-200"
+                  ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20 light_sakura:bg-rose-100 light_sakura:text-rose-600 light_sakura:border-rose-200"
                   : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500 light_sakura:hover:text-slate-800"}`}
             >
               {tab.label}
@@ -535,15 +535,15 @@ export const AdminPanel: React.FC = () => {
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-teal-500/20 bg-teal-500/5 p-4 shadow-sm light_sakura:bg-teal-100/30 light_sakura:border-teal-200 space-y-2">
-                <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-teal-400/80 light_sakura:text-teal-600">
+              <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-4 shadow-sm light_sakura:bg-indigo-100/30 light_sakura:border-indigo-200 space-y-2">
+                <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-indigo-400/80 light_sakura:text-indigo-600">
                   {t("admin.metrics.admin")}
                 </p>
-                <h2 className="font-sans font-black text-2xl text-teal-400 light_sakura:text-teal-600">
+                <h2 className="font-sans font-black text-2xl text-indigo-400 light_sakura:text-indigo-600">
                   {metrics.adminUsers}
                 </h2>
-                <div className="h-1 rounded-full bg-teal-900/30 overflow-hidden light_sakura:bg-teal-100">
-                  <div className="h-full rounded-full bg-teal-500 transition-all duration-700"
+                <div className="h-1 rounded-full bg-indigo-900/30 overflow-hidden light_sakura:bg-indigo-100">
+                  <div className="h-full rounded-full bg-indigo-500 transition-all duration-700"
                     style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.adminUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
                 </div>
               </div>
@@ -618,8 +618,8 @@ export const AdminPanel: React.FC = () => {
 
           {/* Bulk Action Bar */}
           {selectedIds.size > 0 && (
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-6 py-4 rounded-3xl border border-teal-500/20 bg-teal-500/5 light_sakura:bg-rose-50 light_sakura:border-rose-200">
-              <span className="text-xs font-bold text-teal-400 light_sakura:text-rose-600">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-6 py-4 rounded-3xl border border-indigo-500/20 bg-indigo-500/5 light_sakura:bg-rose-50 light_sakura:border-rose-200">
+              <span className="text-xs font-bold text-indigo-400 light_sakura:text-rose-600">
                 {t("admin.users_selected").replace("{count}", selectedIds.size.toString())}
               </span>
               <div className="flex flex-wrap items-center gap-2">
@@ -652,7 +652,7 @@ export const AdminPanel: React.FC = () => {
           <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm overflow-hidden">
             {loading ? (
               <div className="py-20 flex flex-col items-center justify-center space-y-3">
-                <Clock className="animate-spin text-teal-400 light_sakura:text-rose-500" size={32} />
+                <Clock className="animate-spin text-indigo-400 light_sakura:text-rose-500" size={32} />
                 <p className="font-sans text-xs text-slate-400">
                   {t("admin.loading")}
                 </p>
@@ -708,7 +708,7 @@ export const AdminPanel: React.FC = () => {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
                               <div className={`w-8 h-8 rounded-xl font-bold flex items-center justify-center shrink-0 
-                                ${user.is_banned ? "bg-red-500/20 text-red-400" : "bg-slate-800 text-teal-400 light_sakura:bg-rose-100 light_sakura:text-rose-600"}`}>
+                                 ${user.is_banned ? "bg-red-500/20 text-red-400" : "bg-slate-800 text-indigo-400 light_sakura:bg-rose-100 light_sakura:text-rose-600"}`}>
                                 {user.display_name.charAt(0).toUpperCase()}
                               </div>
                               <div>
@@ -755,7 +755,7 @@ export const AdminPanel: React.FC = () => {
                             <div className="flex items-center gap-2">
                               <span className={`px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider rounded-lg uppercase border
                                 ${user.role === "owner" ? "bg-red-500/10 text-red-400 border-red-500/20 light_sakura:bg-red-100 light_sakura:text-red-700 light_sakura:border-red-200" :
-                                  user.role === "admin" ? "bg-teal-500/10 text-teal-400 border-teal-500/20 light_sakura:bg-teal-100 light_sakura:text-teal-700 light_sakura:border-teal-200" : 
+                                  user.role === "admin" ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20 light_sakura:bg-indigo-100 light_sakura:text-indigo-700 light_sakura:border-indigo-200" : 
                                   "bg-slate-800 text-slate-400 border-slate-700 light_sakura:bg-slate-100 light_sakura:text-slate-600 light_sakura:border-slate-200"}`}>
                                 {user.role}
                               </span>

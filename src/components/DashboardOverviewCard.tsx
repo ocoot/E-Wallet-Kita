@@ -155,7 +155,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
             </div>
             <div className="flex items-center gap-1.5 pl-3 border-l border-slate-800 light_sakura:border-rose-100">
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 shrink-0">{t("dashboard.balance")}</span>
-              <span className={`text-xs font-bold whitespace-nowrap ${monthlySummary.balance >= 0 ? "text-teal-400 light_sakura:text-rose-500" : "text-red-400"}`}>
+              <span className={`text-xs font-bold whitespace-nowrap ${monthlySummary.balance >= 0 ? "text-emerald-400 light_sakura:text-emerald-600" : "text-red-400"}`}>
                 {formatIDR(monthlySummary.balance)}
               </span>
             </div>
