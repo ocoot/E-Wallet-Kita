@@ -56,15 +56,33 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     year: "numeric",
   }).format(new Date());
 
-  const getDynamicSubGreeting = (): { text: string; type: "budget_danger" | "budget_warning" | "budget_ok" | "empty" | "loading" } => {
-    if (budgetsLoading) {
-      return {
-        text: locale === "id" ? "Memuat status anggaran..." : "Loading budget status...",
-        type: "loading"
-      };
-    }
+  const getDynamicTip = (): string => {
+    const tipsId = [
+      "Tips hari ini: Selalu catat transaksi kecil seperti parkir atau jajan agar pengeluaran bulanan tetap terkontrol!",
+      "Tips hari ini: Gunakan fitur Anggaran Kategori untuk membatasi pengeluaran hiburan dan makan di luar.",
+      "Tips hari ini: Sisihkan minimal 10% pendapatan di awal bulan sebelum mulai berbelanja.",
+      "Tips hari ini: Sudahkah Anda memeriksa pengingat tagihan hari ini? Jangan biarkan denda menumpuk!",
+      "Tips hari ini: Gunakan OCR struk belanja untuk mencatat transaksi panjang dengan satu ketukan cepat.",
+      "Tips hari ini: Konsistensi adalah kunci! Catat keuangan setiap hari agar pengelolaan uang terasa lebih ringan.",
+      "Tips hari ini: Hubungkan Telegram Bot kami untuk mencatat transaksi langsung dari ruang chat Anda."
+    ];
 
-    if (budgets.length > 0) {
+    const tipsEn = [
+      "Tip of the day: Always record small expenses like parking or snacks to keep your monthly budget under control!",
+      "Tip of the day: Use Category Budgets to limit entertainment and dining-out expenses.",
+      "Tip of the day: Save at least 10% of your income at the beginning of the month before spending.",
+      "Tip of the day: Have you checked your bill reminders today? Avoid late fees by staying ahead!",
+      "Tip of the day: Use receipt OCR to log long purchase receipts with a single quick tap.",
+      "Tip of the day: Consistency is key! Log daily to make money management feel effortless.",
+      "Tip of the day: Connect our Telegram Bot to record transactions directly from your chat app."
+    ];
+
+    const day = new Date().getDay(); // 0 to 6
+    return locale === "id" ? tipsId[day] : tipsEn[day];
+  };
+
+  const getDynamicSubGreeting = (): { text: string; type: "budget_danger" | "budget_warning" | "budget_ok" | "tip" } => {
+    if (!budgetsLoading && budgets.length > 0) {
       const dangerBudget = budgets.find(b => b.status === "danger" || b.percent >= 100);
       if (dangerBudget) {
         return {
@@ -112,10 +130,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     }
 
     return {
-      text: locale === "id"
-        ? "Belum ada anggaran kategori yang diatur. Buat anggaran untuk memantau pengeluaran Anda."
-        : "No category budgets set yet. Create one to keep track of your spending.",
-      type: "empty"
+      text: getDynamicTip(),
+      type: "tip"
     };
   };
 
@@ -184,7 +200,15 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           {(() => {
             const subGreeting = getDynamicSubGreeting();
             return (
-              <p className="font-sans text-xs mt-1.5 max-w-xl leading-relaxed transition-colors text-slate-400 light_sakura:text-slate-500 italic">
+              <p className={`font-sans text-xs mt-1.5 max-w-xl leading-relaxed transition-colors ${
+                subGreeting.type === "budget_danger"
+                  ? "text-rose-400 font-semibold light_sakura:text-rose-600"
+                  : subGreeting.type === "budget_warning"
+                  ? "text-amber-300 font-medium light_sakura:text-amber-700"
+                  : subGreeting.type === "budget_ok"
+                  ? "text-emerald-300 font-medium light_sakura:text-emerald-700"
+                  : "text-slate-400 light_sakura:text-slate-500 italic"
+              }`}>
                 {subGreeting.text}
               </p>
             );
