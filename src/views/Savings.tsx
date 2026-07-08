@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { dbService } from "../lib/db";
 import { useSavings, SavingsPocketWithProgress } from "../hooks/useSavings";
+import { useWallets } from "../hooks/useWallets";
 import { SavingsPocketType } from "../types";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
@@ -38,9 +39,10 @@ interface PocketFormState {
   target_amount: string;
   target_date: string;
   notes: string;
+  wallet_id: string;
 }
 const emptyForm = (): PocketFormState => ({
-  name: "", pocket_type: "goal", target_amount: "", target_date: "", notes: ""
+  name: "", pocket_type: "goal", target_amount: "", target_date: "", notes: "", wallet_id: ""
 });
 const formatIDR = (num: number | null) => num != null ? "Rp" + Math.round(num).toLocaleString("id-ID") : "-";
 
@@ -49,6 +51,7 @@ export const Savings: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const { pockets, summary, loading, refresh } = useSavings(user?.id);
+  const { activeWallets } = useWallets();
 
   const [availableBalance, setAvailableBalance] = useState<number | null>(null);
 
@@ -84,7 +87,8 @@ export const Savings: React.FC = () => {
       pocket_type: p.pocket_type,
       target_amount: p.target_amount != null ? String(p.target_amount) : "",
       target_date: p.target_date ?? "",
-      notes: p.notes ?? ""
+      notes: p.notes ?? "",
+      wallet_id: p.wallet_id ?? ""
     });
     setIsFormOpen(true);
   };
@@ -106,7 +110,8 @@ export const Savings: React.FC = () => {
         pocket_type: form.pocket_type,
         target_amount: targetNum,
         target_date: form.target_date || null,
-        notes: form.notes.trim() || null
+        notes: form.notes.trim() || null,
+        wallet_id: form.wallet_id || null
       };
       if (editTarget) {
         await dbService.updateSavingsPocket(user.id, editTarget.id, payload);
@@ -344,6 +349,15 @@ export const Savings: React.FC = () => {
                     <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_target_date")}</label>
                     <input type="date" value={form.target_date} onChange={e => setForm(f => ({ ...f, target_date: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
                   </div>
+                </div>
+                <div>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
+                  <select value={form.wallet_id} onChange={e => setForm(f => ({ ...f, wallet_id: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer transition-colors">
+                    <option value="">{t("wallet.group_general")}</option>
+                    {activeWallets.filter(w => w.type !== "general").map(w => (
+                      <option key={w.id} value={w.id}>{w.name}{w.provider ? ` · ${w.provider}` : ""}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_notes")}</label>

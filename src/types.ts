@@ -27,6 +27,41 @@ export interface Transaction {
   source: "manual" | "ai_web" | "telegram";
   transaction_date: string;
   created_at: string;
+  wallet_id: string | null;
+}
+
+/**
+ * Pos Dompet: "ewallet" (Gopay/OVO/Dana/dll, boleh banyak instance),
+ * "bank" (rekening bank, boleh banyak instance), "cash" (tunai), dan
+ * "general" (Saldo Total -- pos default/fallback, 1 per user, dibuat
+ * otomatis lewat RPC ensure_general_wallet).
+ */
+export type WalletType = "ewallet" | "bank" | "cash" | "general";
+
+export interface Wallet {
+  id: string;
+  user_id: string;
+  name: string;
+  type: WalletType;
+  provider: string | null;
+  /** Nomor HP akun e-wallet (Gopay/OVO/dll) -- opsional, ditampilkan dengan toggle show/hide. */
+  phone_number: string | null;
+  /** Nomor rekening bank -- opsional, ditampilkan dengan toggle show/hide. */
+  account_number: string | null;
+  /** Basis yang digeser saat user melakukan edit saldo manual. */
+  starting_balance: number;
+  is_archived: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Hasil RPC get_wallets_with_balance -- sudah termasuk saldo terhitung. */
+export interface WalletWithBalance extends Wallet {
+  balance: number;
+  /** Total dana di pos ini yang sudah "dititipkan" ke Tabungan/Emas. */
+  earmarked_amount: number;
+  /** balance - earmarked_amount -- dana yang benar-benar bebas dipakai. */
+  available_balance: number;
 }
 
 export interface Category {
@@ -88,6 +123,8 @@ export interface BillReminder {
   is_paid: boolean;
   paid_at: string | null;
   linked_transaction_id: string | null;
+  /** Pos dompet yang dipakai untuk auto-transaksi saat ditandai lunas. */
+  wallet_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -105,6 +142,8 @@ export interface Installment {
   is_completed: boolean;
   notes: string | null;
   last_transaction_id: string | null;
+  /** Pos dompet yang dipakai untuk auto-transaksi saat 1 bulan ditandai lunas. */
+  wallet_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -133,6 +172,8 @@ export interface SavingsPocket {
   current_amount: number;
   notes: string | null;
   is_archived: boolean;
+  /** Pos dompet mana yang "menyimpan" tabungan ini (opsional). */
+  wallet_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -182,6 +223,8 @@ export interface GoldPocket {
   cash_locked_amount: number;
   notes: string | null;
   is_archived: boolean;
+  /** Pos dompet mana yang "menyimpan" emas ini (opsional). */
+  wallet_id: string | null;
   created_at: string;
   updated_at: string;
 }

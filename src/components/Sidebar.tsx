@@ -88,6 +88,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const menuItems: { id: string; label: string; icon: any; path: string; featureKey?: string }[] = [
     { id: "dashboard", label: t("nav.dashboard"), icon: LayoutDashboard, path: "/dashboard" },
     { id: "new_transaction", label: t("nav.new_transaction"), icon: PlusCircle, path: "/transactions/new", featureKey: "new_transaction" },
+    { id: "wallets", label: t("nav.wallets"), icon: Wallet, path: "/wallets", featureKey: "wallets" },
     { id: "budget", label: t("nav.budget"), icon: PiggyBank, path: "/budget", featureKey: "budget" },
     { id: "bill_reminders", label: t("nav.bill_reminders"), icon: Bell, path: "/bill-reminders", featureKey: "bill_reminders" },
     { id: "installments", label: t("nav.installments"), icon: Landmark, path: "/installments", featureKey: "installments" },

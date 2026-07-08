@@ -16,7 +16,8 @@
     "onboarding": "Guide",
     "installments": "Installments",
     "savings": "Savings",
-    "gold_savings": "Gold Savings"
+    "gold_savings": "Gold Savings",
+    "wallets": "Wallets"
   },
   "auth": {
     "login_title": "Account Sign In",
@@ -131,7 +132,7 @@
     "accumulated_balance_tooltip": "Formula: Total Income − Total Expenses, calculated since your very first transaction (not just this month). Funds in Savings pockets are still included here since they're still yours.",
     "available_balance_label": "Available Balance",
     "total_savings_label": "Total Savings",
-    "savings_breakdown_hint": "Available Balance already excludes funds held in Savings pockets & Gold Savings, so it isn't accidentally spent.",
+    "savings_breakdown_hint": "Money kept in Savings & Gold pockets is marked as \"earmarked\" on each Wallet card above, so it doesn't get spent by accident.",
     "available_balance_tooltip": "Formula: Net Worth − Total Savings − cash used to buy Gold. This is the money you can truly spend freely without touching your savings.",
     "net_worth_tooltip": "Formula: Total Income − Total Expense + unrealized Gold gain/loss. Already includes your gold's current market value, not just the cash spent buying it.",
     "asset_breakdown_label": "Asset & History Breakdown",
@@ -171,7 +172,8 @@
     "source_telegram": "Telegram Bot Chat",
     "preview_title": "Artificial Intelligence (E-Wallet Kita-AI) Breakdown",
     "preview_desc": "Please review, adjust, and confirm the details before saving into the ledger.",
-    "btn_confirm_save": "Confirm & Record"
+    "btn_confirm_save": "Confirm & Record",
+    "label_wallet": "Wallet"
   },
   "history": {
     "title": "Cashbook Ledger & History",
@@ -312,7 +314,8 @@
     "save": "Save",
     "edit": "Edit",
     "sending": "Sending...",
-    "generating_pdf": "Preparing PDF..."
+    "generating_pdf": "Preparing PDF...",
+    "clear": "Clear filter"
   },
   "confirm": {
     "logout_title": "End Session",
@@ -329,7 +332,8 @@
     "profile_update_title": "Update Profile Name?",
     "profile_update_desc": "Change your display name to '{name}'?",
     "profile_update_confirm": "Update Name",
-    "delete_item_confirm": "Delete Log"
+    "delete_item_confirm": "Delete Log",
+    "review_before_save": "Review before saving. Everything can be edited."
   },
   "toast": {
     "error_general": "Internal error occurred. Please try again.",
@@ -1181,5 +1185,39 @@
     "card_tap_hint_front": "Tap outside the card to close",
     "card_show_actions": "Show gold pocket actions",
     "card_show_front": "Close actions, show card"
+  },
+  "wallet": {
+    "title": "Wallets",
+    "desc": "Manage your E-Wallet, Bank Account, Cash, and Total Balance.",
+    "label_pos": "Wallet",
+    "total_balance": "Total Across All Wallets",
+    "group_ewallet": "E-Wallets",
+    "group_bank": "Bank Accounts",
+    "group_cash": "Cash",
+    "group_general": "Total Balance",
+    "general_desc": "General wallet — used automatically when you don't pick a specific wallet while logging a transaction.",
+    "add_wallet": "Add Wallet",
+    "add_bank": "Add Bank Account",
+    "add_cash": "Add Cash",
+    "empty_group": "No wallets here yet.",
+    "field_name": "Wallet Name",
+    "field_name_placeholder_ewallet": "e.g. Gopay, ShopeePay, OVO, Dana",
+    "field_name_placeholder_bank": "e.g. BCA, Mandiri, BNI",
+    "field_name_placeholder_cash": "e.g. Physical Wallet",
+    "field_starting_balance": "Starting Balance",
+    "btn_save_wallet": "Save Wallet",
+    "btn_cancel": "Cancel",
+    "edit_balance": "Edit Balance",
+    "edit_balance_desc": "Enter the actual balance (e.g. from checking the app). Transaction history stays intact.",
+    "view_history": "View History",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "rename": "Rename",
+    "toast_wallet_created": "New wallet added successfully",
+    "toast_balance_updated": "Balance updated successfully",
+    "toast_wallet_updated": "Wallet updated successfully",
+    "field_phone": "Phone Number",
+    "field_account_number": "Account Number",
+    "earmarked_note": "Rp{earmarked} earmarked for Savings/Gold · Available {available}"
   }
 }

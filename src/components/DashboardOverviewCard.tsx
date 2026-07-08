@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Wallet, TrendingUp, TrendingDown, Layers, Vault, Coins, ChevronDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Layers, Vault, Coins, ChevronDown } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { dbService } from "../lib/db";
@@ -100,7 +100,6 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
   const goldMarketValue = gold?.total_market_value ?? 0;
   const goldGainLoss = gold?.unrealized_gain_loss ?? 0;
 
-  const availableBalance = data.balance - savedAmount - goldCashLocked;
   const netWorth = data.balance + goldGainLoss;
   const isPositive = netWorth >= 0;
 
@@ -110,31 +109,23 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       className="relative overflow-hidden rounded-3xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/10 via-slate-900 to-slate-900 shadow-xl shadow-indigo-900/10 light_sakura:from-rose-100/60 light_sakura:via-white light_sakura:to-white light_sakura:border-rose-200/50"
     >
-      {/* Hero: Saldo Tersedia */}
+      {/* Total Kekayaan -- sekarang jadi angka utama kartu ini, karena
+          "Saldo Tersedia" tunggal sudah dipindah jadi kartu-kartu Pos Dompet
+          terpisah di Dashboard (lihat DashboardWalletCards.tsx). */}
       <div className="p-5 sm:p-6 pb-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-2xl bg-indigo-500/15 flex items-center justify-center text-indigo-400 shrink-0 light_sakura:bg-rose-500/15 light_sakura:text-rose-500">
-            <Wallet size={20} />
+            <Layers size={20} />
           </div>
           <div className="min-w-0">
             <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500 flex items-center gap-1.5">
-              {t("dashboard.available_balance_label")}
-              <InfoTooltip text={t("dashboard.available_balance_tooltip")} align="left" />
+              {t("dashboard.accumulated_balance_label")}
+              <InfoTooltip text={t("dashboard.net_worth_tooltip")} align="left" />
             </p>
-            <p className="font-sans font-bold text-2xl sm:text-3xl tracking-tight text-white light_sakura:text-slate-900">
-              {formatIDR(availableBalance)}
+            <p className={`font-sans font-bold text-2xl sm:text-3xl tracking-tight ${isPositive ? "text-white light_sakura:text-slate-900" : "text-red-400"}`}>
+              {formatIDR(netWorth)}
             </p>
           </div>
-        </div>
-
-        {/* Total Kekayaan -- sekunder */}
-        <div className="mt-3 flex items-center gap-1.5 pl-[3.4rem]">
-          <Layers size={12} className="text-slate-500" />
-          <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500">{t("dashboard.accumulated_balance_label")}</span>
-          <span className={`text-xs font-bold whitespace-nowrap tabular-nums ${isPositive ? "text-slate-300 light_sakura:text-slate-700" : "text-red-400"}`}>
-            {formatIDR(netWorth)}
-          </span>
-          <InfoTooltip text={t("dashboard.net_worth_tooltip")} align="left" />
         </div>
       </div>
 

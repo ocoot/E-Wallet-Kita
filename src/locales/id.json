@@ -16,7 +16,8 @@
     "onboarding": "Panduan",
     "installments": "Cicilan",
     "savings": "Tabungan",
-    "gold_savings": "Tabungan Emas"
+    "gold_savings": "Tabungan Emas",
+    "wallets": "Dompet"
   },
   "auth": {
     "login_title": "Masuk Akun",
@@ -131,7 +132,7 @@
     "accumulated_balance_tooltip": "Rumus: Total Pemasukan − Total Pengeluaran, dihitung sejak transaksi pertama Anda (bukan cuma bulan ini). Dana di pos Tabungan tetap termasuk di sini karena masih milik Anda.",
     "available_balance_label": "Saldo Tersedia",
     "total_savings_label": "Total Tabungan",
-    "savings_breakdown_hint": "Saldo Tersedia sudah dikurangi dana yang tersimpan di pos Tabungan & Tabungan Emas, supaya tidak sengaja terpakai.",
+    "savings_breakdown_hint": "Dana yang tersimpan di pos Tabungan & Tabungan Emas ditandai sebagai \"dititipkan\" di kartu Pos Dompet masing-masing, supaya tidak sengaja terpakai.",
     "available_balance_tooltip": "Rumus: Total Kekayaan − Total Tabungan − dana yang terpakai beli Emas. Ini uang yang benar-benar bebas dibelanjakan tanpa mengganggu tabungan Anda.",
     "net_worth_tooltip": "Rumus: Total Pemasukan − Total Pengeluaran + Untung/Rugi Emas belum direalisasi. Sudah termasuk nilai pasar emas Anda saat ini, bukan cuma uang yang dibelanjakan untuk membelinya.",
     "asset_breakdown_label": "Rincian Aset & Riwayat",
@@ -171,7 +172,8 @@
     "source_telegram": "Telegram Bot Chat",
     "preview_title": "Hasil Analisis Kecerdasan Buatan (E-Wallet Kita-AI)",
     "preview_desc": "Silakan tinjau, sesuaikan, dan konfirmasi rincian di bawah sebelum disimpan ke pembukuan.",
-    "btn_confirm_save": "Konfirmasi & Simpan"
+    "btn_confirm_save": "Konfirmasi & Simpan",
+    "label_wallet": "Pos Dompet"
   },
   "history": {
     "title": "Buku Kas & Riwayat Transaksi",
@@ -312,7 +314,8 @@
     "save": "Simpan",
     "edit": "Edit",
     "sending": "Mengirim...",
-    "generating_pdf": "Menyiapkan PDF..."
+    "generating_pdf": "Menyiapkan PDF...",
+    "clear": "Hapus filter"
   },
   "confirm": {
     "logout_title": "Keluar Sesi",
@@ -329,7 +332,8 @@
     "profile_update_title": "Perbarui Nama Profil?",
     "profile_update_desc": "Ganti nama tampilan utama Anda menjadi '{name}'?",
     "profile_update_confirm": "Perbarui Nama",
-    "delete_item_confirm": "Hapus Log"
+    "delete_item_confirm": "Hapus Log",
+    "review_before_save": "Periksa lagi sebelum disimpan. Semua bisa diedit."
   },
   "toast": {
     "error_general": "Terjadi kesalahan internal. Silakan coba kembali.",
@@ -1181,5 +1185,39 @@
     "card_tap_hint_front": "Ketuk di luar kartu untuk tutup",
     "card_show_actions": "Tampilkan aksi pos emas",
     "card_show_front": "Tutup aksi, tampilkan kartu"
+  },
+  "wallet": {
+    "title": "Pos Dompet",
+    "desc": "Kelola saldo E-Wallet, Rekening, Tunai, dan Saldo Total kamu.",
+    "label_pos": "Pos Dompet",
+    "total_balance": "Total Seluruh Pos",
+    "group_ewallet": "Dompet E-Wallet",
+    "group_bank": "Dompet Rekening",
+    "group_cash": "Cash / Tunai",
+    "group_general": "Saldo Total",
+    "general_desc": "Pos umum — dipakai otomatis kalau kamu tidak memilih pos tertentu saat mencatat transaksi.",
+    "add_wallet": "Tambah Dompet",
+    "add_bank": "Tambah Rekening",
+    "add_cash": "Tambah Tunai",
+    "empty_group": "Belum ada pos di sini.",
+    "field_name": "Nama Dompet",
+    "field_name_placeholder_ewallet": "cth. Gopay, ShopeePay, OVO, Dana",
+    "field_name_placeholder_bank": "cth. BCA, Mandiri, BNI",
+    "field_name_placeholder_cash": "cth. Dompet Fisik",
+    "field_starting_balance": "Saldo Awal",
+    "btn_save_wallet": "Simpan Dompet",
+    "btn_cancel": "Batal",
+    "edit_balance": "Edit Saldo",
+    "edit_balance_desc": "Masukkan saldo yang sebenarnya (misal hasil cek di aplikasi). Riwayat transaksi tidak akan terhapus.",
+    "view_history": "Lihat Riwayat",
+    "archive": "Arsipkan",
+    "unarchive": "Aktifkan Lagi",
+    "rename": "Ganti Nama",
+    "toast_wallet_created": "Dompet baru berhasil ditambahkan",
+    "toast_balance_updated": "Saldo berhasil diperbarui",
+    "toast_wallet_updated": "Dompet berhasil diperbarui",
+    "field_phone": "Nomor HP / Telepon",
+    "field_account_number": "Nomor Rekening",
+    "earmarked_note": "Rp{earmarked} dititipkan ke Tabungan/Emas · Tersedia {available}"
   }
 }

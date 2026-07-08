@@ -6,6 +6,7 @@ import { dbService } from "../lib/db";
 import { supabase } from "../lib/supabase";
 import { useCategories } from "../hooks/useCategories";
 import { useBillReminders, BillReminderWithUrgency } from "../hooks/useBillReminders";
+import { useWallets } from "../hooks/useWallets";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
 import { motion, AnimatePresence } from "motion/react";
@@ -22,9 +23,9 @@ type RecurrenceType = "monthly" | "yearly" | "one_time";
 
 interface BillFormState {
   name: string; category_key: string; amount: string;
-  recurrence_type: RecurrenceType; due_day: string; due_date: string; notes: string;
+  recurrence_type: RecurrenceType; due_day: string; due_date: string; notes: string; wallet_id: string;
 }
-const emptyForm = (): BillFormState => ({ name: "", category_key: "other", amount: "", recurrence_type: "monthly", due_day: "1", due_date: "", notes: "" });
+const emptyForm = (): BillFormState => ({ name: "", category_key: "other", amount: "", recurrence_type: "monthly", due_day: "1", due_date: "", notes: "", wallet_id: "" });
 const formatIDR = (num: number | null) => num != null ? "Rp" + Math.round(num).toLocaleString("id-ID") : "-";
 
 export const BillReminders: React.FC = () => {
@@ -46,6 +47,7 @@ export const BillReminders: React.FC = () => {
   const [isTelegramLinked, setIsTelegramLinked] = useState(false);
   const [billReminderHour, setBillReminderHour] = useState<number>(19);
   const [isSavingReminderHour, setIsSavingReminderHour] = useState(false);
+  const { activeWallets } = useWallets();
 
   useEffect(() => {
     if (!user) return;
@@ -80,7 +82,7 @@ export const BillReminders: React.FC = () => {
   const openAddForm = () => { setEditTarget(null); setForm(emptyForm()); setIsFormOpen(true); };
   const openEditForm = (r: BillReminderWithUrgency) => {
     setEditTarget(r);
-    setForm({ name: r.name, category_key: r.category_key, amount: r.amount != null ? String(r.amount) : "", recurrence_type: r.recurrence_type, due_day: r.due_day != null ? String(r.due_day) : "1", due_date: r.due_date ?? "", notes: r.notes ?? "" });
+    setForm({ name: r.name, category_key: r.category_key, amount: r.amount != null ? String(r.amount) : "", recurrence_type: r.recurrence_type, due_day: r.due_day != null ? String(r.due_day) : "1", due_date: r.due_date ?? "", notes: r.notes ?? "", wallet_id: r.wallet_id ?? "" });
     setIsFormOpen(true);
   };
 
@@ -98,7 +100,7 @@ export const BillReminders: React.FC = () => {
     }
     setIsSaving(true);
     try {
-      const payload = { name: trimmedName, category_key: form.category_key, amount: amountNum, recurrence_type: form.recurrence_type, due_day: form.recurrence_type === "monthly" ? Number(form.due_day) : null, due_date: form.recurrence_type !== "monthly" ? form.due_date : null, notes: form.notes.trim() || null };
+      const payload = { name: trimmedName, category_key: form.category_key, amount: amountNum, recurrence_type: form.recurrence_type, due_day: form.recurrence_type === "monthly" ? Number(form.due_day) : null, due_date: form.recurrence_type !== "monthly" ? form.due_date : null, notes: form.notes.trim() || null, wallet_id: form.wallet_id || null };
       if (editTarget) await dbService.updateBillReminder(user.id, editTarget.id, payload);
       else await dbService.saveBillReminder(user.id, payload);
       showToast(t("bill_reminders.save_success"), "success");
@@ -367,6 +369,15 @@ export const BillReminders: React.FC = () => {
                   </div>
                 )}
                 {/* Notes */}
+                <div>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
+                  <select value={form.wallet_id} onChange={e => setForm(f => ({ ...f, wallet_id: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer transition-colors">
+                    <option value="">{t("wallet.group_general")}</option>
+                    {activeWallets.filter(w => w.type !== "general").map(w => (
+                      <option key={w.id} value={w.id}>{w.name}{w.provider ? ` · ${w.provider}` : ""}</option>
+                    ))}
+                  </select>
+                </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_notes")}</label>
                   <input type="text" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder={t("bill_reminders.form_notes_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />

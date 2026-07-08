@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { dbService } from "../lib/db";
 import { useGoldSavings } from "../hooks/useGoldSavings";
+import { useWallets } from "../hooks/useWallets";
 import { GoldPocket, GoldBrand, ACTIVE_GOLD_BRANDS } from "../types";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
@@ -66,8 +67,9 @@ interface PocketFormState {
   name: string;
   brand: GoldBrand;
   notes: string;
+  wallet_id: string;
 }
-const emptyForm = (): PocketFormState => ({ name: "", brand: "antam", notes: "" });
+const emptyForm = (): PocketFormState => ({ name: "", brand: "antam", notes: "", wallet_id: "" });
 
 type MoveDirection = "buy" | "sell" | "manual_add" | "manual_remove";
 
@@ -76,6 +78,7 @@ export const GoldSavings: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const { pockets, summary, prices, loading, refresh } = useGoldSavings(user?.id);
+  const { activeWallets } = useWallets();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<GoldPocket | null>(null);
@@ -134,7 +137,7 @@ export const GoldSavings: React.FC = () => {
   const openAddForm = () => { setEditTarget(null); setForm(emptyForm()); setIsFormOpen(true); };
   const openEditForm = (p: GoldPocket) => {
     setEditTarget(p);
-    setForm({ name: p.name, brand: p.brand, notes: p.notes ?? "" });
+    setForm({ name: p.name, brand: p.brand, notes: p.notes ?? "", wallet_id: p.wallet_id ?? "" });
     setIsFormOpen(true);
   };
 
@@ -149,9 +152,9 @@ export const GoldSavings: React.FC = () => {
         // Brand sengaja tidak ikut di-submit saat edit -- lihat catatan di
         // migration (brand acuan harga tidak dianjurkan berubah setelah
         // pocket punya transaksi, supaya cash_locked_amount tetap bermakna).
-        await dbService.updateGoldPocket(user.id, editTarget.id, { name: trimmedName, notes: form.notes.trim() || null });
+        await dbService.updateGoldPocket(user.id, editTarget.id, { name: trimmedName, notes: form.notes.trim() || null, wallet_id: form.wallet_id || null });
       } else {
-        await dbService.createGoldPocket(user.id, { name: trimmedName, brand: form.brand, notes: form.notes.trim() || null });
+        await dbService.createGoldPocket(user.id, { name: trimmedName, brand: form.brand, notes: form.notes.trim() || null, wallet_id: form.wallet_id || null });
       }
       showToast(t("gold.save_success"), "success");
       audioFeedback.playClick();
@@ -517,6 +520,15 @@ export const GoldSavings: React.FC = () => {
                   <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5 leading-relaxed">
                     {editTarget ? t("gold.form_brand_locked_hint") : t("gold.form_brand_hint")}
                   </p>
+                </div>
+                <div>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
+                  <select value={form.wallet_id} onChange={e => setForm(f => ({ ...f, wallet_id: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-amber-500 cursor-pointer transition-colors">
+                    <option value="">{t("wallet.group_general")}</option>
+                    {activeWallets.filter(w => w.type !== "general").map(w => (
+                      <option key={w.id} value={w.id}>{w.name}{w.provider ? ` · ${w.provider}` : ""}</option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_notes")}</label>

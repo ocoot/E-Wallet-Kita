@@ -5,7 +5,6 @@ import { supabase } from "../lib/supabase";
 import { UserSession } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
-import { Modal } from "../components/Modal";
 import { motion, useAnimation, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
@@ -15,7 +14,9 @@ import { ReceiptUploader } from "../components/ReceiptUploader";
 import { ReceiptPreview } from "../components/ReceiptPreview";
 import { VoiceRecorder } from "../components/VoiceRecorder";
 import { useCategories } from "../hooks/useCategories";
+import { useWallets } from "../hooks/useWallets";
 import { checkSingleCategoryBudget } from "../hooks/useBudgets";
+import { ConfirmTransactionModal, ConfirmTransactionDraft } from "../components/ConfirmTransactionModal";
 
 // Emoji map for category keys — fallback to 💰 if key not found
 const CATEGORY_EMOJI: Record<string, string> = {
@@ -65,6 +66,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   const { user } = useAuth();
   const { showToast } = useToast();
   const { categories } = useCategories();
+  const { activeWallets, generalWallet, refresh: refreshWallets } = useWallets();
   const shakeControls = useAnimation();
 
   const [displayName, setDisplayName] = useState<string>(userDisplayName || "");
@@ -99,9 +101,17 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   const [amount, setAmount] = useState<number | "">("");
   const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [note, setNote] = useState(prefill?.prefillNote || "");
+  const [walletId, setWalletId] = useState<string | null>(null);
   const [receiptDraft, setReceiptDraft] = useState<any>(null);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [confirmDraft, setConfirmDraft] = useState<ConfirmTransactionDraft | null>(null);
+  const [confirmSource, setConfirmSource] = useState<"manual" | "receipt" | "voice">("manual");
   const [isLoading, setIsLoading] = useState(false);
+
+  // Begitu wallet sudah termuat, defaultkan pilihan ke "Saldo Total" (general)
+  // supaya form tidak pernah dikirim tanpa pos -- user tetap bebas menggantinya.
+  useEffect(() => {
+    if (!walletId && generalWallet) setWalletId(generalWallet.id);
+  }, [generalWallet, walletId]);
   // ── Formasi tab: Struk / Suara / Manual (hanya satu panel tampil) ────
   const [activeInputTab, setActiveInputTab] = useState<"receipt" | "voice" | "manual">("manual");
 
@@ -162,52 +172,36 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   };
 
   // ── Handlers ─────────────────────────────────────────────────────────
-  const handleReceiptApprove = async (finalData: {
+  // Dipanggil setelah pengguna menyetujui hasil parsing struk/suara. Alih-alih
+  // langsung menyimpan, sekarang kita tampilkan dialog konfirmasi yang sama
+  // dengan input manual (nominal, kategori, pos dompet, tanggal, dan bisa
+  // diedit) sebelum benar-benar tersimpan ke database.
+  const handleReceiptApprove = (finalData: {
     amount: number; merchant_name: string; category: string; date: string; note: string;
   }) => {
-    setIsLoading(true);
-    try {
-      const savedTx = await dbService.saveTransaction(
-        currentUser.id, "expense", finalData.category,
-        finalData.amount, finalData.note, "ai_web", finalData.date
-      );
-      if (savedTx?.id) (window as any).lastSavedTransactionId = savedTx.id;
-      if (receiptDraft?.id) await dbService.approveReceiptDraft(receiptDraft.id);
-      showToast(t("toast.success_save"), "success");
-      setReceiptDraft(null);
-      onTransactionAdded();
-      await maybeWarnBudget(finalData.category, "expense");
-      navigate("/dashboard");
-    } catch {
-      showToast(t("toast.error_general"), "error");
-    } finally {
-      setIsLoading(false);
-    }
+    setConfirmSource("receipt");
+    setConfirmDraft({
+      type: "expense",
+      category: finalData.category,
+      amount: finalData.amount,
+      date: finalData.date,
+      note: finalData.note,
+      walletId: walletId || generalWallet?.id || null,
+    });
   };
 
-  // Dipanggil setelah pengguna menekan "Sudah Sesuai" di modal review
-  // VoicePreview (lihat VoiceRecorder.tsx). Langsung menyimpan transaksi
-  // ke database — TIDAK lagi hanya mengisi form manual — supaya pengguna
-  // tidak perlu menekan submit dua kali (satu di modal, satu lagi di form).
-  const handleVoiceApprove = async (finalData: {
+  const handleVoiceApprove = (finalData: {
     type: "income" | "expense"; category_key: string; amount: number; note: string;
   }) => {
-    setIsLoading(true);
-    try {
-      const savedTx = await dbService.saveTransaction(
-        currentUser.id, finalData.type, finalData.category_key,
-        finalData.amount, finalData.note || null, "ai_web", new Date().toISOString().split("T")[0]
-      );
-      if (savedTx?.id) (window as any).lastSavedTransactionId = savedTx.id;
-      showToast(t("toast.success_save"), "success");
-      onTransactionAdded();
-      await maybeWarnBudget(finalData.category_key, finalData.type);
-      navigate("/dashboard");
-    } catch {
-      showToast(t("toast.error_general"), "error");
-    } finally {
-      setIsLoading(false);
-    }
+    setConfirmSource("voice");
+    setConfirmDraft({
+      type: finalData.type,
+      category: finalData.category_key,
+      amount: finalData.amount,
+      date: new Date().toISOString().split("T")[0],
+      note: finalData.note || "",
+      walletId: walletId || generalWallet?.id || null,
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -227,24 +221,40 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
       showToast(t("toast.invalid_date"), "error");
       return;
     }
-    setIsConfirmOpen(true);
+    setConfirmSource("manual");
+    setConfirmDraft({
+      type,
+      category,
+      amount: Number(amount),
+      date,
+      note,
+      walletId: walletId || generalWallet?.id || null,
+    });
   };
 
   const handleExecuteSave = async () => {
-    setIsConfirmOpen(false);
+    if (!confirmDraft) return;
+    const draft = confirmDraft;
+    setConfirmDraft(null);
     setIsLoading(true);
     try {
+      const source = confirmSource === "manual" ? "manual" : "ai_web";
       const savedTx = await dbService.saveTransaction(
-        currentUser.id, type, category,
-        Number(amount), note.trim() || null, "manual", date
+        currentUser.id, draft.type, draft.category,
+        Number(draft.amount), draft.note.trim() || null, source, draft.date, draft.walletId
       );
       if (savedTx?.id) (window as any).lastSavedTransactionId = savedTx.id;
+      if (confirmSource === "receipt" && receiptDraft?.id) {
+        await dbService.approveReceiptDraft(receiptDraft.id);
+      }
       showToast(t("toast.success_save"), "success");
       setAmount("");
       setNote("");
       setDate(new Date().toISOString().split("T")[0]);
+      setReceiptDraft(null);
+      refreshWallets();
       onTransactionAdded();
-      await maybeWarnBudget(category, type);
+      await maybeWarnBudget(draft.category, draft.type);
       navigate("/dashboard");
     } catch {
       showToast(t("toast.error_general"), "error");
@@ -460,6 +470,26 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                   </div>
                 </div>
 
+                {/* 3b ── Pos Dompet ──────────────────────────────────────── */}
+                <div className="space-y-2">
+                  <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                    {t("wallet.label_pos")}
+                  </label>
+                  <select
+                    disabled={isLoading}
+                    value={walletId ?? ""}
+                    onChange={(e) => setWalletId(e.target.value || null)}
+                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+                  >
+                    {activeWallets.map((w) => (
+                      <option key={w.id} value={w.id}>
+                        {w.type === "general" ? "💰" : w.type === "ewallet" ? "📱" : w.type === "bank" ? "🏦" : "💵"}{" "}
+                        {w.name}{w.provider ? ` · ${w.provider}` : ""} ({formatIDR(w.balance)})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 {/* 4 ── Date + Note ─────────────────────────────────────── */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -523,19 +553,16 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         </motion.div>
       )}
 
-      {/* Confirmation Modal */}
-      <Modal
-        isOpen={isConfirmOpen}
-        title={t("confirm.save_transaction_title")}
-        description={t("confirm.save_transaction_desc", {
-          amount: amount !== "" ? formatIDR(amount as number) : "Rp0",
-          category: getCategoryLabel(category),
-        })}
-        type="info"
-        confirmLabel={t("common.confirm")}
-        cancelLabel={t("common.cancel")}
+      {/* Confirmation Modal — nominal, kategori, pos dompet, tanggal, semua bisa diedit */}
+      <ConfirmTransactionModal
+        isOpen={!!confirmDraft}
+        draft={confirmDraft}
+        categories={categories}
+        wallets={activeWallets}
+        isSaving={isLoading}
+        onChange={setConfirmDraft}
         onConfirm={handleExecuteSave}
-        onCancel={() => { audioFeedback.playClick(); setIsConfirmOpen(false); }}
+        onCancel={() => { audioFeedback.playClick(); setConfirmDraft(null); }}
       />
 
       <LoadingOverlay isOpen={isLoading} message={t("common.loading")} />

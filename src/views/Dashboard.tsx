@@ -17,6 +17,7 @@ import { DashboardBudgetSummary } from "../components/DashboardBudgetSummary";
 import { DashboardBillReminders } from "../components/DashboardBillReminders";
 import { DashboardInstallments } from "../components/DashboardInstallments";
 import { DashboardOverviewCard } from "../components/DashboardOverviewCard";
+import { DashboardWalletCards } from "../components/DashboardWalletCards";
 import { useCategories } from "../hooks/useCategories";
 
 interface DashboardProps {
@@ -227,9 +228,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
         telegramStatus={telegramStatus} 
       />
 
-      {/* 1b. Ringkasan Keuangan -- 1 kartu (Saldo Tersedia, Total Kekayaan,
-          Bulan Ini, Rincian Aset expandable), gabungan dari 2 komponen lama
-          yang sebelumnya menampilkan 8 angka Rupiah terpisah. */}
+      {/* 1b. Pos Dompet -- kartu per pos (E-Wallet/Rekening/Cash/Saldo Total),
+          menggantikan kartu tunggal "Saldo Tersedia" yang menggabungkan semua
+          pos jadi satu angka. Kelola penuh (nomor HP/rekening, saldo manual,
+          arsip) ada di /wallets. */}
+      <DashboardWalletCards formatIDR={formatIDR} refreshTrigger={transactionsUpdatedTrigger} />
+
+      {/* 1c. Ringkasan Keuangan -- Total Kekayaan, Bulan Ini, Rincian Aset
+          (Tabungan/Emas) expandable. Angka "Saldo Tersedia" tunggal sudah
+          dipindah jadi kartu-kartu Pos Dompet di atas. */}
       <div className="flex items-center gap-2 px-1">
         <Layers size={14} className="text-indigo-400 light_sakura:text-rose-500" />
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">

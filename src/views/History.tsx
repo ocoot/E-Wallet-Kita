@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { dbService } from "../lib/db";
 import { supabase } from "../lib/supabase";
@@ -22,6 +23,7 @@ import { HistoryEditModal } from "../components/HistoryEditModal";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "../components/PremiumModal";
 import { useCategories } from "../hooks/useCategories";
+import { useWallets } from "../hooks/useWallets";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -36,6 +38,8 @@ export const History: React.FC<HistoryProps> = ({
 }) => {
   const { t, locale } = useLanguage();
   const { categories } = useCategories();
+  const { activeWallets, wallets: allWallets } = useWallets();
+  const locationState = useLocation().state as { filterWalletId?: string } | null;
   const { user } = useAuth();
 
   const [displayName, setDisplayName] = useState<string>(userDisplayName || "");
@@ -69,6 +73,9 @@ export const History: React.FC<HistoryProps> = ({
   });
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterWalletId, setFilterWalletId] = useState<string | null>(
+    (locationState as any)?.filterWalletId || null
+  );
   const [pageSize, setPageSize] = useState<number | "all">(10);
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
@@ -130,10 +137,15 @@ export const History: React.FC<HistoryProps> = ({
       });
     }
     if (filterCategory !== "all") result = result.filter(tx => tx.category === filterCategory);
+    if (filterWalletId) result = result.filter(tx => tx.wallet_id === filterWalletId);
     return result;
-  }, [search, filterCategory, filterType, transactions, categories, locale]);
+  }, [search, filterCategory, filterType, filterWalletId, transactions, categories, locale]);
 
-  useEffect(() => { setCurrentPage(1); }, [search, filterCategory, filterType]);
+  useEffect(() => { setCurrentPage(1); }, [search, filterCategory, filterType, filterWalletId]);
+
+  const filteredWalletName = filterWalletId
+    ? allWallets.find(w => w.id === filterWalletId)?.name
+    : null;
 
   const totalItems = filteredTransactions.length;
   const computedPageSize = pageSize === "all" ? totalItems || 1 : pageSize;
@@ -145,10 +157,10 @@ export const History: React.FC<HistoryProps> = ({
   const handleDeleteItem = (id: string) => { audioFeedback.playDullPluck(); setDeleteTargetId(id); };
   const handleEditItem = (tx: Transaction) => { audioFeedback.playClick(); setEditTarget(tx); };
 
-  const executeEditSave = async (id: string, category: string, amount: number, transactionDate: string) => {
+  const executeEditSave = async (id: string, category: string, amount: number, transactionDate: string, walletId: string | null) => {
     setIsEditSaving(true);
     try {
-      await dbService.updateTransaction(currentUser.id, id, { category, amount, transaction_date: transactionDate });
+      await dbService.updateTransaction(currentUser.id, id, { category, amount, transaction_date: transactionDate, wallet_id: walletId });
       audioFeedback.playChime();
       showToast(t("toast.success_update"), "success");
       setEditTarget(null);
@@ -321,6 +333,18 @@ export const History: React.FC<HistoryProps> = ({
               </button>
             ))}
           </div>
+
+          {filterWalletId && (
+            <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-sans font-semibold light_sakura:bg-rose-50 light_sakura:border-rose-200 light_sakura:text-rose-600">
+              <span>{t("wallet.label_pos")}: {filteredWalletName || "-"}</span>
+              <button
+                onClick={() => setFilterWalletId(null)}
+                className="ml-auto underline underline-offset-2 cursor-pointer"
+              >
+                {t("common.clear") ?? "Hapus filter"}
+              </button>
+            </div>
+          )}
 
           <HistoryFilter
             filterMonth={filterMonth}

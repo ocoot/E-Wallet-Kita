@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Pencil, X } from "lucide-react";
-import { Transaction } from "../types";
+import { Transaction, WalletWithBalance } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useCategories } from "../hooks/useCategories";
+import { useWallets } from "../hooks/useWallets";
 
 interface HistoryEditModalProps {
   transaction: Transaction | null;
   onClose: () => void;
-  onSave: (id: string, category: string, amount: number, transactionDate: string) => Promise<void>;
+  onSave: (id: string, category: string, amount: number, transactionDate: string, walletId: string | null) => Promise<void>;
   isSaving: boolean;
 }
+
+const WALLET_TYPE_ICON: Record<string, string> = { ewallet: "📱", bank: "🏦", cash: "💵", general: "💰" };
 
 export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
   transaction,
@@ -20,15 +23,18 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
 }) => {
   const { t, locale } = useLanguage();
   const { categories } = useCategories();
+  const { activeWallets } = useWallets();
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState<number | "">("");
   const [transactionDate, setTransactionDate] = useState("");
+  const [walletId, setWalletId] = useState<string | null>(null);
 
   useEffect(() => {
     if (transaction) {
       setCategory(transaction.category);
       setAmount(transaction.amount);
       setTransactionDate(transaction.transaction_date);
+      setWalletId(transaction.wallet_id);
     }
   }, [transaction]);
 
@@ -40,7 +46,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
     e.preventDefault();
     if (!amount || Number(amount) <= 0) return;
     if (!transactionDate) return;
-    await onSave(transaction.id, category, Number(amount), transactionDate);
+    await onSave(transaction.id, category, Number(amount), transactionDate, walletId);
   };
 
   return (
@@ -107,6 +113,23 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
                 max={new Date().toISOString().split("T")[0]}
                 className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
               />
+            </div>
+
+            <div>
+              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
+                {t("wallet.label_pos")}
+              </label>
+              <select
+                value={walletId ?? ""}
+                onChange={e => setWalletId(e.target.value || null)}
+                className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+              >
+                {activeWallets.map(w => (
+                  <option key={w.id} value={w.id}>
+                    {WALLET_TYPE_ICON[w.type]} {w.name}{w.provider ? ` · ${w.provider}` : ""}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>

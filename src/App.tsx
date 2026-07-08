@@ -47,6 +47,7 @@ const NewTransaction = lazy(() => import("./views/NewTransaction").then(m => ({ 
 const History = lazy(() => import("./views/History").then(m => ({ default: m.History })));
 const Settings = lazy(() => import("./views/Settings").then(m => ({ default: m.Settings })));
 const Budget = lazy(() => import("./views/Budget").then(m => ({ default: m.Budget })));
+const Wallets = lazy(() => import("./views/Wallets").then(m => ({ default: m.Wallets })));
 const BillReminders = lazy(() => import("./views/BillReminders").then(m => ({ default: m.BillReminders })));
 const Installments = lazy(() => import("./views/Installments").then(m => ({ default: m.Installments })));
 const Savings = lazy(() => import("./views/Savings").then(m => ({ default: m.Savings })));
@@ -287,6 +288,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                   <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} />} />
                   <Route path="/transactions/new" element={<FeatureLockGate featureKey="new_transaction"><NewTransaction onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
                   <Route path="/transactions" element={<FeatureLockGate featureKey="history"><History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
+                  <Route path="/wallets" element={<FeatureLockGate featureKey="wallets"><Wallets /></FeatureLockGate>} />
                   <Route path="/budget" element={<FeatureLockGate featureKey="budget"><Budget /></FeatureLockGate>} />
                   <Route path="/bill-reminders" element={<FeatureLockGate featureKey="bill_reminders"><BillReminders /></FeatureLockGate>} />
                   <Route path="/installments" element={<FeatureLockGate featureKey="installments"><Installments /></FeatureLockGate>} />

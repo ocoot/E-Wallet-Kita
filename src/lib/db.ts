@@ -1,5 +1,5 @@
 import { supabase } from "./supabase";
-import { Transaction, Category, Budget, BillReminder, Installment, AccumulatedBalance, SavingsPocket, SavingsPocketEntry, SavingsSummary, SavingsPocketType, GoldPocket, GoldPocketEntry, GoldHoldingsSummary, GoldBrand, ACTIVE_GOLD_BRANDS } from "../types";
+import { Transaction, Category, Budget, BillReminder, Installment, AccumulatedBalance, SavingsPocket, SavingsPocketEntry, SavingsSummary, SavingsPocketType, GoldPocket, GoldPocketEntry, GoldHoldingsSummary, GoldBrand, ACTIVE_GOLD_BRANDS, Wallet, WalletWithBalance, WalletType } from "../types";
 
 export const dbService = {
   async getCategories(): Promise<Category[]> {
@@ -86,8 +86,14 @@ export const dbService = {
     amount: number,
     note: string | null,
     source: "manual" | "ai_web" | "telegram",
-    transactionDate: string
+    transactionDate: string,
+    walletId?: string | null
   ): Promise<Transaction> {
+    // Kalau tidak ada wallet dipilih, tetap arahkan ke pos "Saldo Total"
+    // supaya setiap transaksi selalu punya rumah -- konsisten dengan
+    // perilaku backfill untuk transaksi lama.
+    const resolvedWalletId = walletId ?? (await dbService.ensureGeneralWallet(userId));
+
     const { data, error } = await supabase
       .from('transactions')
       .insert({
@@ -97,7 +103,8 @@ export const dbService = {
         amount: Math.max(0, amount),
         note: note ? note.trim() : null,
         source,
-        transaction_date: transactionDate
+        transaction_date: transactionDate,
+        wallet_id: resolvedWalletId
       })
       .select()
       .single();
@@ -127,12 +134,13 @@ export const dbService = {
   async updateTransaction(
     userId: string,
     transactionId: string,
-    updates: { category?: string; amount?: number; transaction_date?: string }
+    updates: { category?: string; amount?: number; transaction_date?: string; wallet_id?: string | null }
   ): Promise<Transaction> {
     const payload: Record<string, any> = {};
     if (updates.category !== undefined) payload.category = updates.category;
     if (updates.amount !== undefined) payload.amount = Math.max(0, updates.amount);
     if (updates.transaction_date !== undefined) payload.transaction_date = updates.transaction_date;
+    if (updates.wallet_id !== undefined) payload.wallet_id = updates.wallet_id;
 
     const { data, error } = await supabase
       .from('transactions')
@@ -158,6 +166,96 @@ export const dbService = {
 
     if (error) {
       console.error('Error purging transactions:', error);
+      throw error;
+    }
+  },
+
+  // ── Pos Dompet (Wallets) ──────────────────────────────────────────────
+  // Lihat migration 20260708000000_wallets_pos_system.sql untuk skema & RPC.
+
+  /** Pastikan pos "Saldo Total" ada, kembalikan id-nya. Aman dipanggil berkali-kali. */
+  async ensureGeneralWallet(userId: string): Promise<string> {
+    const { data, error } = await supabase.rpc('ensure_general_wallet', { p_user_id: userId });
+    if (error) {
+      console.error('Error ensuring general wallet:', error);
+      throw error;
+    }
+    return data as string;
+  },
+
+  async getWallets(userId: string): Promise<WalletWithBalance[]> {
+    const { data, error } = await supabase.rpc('get_wallets_with_balance', { p_user_id: userId });
+    if (error) {
+      console.error('Error fetching wallets:', error);
+      throw error;
+    }
+    return (data ?? []) as WalletWithBalance[];
+  },
+
+  async createWallet(
+    userId: string,
+    name: string,
+    type: Exclude<WalletType, 'general'>,
+    provider: string | null,
+    startingBalance: number = 0,
+    phoneNumber: string | null = null,
+    accountNumber: string | null = null
+  ): Promise<string> {
+    const { data, error } = await supabase.rpc('create_wallet', {
+      p_user_id: userId,
+      p_name: name,
+      p_type: type,
+      p_provider: provider,
+      p_starting_balance: startingBalance,
+      p_phone_number: phoneNumber,
+      p_account_number: accountNumber
+    });
+    if (error) {
+      console.error('Error creating wallet:', error);
+      throw error;
+    }
+    return data as string;
+  },
+
+  /** Edit saldo manual: user memasukkan saldo "sebenarnya", sistem menyesuaikan basisnya. */
+  async setWalletBalance(userId: string, walletId: string, newBalance: number): Promise<void> {
+    const { error } = await supabase.rpc('set_wallet_balance', {
+      p_user_id: userId,
+      p_wallet_id: walletId,
+      p_new_balance: newBalance
+    });
+    if (error) {
+      console.error('Error setting wallet balance:', error);
+      throw error;
+    }
+  },
+
+  async updateWallet(
+    userId: string,
+    walletId: string,
+    updates: {
+      name?: string;
+      provider?: string | null;
+      is_archived?: boolean;
+      phoneNumber?: string | null;
+      accountNumber?: string | null;
+      clearPhoneNumber?: boolean;
+      clearAccountNumber?: boolean;
+    }
+  ): Promise<void> {
+    const { error } = await supabase.rpc('update_wallet', {
+      p_user_id: userId,
+      p_wallet_id: walletId,
+      p_name: updates.name ?? null,
+      p_provider: updates.provider ?? null,
+      p_is_archived: updates.is_archived ?? null,
+      p_phone_number: updates.phoneNumber ?? null,
+      p_account_number: updates.accountNumber ?? null,
+      p_clear_phone_number: updates.clearPhoneNumber ?? false,
+      p_clear_account_number: updates.clearAccountNumber ?? false
+    });
+    if (error) {
+      console.error('Error updating wallet:', error);
       throw error;
     }
   },
@@ -292,6 +390,7 @@ export const dbService = {
       due_day: number | null;
       due_date: string | null;
       notes: string | null;
+      wallet_id?: string | null;
     }
   ): Promise<BillReminder> {
     const { data, error } = await supabase
@@ -311,7 +410,7 @@ export const dbService = {
   async updateBillReminder(
     userId: string,
     reminderId: string,
-    updates: Partial<Pick<BillReminder, 'name' | 'category_key' | 'amount' | 'recurrence_type' | 'due_day' | 'due_date' | 'notes' | 'is_paid' | 'paid_at'>>
+    updates: Partial<Pick<BillReminder, 'name' | 'category_key' | 'amount' | 'recurrence_type' | 'due_day' | 'due_date' | 'notes' | 'is_paid' | 'paid_at' | 'wallet_id'>>
   ): Promise<BillReminder> {
     const payload: Record<string, any> = { ...updates, updated_at: new Date().toISOString() };
 
@@ -425,6 +524,7 @@ export const dbService = {
       total_months: number;
       start_date: string;
       notes: string | null;
+      wallet_id?: string | null;
     }
   ): Promise<Installment> {
     const { data, error } = await supabase
@@ -444,7 +544,7 @@ export const dbService = {
   async updateInstallment(
     userId: string,
     installmentId: string,
-    updates: Partial<Pick<Installment, 'name' | 'category_key' | 'principal_amount' | 'monthly_amount' | 'total_months' | 'start_date' | 'notes'>>
+    updates: Partial<Pick<Installment, 'name' | 'category_key' | 'principal_amount' | 'monthly_amount' | 'total_months' | 'start_date' | 'notes' | 'wallet_id'>>
   ): Promise<Installment> {
     const payload: Record<string, any> = { ...updates, updated_at: new Date().toISOString() };
 
@@ -580,6 +680,7 @@ export const dbService = {
       target_amount: number | null;
       target_date: string | null;
       notes: string | null;
+      wallet_id?: string | null;
     }
   ): Promise<SavingsPocket> {
     const { data, error } = await supabase
@@ -599,7 +700,7 @@ export const dbService = {
   async updateSavingsPocket(
     userId: string,
     pocketId: string,
-    updates: Partial<Pick<SavingsPocket, 'name' | 'target_amount' | 'target_date' | 'notes' | 'is_archived'>>
+    updates: Partial<Pick<SavingsPocket, 'name' | 'target_amount' | 'target_date' | 'notes' | 'is_archived' | 'wallet_id'>>
   ): Promise<SavingsPocket> {
     const payload: Record<string, any> = { ...updates, updated_at: new Date().toISOString() };
 
@@ -741,7 +842,7 @@ export const dbService = {
 
   async createGoldPocket(
     userId: string,
-    payload: { name: string; brand: GoldBrand; notes: string | null }
+    payload: { name: string; brand: GoldBrand; notes: string | null; wallet_id?: string | null }
   ): Promise<GoldPocket> {
     const { data, error } = await supabase
       .from('gold_pockets')
@@ -760,7 +861,7 @@ export const dbService = {
   async updateGoldPocket(
     userId: string,
     pocketId: string,
-    updates: Partial<Pick<GoldPocket, 'name' | 'notes' | 'is_archived'>>
+    updates: Partial<Pick<GoldPocket, 'name' | 'notes' | 'is_archived' | 'wallet_id'>>
   ): Promise<GoldPocket> {
     const payload: Record<string, any> = { ...updates, updated_at: new Date().toISOString() };
 
