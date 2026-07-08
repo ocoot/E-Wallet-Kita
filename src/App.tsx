@@ -31,7 +31,7 @@ import {
   DefaultSkeleton,
 } from "./components/SkeletonLoader";
 import { motion, AnimatePresence } from "motion/react";
-import { LogOut } from "lucide-react";
+import logoUrl from "./assets/images/user_logo_transparent.png";
 import { supabase } from "./lib/supabase";
 import { requestFcmToken, saveFcmToken, clearFcmToken } from "./lib/firebase";
 import { User } from "@supabase/supabase-js";
@@ -348,7 +348,17 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
             className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-md"
           >
             <div className="p-8 bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl">
-                 <LogOut className="animate-spin text-red-500" size={48} />
+                 <div className="relative w-14 h-14 flex items-center justify-center">
+                   <div className="absolute inset-0 border-[3px] border-indigo-600/20 rounded-full
+                                   light_sakura:border-rose-400/20" />
+                   <div className="absolute inset-0 border-[3px] border-t-indigo-500 rounded-full
+                                   animate-spin light_sakura:border-t-rose-500" />
+                   <img
+                     src={logoUrl}
+                     alt=""
+                     className="w-7 h-7 object-contain animate-pulse"
+                   />
+                 </div>
             </div>
           </motion.div>
         )}

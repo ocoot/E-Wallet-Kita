@@ -7,7 +7,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
 import { ExportFullModal } from "../components/ExportFullModal";
-import { Trash2, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { exportSummaryPdf, exportFullPdf } from "../lib/pdf/exportPdf";
@@ -263,7 +263,6 @@ export const History: React.FC<HistoryProps> = ({
             <div className="grid grid-cols-3 gap-2">
               <div className="rounded-2xl bg-red-500/8 border border-red-500/15 px-3 py-3 light_sakura:bg-red-50/60 light_sakura:border-red-100">
                 <div className="flex items-start gap-1.5 mb-1 min-h-[1.9rem]">
-                  <TrendingDown size={12} className="text-red-400 shrink-0 mt-[1px]" />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 light_sakura:text-slate-400 leading-tight break-words">
                     {t("dashboard.expense")}
                   </span>
@@ -274,7 +273,6 @@ export const History: React.FC<HistoryProps> = ({
               </div>
               <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-3 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
                 <div className="flex items-start gap-1.5 mb-1 min-h-[1.9rem]">
-                  <TrendingUp size={12} className="text-emerald-400 shrink-0 mt-[1px]" />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 light_sakura:text-slate-400 leading-tight break-words">
                     {t("dashboard.income")}
                   </span>
@@ -289,7 +287,6 @@ export const History: React.FC<HistoryProps> = ({
                   : "bg-orange-500/8 border-orange-500/15 light_sakura:bg-orange-50/60 light_sakura:border-orange-100"
               }`}>
                 <div className="flex items-start gap-1.5 mb-1 min-h-[1.9rem]">
-                  <Wallet size={12} className={`shrink-0 mt-[1px] ${stats.net >= 0 ? "text-indigo-400" : "text-orange-400"}`} />
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 light_sakura:text-slate-400 leading-tight break-words">
                     {t("dashboard.balance")}
                   </span>
