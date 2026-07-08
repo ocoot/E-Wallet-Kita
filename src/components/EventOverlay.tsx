@@ -189,7 +189,7 @@ export const EventOverlay: React.FC<EventOverlayProps> = ({ type }) => {
   const confettiParticles = useMemo(() => {
     if (type !== "confetti") return null;
     return Array.from({ length: config.count }, (_, i) => ({
-      key: i,
+      id: i,
       left: `${(seededRandom(i + config.seedOffset) * 100).toFixed(1)}%`,
       color: config.colors![Math.floor(seededRandom(i + 50) * config.colors!.length)],
       w: config.sizeRange![0] + seededRandom(i + 100) * (config.sizeRange![1] - config.sizeRange![0]),
@@ -202,7 +202,7 @@ export const EventOverlay: React.FC<EventOverlayProps> = ({ type }) => {
   const fireworkBursts = useMemo(() => {
     if (type !== "fireworks") return null;
     return Array.from({ length: config.count }, (_, i) => ({
-      key: i,
+      id: i,
       left: `${(5 + seededRandom(i + config.seedOffset) * 90).toFixed(1)}%`,
       top: `${(5 + seededRandom(i + 50) * 70).toFixed(1)}%`,
       dur: `${(config.durRange![0] + seededRandom(i + 100) * (config.durRange![1] - config.durRange![0])).toFixed(1)}s`,
@@ -213,7 +213,7 @@ export const EventOverlay: React.FC<EventOverlayProps> = ({ type }) => {
   const heartParticles = useMemo(() => {
     if (type !== "hearts") return null;
     return Array.from({ length: config.count }, (_, i) => ({
-      key: i,
+      id: i,
       left: `${(seededRandom(i + config.seedOffset) * 100).toFixed(1)}%`,
       size: config.sizeRange![0] + seededRandom(i + 50) * (config.sizeRange![1] - config.sizeRange![0]),
       dur: `${(config.durRange![0] + seededRandom(i + 100) * (config.durRange![1] - config.durRange![0])).toFixed(1)}s`,
@@ -225,7 +225,7 @@ export const EventOverlay: React.FC<EventOverlayProps> = ({ type }) => {
   const sparkleParticles = useMemo(() => {
     if (type !== "sparkles") return null;
     return Array.from({ length: config.count }, (_, i) => ({
-      key: i,
+      id: i,
       left: `${(seededRandom(i + config.seedOffset) * 100).toFixed(1)}%`,
       top: `${(seededRandom(i + 50) * 80).toFixed(1)}%`,
       size: config.sizeRange![0] + seededRandom(i + 100) * (config.sizeRange![1] - config.sizeRange![0]),
@@ -239,22 +239,22 @@ export const EventOverlay: React.FC<EventOverlayProps> = ({ type }) => {
     <div className="pointer-events-none absolute inset-0 overflow-hidden rounded-3xl" aria-hidden="true">
       {/* Confetti */}
       {confettiParticles?.map((p) => (
-        <ConfettiParticle key={p.key} {...p} />
+        <ConfettiParticle key={p.id} {...p} />
       ))}
 
       {/* Fireworks */}
       {fireworkBursts?.map((b) => (
-        <FireworkBurst key={b.key} {...b} />
+        <FireworkBurst key={b.id} {...b} />
       ))}
 
       {/* Hearts */}
       {heartParticles?.map((h) => (
-        <HeartParticle key={h.key} {...h} />
+        <HeartParticle key={h.id} {...h} />
       ))}
 
       {/* Sparkles */}
       {sparkleParticles?.map((s) => (
-        <SparkleParticle key={s.key} {...s} />
+        <SparkleParticle key={s.id} {...s} />
       ))}
     </div>
   );
