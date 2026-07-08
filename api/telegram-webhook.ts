@@ -5,7 +5,7 @@ import { parseAmountFromString } from '../src/lib/parserUtils.js';
 import { generatePdf } from '../src/lib/pdf/exportPdf.js';
 import { createPdfTranslator } from './_lib/pdf-translator.js';
 import { parseReceipt } from './_lib/receipt-parser.js';
-import { createReceiptDraft, approveReceiptDraft, cancelReceiptDraft, getReceiptDraft, updateReceiptCategory } from './_lib/receipt-service.js';
+import { createReceiptDraft, approveReceiptDraft, cancelReceiptDraft, getReceiptDraft, updateReceiptCategory, updateReceiptWallet } from './_lib/receipt-service.js';
 import { getMaintenanceStatus, isFeatureLocked, getMaintenanceMessage, MaintenanceStatus } from './_lib/maintenance.js';
 import { tr } from './_lib/botText.js';
 import { inferCategoryKey } from './_lib/categoryInference.js';
@@ -189,10 +189,135 @@ function buildDraftKeyboard(lang: Lang) {
       [
         { text: tr("btnEditAmount", lang), callback_data: "tx_edit_amount" },
         { text: tr("btnEditCategory", lang), callback_data: "tx_edit_category" }
+      ],
+      [
+        { text: tr("btnEditWallet", lang), callback_data: "tx_edit_wallet" }
       ]
     ]
   };
 }
+
+// Ikon per tipe pos dompet -- dipakai konsisten dengan web (Wallets.tsx /
+// ConfirmTransactionModal.tsx) supaya terasa satu produk yang sama.
+function walletTypeIcon(type: string): string {
+  if (type === "ewallet") return "📱";
+  if (type === "bank") return "🏦";
+  if (type === "cash") return "💵";
+  return "💰"; // general / Saldo Total
+}
+
+function walletDisplayLabel(w: { name: string; type: string; provider?: string | null }): string {
+  return `${walletTypeIcon(w.type)} ${w.name}${w.provider ? ` · ${w.provider}` : ""}`;
+}
+
+/**
+ * Ambil daftar pos dompet aktif milik user yang terhubung ke chat_id ini.
+ * Dipakai untuk render inline keyboard pemilih pos DAN untuk resolve index
+ * -> wallet id lagi saat callback tx_set_wallet/rcpt_setwallet diproses
+ * (index dipakai, bukan UUID langsung, supaya callback_data tetap di bawah
+ * limit 64 byte Telegram -- sama seperti pola tx_set_cat/rcpt_setcat).
+ */
+async function getTelegramWalletList(chatId: number): Promise<{ id: string; name: string; type: string; provider: string | null }[]> {
+  const { data, error } = await supabaseBackend.rpc("get_telegram_wallets", { p_chat_id: chatId });
+  if (error || !data) {
+    console.error("❌ RPC get_telegram_wallets error:", error);
+    return [];
+  }
+  return data;
+}
+
+function buildWalletKeyboard(
+  wallets: { id: string; name: string; type: string; provider: string | null }[],
+  lang: Lang,
+  setCallbackPrefix: string,
+  backCallback: string
+) {
+  const rows = [];
+  for (let i = 0; i < wallets.length; i += 2) {
+    const pair = wallets.slice(i, i + 2);
+    rows.push(pair.map((w, j) => ({
+      text: walletDisplayLabel(w),
+      callback_data: `${setCallbackPrefix}${i + j}`
+    })));
+  }
+  rows.push([{ text: tr("btnBackToDraft", lang), callback_data: backCallback }]);
+  return { inline_keyboard: rows };
+}
+
+/** Label pos dompet untuk 1 wallet_id spesifik (dipakai di pesan draf/sukses). */
+async function getWalletLabelById(walletId: string | null): Promise<string> {
+  if (!walletId) return walletTypeIcon("general") + " -";
+  const { data, error } = await supabaseBackend
+    .from("wallets")
+    .select("name, type, provider")
+    .eq("id", walletId)
+    .single();
+  if (error || !data) return walletTypeIcon("general") + " -";
+  return walletDisplayLabel(data);
+}
+
+/**
+ * Render ulang teks preview + keyboard draf struk. Dipakai di 4 titik
+ * (kirim awal, setelah ganti kategori, setelah ganti pos dompet, tombol
+ * kembali) supaya keempatnya konsisten -- termasuk baris "Pos Dompet" yang
+ * baru, tanpa harus menyalin blok teks yang sama berkali-kali lagi.
+ */
+async function renderReceiptPreview(
+  draftId: string,
+  receipt: any,
+  catLabel: string,
+  walletLabel: string,
+  lang: Lang
+): Promise<{ text: string; keyboard: any }> {
+  let itemLines = "";
+  if (receipt.items && receipt.items.length > 0) {
+    receipt.items.forEach((it: any) => {
+      itemLines += `• *${it.name}*\n  Qty ${it.qty} · ${formatIDR(it.unit_price)} (${formatIDR(it.subtotal)})\n`;
+    });
+  } else {
+    itemLines += lang === "id" ? "_(Tidak ada rincian item)_\n" : "_(No itemized detail)_\n";
+  }
+  const receiptDateFormatted = receipt.receipt_date
+    ? new Date(receipt.receipt_date).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", { day: "numeric", month: "long", year: "numeric" })
+    : "-";
+
+  const text = lang === "id"
+    ? `🧾 *Hasil Pembacaan Struk (OCR-Gemini)* 🌸\n\n` +
+      `*Toko*: ${receipt.merchant_name}\n` +
+      `*Tanggal*: ${receiptDateFormatted}\n` +
+      `*Kategori*: ${catLabel}\n` +
+      `*Pos Dompet*: ${walletLabel}\n\n` +
+      `*Rincian Barang*:\n${itemLines}\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `*Total Belanja*: *${formatIDR(receipt.total_amount)}*\n\n` +
+      `_Konfirmasi pencatatan pengeluaran di bawah ini:_`
+    : `🧾 *Receipt Reading Result (OCR-Gemini)* 🌸\n\n` +
+      `*Store*: ${receipt.merchant_name}\n` +
+      `*Date*: ${receiptDateFormatted}\n` +
+      `*Category*: ${catLabel}\n` +
+      `*Wallet*: ${walletLabel}\n\n` +
+      `*Itemized Detail*:\n${itemLines}\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `*Total Cost*: *${formatIDR(receipt.total_amount)}*\n\n` +
+      `_Confirm saving this expense below:_`;
+
+  const keyboard = {
+    inline_keyboard: [
+      [
+        { text: lang === "id" ? "✏️ Edit Kategori" : "✏️ Edit Category", callback_data: `rcpt_editcat:${draftId}` },
+        { text: tr("btnEditWallet", lang), callback_data: `rcpt_editwallet:${draftId}` }
+      ],
+      [
+        { text: lang === "id" ? "✅ Simpan Transaksi" : "✅ Save Transaction", callback_data: `rcpt_approve:${draftId}` },
+        { text: lang === "id" ? "❌ Batal" : "❌ Cancel", callback_data: `rcpt_cancel:${draftId}` }
+      ]
+    ]
+  };
+
+  return { text, keyboard };
+}
+
+
 
 function buildCategoryKeyboard(type: "income" | "expense", lang: Lang, categories: Category[]) {
   const matching = categories.filter(c => c.type === type || c.type === "both");
@@ -565,49 +690,9 @@ async function handleReceiptPhoto(message: any, maintenanceStatus: MaintenanceSt
     const draft = await createReceiptDraft(userCtx.id, receipt, "telegram", String(chatId), categorySnapshot);
 
     // Step 6: Render and send preview
-    let itemLines = "";
-    if (receipt.items && receipt.items.length > 0) {
-      receipt.items.forEach((it: any) => {
-        itemLines += `• *${it.name}*\n  Qty ${it.qty} · ${formatIDR(it.unit_price)} (${formatIDR(it.subtotal)})\n`;
-      });
-    } else {
-      itemLines += lang === "id" ? "_(Tidak ada rincian item)_\n" : "_(No itemized detail)_\n";
-    }
-
-    const receiptDateFormatted = receipt.receipt_date ? new Date(receipt.receipt_date).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", {
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    }) : "-";
-
-    const textPreview = lang === "id" 
-      ? `🧾 *Hasil Pembacaan Struk (OCR-Gemini)* 🌸\n\n` +
-        `*Toko*: ${receipt.merchant_name}\n` +
-        `*Tanggal*: ${receiptDateFormatted}\n\n` +
-        `*Rincian Barang*:\n${itemLines}\n` +
-        `━━━━━━━━━━━━━━━━━━━━\n\n` +
-        `*Total Belanja*: *${formatIDR(receipt.total_amount)}*\n\n` +
-        `_Konfirmasi pencatatan pengeluaran di bawah ini:_`
-      : `🧾 *Receipt Reading Result (OCR-Gemini)* 🌸\n\n` +
-        `*Store*: ${receipt.merchant_name}\n` +
-        `*Date*: ${receiptDateFormatted}\n` +
-        `*Category*: ${await getCategoryLabel(draft.category || 'other', lang)}\n\n` +
-        `*Itemized Detail*:\n${itemLines}\n` +
-        `━━━━━━━━━━━━━━━━━━━━\n\n` +
-        `*Total Cost*: *${formatIDR(receipt.total_amount)}*\n\n` +
-        `_Confirm saving this expense below:_`;
-
-    const inlineKeyboard = {
-      inline_keyboard: [
-        [
-          { text: lang === "id" ? "✏️ Edit Kategori" : "✏️ Edit Category", callback_data: `rcpt_editcat:${draft.id}` }
-        ],
-        [
-          { text: lang === "id" ? "✅ Simpan Transaksi" : "✅ Save Transaction", callback_data: `rcpt_approve:${draft.id}` },
-          { text: lang === "id" ? "❌ Batal" : "❌ Cancel", callback_data: `rcpt_cancel:${draft.id}` }
-        ]
-      ]
-    };
+    const catLabel = await getCategoryLabel(draft.category || 'other', lang);
+    const walletLabel = await getWalletLabelById(draft.wallet_id);
+    const { text: textPreview, keyboard: inlineKeyboard } = await renderReceiptPreview(draft.id, receipt, catLabel, walletLabel, lang);
 
     await sendTelegramMessage(chatId, textPreview, inlineKeyboard);
 
@@ -741,9 +826,14 @@ async function handleVoiceNote(message: any, maintenanceStatus: MaintenanceStatu
     const typeLabel = parsed.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
     const draftMarkup = buildDraftKeyboard(lang);
 
+    // Ambil balik draft yang baru diupsert supaya tahu wallet_id yang
+    // di-resolve otomatis oleh RPC (default: Saldo Total).
+    const { data: freshDraft } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
+    const walletLabel = await getWalletLabelById(freshDraft?.[0]?.wallet_id ?? null);
+
     await sendTelegramMessage(
       chatId,
-      tr("draftPrompt", lang, typeLabel, localizedCat, currencyStr, parsed.original_text),
+      tr("draftPrompt", lang, typeLabel, localizedCat, currencyStr, parsed.original_text, walletLabel),
       draftMarkup
     );
   } catch (err: any) {
@@ -918,10 +1008,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         const typeLabel = row.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
         const catLabel  = await getCategoryLabel(row.category_key, lang);
         const amountStr = formatIDR(row.amount);
+        const walletLabel = await getWalletLabelById(row.wallet_id);
 
         await editTelegramMessage(
           chatId, msgId,
-          tr("draftPrompt", lang, typeLabel, catLabel, amountStr, row.original_text),
+          tr("draftPrompt", lang, typeLabel, catLabel, amountStr, row.original_text, walletLabel),
           buildDraftKeyboard(lang)
         );
 
@@ -953,9 +1044,10 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           const typeLabel = row.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
           const catLabel  = await getCategoryLabel(row.category_key, lang);
           const amountStr = formatIDR(row.amount);
+          const walletLabel = await getWalletLabelById(row.wallet_id);
 
           await answerTelegramCallback(queryId, tr("cbSaveSuccess", lang));
-          await editTelegramMessage(chatId, msgId, tr("msgSaveSuccess", lang, typeLabel, catLabel, amountStr, row.original_text));
+          await editTelegramMessage(chatId, msgId, tr("msgSaveSuccess", lang, typeLabel, catLabel, amountStr, row.original_text, walletLabel));
 
           const userCtx = await resolveUserContext(chatId);
           if (userCtx) {
@@ -1014,7 +1106,62 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         const row = draft[0];
         const typeLabel = row.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
         const catLabel  = await getCategoryLabel(row.category_key, lang);
-        await editTelegramMessage(chatId, msgId, tr("draftPrompt", lang, typeLabel, catLabel, formatIDR(row.amount), row.original_text), buildDraftKeyboard(lang));
+        const walletLabel = await getWalletLabelById(row.wallet_id);
+        await editTelegramMessage(chatId, msgId, tr("draftPrompt", lang, typeLabel, catLabel, formatIDR(row.amount), row.original_text, walletLabel), buildDraftKeyboard(lang));
+        await answerTelegramCallback(queryId);
+      }
+      // Pilih pos dompet untuk draft teks/voice (mirror alur edit kategori
+      // di atas: tampilkan keyboard -> user tap -> kembali ke draf).
+      else if (actionData === "tx_edit_wallet") {
+        const { data: draft } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
+        if (!draft || draft.length === 0) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        const wallets = await getTelegramWalletList(chatId);
+        await editTelegramMessage(chatId, msgId, tr("editWalletPrompt", lang), buildWalletKeyboard(wallets, lang, "tx_set_wallet:", "tx_edit_wallet_cancel"));
+        await answerTelegramCallback(queryId);
+      }
+      else if (actionData.startsWith("tx_set_wallet:")) {
+        const walletIndex = parseInt(actionData.split(":")[1], 10);
+        const wallets = await getTelegramWalletList(chatId);
+        const selectedWallet = wallets[walletIndex];
+        if (!selectedWallet) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        const { error: updateWalletErr } = await supabaseBackend.rpc("update_pending_telegram_tx_wallet", {
+          p_chat_id: chatId,
+          p_wallet_id: selectedWallet.id
+        });
+        if (updateWalletErr) {
+          await answerTelegramCallback(queryId, tr("cbSaveFailed", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+
+        const { data: draft } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
+        if (!draft || draft.length === 0) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        const row = draft[0];
+        const typeLabel = row.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
+        const catLabel  = await getCategoryLabel(row.category_key, lang);
+        const walletLabel = walletDisplayLabel(selectedWallet);
+        await editTelegramMessage(chatId, msgId, tr("draftPrompt", lang, typeLabel, catLabel, formatIDR(row.amount), row.original_text, walletLabel), buildDraftKeyboard(lang));
+        await answerTelegramCallback(queryId, tr("cbWalletUpdated", lang));
+      }
+      else if (actionData === "tx_edit_wallet_cancel") {
+        const { data: draft } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
+        if (!draft || draft.length === 0) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        const row = draft[0];
+        const typeLabel = row.type === "income" ? tr("txTypeIncome", lang) : tr("txTypeExpense", lang);
+        const catLabel  = await getCategoryLabel(row.category_key, lang);
+        const walletLabel = await getWalletLabelById(row.wallet_id);
+        await editTelegramMessage(chatId, msgId, tr("draftPrompt", lang, typeLabel, catLabel, formatIDR(row.amount), row.original_text, walletLabel), buildDraftKeyboard(lang));
         await answerTelegramCallback(queryId);
       }
       // OCR Callbacks
@@ -1025,7 +1172,8 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           await answerTelegramCallback(queryId, tr("cbSaveSuccess", lang));
           const catLabel = await getCategoryLabel(resApprove.draft.category || 'other', lang);
           const typeLabel = tr("txTypeExpense", lang);
-          await editTelegramMessage(chatId, msgId, tr("msgSaveSuccess", lang, typeLabel, catLabel, formatIDR(resApprove.draft.total_amount), resApprove.draft.merchant_name || 'Receipt Scan'));
+          const walletLabel = await getWalletLabelById(resApprove.draft.wallet_id ?? null);
+          await editTelegramMessage(chatId, msgId, tr("msgSaveSuccess", lang, typeLabel, catLabel, formatIDR(resApprove.draft.total_amount), resApprove.draft.merchant_name || 'Receipt Scan', walletLabel));
 
           if (resApprove.transaction?.user_id) {
             await sendBudgetWarningIfNeeded(chatId, resApprove.transaction.user_id, resApprove.draft.category || 'other', 'expense', lang);
@@ -1109,46 +1257,9 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           res.status(200).json({ ok: true }); return;
         }
         const catLabel = await getCategoryLabel(catKey, lang);
-        // Minimal refresh - technically should re-render the whole receipt preview but for simplicity just answer
         await answerTelegramCallback(queryId, tr("cbCategoryUpdated", lang));
-        // Trigger back to preview
-        const categories = await getActiveCategories();
-        const receipt = draft.raw_ai_response;
-        let itemLines = "";
-        if (receipt.items && receipt.items.length > 0) {
-          receipt.items.forEach((it: any) => {
-            itemLines += `• *${it.name}*\n  Qty ${it.qty} · ${formatIDR(it.unit_price)} (${formatIDR(it.subtotal)})\n`;
-          });
-        }
-        const receiptDateFormatted = receipt.receipt_date ? new Date(receipt.receipt_date).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", {
-          day: "numeric", month: "long", year: "numeric"
-        }) : "-";
-        
-        const textPreview = lang === "id" 
-          ? `🧾 *Hasil Pembacaan Struk (OCR-Gemini)* 🌸\n\n` +
-            `*Toko*: ${receipt.merchant_name}\n` +
-            `*Tanggal*: ${receiptDateFormatted}\n` +
-            `*Kategori*: ${catLabel}\n\n` +
-            `*Rincian Barang*:\n${itemLines}\n` +
-            `━━━━━━━━━━━━━━━━━━━━\n\n` +
-            `*Total Belanja*: *${formatIDR(receipt.total_amount)}*\n\n` +
-            `_Konfirmasi pencatatan pengeluaran di bawah ini:_`
-          : `🧾 *Receipt Reading Result (OCR-Gemini)* 🌸\n\n` +
-            `*Store*: ${receipt.merchant_name}\n` +
-            `*Date*: ${receiptDateFormatted}\n` +
-            `*Category*: ${catLabel}\n\n` +
-            `*Itemized Detail*:\n${itemLines}\n` +
-            `━━━━━━━━━━━━━━━━━━━━\n\n` +
-            `*Total Cost*: *${formatIDR(receipt.total_amount)}*\n\n` +
-            `_Confirm saving this expense below:_`;
-
-        const inlineKeyboard = {
-          inline_keyboard: [
-            [{ text: lang === "id" ? "✏️ Edit Kategori" : "✏️ Edit Category", callback_data: `rcpt_editcat:${draftId}` }],
-            [{ text: lang === "id" ? "✅ Simpan Transaksi" : "✅ Save Transaction", callback_data: `rcpt_approve:${draftId}` },
-             { text: lang === "id" ? "❌ Batal" : "❌ Cancel", callback_data: `rcpt_cancel:${draftId}` }]
-          ]
-        };
+        const walletLabel = await getWalletLabelById(draft.wallet_id ?? null);
+        const { text: textPreview, keyboard: inlineKeyboard } = await renderReceiptPreview(draftId, draft.raw_ai_response, catLabel, walletLabel, lang);
         await editTelegramMessage(chatId, msgId, textPreview, inlineKeyboard);
       }
       else if (actionData.startsWith("rcpt_back:")) {
@@ -1159,42 +1270,46 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           res.status(200).json({ ok: true }); return;
         }
         const catLabel = await getCategoryLabel(draft.category || 'other', lang);
-        const receipt = draft.raw_ai_response;
-        let itemLines = "";
-        if (receipt.items && receipt.items.length > 0) {
-          receipt.items.forEach((it: any) => {
-            itemLines += `• *${it.name}*\n  Qty ${it.qty} · ${formatIDR(it.unit_price)} (${formatIDR(it.subtotal)})\n`;
-          });
-        }
-        const receiptDateFormatted = receipt.receipt_date ? new Date(receipt.receipt_date).toLocaleDateString(lang === "id" ? "id-ID" : "en-US", {
-          day: "numeric", month: "long", year: "numeric"
-        }) : "-";
-        const textPreview = lang === "id" 
-          ? `🧾 *Hasil Pembacaan Struk (OCR-Gemini)* 🌸\n\n` +
-            `*Toko*: ${receipt.merchant_name}\n` +
-            `*Tanggal*: ${receiptDateFormatted}\n` +
-            `*Kategori*: ${catLabel}\n\n` +
-            `*Rincian Barang*:\n${itemLines}\n` +
-            `━━━━━━━━━━━━━━━━━━━━\n\n` +
-            `*Total Belanja*: *${formatIDR(receipt.total_amount)}*\n\n` +
-            `_Konfirmasi pencatatan pengeluaran di bawah ini:_`
-          : `🧾 *Receipt Reading Result (OCR-Gemini)* 🌸\n\n` +
-            `*Store*: ${receipt.merchant_name}\n` +
-            `*Date*: ${receiptDateFormatted}\n` +
-            `*Category*: ${catLabel}\n\n` +
-            `*Itemized Detail*:\n${itemLines}\n` +
-            `━━━━━━━━━━━━━━━━━━━━\n\n` +
-            `*Total Cost*: *${formatIDR(receipt.total_amount)}*\n\n` +
-            `_Confirm saving this expense below:_`;
-        const inlineKeyboard = {
-          inline_keyboard: [
-            [{ text: lang === "id" ? "✏️ Edit Kategori" : "✏️ Edit Category", callback_data: `rcpt_editcat:${draftId}` }],
-            [{ text: lang === "id" ? "✅ Simpan Transaksi" : "✅ Save Transaction", callback_data: `rcpt_approve:${draftId}` },
-             { text: lang === "id" ? "❌ Batal" : "❌ Cancel", callback_data: `rcpt_cancel:${draftId}` }]
-          ]
-        };
+        const walletLabel = await getWalletLabelById(draft.wallet_id ?? null);
+        const { text: textPreview, keyboard: inlineKeyboard } = await renderReceiptPreview(draftId, draft.raw_ai_response, catLabel, walletLabel, lang);
         await editTelegramMessage(chatId, msgId, textPreview, inlineKeyboard);
         await answerTelegramCallback(queryId);
+      }
+      // Pilih pos dompet untuk draf struk (mirror alur edit kategori di atas).
+      else if (actionData.startsWith("rcpt_editwallet:")) {
+        const draftId = actionData.split(":")[1];
+        const draftForEdit = await getReceiptDraft(draftId);
+        if (!draftForEdit) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        const wallets = await getTelegramWalletList(chatId);
+        await editTelegramMessage(chatId, msgId, tr("editWalletPrompt", lang), buildWalletKeyboard(wallets, lang, `rcpt_setwallet:${draftId}:`, `rcpt_back:${draftId}`));
+        await answerTelegramCallback(queryId);
+      }
+      else if (actionData.startsWith("rcpt_setwallet:")) {
+        const [, draftId, walletIndexStr] = actionData.split(":");
+        const draftForSetwallet = await getReceiptDraft(draftId);
+        if (!draftForSetwallet) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        const wallets = await getTelegramWalletList(chatId);
+        const selectedWallet = wallets[parseInt(walletIndexStr, 10)];
+        if (!selectedWallet) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        await updateReceiptWallet(draftId, selectedWallet.id);
+        const draft = await getReceiptDraft(draftId);
+        if (!draft) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        const catLabel = await getCategoryLabel(draft.category || 'other', lang);
+        await answerTelegramCallback(queryId, tr("cbWalletUpdated", lang));
+        const { text: textPreview, keyboard: inlineKeyboard } = await renderReceiptPreview(draftId, draft.raw_ai_response, catLabel, walletDisplayLabel(selectedWallet), lang);
+        await editTelegramMessage(chatId, msgId, textPreview, inlineKeyboard);
       }
       // Language selection
       else if (actionData === "set_lang_id" || actionData === "set_lang_en") {
@@ -1460,10 +1575,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             res.status(200).json({ ok: true }); return;
           }
 
-          // Fetch last 5 transactions
+          // Fetch last 5 transactions (wallets(...) = embedded join lewat FK
+          // transactions.wallet_id -> wallets.id, biar sekalian dapat nama posnya)
           const { data, error } = await supabaseBackend
             .from("transactions")
-            .select("type, amount, category, note, transaction_date")
+            .select("type, amount, category, note, transaction_date, wallets(name, type, provider)")
             .eq("user_id", userCtx.id)
             .order("created_at", { ascending: false })
             .limit(5);
@@ -1474,11 +1590,12 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             await sendTelegramMessage(chatId, tr("riwayatEmpty", lang));
           } else {
             let msg = tr("riwayatHeader", lang);
-            for (const tx of data) {
+            for (const tx of data as any[]) {
               const icon = tx.type === "income" ? "📥" : "📤";
               const catLabel = await getCategoryLabel(tx.category, lang);
+              const walletTag = tx.wallets ? ` (${walletDisplayLabel(tx.wallets)})` : "";
               msg += `${icon} *${formatIDR(tx.amount)}*\n` +
-                     `└ _${catLabel}_ · ${tx.note || '-'}\n\n`;
+                     `└ _${catLabel}_${walletTag} · ${tx.note || '-'}\n\n`;
             }
             msg += tr("riwayatFooter", lang);
             await sendTelegramMessage(chatId, msg);
@@ -1774,9 +1891,12 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
         const draftMarkup = buildDraftKeyboard(lang);
 
+        const { data: freshDraft } = await supabaseBackend.rpc("get_pending_telegram_tx", { p_chat_id: chatId });
+        const walletLabel = await getWalletLabelById(freshDraft?.[0]?.wallet_id ?? null);
+
         await sendTelegramMessage(
           chatId,
-          tr("draftPrompt", lang, typeLabel, localizedCat, currencyStr, parsed.original_text),
+          tr("draftPrompt", lang, typeLabel, localizedCat, currencyStr, parsed.original_text, walletLabel),
           draftMarkup
         );
 

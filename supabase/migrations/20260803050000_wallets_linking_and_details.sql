@@ -48,11 +48,6 @@ CREATE INDEX IF NOT EXISTS gold_pockets_wallet_id_idx ON public.gold_pockets (wa
 --    bukan di DB -- kolomnya tetap plain text di server), earmarked_amount
 --    (jumlah savings_pockets.current_amount + gold_pockets.cash_locked_amount
 --    yang wallet_id-nya = pos ini), dan available_balance = balance - earmarked.
--- Catatan: DROP dulu karena kolom return table berubah (bertambah) dari versi
--- sebelumnya di 20260803040000_wallets_pos_system.sql -- Postgres tidak
--- mengizinkan CREATE OR REPLACE mengubah struktur OUT parameters/return table.
-DROP FUNCTION IF EXISTS public.get_wallets_with_balance(UUID);
-
 CREATE OR REPLACE FUNCTION public.get_wallets_with_balance(p_user_id UUID)
 RETURNS TABLE (
     id UUID,

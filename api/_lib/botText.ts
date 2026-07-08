@@ -256,20 +256,22 @@ export const botText = {
     en: () => "⚠️ An internal error occurred while saving the transaction draft. Please try again.",
   },
   draftPrompt: {
-    id: (typeLabel: string, catLabel: string, currencyStr: string, originalText: string) =>
+    id: (typeLabel: string, catLabel: string, currencyStr: string, originalText: string, walletLabel: string) =>
       `📝 *Draf Catatan Transaksi*\n` +
       `Apakah rincian keuangan berikut sudah sesuai?\n\n` +
       `• *Tipe*: ${typeLabel}\n` +
       `• *Kategori*: ${catLabel}\n` +
       `• *Nominal*: *${currencyStr}*\n` +
+      `• *Pos Dompet*: ${walletLabel}\n` +
       `• *Catatan*: "${originalText}"\n\n` +
       `_Jika nominal salah, ketik ulang dengan nominal yang benar._`,
-    en: (typeLabel: string, catLabel: string, currencyStr: string, originalText: string) =>
+    en: (typeLabel: string, catLabel: string, currencyStr: string, originalText: string, walletLabel: string) =>
       `📝 *Transaction Draft*\n` +
       `Does the following financial detail look correct?\n\n` +
       `• *Type*: ${typeLabel}\n` +
       `• *Category*: ${catLabel}\n` +
       `• *Amount*: *${currencyStr}*\n` +
+      `• *Wallet*: ${walletLabel}\n` +
       `• *Note*: "${originalText}"\n\n` +
       `_If the amount is wrong, type a correction below._`,
   },
@@ -297,6 +299,15 @@ export const botText = {
     id: () => "🏷️ *Edit Kategori*\n\nPilih kategori yang sesuai di bawah ini:",
     en: () => "🏷️ *Edit Category*\n\nPlease choose the correct category below:",
   },
+  btnEditWallet: { id: () => "👛 Ganti Pos Dompet", en: () => "👛 Change Wallet" },
+  editWalletPrompt: {
+    id: () => "👛 *Pilih Pos Dompet*\n\nUang ini dari/ke pos mana?",
+    en: () => "👛 *Choose Wallet*\n\nWhich wallet is this money from/to?",
+  },
+  cbWalletUpdated: {
+    id: () => "Pos dompet berhasil diperbarui.",
+    en: () => "Wallet updated successfully.",
+  },
   btnBackToDraft: { id: () => "↩️ Kembali", en: () => "↩️ Back" },
   cbCategoryUpdated: {
     id: () => "Kategori berhasil diperbarui.",
@@ -323,18 +334,20 @@ export const botText = {
     en: () => "Transaction successfully recorded!",
   },
   msgSaveSuccess: {
-    id: (typeLabel: string, catLabel: string, amountStr: string, originalText: string) =>
+    id: (typeLabel: string, catLabel: string, amountStr: string, originalText: string, walletLabel: string) =>
       `✅ *Transaksi Berhasil Disimpan!*\n\n` +
       `• *Tipe*: ${typeLabel}\n` +
       `• *Kategori*: ${catLabel}\n` +
       `• *Jumlah*: *${amountStr}*\n` +
+      `• *Pos Dompet*: ${walletLabel}\n` +
       `• *Catatan*: "${originalText}"\n\n` +
       `_Catatan telah tersimpan secara aman ke E-Wallet Kita._ 🌸`,
-    en: (typeLabel: string, catLabel: string, amountStr: string, originalText: string) =>
+    en: (typeLabel: string, catLabel: string, amountStr: string, originalText: string, walletLabel: string) =>
       `✅ *Transaction Saved Successfully!*\n\n` +
       `• *Type*: ${typeLabel}\n` +
       `• *Category*: ${catLabel}\n` +
       `• *Amount*: *${amountStr}*\n` +
+      `• *Wallet*: ${walletLabel}\n` +
       `• *Note*: "${originalText}"\n\n` +
       `_Your record has been safely saved to E-Wallet Kita._ 🌸`,
   },

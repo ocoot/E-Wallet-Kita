@@ -14,6 +14,18 @@ export async function createReceiptDraft(
   telegramChatId?: string,
   categoryOptions?: { key: string; label_id: string | null; label_en: string | null }[]
 ) {
+  // Resolve pos dompet default ("Saldo Total") begitu draft dibuat, supaya
+  // draft selalu punya wallet_id konkret sejak awal -- kode di bawah/di
+  // webhook tidak perlu menangani NULL, dan user tinggal ganti kalau mau
+  // lewat tombol "Ganti Pos Dompet".
+  let defaultWalletId: string | null = null;
+  try {
+    const { data: walletId, error: walletErr } = await supabaseBackend.rpc('ensure_general_wallet', { p_user_id: userId });
+    if (!walletErr) defaultWalletId = walletId as string;
+  } catch (err) {
+    console.error("⚠️ Gagal resolve wallet default untuk receipt draft:", err);
+  }
+
   const { data, error } = await supabaseBackend
     .from('receipt_drafts')
     .insert({
@@ -26,6 +38,7 @@ export async function createReceiptDraft(
       raw_ai_response: parsed,
       category: parsed.category || 'other',
       category_options: categoryOptions ?? null,
+      wallet_id: defaultWalletId,
       approved: false,
       source,
       telegram_chat_id: telegramChatId ? String(telegramChatId) : null
@@ -70,6 +83,18 @@ export async function approveReceiptDraft(id: string) {
   // Find a suitable category for the transaction, defaulting to monthly_groceries
   const category = draft.category || 'monthly_groceries';
 
+  // Jaring pengaman: draft lama (dari sebelum kolom wallet_id ada) mungkin
+  // belum punya wallet_id. Resolve ke Saldo Total kalau begitu.
+  let walletId = draft.wallet_id || null;
+  if (!walletId) {
+    try {
+      const { data: fallbackWalletId } = await supabaseBackend.rpc('ensure_general_wallet', { p_user_id: draft.user_id });
+      walletId = fallbackWalletId as string;
+    } catch (err) {
+      console.error("⚠️ Gagal resolve wallet fallback saat approve receipt draft:", err);
+    }
+  }
+
   const { data: tx, error: txErr } = await supabaseBackend
     .from('transactions')
     .insert({
@@ -79,7 +104,8 @@ export async function approveReceiptDraft(id: string) {
       amount: draft.total_amount || 0,
       note: `${draft.total_items || 0} item barang (${draft.merchant_name || 'Toko Tidak Dikenal'})`,
       source: 'telegram',
-      transaction_date: draft.receipt_date ? new Date(draft.receipt_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]
+      transaction_date: draft.receipt_date ? new Date(draft.receipt_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      wallet_id: walletId
     })
     .select()
     .single();
@@ -129,6 +155,21 @@ export async function updateReceiptCategory(id: string, category: string) {
 
   if (error) {
     console.error("❌ Error in updateReceiptCategory:", error);
+    throw error;
+  }
+  return data;
+}
+
+export async function updateReceiptWallet(id: string, walletId: string) {
+  const { data, error } = await supabaseBackend
+    .from('receipt_drafts')
+    .update({ wallet_id: walletId })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error("❌ Error in updateReceiptWallet:", error);
     throw error;
   }
   return data;
