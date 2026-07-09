@@ -7,6 +7,43 @@ import {AuthProvider} from './contexts/AuthContext';
 import { registerSW } from "virtual:pwa-register";
 import { onForegroundFcmMessage, resetFcmState } from "./lib/firebase";
 import { cleanupStaleServiceWorkers } from "./lib/swCleanup";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { reportFrontendError } from "./lib/errorReporter";
+
+// ── Frontend error capture (tanpa Sentry) ──────────────────────
+// Menangkap error yang TIDAK lewat React render tree (jadi tidak
+// tertangkap oleh <ErrorBoundary/> di bawah): promise yang reject tanpa
+// .catch, dan runtime error di luar siklus render React (mis. di dalam
+// event handler atau setTimeout). Dikirim ke error_logs dengan source
+// "frontend:unhandled-rejection" / "frontend:runtime".
+window.addEventListener("unhandledrejection", (event) => {
+  const reason = event.reason;
+  const message = reason instanceof Error ? reason.message : String(reason);
+  console.error("[unhandledrejection]", reason);
+  void reportFrontendError({
+    source: "frontend:unhandled-rejection",
+    message,
+    context: { stack: reason instanceof Error ? reason.stack?.slice(0, 1500) : null },
+  });
+});
+
+window.addEventListener("error", (event) => {
+  // Abaikan resource loading error (gambar/script 404 dll) yang juga
+  // memicu event "error" tapi bukan JS runtime error -- event.error
+  // hanya terisi untuk JS exception asli.
+  if (!event.error) return;
+  console.error("[window.onerror]", event.error);
+  void reportFrontendError({
+    source: "frontend:runtime",
+    message: event.error?.message || event.message || "Unknown runtime error",
+    context: {
+      stack: event.error?.stack?.slice(0, 1500) ?? null,
+      filename: event.filename ?? null,
+      lineno: event.lineno ?? null,
+      colno: event.colno ?? null,
+    },
+  });
+});
 
 // Register Service Worker via Vite PWA plugin.
 // onNeedRefresh dipanggil saat SW mendeteksi build baru sudah tersedia
@@ -53,11 +90,13 @@ onForegroundFcmMessage(({ title, body }) => {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <AuthProvider>
+          <App />
+        </AuthProvider>
+      </BrowserRouter>
+    </ErrorBoundary>
   </StrictMode>,
 );
 
