@@ -711,6 +711,7 @@
     "maintenance_feature": {
       "new_transaction": "Transaksi Baru",
       "history": "Riwayat Transaksi",
+      "wallets": "Dompet/Kantong",
       "settings": "Pengaturan",
       "receipt_scan": "Pindai Struk (AI)",
       "telegram_bot": "Bot Telegram",

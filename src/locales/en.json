@@ -711,6 +711,7 @@
     "maintenance_feature": {
       "new_transaction": "New Transaction",
       "history": "History Ledger",
+      "wallets": "Wallets",
       "settings": "Settings",
       "receipt_scan": "Receipt Scan (AI)",
       "telegram_bot": "Telegram Bot",
