@@ -408,7 +408,10 @@
     "summary_confirm_desc": "PDF will contain all transactions from {start} to {end}.",
     "confirm_export": "Export Now",
     "success_export": "PDF created successfully: {filename}",
-    "error_export": "Failed to create PDF. Please try again."
+    "error_export": "Failed to create PDF. Please try again.",
+    "wallet_breakdown_title": "Breakdown by Wallet",
+    "wallet_filter_all": "All Wallets",
+    "wallet_filter_label": "Wallet"
   },
   "premium": {
     "menu_label": "Go Premium",

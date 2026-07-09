@@ -8,6 +8,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
 import { ExportFullModal } from "../components/ExportFullModal";
+import { ExportSummaryModal } from "../components/ExportSummaryModal";
 import { Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
@@ -217,28 +218,28 @@ export const History: React.FC<HistoryProps> = ({
     return t("transaction.source_telegram");
   };
 
-  const handleExportSummary = async () => {
+  const handleExportSummary = async (walletId: string | null) => {
     setIsSummaryConfirmOpen(false);
     setIsExporting(true);
     audioFeedback.playClick();
     try {
       const { start, end } = getCurrentMonthToDateRange();
       const data = await dbService.getTransactionsBetween(currentUser.id, toISODate(start), toISODate(end));
-      const filename = exportSummaryPdf({ t, userName: currentUser.display_name, transactions: data, categories });
+      const filename = exportSummaryPdf({ t, userName: currentUser.display_name, transactions: data, categories, wallets: allWallets, walletId });
       audioFeedback.playChime();
       showToast(t("export.success_export", { filename }), "success");
     } catch { audioFeedback.playDullPluck(); showToast(t("export.error_export"), "error"); }
     finally { setIsExporting(false); }
   };
 
-  const handleExportFull = async (fromMonth: string, toMonth: string) => {
+  const handleExportFull = async (fromMonth: string, toMonth: string, walletId: string | null) => {
     setIsExporting(true);
     audioFeedback.playClick();
     try {
       const [ty, tm] = toMonth.split("-").map(Number);
       const lastDay = new Date(ty, tm, 0).getDate();
       const data = await dbService.getTransactionsBetween(currentUser.id, `${fromMonth}-01`, `${toMonth}-${String(lastDay).padStart(2, "0")}`);
-      const filename = exportFullPdf({ t, userName: currentUser.display_name, transactions: data, categories, fromMonth, toMonth });
+      const filename = exportFullPdf({ t, userName: currentUser.display_name, transactions: data, categories, fromMonth, toMonth, wallets: allWallets, walletId });
       audioFeedback.playChime();
       showToast(t("export.success_export", { filename }), "success");
       setIsFullExportOpen(false);
@@ -401,16 +402,12 @@ export const History: React.FC<HistoryProps> = ({
         isSaving={isEditSaving}
       />
 
-      <Modal
+      <ExportSummaryModal
         isOpen={isSummaryConfirmOpen}
-        title={t("export.summary_confirm_title")}
-        description={t("export.summary_confirm_desc", { start: currentMonthRangeLabel.start, end: currentMonthRangeLabel.end })}
-        type="info"
-        confirmLabel={t("export.confirm_export")}
-        cancelLabel={t("common.cancel")}
-        onConfirm={handleExportSummary}
+        periodLabel={currentMonthRangeLabel}
+        onGenerate={handleExportSummary}
         onCancel={() => { audioFeedback.playClick(); setIsSummaryConfirmOpen(false); }}
-        confirmDisabled={isExporting}
+        isGenerating={isExporting}
       />
 
       <ExportFullModal

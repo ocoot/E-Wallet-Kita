@@ -408,7 +408,10 @@
     "summary_confirm_desc": "PDF akan berisi seluruh transaksi dari {start} sampai {end}.",
     "confirm_export": "Ekspor Sekarang",
     "success_export": "PDF berhasil dibuat: {filename}",
-    "error_export": "Gagal membuat PDF. Silakan coba lagi."
+    "error_export": "Gagal membuat PDF. Silakan coba lagi.",
+    "wallet_breakdown_title": "Rincian per Pos Dompet",
+    "wallet_filter_all": "Semua Pos",
+    "wallet_filter_label": "Pos Dompet"
   },
   "premium": {
     "menu_label": "Aktifkan Premium",

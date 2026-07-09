@@ -317,6 +317,131 @@ async function renderReceiptPreview(
   return { text, keyboard };
 }
 
+// ─────────────────────────────────────────────────────────────
+// PDF EXPORT -- pemilih pos dompet opsional (command /pdf)
+// ─────────────────────────────────────────────────────────────
+
+/** "2026-07-09" -> "20260709" (dipakai supaya callback_data tetap pendek). */
+function toCompactDate(d: Date): string {
+  const iso = d.toISOString().split("T")[0]; // YYYY-MM-DD
+  return iso.replace(/-/g, "");
+}
+
+/** "20260709" -> Date (UTC midnight). */
+function fromCompactDate(compact: string): Date {
+  const y = parseInt(compact.substring(0, 4), 10);
+  const m = parseInt(compact.substring(4, 6), 10);
+  const d = parseInt(compact.substring(6, 8), 10);
+  return new Date(Date.UTC(y, m - 1, d));
+}
+
+const MONTH_NAMES_ID = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const MONTH_NAMES_EN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+/**
+ * Bangun label periode yang enak dibaca. Kalau rentangnya persis 1 bulan
+ * penuh (tanggal 1 s/d akhir bulan), pakai nama bulan ("Juli 2026").
+ * Selain itu, pakai rentang ISO. Dipakai baik saat command /pdf pertama
+ * kali diketik maupun saat direkonstruksi ulang dari callback_data
+ * (setelah user pilih "Semua Pos" / pos tertentu).
+ */
+function buildPdfPeriodLabel(startDate: Date, endDate: Date, lang: Lang): string {
+  const lastDayOfStartMonth = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).getDate();
+  const isFullMonth =
+    startDate.getDate() === 1 &&
+    endDate.getFullYear() === startDate.getFullYear() &&
+    endDate.getMonth() === startDate.getMonth() &&
+    endDate.getDate() === lastDayOfStartMonth;
+
+  if (isFullMonth) {
+    const monthLabel = lang === "en" ? MONTH_NAMES_EN[startDate.getMonth()] : MONTH_NAMES_ID[startDate.getMonth()];
+    return `${monthLabel} ${startDate.getFullYear()}`;
+  }
+  const toISO = (d: Date) => d.toISOString().split("T")[0];
+  return `${toISO(startDate)} - ${toISO(endDate)}`;
+}
+
+/**
+ * Ambil transaksi + kategori + (semua) wallet, generate PDF, kirim ke chat.
+ * walletId null/undefined = "Semua Pos" (tanpa filter). Dipakai baik dari
+ * tombol "📄 Semua Pos" maupun setelah user memilih 1 pos di keyboard.
+ */
+async function generateAndSendPdf(
+  chatId: number,
+  userId: string,
+  displayName: string,
+  lang: Lang,
+  startDate: Date,
+  endDate: Date,
+  summaryOnly: boolean,
+  walletId: string | null,
+  walletFilterLabel: string | null
+): Promise<void> {
+  const toISODateStr = (d: Date) => d.toISOString().split("T")[0];
+
+  let query = supabaseBackend
+    .from("transactions")
+    .select("id, type, amount, category, note, source, transaction_date, created_at, wallet_id")
+    .eq("user_id", userId)
+    .gte("transaction_date", toISODateStr(startDate))
+    .lte("transaction_date", toISODateStr(endDate))
+    .order("transaction_date", { ascending: true });
+
+  if (walletId) query = query.eq("wallet_id", walletId);
+
+  const { data: txs, error: txsErr } = await query;
+  if (txsErr) throw txsErr;
+
+  if (!txs || txs.length === 0) {
+    await sendTelegramMessage(chatId, tr("pdfNoTransactions", lang));
+    return;
+  }
+
+  const categories = await getActiveCategories();
+  const { data: walletsData } = await supabaseBackend
+    .from("wallets")
+    .select("id, name, type, provider")
+    .eq("user_id", userId);
+
+  const pdfT = createPdfTranslator(lang);
+
+  const mappedTxs: Transaction[] = txs.map((tx: any) => ({
+    id: tx.id,
+    user_id: userId,
+    type: tx.type as "income" | "expense",
+    amount: tx.amount,
+    category: tx.category,
+    note: tx.note,
+    source: (tx.source || "manual") as "manual" | "ai_web" | "telegram",
+    transaction_date: tx.transaction_date,
+    created_at: tx.created_at,
+    wallet_id: tx.wallet_id ?? null
+  }));
+
+  const periodLabel = buildPdfPeriodLabel(startDate, endDate, lang);
+  const fullPeriodLabel = walletFilterLabel ? `${periodLabel} · 👛 ${walletFilterLabel}` : periodLabel;
+  const reportTitle = summaryOnly ? pdfT("export.summary_report_title") : pdfT("export.full_report_title");
+
+  const pdfBytes = generatePdf({
+    t: pdfT,
+    userName: displayName,
+    transactions: mappedTxs,
+    categories,
+    periodLabel: fullPeriodLabel,
+    reportTitle,
+    summaryOnly,
+    wallets: (walletsData || []) as any,
+    walletFilterLabel
+  });
+
+  const filePrefix = summaryOnly ? "Laporan_Ringkasan" : "Laporan";
+  const formattedPeriod = periodLabel.replace(/\s+/g, "_").replace(/-/g, "_");
+  const filename = `${filePrefix}_${formattedPeriod}.pdf`;
+  const caption = tr("pdfCaption", lang, fullPeriodLabel);
+
+  await sendTelegramDocument(chatId, pdfBytes, filename, caption);
+}
+
 
 
 function buildCategoryKeyboard(type: "income" | "expense", lang: Lang, categories: Category[]) {
@@ -1311,6 +1436,75 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         const { text: textPreview, keyboard: inlineKeyboard } = await renderReceiptPreview(draftId, draft.raw_ai_response, catLabel, walletDisplayLabel(selectedWallet), lang);
         await editTelegramMessage(chatId, msgId, textPreview, inlineKeyboard);
       }
+      // ── /pdf: pilihan "Semua Pos" vs "Pilih Pos Dompet" ──────────────
+      // callback_data formatnya "pdf_all:<startYYYYMMDD>:<endYYYYMMDD>:<summaryFlag>"
+      // Tanggal dikompres (lihat toCompactDate/fromCompactDate) supaya muat
+      // jauh di bawah limit 64-byte Telegram tanpa perlu tabel pending baru.
+      else if (actionData.startsWith("pdf_all:")) {
+        const [, startCompact, endCompact, summaryFlag] = actionData.split(":");
+        const userCtx = await resolveUserContext(chatId);
+        if (!userCtx) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        await answerTelegramCallback(queryId);
+        await editTelegramMessage(chatId, msgId, tr("pdfGenerating", lang));
+        try {
+          await generateAndSendPdf(
+            chatId, userCtx.id, userCtx.display_name, lang,
+            fromCompactDate(startCompact), fromCompactDate(endCompact),
+            summaryFlag === "1", null, null
+          );
+        } catch (err: any) {
+          console.error("❌ pdf_all error:", err);
+          await sendTelegramMessage(chatId, tr("riwayatError", lang));
+        }
+      }
+      else if (actionData.startsWith("pdf_wallet:")) {
+        const [, startCompact, endCompact, summaryFlag] = actionData.split(":");
+        const wallets = await getTelegramWalletList(chatId);
+        if (wallets.length === 0) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        await editTelegramMessage(
+          chatId, msgId, tr("editWalletPrompt", lang),
+          buildWalletKeyboard(wallets, lang, `pdf_setwallet:${startCompact}:${endCompact}:${summaryFlag}:`, `pdf_wallet_cancel:${startCompact}:${endCompact}:${summaryFlag}`)
+        );
+        await answerTelegramCallback(queryId);
+      }
+      else if (actionData.startsWith("pdf_setwallet:")) {
+        const [, startCompact, endCompact, summaryFlag, walletIndexStr] = actionData.split(":");
+        const wallets = await getTelegramWalletList(chatId);
+        const selectedWallet = wallets[parseInt(walletIndexStr, 10)];
+        const userCtx = await resolveUserContext(chatId);
+        if (!selectedWallet || !userCtx) {
+          await answerTelegramCallback(queryId, tr("cbExpired", lang));
+          res.status(200).json({ ok: true }); return;
+        }
+        await answerTelegramCallback(queryId);
+        await editTelegramMessage(chatId, msgId, tr("pdfGenerating", lang));
+        try {
+          await generateAndSendPdf(
+            chatId, userCtx.id, userCtx.display_name, lang,
+            fromCompactDate(startCompact), fromCompactDate(endCompact),
+            summaryFlag === "1", selectedWallet.id, walletDisplayLabel(selectedWallet)
+          );
+        } catch (err: any) {
+          console.error("❌ pdf_setwallet error:", err);
+          await sendTelegramMessage(chatId, tr("riwayatError", lang));
+        }
+      }
+      else if (actionData.startsWith("pdf_wallet_cancel:")) {
+        const [, startCompact, endCompact, summaryFlag] = actionData.split(":");
+        await editTelegramMessage(chatId, msgId, tr("pdfChooseWalletPrompt", lang), {
+          inline_keyboard: [
+            [{ text: tr("btnPdfAllWallets", lang), callback_data: `pdf_all:${startCompact}:${endCompact}:${summaryFlag}` }],
+            [{ text: tr("btnPdfPickWallet", lang), callback_data: `pdf_wallet:${startCompact}:${endCompact}:${summaryFlag}` }]
+          ]
+        });
+        await answerTelegramCallback(queryId);
+      }
       // Language selection
       else if (actionData === "set_lang_id" || actionData === "set_lang_en") {
         const newLang = actionData === "set_lang_id" ? "id" : "en";
@@ -1632,25 +1826,16 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           // Now determine date range
           let startDate: Date;
           let endDate: Date;
-          let periodLabel = "";
-          let reportTitle = "";
+          // periodLabel yang enak dibaca (nama bulan / rentang ISO) dibangun
+          // ulang dari startDate/endDate lewat buildPdfPeriodLabel() -- baik
+          // di sini (dipakai untuk tombol) maupun saat callback pdf_all /
+          // pdf_setwallet diproses nanti, jadi tidak perlu disimpan di sini.
 
           if (remainingArgs === "") {
             // Default to current month: from 1st of current month to today
             const now = new Date();
             startDate = new Date(now.getFullYear(), now.getMonth(), 1);
             endDate = now;
-            
-            const monthNamesId = [
-              "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-              "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-            ];
-            const monthNamesEn = [
-              "January", "February", "March", "April", "May", "June",
-              "July", "August", "September", "October", "November", "December"
-            ];
-            const monthLabel = lang === "en" ? monthNamesEn[now.getMonth()] : monthNamesId[now.getMonth()];
-            periodLabel = `${monthLabel} ${now.getFullYear()}`;
           } else if (/^\d{4}$/.test(remainingArgs)) {
             // Specific month MMYY (e.g. 0126)
             const month = parseInt(remainingArgs.substring(0, 2), 10);
@@ -1664,17 +1849,6 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             const year = 2000 + yearShort;
             startDate = new Date(year, month - 1, 1);
             endDate = new Date(year, month, 0, 23, 59, 59, 999);
-            
-            const monthNamesId = [
-              "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-              "Juli", "Agustus", "September", "Oktober", "November", "Desember"
-            ];
-            const monthNamesEn = [
-              "January", "February", "March", "April", "May", "June",
-              "July", "August", "September", "October", "November", "December"
-            ];
-            const monthLabel = lang === "en" ? monthNamesEn[month - 1] : monthNamesId[month - 1];
-            periodLabel = `${monthLabel} ${year}`;
           } else if (/^\d{8}\s*-\s*\d{8}$/.test(remainingArgs)) {
             // Specific range DDMMYYYY - DDMMYYYY
             const parts = remainingArgs.split("-").map(p => p.trim());
@@ -1726,77 +1900,27 @@ export default async (req: VercelRequest, res: VercelResponse) => {
               await sendTelegramMessage(chatId, tr("pdfRangeTooLong", lang));
               res.status(200).json({ ok: true }); return;
             }
-            
-            const toISODateStrLocal = (d: Date) => d.toISOString().split("T")[0];
-            periodLabel = `${toISODateStrLocal(startDate)} - ${toISODateStrLocal(endDate)}`;
           } else {
             // Unrecognized argument format (e.g. /pdf abc or /pdf 99999999)
             await sendTelegramMessage(chatId, tr("pdfInvalidFormat", lang));
             res.status(200).json({ ok: true }); return;
           }
 
-          // Let the user know we are generating the PDF
-          await sendTelegramMessage(chatId, tr("pdfGenerating", lang));
+          // Tampilkan pilihan pos dompet dulu sebelum generate -- tanggal
+          // dikompresi ke YYYYMMDD supaya callback_data tetap pendek, dan
+          // periodLabel dibangun ulang dari tanggal itu (lihat buildPdfPeriodLabel)
+          // baik di sini maupun saat callback pdf_all/pdf_setwallet diproses,
+          // jadi tidak perlu tabel "pending" tambahan di DB.
+          const startCompact = toCompactDate(startDate);
+          const endCompact = toCompactDate(endDate);
+          const summaryFlag = summaryOnly ? "1" : "0";
 
-          // Fetch transactions in date range
-          const toISODateStr = (d: Date) => d.toISOString().split("T")[0];
-          const { data: txs, error: txsErr } = await supabaseBackend
-            .from("transactions")
-            .select("id, type, amount, category, note, source, transaction_date, created_at")
-            .eq("user_id", userCtx.id)
-            .gte("transaction_date", toISODateStr(startDate))
-            .lte("transaction_date", toISODateStr(endDate))
-            .order("transaction_date", { ascending: true });
-
-          if (txsErr) throw txsErr;
-
-          if (!txs || txs.length === 0) {
-            await sendTelegramMessage(chatId, tr("pdfNoTransactions", lang));
-            res.status(200).json({ ok: true }); return;
-          }
-
-          // Fetch category definitions
-          const categories = await getActiveCategories();
-
-          // Create translator helper
-          const pdfT = createPdfTranslator(lang);
-
-          // Map db objects to Transaction interface
-          const mappedTxs: Transaction[] = txs.map(tx => ({
-            id: tx.id,
-            user_id: userCtx.id,
-            type: tx.type as "income" | "expense",
-            amount: tx.amount,
-            category: tx.category,
-            note: tx.note,
-            source: (tx.source || "manual") as "manual" | "ai_web" | "telegram",
-            transaction_date: tx.transaction_date,
-            created_at: tx.created_at
-          }));
-
-          // Set report title based on translation and type
-          reportTitle = summaryOnly ? pdfT("export.summary_report_title") : pdfT("export.full_report_title");
-
-          // Generate PDF Uint8Array
-          const pdfBytes = generatePdf({
-            t: pdfT,
-            userName: userCtx.display_name,
-            transactions: mappedTxs,
-            categories,
-            periodLabel,
-            reportTitle,
-            summaryOnly
+          await sendTelegramMessage(chatId, tr("pdfChooseWalletPrompt", lang), {
+            inline_keyboard: [
+              [{ text: tr("btnPdfAllWallets", lang), callback_data: `pdf_all:${startCompact}:${endCompact}:${summaryFlag}` }],
+              [{ text: tr("btnPdfPickWallet", lang), callback_data: `pdf_wallet:${startCompact}:${endCompact}:${summaryFlag}` }]
+            ]
           });
-
-          // Set filename
-          const filePrefix = summaryOnly ? "Laporan_Ringkasan" : "Laporan";
-          const formattedPeriod = periodLabel.replace(/\s+/g, "_").replace(/-/g, "_");
-          const filename = `${filePrefix}_${formattedPeriod}.pdf`;
-
-          const caption = tr("pdfCaption", lang, periodLabel);
-
-          // Send document via sendTelegramDocument helper
-          await sendTelegramDocument(chatId, pdfBytes, filename, caption);
 
         } catch (err: any) {
           console.error("❌ /pdf error:", err);

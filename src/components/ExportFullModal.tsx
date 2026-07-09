@@ -3,12 +3,13 @@ import { motion, AnimatePresence } from "motion/react";
 import { FileText, X } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { isRangeValid, diffMonthsInclusive, MAX_RANGE_MONTHS } from "../lib/pdf/dateRange";
+import { useWallets } from "../hooks/useWallets";
 
 interface ExportFullModalProps {
   isOpen: boolean;
   monthOptions: { value: string; label: string }[];
   onCancel: () => void;
-  onGenerate: (fromMonth: string, toMonth: string) => void;
+  onGenerate: (fromMonth: string, toMonth: string, walletId: string | null) => void;
   isGenerating?: boolean;
 }
 
@@ -20,15 +21,18 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
   isGenerating = false,
 }) => {
   const { t } = useLanguage();
+  const { activeWallets } = useWallets();
 
   const defaultMonth = monthOptions[0]?.value || "";
   const [fromMonth, setFromMonth] = useState(defaultMonth);
   const [toMonth, setToMonth] = useState(defaultMonth);
+  const [walletId, setWalletId] = useState<string>("");
 
   React.useEffect(() => {
     if (isOpen) {
       setFromMonth(defaultMonth);
       setToMonth(defaultMonth);
+      setWalletId("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
@@ -111,6 +115,25 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
               </div>
             </div>
 
+            <div className="space-y-1.5 mb-3">
+              <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
+                {t("wallet.label_pos")}
+              </label>
+              <select
+                value={walletId}
+                onChange={(e) => setWalletId(e.target.value)}
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
+              >
+                <option value="">{t("export.wallet_filter_all")}</option>
+                {activeWallets.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.type === "general" ? "💰" : w.type === "ewallet" ? "📱" : w.type === "bank" ? "🏦" : "💵"}{" "}
+                    {w.name}{w.provider ? ` · ${w.provider}` : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {!valid && monthsSelected !== 0 && (
               <p className="text-xs text-red-400 font-medium mb-3">
                 {t("export.range_invalid")}
@@ -133,7 +156,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
               <button
                 type="button"
                 disabled={!valid || isGenerating}
-                onClick={() => onGenerate(fromMonth, toMonth)}
+                onClick={() => onGenerate(fromMonth, toMonth, walletId || null)}
                 className={`cursor-pointer rounded-xl px-4.5 py-2 font-sans text-sm font-semibold tracking-tight text-white shadow-lg transition-all duration-200
                   bg-indigo-600 hover:bg-indigo-500 hover:shadow-indigo-500/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400
                   ${!valid || isGenerating ? "opacity-40 cursor-not-allowed" : ""}`}

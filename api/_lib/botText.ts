@@ -71,6 +71,12 @@ export const botText = {
     id: () => "🔄 _Sedang menyiapkan laporan PDF Anda..._",
     en: () => "🔄 _Generating your PDF report..._",
   },
+  pdfChooseWalletPrompt: {
+    id: () => "👛 *Pos Dompet*\n\nLaporan mau mencakup semua pos, atau difilter ke 1 pos tertentu?",
+    en: () => "👛 *Wallet*\n\nShould the report cover all wallets, or be filtered to just one?",
+  },
+  btnPdfAllWallets: { id: () => "📄 Semua Pos", en: () => "📄 All Wallets" },
+  btnPdfPickWallet: { id: () => "👛 Pilih Pos Dompet", en: () => "👛 Choose Wallet" },
   pdfNoTransactions: {
     id: () => "📭 Tidak ada transaksi pada periode ini untuk diekspor.",
     en: () => "📭 No transactions found in this period to export.",

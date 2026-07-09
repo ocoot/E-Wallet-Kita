@@ -17,6 +17,14 @@ import {
 const HEADER_HEIGHT = 155; // px reserved at top of every page for the header block
 const SUMMARY_BLOCK_HEIGHT = 100; // extra space reserved on page 1 only, for the summary card
 
+/** Info pos dompet minimal yang dibutuhkan untuk label di PDF (icon + nama). */
+export interface PdfWalletInfo {
+  id: string;
+  name: string;
+  type: "ewallet" | "bank" | "cash" | "general";
+  provider: string | null;
+}
+
 interface ExportContext {
   t: TFunc;
   userName: string;
@@ -25,6 +33,11 @@ interface ExportContext {
   periodLabel: string;
   reportTitle: string;
   summaryOnly?: boolean;
+  /** Semua pos dompet user -- dipakai untuk badge di tabel & breakdown ringkasan. */
+  wallets?: PdfWalletInfo[];
+  /** Kalau laporan difilter ke 1 pos spesifik, breakdown per-pos disembunyikan
+   *  (percuma cuma 1 baris) dan label ini ditambahkan ke subtitle periode. */
+  walletFilterLabel?: string | null;
 }
 
 /** Resolve category label from DB categories, fallback to key if not found. */
@@ -32,6 +45,15 @@ function resolveCategoryLabel(key: string, categories: Category[], locale: "id" 
   const cat = categories.find(c => c.key === key);
   if (!cat) return key;
   return locale === "id" ? (cat.label_id || key) : (cat.label_en || key);
+}
+
+const WALLET_TYPE_ICON: Record<string, string> = { ewallet: "📱", bank: "🏦", cash: "💵", general: "💰" };
+
+/** Resolve wallet label (ikon + nama) dari wallet_id, fallback ke "Saldo Total" kalau tidak ketemu. */
+function resolveWalletLabel(walletId: string | null, wallets: PdfWalletInfo[] | undefined, t: TFunc): string {
+  const w = wallets?.find(w => w.id === walletId);
+  if (!w) return `${WALLET_TYPE_ICON.general} ${t("wallet.group_general")}`;
+  return `${WALLET_TYPE_ICON[w.type] || "💰"} ${w.name}${w.provider ? ` · ${w.provider}` : ""}`;
 }
 
 const formatIDR = (num: number) => "Rp" + Math.round(num).toLocaleString("id-ID");
@@ -52,7 +74,7 @@ const computeTotals = (transactions: Transaction[]) => {
 
 /** Renders the full PDF document (header/footer/watermark on every page + summary + table). */
 const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
-  const { t, userName, transactions, categories, periodLabel, reportTitle, summaryOnly } = ctx;
+  const { t, userName, transactions, categories, periodLabel, reportTitle, summaryOnly, wallets, walletFilterLabel } = ctx;
   // Determine locale from i18n: if t("transaction.income") returns "Pemasukan" → "id", else "en"
   const locale: "id" | "en" = t("transaction.income") === "Pemasukan" ? "id" : "en";
   const doc = new jsPDF({ unit: "pt", format: "a4" });
@@ -142,6 +164,56 @@ const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
       doc.text(card.value, x + 10, sy + 38);
     });
 
+    sy += cardH + 20;
+
+    // Rincian per Pos Dompet -- hanya ditampilkan kalau laporan TIDAK
+    // sedang difilter ke 1 pos tertentu (percuma cuma 1 baris), dan hanya
+    // untuk pos yang punya aktivitas di periode ini.
+    if (!walletFilterLabel && wallets && wallets.length > 0) {
+      const perWallet = new Map<string, { income: number; expense: number }>();
+      for (const tx of transactions) {
+        const key = tx.wallet_id || "__none__";
+        const entry = perWallet.get(key) || { income: 0, expense: 0 };
+        if (tx.type === "income") entry.income += tx.amount; else entry.expense += tx.amount;
+        perWallet.set(key, entry);
+      }
+
+      if (perWallet.size > 0) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(11);
+        doc.setTextColor(30, 41, 59);
+        doc.text(t("export.wallet_breakdown_title"), 40, sy);
+        sy += 16;
+
+        // Urutan konsisten dengan Dashboard: Saldo Total dulu, lalu sisanya.
+        const orderedIds = Array.from(perWallet.keys()).sort((a, b) => {
+          const wa = wallets.find(w => w.id === a);
+          const wb = wallets.find(w => w.id === b);
+          const ga = wa?.type === "general" ? 0 : 1;
+          const gb = wb?.type === "general" ? 0 : 1;
+          return ga - gb;
+        });
+
+        for (const walletId of orderedIds) {
+          const entry = perWallet.get(walletId)!;
+          const label = resolveWalletLabel(walletId === "__none__" ? null : walletId, wallets, t);
+          const net = entry.income - entry.expense;
+
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+          doc.setTextColor(51, 65, 85); // Slate-700
+          doc.text(label, 44, sy);
+
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(net >= 0 ? 4 : 185, net >= 0 ? 120 : 28, net >= 0 ? 87 : 28);
+          doc.text(formatIDR(net), pageWidth - 40, sy, { align: "right" });
+
+          sy += 15;
+        }
+        sy += 5;
+      }
+    }
+
     drawFooter(doc, { t, pageLabelPrefix: "" });
     finalizePageNumbers(doc, t);
     return doc;
@@ -154,10 +226,12 @@ const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
 
   const body = transactions.map((tx) => {
     const sign = tx.type === "income" ? "+" : "-";
+    const catLabel = resolveCategoryLabel(tx.category, categories, locale);
+    const walletBadge = (!walletFilterLabel && wallets && wallets.length > 0) ? resolveWalletLabel(tx.wallet_id, wallets, t) : null;
     return [
       tx.transaction_date,
       tx.note ? tx.note : "-",
-      resolveCategoryLabel(tx.category, categories, locale),
+      walletBadge ? `${catLabel}\n${walletBadge}` : catLabel,
       tx.type === "income" ? t("transaction.income") : t("transaction.expense"),
       `${sign}${formatIDR(tx.amount)}`,
     ];
@@ -307,20 +381,29 @@ export const exportSummaryPdf = (params: {
   userName: string;
   transactions: Transaction[];
   categories: Category[];
+  wallets?: PdfWalletInfo[];
+  /** ID pos dompet buat filter opsional -- null/undefined berarti "Semua Pos". */
+  walletId?: string | null;
 }) => {
-  const { t, userName, transactions, categories } = params;
+  const { t, userName, transactions, categories, wallets, walletId } = params;
   const { start, end } = getCurrentMonthToDateRange();
-  const periodLabel = `${toISODate(start)} - ${toISODate(end)}`;
+  const walletFilterLabel = walletId ? resolveWalletLabel(walletId, wallets, t) : null;
+  const scopedTransactions = walletId ? transactions.filter(tx => tx.wallet_id === walletId) : transactions;
+  const periodLabel = walletFilterLabel
+    ? `${toISODate(start)} - ${toISODate(end)} · 👛 ${walletFilterLabel}`
+    : `${toISODate(start)} - ${toISODate(end)}`;
   const docNumber = generateDocNumber();
 
   const doc = renderDocument(
     {
       t,
       userName,
-      transactions,
+      transactions: scopedTransactions,
       categories,
       periodLabel,
       reportTitle: t("export.summary_report_title"),
+      wallets,
+      walletFilterLabel,
     },
     docNumber
   );
@@ -346,20 +429,28 @@ export const exportFullPdf = (params: {
   categories: Category[];
   fromMonth: string;
   toMonth: string;
+  wallets?: PdfWalletInfo[];
+  walletId?: string | null;
 }) => {
-  const { t, userName, transactions, categories, fromMonth, toMonth } = params;
+  const { t, userName, transactions, categories, fromMonth, toMonth, wallets, walletId } = params;
   const { start, end } = getMonthRange(fromMonth, toMonth);
-  const periodLabel = `${toISODate(start)} - ${toISODate(end)}`;
+  const walletFilterLabel = walletId ? resolveWalletLabel(walletId, wallets, t) : null;
+  const scopedTransactions = walletId ? transactions.filter(tx => tx.wallet_id === walletId) : transactions;
+  const periodLabel = walletFilterLabel
+    ? `${toISODate(start)} - ${toISODate(end)} · 👛 ${walletFilterLabel}`
+    : `${toISODate(start)} - ${toISODate(end)}`;
   const docNumber = generateDocNumber();
 
   const doc = renderDocument(
     {
       t,
       userName,
-      transactions,
+      transactions: scopedTransactions,
       categories,
       periodLabel,
       reportTitle: t("export.full_report_title"),
+      wallets,
+      walletFilterLabel,
     },
     docNumber
   );
@@ -378,6 +469,9 @@ export const exportFullPdf = (params: {
 
 /**
  * High-performance backend PDF generator returning a Uint8Array representation.
+ * Dipakai oleh bot Telegram (command /pdf) -- filter pos dompet (kalau ada)
+ * sudah harus dilakukan oleh caller sebelum transactions dilempar ke sini,
+ * sama seperti caller juga yang menyusun periodLabel/reportTitle.
  */
 export function generatePdf(params: {
   t: TFunc;
@@ -387,6 +481,8 @@ export function generatePdf(params: {
   periodLabel: string;
   reportTitle: string;
   summaryOnly?: boolean;
+  wallets?: PdfWalletInfo[];
+  walletFilterLabel?: string | null;
 }): Uint8Array {
   const docNumber = generateDocNumber();
   const doc = renderDocument(
@@ -398,6 +494,8 @@ export function generatePdf(params: {
       periodLabel: params.periodLabel,
       reportTitle: params.reportTitle,
       summaryOnly: params.summaryOnly,
+      wallets: params.wallets,
+      walletFilterLabel: params.walletFilterLabel,
     },
     docNumber
   );
