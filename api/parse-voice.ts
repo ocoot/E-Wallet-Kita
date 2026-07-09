@@ -2,6 +2,7 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { transcribeVoiceNote } from './_lib/voice-transcriber.js';
 import { getMaintenanceStatus, isFeatureLocked } from './_lib/maintenance.js';
+import { logError } from './_lib/errorLogger.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -142,6 +143,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     if (!transcript) {
       console.error(`❌ [${traceId}] transcribeVoiceNote returned null — lihat log "${traceId}" di atas untuk detail kegagalan tiap model.`);
+      await logError(supabase, {
+        source: "parse-voice",
+        level: "error",
+        message: "transcribeVoiceNote returned null — semua model Gemini gagal atau tidak ada API key tersedia.",
+        userId: user?.id ?? null,
+        traceId,
+      });
       res.status(422).json({ error: "Gagal mentranskrip pesan suara. Coba rekam ulang dengan lebih jelas." });
       return;
     }
@@ -149,6 +157,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.json({ transcript });
   } catch (err: any) {
     console.error("❌ parse-voice endpoint error:", err);
+    await logError(supabase, {
+      source: "parse-voice",
+      level: "error",
+      message: err?.message ? String(err.message) : "Terjadi kesalahan internal ketika memproses pesan suara",
+      userId: user?.id ?? null,
+    });
     res.status(500).json({ error: err.message || "Terjadi kesalahan internal ketika memproses pesan suara" });
   }
 }

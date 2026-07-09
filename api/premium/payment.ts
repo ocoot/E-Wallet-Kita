@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { logError } from '../_lib/errorLogger.js';
 
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -209,8 +210,14 @@ async function handleCreate(req: VercelRequest, res: VercelResponse) {
         is_sandbox: false,
       },
     });
-  } catch (e) {
+  } catch (e: any) {
     console.error('create-transaction error', e);
+    await logError(supabase, {
+      source: "premium/payment:create",
+      level: "error",
+      message: e?.message ? String(e.message) : "Gagal membuat transaksi premium",
+      userId: user?.id ?? null,
+    });
     return res.status(500).json({ error: 'INTERNAL_ERROR' });
   }
 }
@@ -315,8 +322,14 @@ async function handleStatus(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ status: 'EXPIRED' });
     }
     return res.status(200).json({ status: 'PENDING' });
-  } catch (e) {
+  } catch (e: any) {
     console.error('status check error', e);
+    await logError(supabase, {
+      source: "premium/payment:status",
+      level: "warning",
+      message: e?.message ? String(e.message) : "Gagal cek status pembayaran (fail-soft, tetap polling)",
+      userId: user?.id ?? null,
+    });
     return res.status(200).json({ status: 'PENDING' }); // fail-soft, keep polling
   }
 }
@@ -377,8 +390,15 @@ async function handleWebhook(req: VercelRequest, res: VercelResponse) {
     }
 
     res.status(200).json({ received: true });
-  } catch (e) {
+  } catch (e: any) {
     console.error('webhook error', e);
+    await logError(supabase, {
+      source: "premium/payment:webhook",
+      level: "error",
+      message: e?.message ? String(e.message)
+        : "Webhook KlikQRIS gagal diproses tapi tetap dibalas 200 (lihat context untuk order_id) — cek manual apakah status premium user perlu dikoreksi.",
+      context: { order_id: (req.body as any)?.data?.order_id ?? null },
+    });
     res.status(200).json({ received: true }); // KlikQRIS butuh 200 walau ada error internal
   }
 }

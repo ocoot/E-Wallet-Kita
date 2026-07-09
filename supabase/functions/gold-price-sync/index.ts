@@ -370,6 +370,25 @@ Deno.serve(async (req: Request) => {
       console.warn(`[gold-price-sync] Brand yang buyback-nya di-backfill dari fallback kali ini: ${backfilledBuybackFor.join(", ")}`);
     }
 
+    // Catat ke error_logs supaya kegagalan (parsial maupun total) muncul
+    // di Admin Panel > Monitor Error, bukan cuma di Supabase function log.
+    // Soft-fail: kalau insert log ini sendiri gagal, jangan sampai
+    // menjatuhkan response sync yang sebenarnya sudah selesai diproses.
+    if (failedBrands.length > 0) {
+      try {
+        await supabase.from("error_logs").insert({
+          source: "gold-price-sync",
+          level: synced === 0 ? "error" : "warning",
+          message: synced === 0
+            ? `Semua brand gagal disinkronkan (primary & fallback): ${failedBrands.join(", ")}`
+            : `Sebagian brand gagal disinkronkan: ${failedBrands.join(", ")}`,
+          context: { synced, skipped, failedBrands, usedFallbackFor, backfilledBuybackFor },
+        });
+      } catch (logErr) {
+        console.error("[gold-price-sync] Gagal mencatat error_logs (soft-fail):", logErr);
+      }
+    }
+
     // Kalau SEMUA brand gagal (primary & fallback dua-duanya), balikan status
     // 500 supaya kegagalan ini TERLIHAT, bukan silent-fail.
     const status = synced === 0 ? 500 : 200;
@@ -388,6 +407,21 @@ Deno.serve(async (req: Request) => {
     );
   } catch (err: any) {
     console.error("gold-price-sync error:", err);
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+      if (supabaseUrl && supabaseServiceKey) {
+        const supabase = createClient(supabaseUrl, supabaseServiceKey);
+        await supabase.from("error_logs").insert({
+          source: "gold-price-sync",
+          level: "error",
+          message: err?.message ? String(err.message) : "Unhandled error di gold-price-sync",
+          context: { name: err?.name ?? null },
+        });
+      }
+    } catch (logErr) {
+      console.error("[gold-price-sync] Gagal mencatat error_logs di catch terluar (soft-fail):", logErr);
+    }
     return new Response(JSON.stringify({ error: err.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,

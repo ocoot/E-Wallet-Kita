@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { sendPushNotificationToUser } from '../_lib/fcm.js';
 import { createClient } from '@supabase/supabase-js';
+import { logError } from '../_lib/errorLogger.js';
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -65,6 +66,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(200).json({ success: true, ...result });
   } catch (err: any) {
     console.error('[send-bill-reminder-push] Failed:', err);
+    await logError(supabaseBackend, {
+      source: "internal/send-bill-reminder-push",
+      level: "error",
+      message: err?.message ? String(err.message) : "Gagal mengirim push reminder tagihan",
+      userId: user_id,
+    });
     res.status(500).json({ error: err.message || 'Failed to send push' });
   }
 }

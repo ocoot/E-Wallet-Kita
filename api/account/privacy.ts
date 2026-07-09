@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { logError } from '../_lib/errorLogger.js';
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -98,8 +99,14 @@ async function handleExport(req: VercelRequest, res: VercelResponse) {
       `attachment; filename="ewallet-kita-data-${user.id.slice(0, 8)}.json"`
     );
     return res.status(200).json(exportPayload);
-  } catch (e) {
+  } catch (e: any) {
     console.error('privacy export error', e);
+    await logError(supabase, {
+      source: "account/privacy:export",
+      level: "error",
+      message: e?.message ? String(e.message) : "Gagal mengekspor data privasi user",
+      userId: user?.id ?? null,
+    });
     return res.status(500).json({ error: 'INTERNAL_ERROR' });
   }
 }
@@ -128,6 +135,12 @@ async function handleDeleteAccount(req: VercelRequest, res: VercelResponse) {
 
     if (rpcError || deleted !== true) {
       console.error('delete_own_account_data error', rpcError);
+      await logError(supabase, {
+        source: "account/privacy:delete",
+        level: "error",
+        message: rpcError?.message || "delete_own_account_data gagal atau mengembalikan false",
+        userId: user.id,
+      });
       return res.status(500).json({ error: 'DATA_DELETE_FAILED' });
     }
 
@@ -140,12 +153,24 @@ async function handleDeleteAccount(req: VercelRequest, res: VercelResponse) {
     const { error: authDeleteError } = await supabase.auth.admin.deleteUser(user.id);
     if (authDeleteError) {
       console.error('auth.admin.deleteUser error', authDeleteError);
+      await logError(supabase, {
+        source: "account/privacy:delete",
+        level: "error",
+        message: `auth.admin.deleteUser gagal SETELAH data public sudah terhapus (akun orphaned): ${authDeleteError.message}`,
+        userId: user.id,
+      });
       return res.status(500).json({ error: 'AUTH_DELETE_FAILED' });
     }
 
     return res.status(200).json({ success: true });
-  } catch (e) {
+  } catch (e: any) {
     console.error('delete account error', e);
+    await logError(supabase, {
+      source: "account/privacy:delete",
+      level: "error",
+      message: e?.message ? String(e.message) : "Gagal menghapus akun",
+      userId: user?.id ?? null,
+    });
     return res.status(500).json({ error: 'INTERNAL_ERROR' });
   }
 }

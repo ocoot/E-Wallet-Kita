@@ -2,6 +2,7 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { parseReceipt } from './_lib/receipt-parser.js';
 import { getMaintenanceStatus, isFeatureLocked } from './_lib/maintenance.js';
+import { logError } from './_lib/errorLogger.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -115,6 +116,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   } catch (err: any) {
     console.error("❌ parse-receipt endpoint error:", err);
+    await logError(supabase, {
+      source: "parse-receipt",
+      level: "error",
+      message: err?.message ? String(err.message) : "Terjadi kesalahan internal ketika melakukan OCR struk",
+      userId: user?.id ?? null,
+    });
     res.status(500).json({ error: err.message || "Terjadi kesalahan internal ketika melakukan OCR struk" });
   }
 }

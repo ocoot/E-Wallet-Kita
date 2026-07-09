@@ -2,6 +2,7 @@ import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { sendPushNotificationBatch } from '../_lib/fcm.js';
 import { sendTelegramMessageOrThrow } from '../_lib/telegram.js';
+import { logError } from '../_lib/errorLogger.js';
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
@@ -113,6 +114,11 @@ async function handlePushBroadcast(
 
   if (dbError) {
     res.status(500).json({ error: dbError.message });
+    await logError(supabaseBackend, {
+      source: "admin/broadcast:push",
+      level: "error",
+      message: `Gagal mengambil daftar fcm_token: ${dbError.message}`,
+    });
     return;
   }
 
@@ -136,6 +142,15 @@ async function handlePushBroadcast(
       failCount += batch.length;
       console.error('[Push Broadcast] Batch failed:', err);
     }
+  }
+
+  if (failCount > 0) {
+    await logError(supabaseBackend, {
+      source: "admin/broadcast:push",
+      level: failCount === total ? "error" : "warning",
+      message: `Push broadcast: ${failCount}/${total} pengiriman gagal.`,
+      context: { total, successCount, failCount },
+    });
   }
 
   res.status(200).json({ success: true, total, successCount, failCount });
@@ -168,6 +183,13 @@ async function handleTelegramBroadcast(
   const { data: targets, error: rpcError } = await userSupabase.rpc('admin_get_telegram_chat_ids');
   if (rpcError) {
     res.status(500).json({ error: rpcError.message });
+    if (supabaseServiceKey) {
+      await logError(createClient(supabaseUrl, supabaseServiceKey), {
+        source: "admin/broadcast:telegram",
+        level: "error",
+        message: `admin_get_telegram_chat_ids gagal: ${rpcError.message}`,
+      });
+    }
     return;
   }
 
@@ -210,4 +232,13 @@ async function handleTelegramBroadcast(
     successCount,
     failCount,
   });
+
+  if (failCount > 0 && supabaseServiceKey) {
+    await logError(createClient(supabaseUrl, supabaseServiceKey), {
+      source: "admin/broadcast:telegram",
+      level: failCount === allTargets.length ? "error" : "warning",
+      message: `Telegram broadcast: ${failCount}/${allTargets.length} pengiriman gagal.`,
+      context: { total: allTargets.length, successCount, failCount },
+    });
+  }
 }

@@ -1,4 +1,11 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
+import { createClient } from '@supabase/supabase-js';
+import { logError } from './_lib/errorLogger.js';
+
+const supabase = createClient(
+  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+);
 
 /**
  * GET /api/weather?lat=..&lon=..
@@ -256,7 +263,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (err: any) {
     const errMsg = err?.message || String(err);
     console.error('[api/weather] error:', errMsg);
-    
+    await logError(supabase, {
+      source: "weather",
+      level: "warning",
+      message: `Weather widget fallback ke data statis: ${errMsg}`,
+    });
+
     // Graceful degradation: return fallback data instead of 502 error
     // sehingga widget cuaca tetap tampil dengan "data tidak tersedia" dibanding
     // blank/error. Ini lebih baik UX-wise daripada hard failure.

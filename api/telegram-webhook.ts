@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { logError } from './_lib/errorLogger.js';
 import { GoogleGenAI, Type } from '@google/genai';
 import { parseAmountFromString } from '../src/lib/parserUtils.js';
 import { generatePdf } from '../src/lib/pdf/exportPdf.js';
@@ -913,6 +914,13 @@ async function handleVoiceNote(message: any, maintenanceStatus: MaintenanceStatu
     const transcript = await transcribeVoiceNote(base64Audio, mimeType, traceId);
     if (!transcript) {
       console.error(`❌ [${traceId}] transcribeVoiceNote returned null — mengirim pesan error ke user. Lihat log "${traceId}" di atas untuk detail kegagalan tiap model.`);
+      await logError(supabaseBackend, {
+        source: "telegram-webhook:voice-transcribe",
+        level: "error",
+        message: "transcribeVoiceNote returned null — semua model Gemini gagal atau tidak ada API key tersedia.",
+        context: { chatId, mimeType, filePath },
+        traceId,
+      });
       await sendTelegramMessage(chatId, tr("voiceTranscribeError", lang));
       return;
     }
@@ -2036,6 +2044,12 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     res.status(200).json({ ok: true });
   } catch (err: any) {
     console.error("🔴 Telegram Webhook Error:", err);
+    await logError(supabaseBackend, {
+      source: "telegram-webhook",
+      level: "error",
+      message: err?.message ? String(err.message) : "Unhandled error di telegram-webhook",
+      context: { name: err?.name ?? null, stack: err?.stack ? String(err.stack).slice(0, 1000) : null },
+    });
     res.status(500).json({ error: "Internal server error" });
   }
 };

@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from "@vercel/node";
 import { createClient } from "@supabase/supabase-js";
 import nodemailer from "nodemailer";
+import { logError } from "./_lib/errorLogger.js";
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -120,6 +121,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(200).json({ success: true, messageId: info.messageId });
   } catch (err: any) {
     console.error("❌ Send receipt error:", err);
+    await logError(supabase, {
+      source: "send-receipt",
+      level: "error",
+      message: err?.message ? String(err.message) : "Gagal mengirim struk ke email",
+      userId: user?.id ?? null,
+      context: { order_id: (req.body as any)?.orderId ?? null, email: (req.body as any)?.email ?? null },
+    });
     res.status(500).json({
       success: false,
       error: err.message || "Terjadi kesalahan internal ketika mengirim struk ke email",

@@ -32,11 +32,12 @@ import { AdminPremiumMonitor } from "./AdminPremiumMonitor";
 import { AdminCategoryManager } from "./AdminCategoryManager";
 import { AdminBroadcast } from "./AdminBroadcast";
 import { AdminAiMonitor } from "./AdminAiMonitor";
+import { AdminErrorMonitor } from "./AdminErrorMonitor";
 import { AdminMaintenance } from "./AdminMaintenance";
 import { AdminVoucherManager } from "./AdminVoucherManager";
 import { AdminUserDetailModal } from "../components/AdminUserDetailModal";
 
-type AdminTab = "users" | "premium" | "voucher" | "categories" | "broadcast" | "ai_monitor" | "maintenance";
+type AdminTab = "users" | "premium" | "voucher" | "categories" | "broadcast" | "ai_monitor" | "error_monitor" | "maintenance";
 
 export const AdminPanel: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -482,6 +483,7 @@ export const AdminPanel: React.FC = () => {
             { key: "categories",  label: t("admin.tab_categories") },
             { key: "broadcast",   label: t("admin.tab_broadcast") },
             { key: "ai_monitor",  label: t("admin.tab_ai_monitor") },
+            { key: "error_monitor", label: t("admin.tab_error_monitor") },
             { key: "maintenance", label: t("admin.tab_maintenance") },
           ] as { key: AdminTab; label: string }[]).map(tab => (
             <button
@@ -903,6 +905,8 @@ export const AdminPanel: React.FC = () => {
       {activeTab === "broadcast" && <AdminBroadcast />}
 
       {activeTab === "ai_monitor" && <AdminAiMonitor />}
+
+      {activeTab === "error_monitor" && <AdminErrorMonitor />}
 
       {activeTab === "maintenance" && <AdminMaintenance />}
 

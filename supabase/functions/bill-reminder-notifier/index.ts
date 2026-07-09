@@ -302,12 +302,39 @@ Deno.serve(async (req: Request) => {
       }
     }
 
+    if (skipped > 0) {
+      try {
+        await supabase.from("error_logs").insert({
+          source: "bill-reminder-notifier",
+          level: sent === 0 ? "error" : "warning",
+          message: `${skipped}/${rows.length} pengingat tagihan gagal dikirim (chat_id kosong atau sendMessage gagal, mis. user blokir bot).`,
+          context: { sent, skipped, total: rows.length },
+        });
+      } catch (logErr) {
+        console.error("[bill-reminder-notifier] Gagal mencatat error_logs (soft-fail):", logErr);
+      }
+    }
+
     return new Response(JSON.stringify({ success: true, sent, skipped, total: rows.length }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
   } catch (err: any) {
     console.error("bill-reminder-notifier error:", err);
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+      if (supabaseUrl && supabaseServiceKey) {
+        const supabaseLog = createClient(supabaseUrl, supabaseServiceKey);
+        await supabaseLog.from("error_logs").insert({
+          source: "bill-reminder-notifier",
+          level: "error",
+          message: err?.message ? String(err.message) : "Unhandled error di bill-reminder-notifier",
+        });
+      }
+    } catch (logErr) {
+      console.error("[bill-reminder-notifier] Gagal mencatat error_logs di catch terluar (soft-fail):", logErr);
+    }
     return new Response(JSON.stringify({ error: err.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,

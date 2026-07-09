@@ -166,6 +166,21 @@ serve(async (req) => {
     return new Response("ok", { status: 200 });
 
   } catch (err: any) {
+    console.error("support-bridge error:", err);
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+      if (supabaseUrl && supabaseServiceKey) {
+        const supabaseLog = createClient(supabaseUrl, supabaseServiceKey);
+        await supabaseLog.from("error_logs").insert({
+          source: "support-bridge",
+          level: "error",
+          message: err?.message ? String(err.message) : "Unhandled error di support-bridge",
+        });
+      }
+    } catch (logErr) {
+      console.error("[support-bridge] Gagal mencatat error_logs (soft-fail):", logErr);
+    }
     return new Response(JSON.stringify({ error: err.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,

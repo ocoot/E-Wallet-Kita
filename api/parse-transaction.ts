@@ -4,6 +4,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { getActiveCategories, generateCategoryPrompt, validateCategoryKey } from './_lib/categories.js';
 import { parseAmountFromString } from '../src/lib/parserUtils.js';
 import { inferCategoryKey } from './_utils.js';
+import { logError } from './_lib/errorLogger.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL!,
@@ -288,7 +289,18 @@ ALWAYS return the 'category_key' from the list above.`;
     const inferredAmount = parseAmountFromString(query);
     const inferredCategory = inferCategoryKey(query);
     const inferredType = ["gaji", "bonus", "salary", "upah"].some(k => query.toLowerCase().includes(k)) ? "income" : "expense";
-    
+
+    // Level "warning", bukan "error": request tetap dilayani lewat fallback
+    // regex di bawah, jadi ini bukan kegagalan total -- tapi tetap perlu
+    // kelihatan di Admin Panel supaya kita tahu seberapa sering AI parsing
+    // gagal dan fallback yang kurang akurat ini yang dipakai.
+    await logError(supabase, {
+      source: "parse-transaction",
+      level: "warning",
+      message: err?.message ? String(err.message) : "AI parsing gagal, fallback ke regex",
+      context: { query, fallback_used: true },
+    });
+
     res.json({
       source: "fallback_server_error_regex",
       type: inferredType,
