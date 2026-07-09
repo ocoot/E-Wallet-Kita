@@ -1270,6 +1270,6 @@
     "toast_wallet_updated": "Dompet berhasil diperbarui",
     "field_phone": "Nomor HP / Telepon",
     "field_account_number": "Nomor Rekening",
-    "earmarked_note": "Rp{earmarked} dititipkan ke Tabungan/Emas · Tersedia {available}"
+    "earmarked_note": "{earmarked} dititipkan ke Tabungan/Emas · Tersedia {available}"
   }
 }

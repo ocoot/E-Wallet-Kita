@@ -1270,6 +1270,6 @@
     "toast_wallet_updated": "Wallet updated successfully",
     "field_phone": "Phone Number",
     "field_account_number": "Account Number",
-    "earmarked_note": "Rp{earmarked} earmarked for Savings/Gold · Available {available}"
+    "earmarked_note": "{earmarked} earmarked for Savings/Gold · Available {available}"
   }
 }
