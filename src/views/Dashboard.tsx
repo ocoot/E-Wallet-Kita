@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabase";
 import { UserSession, Transaction } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Plus, BookOpen, X, Layers } from "lucide-react";
+import { Plus, BookOpen, X } from "lucide-react";
 import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
@@ -237,12 +237,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* 1c. Ringkasan Keuangan -- Total Kekayaan, Bulan Ini, Rincian Aset
           (Tabungan/Emas) expandable. Angka "Saldo Tersedia" tunggal sudah
           dipindah jadi kartu-kartu Pos Dompet di atas. */}
-      <div className="flex items-center gap-2 px-3 py-2 rounded-2xl border bg-slate-900/60 border-slate-800/40 shadow-sm light_sakura:bg-white light_sakura:border-rose-100/40">
-        <Layers size={14} className="text-indigo-400 light_sakura:text-rose-500" />
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
-          {t("dashboard.overall_summary_label")}
-        </h3>
-      </div>
       <DashboardOverviewCard
         refreshTrigger={transactionsUpdatedTrigger}
         formatIDR={formatIDR}

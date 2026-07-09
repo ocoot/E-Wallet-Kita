@@ -47,8 +47,8 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
   if (activeWallets.length === 0) return null;
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2 px-3 py-2 rounded-2xl border bg-slate-900/60 border-slate-800/40 shadow-sm light_sakura:bg-white light_sakura:border-rose-100/40">
+    <div className="rounded-3xl border bg-slate-900 border-slate-800/60 shadow-sm light_sakura:bg-white light_sakura:border-rose-100/40 p-4 space-y-3">
+      <div className="flex items-center gap-2">
         <WalletIcon size={14} className="text-indigo-400 light_sakura:text-rose-500" />
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
           {t("wallet.title")}
@@ -71,7 +71,7 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               onClick={() => { audioFeedback.playClick(); navigate("/wallets"); }}
-              className="shrink-0 w-[168px] snap-start text-left rounded-2xl border p-4 space-y-2 cursor-pointer transition-colors bg-slate-900 border-slate-800/60 hover:bg-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 light_sakura:hover:bg-rose-50/30"
+              className="shrink-0 w-[168px] snap-start text-left rounded-2xl border p-4 space-y-2 cursor-pointer transition-colors bg-slate-950/40 border-slate-800/60 hover:bg-slate-800/60 light_sakura:bg-rose-50/30 light_sakura:border-rose-100/50 light_sakura:hover:bg-rose-50/60"
             >
               <div className="flex items-center gap-1.5">
                 <span className="text-sm">{WALLET_TYPE_ICON[w.type]}</span>

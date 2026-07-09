@@ -113,6 +113,12 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
           "Saldo Tersedia" tunggal sudah dipindah jadi kartu-kartu Pos Dompet
           terpisah di Dashboard (lihat DashboardWalletCards.tsx). */}
       <div className="p-5 sm:p-6 pb-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Layers size={14} className="text-indigo-400 light_sakura:text-rose-500" />
+          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
+            {t("dashboard.overall_summary_label")}
+          </h3>
+        </div>
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-2xl bg-indigo-500/15 flex items-center justify-center text-indigo-400 shrink-0 light_sakura:bg-rose-500/15 light_sakura:text-rose-500">
             <Layers size={20} />
