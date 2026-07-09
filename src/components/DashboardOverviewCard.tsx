@@ -182,7 +182,10 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                         <Vault size={13} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold">{t("dashboard.total_savings_label")}</p>
+                        <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold flex items-center gap-1">
+                          {t("dashboard.total_savings_label")}
+                          <InfoTooltip text={t("dashboard.earmarked_note_tooltip")} align="right" />
+                        </p>
                         <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(savedAmount)}</p>
                       </div>
                     </div>
@@ -233,7 +236,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
       )}
 
       <p className="px-5 sm:px-6 pb-4 -mt-1 text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 leading-relaxed">
-        {hasAssets ? t("dashboard.savings_breakdown_hint") : t("dashboard.accumulated_balance_hint")}
+        {t("dashboard.accumulated_balance_hint")}
       </p>
     </motion.div>
   );

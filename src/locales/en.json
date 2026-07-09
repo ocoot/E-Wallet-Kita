@@ -133,11 +133,12 @@
     "available_balance_label": "Available Balance",
     "total_savings_label": "Total Savings",
     "savings_breakdown_hint": "Money kept in Savings & Gold pockets is marked as \"earmarked\" on each Wallet card above, so it doesn't get spent by accident.",
+    "earmarked_note_tooltip": "This amount is already included in its Wallet card's balance, marked as \"earmarked\" so it doesn't get spent on anything else by accident.",
     "available_balance_tooltip": "Formula: Net Worth − Total Savings − cash used to buy Gold. This is the money you can truly spend freely without touching your savings.",
-    "net_worth_tooltip": "Formula: Total Income − Total Expense + unrealized Gold gain/loss. Already includes your gold's current market value, not just the cash spent buying it.",
+    "net_worth_tooltip": "Net Worth ≠ the sum of your Wallet cards above. Formula: Total Income − Total Expense + unrealized Gold gain/loss (based on today's market value, not just what you paid for it).",
     "asset_breakdown_label": "Asset & History Breakdown",
     "total_gold_label": "Total Gold (Market Value)",
-    "total_gold_tooltip": "Estimated value of your gold at the current market (buyback) price, not the price when purchased. Can go up/down with the gold price.",
+    "total_gold_tooltip": "Estimated value of your gold at the current market (buyback) price, not the price when purchased. Can go up/down with the gold price. The cash spent buying it is already included in its Wallet card's balance, marked as \"earmarked\".",
     "gold_stale_note": "Prices for some gold pockets haven't updated recently -- the value shown may not reflect the current market price."
   },
   "transaction": {
@@ -1246,7 +1247,7 @@
     "group_ewallet": "E-Wallets",
     "group_bank": "Bank Accounts",
     "group_cash": "Cash",
-    "group_general": "Total Balance",
+    "group_general": "General Balance",
     "general_desc": "General wallet — used automatically when you don't pick a specific wallet while logging a transaction.",
     "add_wallet": "Add Wallet",
     "add_bank": "Add Bank Account",

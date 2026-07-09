@@ -133,11 +133,12 @@
     "available_balance_label": "Saldo Tersedia",
     "total_savings_label": "Total Tabungan",
     "savings_breakdown_hint": "Dana yang tersimpan di pos Tabungan & Tabungan Emas ditandai sebagai \"dititipkan\" di kartu Pos Dompet masing-masing, supaya tidak sengaja terpakai.",
+    "earmarked_note_tooltip": "Dana ini sudah termasuk di dalam saldo kartu Pos Dompet-nya, ditandai sebagai \"dititipkan\" supaya tidak sengaja terpakai untuk hal lain.",
     "available_balance_tooltip": "Rumus: Total Kekayaan − Total Tabungan − dana yang terpakai beli Emas. Ini uang yang benar-benar bebas dibelanjakan tanpa mengganggu tabungan Anda.",
-    "net_worth_tooltip": "Rumus: Total Pemasukan − Total Pengeluaran + Untung/Rugi Emas belum direalisasi. Sudah termasuk nilai pasar emas Anda saat ini, bukan cuma uang yang dibelanjakan untuk membelinya.",
+    "net_worth_tooltip": "Total Kekayaan ≠ jumlah kartu Pos Dompet di atas. Rumus: Total Pemasukan − Total Pengeluaran + Untung/Rugi Emas yang belum direalisasi (dihitung dari nilai pasar emas Anda saat ini, bukan cuma modal saat membelinya).",
     "asset_breakdown_label": "Rincian Aset & Riwayat",
     "total_gold_label": "Total Emas (Nilai Pasar)",
-    "total_gold_tooltip": "Estimasi nilai emas Anda di harga pasar terkini (harga buyback), bukan harga saat dibeli. Bisa naik/turun mengikuti harga emas.",
+    "total_gold_tooltip": "Estimasi nilai emas Anda di harga pasar terkini (harga buyback), bukan harga saat dibeli. Bisa naik/turun mengikuti harga emas. Modal pembeliannya sudah termasuk di saldo kartu Pos Dompet, ditandai sebagai \"dititipkan\".",
     "gold_stale_note": "Harga sebagian pos emas belum diperbarui baru-baru ini -- nilai yang ditampilkan mungkin tidak mencerminkan harga pasar terkini."
   },
   "transaction": {
@@ -1246,7 +1247,7 @@
     "group_ewallet": "Dompet E-Wallet",
     "group_bank": "Dompet Rekening",
     "group_cash": "Cash / Tunai",
-    "group_general": "Saldo Total",
+    "group_general": "Saldo Umum",
     "general_desc": "Pos umum — dipakai otomatis kalau kamu tidak memilih pos tertentu saat mencatat transaksi.",
     "add_wallet": "Tambah Dompet",
     "add_bank": "Tambah Rekening",

@@ -5,6 +5,7 @@ import { Wallet as WalletIcon, Eye, EyeOff, Plus } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useWallets } from "../hooks/useWallets";
 import { audioFeedback } from "../lib/audio";
+import { InfoTooltip } from "./InfoTooltip";
 
 const WALLET_TYPE_ICON: Record<string, string> = { ewallet: "📱", bank: "🏦", cash: "💵", general: "💰" };
 
@@ -62,7 +63,6 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
 
       <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 snap-x">
         {activeWallets.map((w) => {
-          const isGeneral = w.type === "general";
           const contactValue = w.type === "ewallet" ? w.phone_number : w.type === "bank" ? w.account_number : null;
           const isVisible = visibleContactIds.has(w.id);
           return (
@@ -71,15 +71,14 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               onClick={() => { audioFeedback.playClick(); navigate("/wallets"); }}
-              className={`shrink-0 w-[168px] snap-start text-left rounded-2xl border p-4 space-y-2 cursor-pointer transition-colors ${
-                isGeneral
-                  ? "bg-indigo-500/5 border-indigo-500/30 hover:bg-indigo-500/10 light_sakura:bg-indigo-50/40 light_sakura:border-indigo-200"
-                  : "bg-slate-900 border-slate-800/60 hover:bg-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 light_sakura:hover:bg-rose-50/30"
-              }`}
+              className="shrink-0 w-[168px] snap-start text-left rounded-2xl border p-4 space-y-2 cursor-pointer transition-colors bg-slate-900 border-slate-800/60 hover:bg-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 light_sakura:hover:bg-rose-50/30"
             >
               <div className="flex items-center gap-1.5">
                 <span className="text-sm">{WALLET_TYPE_ICON[w.type]}</span>
                 <span className="font-sans text-[11px] font-bold text-slate-300 truncate light_sakura:text-slate-600">{w.name}</span>
+                {w.type === "general" && (
+                  <InfoTooltip text={t("wallet.general_desc")} align="left" className="shrink-0" />
+                )}
               </div>
               <p className="font-sans font-black text-lg tabular-nums text-white leading-tight light_sakura:text-slate-900">
                 {formatIDR(w.balance)}
