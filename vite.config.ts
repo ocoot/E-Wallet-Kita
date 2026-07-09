@@ -11,7 +11,7 @@ export default defineConfig(({ mode }) => {
       react(),
       tailwindcss(),
       VitePWA({
-        registerType: 'autoUpdate',
+        registerType: 'prompt',
         manifestFilename: 'manifest.json',
         includeAssets: ['logo.png', 'icon-192.png', 'icon-512.png'],
         strategies: 'generateSW',
