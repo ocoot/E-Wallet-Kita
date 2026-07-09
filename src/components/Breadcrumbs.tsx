@@ -13,7 +13,11 @@ import {
   Shield,
   PiggyBank,
   ReceiptText,
-  CreditCard
+  CreditCard,
+  Wallet,
+  Landmark,
+  Vault,
+  Coins
 } from "lucide-react";
 
 export const Breadcrumbs: React.FC = () => {
@@ -76,6 +80,30 @@ export const Breadcrumbs: React.FC = () => {
           label: t("nav.admin_panel"),
           path: "/admin",
           icon: <Shield size={14} />
+        });
+      } else if (part === "wallets") {
+        list.push({
+          label: t("nav.wallets"),
+          path: "/wallets",
+          icon: <Wallet size={14} />
+        });
+      } else if (part === "installments") {
+        list.push({
+          label: t("nav.installments"),
+          path: "/installments",
+          icon: <Landmark size={14} />
+        });
+      } else if (part === "savings") {
+        list.push({
+          label: t("nav.savings"),
+          path: "/savings",
+          icon: <Vault size={14} />
+        });
+      } else if (part === "gold-savings") {
+        list.push({
+          label: t("nav.gold_savings"),
+          path: "/gold-savings",
+          icon: <Coins size={14} />
         });
       }
     } else if (parts.length === 2 && parts[0] === "transactions") {

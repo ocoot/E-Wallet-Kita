@@ -271,136 +271,145 @@ export const Wallets: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="font-sans font-bold text-2xl tracking-tight text-white flex items-center gap-2 light_sakura:text-slate-900">
-          <WalletIcon size={22} /> {t("wallet.title")}
-        </h1>
-        <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500">{t("wallet.desc")}</p>
-      </div>
+      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
+        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
+        <div className="p-6 md:p-8 space-y-6">
 
-      {/* Total banner */}
-      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 p-6 light_sakura:bg-white light_sakura:border-rose-100/40">
-        <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-widest light_sakura:text-slate-500">
-          {t("wallet.total_balance")}
-        </p>
-        <p className="font-sans font-black text-3xl tabular-nums text-white mt-1 light_sakura:text-slate-900">
-          {formatIDR(totalBalance)}
-        </p>
-      </div>
-
-      {/* General wallet (Saldo Total) */}
-      {generalWallet && (
-        <div className="space-y-2">
-          <h2 className="font-sans text-xs font-bold text-slate-300 uppercase tracking-wider light_sakura:text-slate-600">
-            {t("wallet.group_general")}
-          </h2>
-          <p className="font-sans text-[11px] text-slate-500 -mt-1 light_sakura:text-slate-400">{t("wallet.general_desc")}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <WalletCard wallet={generalWallet} />
+          {/* Header */}
+          <div>
+            <h1 className="font-sans font-bold text-2xl tracking-tight text-white flex items-center gap-2 light_sakura:text-slate-900">
+              <WalletIcon size={22} /> {t("wallet.title")}
+            </h1>
+            <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500">{t("wallet.desc")}</p>
           </div>
-        </div>
-      )}
 
-      {/* E-Wallet / Bank / Cash groups */}
-      {(["ewallet", "bank", "cash"] as const).map((type) => {
-        const meta = GROUP_META[type];
-        const items = grouped(type);
-        return (
-          <div key={type} className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h2 className="font-sans text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 light_sakura:text-slate-600">
-                <span>{meta.icon}</span> {t(meta.labelKey)}
+          {/* Total banner */}
+          <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-5 py-4 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
+            <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-widest light_sakura:text-slate-500">
+              {t("wallet.total_balance")}
+            </p>
+            <p className="font-sans font-black text-3xl tabular-nums text-white mt-1 light_sakura:text-slate-900">
+              {formatIDR(totalBalance)}
+            </p>
+          </div>
+
+          {/* General wallet (Saldo Total) */}
+          {generalWallet && (
+            <div className="space-y-2">
+              <h2 className="font-sans text-xs font-bold text-slate-300 uppercase tracking-wider light_sakura:text-slate-600">
+                {t("wallet.group_general")}
               </h2>
-              <button
-                onClick={() => { setCreatingType(type); setNewName(""); setNewStartBalance(""); setNewContact(""); }}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100 light_sakura:text-rose-600"
-              >
-                <Plus size={12} /> {t(meta.addKey)}
-              </button>
+              <p className="font-sans text-[11px] text-slate-500 -mt-1 light_sakura:text-slate-400">{t("wallet.general_desc")}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <WalletCard wallet={generalWallet} />
+              </div>
             </div>
+          )}
 
-            {creatingType === type && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="rounded-2xl border border-indigo-500/30 bg-indigo-500/5 p-4 space-y-3 light_sakura:bg-indigo-50/30"
-              >
-                <div>
-                  <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">
-                    {t("wallet.field_name")}
-                  </label>
-                  <input
-                    autoFocus
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    placeholder={t(meta.placeholderKey)}
-                    className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
-                  />
+          {/* E-Wallet / Bank / Cash groups */}
+          {(["ewallet", "bank", "cash"] as const).map((type) => {
+            const meta = GROUP_META[type];
+            const items = grouped(type);
+            return (
+              <div key={type} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h2 className="font-sans text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 light_sakura:text-slate-600">
+                    <span>{meta.icon}</span> {t(meta.labelKey)}
+                  </h2>
+                  <button
+                    onClick={() => { setCreatingType(type); setNewName(""); setNewStartBalance(""); setNewContact(""); }}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100 light_sakura:text-rose-600"
+                  >
+                    <Plus size={12} /> {t(meta.addKey)}
+                  </button>
                 </div>
-                <div>
-                  <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">
-                    {t("wallet.field_starting_balance")}
-                  </label>
-                  <input
-                    type="number"
-                    value={newStartBalance}
-                    onChange={(e) => setNewStartBalance(e.target.value === "" ? "" : Number(e.target.value))}
-                    placeholder="0"
-                    className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
-                  />
-                </div>
-                {(type === "ewallet" || type === "bank") && (
-                  <div>
-                    <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">
-                      {type === "ewallet" ? t("wallet.field_phone") : t("wallet.field_account_number")}
-                    </label>
-                    <input
-                      value={newContact}
-                      onChange={(e) => setNewContact(e.target.value)}
-                      placeholder={type === "ewallet" ? "08xxxxxxxxxx" : "1234567890"}
-                      className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
-                    />
+
+                {creatingType === type && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    className="rounded-2xl border border-indigo-500/30 bg-indigo-500/5 p-4 space-y-3 light_sakura:bg-indigo-50/30"
+                  >
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">
+                        {t("wallet.field_name")}
+                      </label>
+                      <input
+                        autoFocus
+                        value={newName}
+                        onChange={(e) => setNewName(e.target.value)}
+                        placeholder={t(meta.placeholderKey)}
+                        className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">
+                        {t("wallet.field_starting_balance")}
+                      </label>
+                      <input
+                        type="number"
+                        value={newStartBalance}
+                        onChange={(e) => setNewStartBalance(e.target.value === "" ? "" : Number(e.target.value))}
+                        placeholder="0"
+                        className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                      />
+                    </div>
+                    {(type === "ewallet" || type === "bank") && (
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">
+                          {type === "ewallet" ? t("wallet.field_phone") : t("wallet.field_account_number")}
+                        </label>
+                        <input
+                          value={newContact}
+                          onChange={(e) => setNewContact(e.target.value)}
+                          placeholder={type === "ewallet" ? "08xxxxxxxxxx" : "1234567890"}
+                          className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                        />
+                      </div>
+                    )}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleCreateWallet(type)}
+                        disabled={busy || !newName.trim()}
+                        className="flex-1 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-50"
+                      >
+                        {t("wallet.btn_save_wallet")}
+                      </button>
+                      <button
+                        onClick={() => setCreatingType(null)}
+                        className="flex-1 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
+                      >
+                        {t("wallet.btn_cancel")}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {items.length === 0 ? (
+                  <p className="font-sans text-xs text-slate-500 italic px-1">{t("wallet.empty_group")}</p>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {items.map((w) => <WalletCard key={w.id} wallet={w} />)}
                   </div>
                 )}
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleCreateWallet(type)}
-                    disabled={busy || !newName.trim()}
-                    className="flex-1 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-50"
-                  >
-                    {t("wallet.btn_save_wallet")}
-                  </button>
-                  <button
-                    onClick={() => setCreatingType(null)}
-                    className="flex-1 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
-                  >
-                    {t("wallet.btn_cancel")}
-                  </button>
-                </div>
-              </motion.div>
-            )}
-
-            {items.length === 0 ? (
-              <p className="font-sans text-xs text-slate-500 italic px-1">{t("wallet.empty_group")}</p>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {items.map((w) => <WalletCard key={w.id} wallet={w} />)}
               </div>
-            )}
-          </div>
-        );
-      })}
+            );
+          })}
 
-      {archivedWallets.length > 0 && (
-        <div className="space-y-2 opacity-60">
-          <h2 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">{t("wallet.archive")}</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {archivedWallets.map((w) => <WalletCard key={w.id} wallet={w} />)}
-          </div>
+          {archivedWallets.length > 0 && (
+            <div className="space-y-2 opacity-60">
+              <h2 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">{t("wallet.archive")}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {archivedWallets.map((w) => <WalletCard key={w.id} wallet={w} />)}
+              </div>
+            </div>
+          )}
+
+          {!isLoading && activeWallets.length === 0 && <EmptyState />}
+
         </div>
-      )}
+      </div>
 
-      {!isLoading && activeWallets.length === 0 && <EmptyState />}
       <LoadingOverlay isOpen={busy} message={t("common.loading")} />
     </div>
   );

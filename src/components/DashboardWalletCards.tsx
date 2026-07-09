@@ -48,7 +48,7 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 px-1">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-2xl border bg-slate-900/60 border-slate-800/40 shadow-sm light_sakura:bg-white light_sakura:border-rose-100/40">
         <WalletIcon size={14} className="text-indigo-400 light_sakura:text-rose-500" />
         <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
           {t("wallet.title")}
