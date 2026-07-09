@@ -18,7 +18,12 @@ import {
   Filter,
   FileDown,
   PiggyBank,
-  ReceiptText
+  ReceiptText,
+  Send,
+  Wallet,
+  Target,
+  Coins,
+  CalendarClock
 } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
 
@@ -90,7 +95,7 @@ export const Onboarding: React.FC = () => {
     showToast(t("onboarding.catat_practice_success"), "success");
   };
 
-  const stepsCount = 6;
+  const stepsCount = 11;
 
   // Mock data for Step 3 Riwayat Transaksi Filter Practice
   const mockTransactions = [
@@ -294,8 +299,65 @@ export const Onboarding: React.FC = () => {
               </div>
             )}
 
-            {/* STEP 2: RIWAYAT TRANSAKSI AND FILTERS */}
+            {/* STEP 2: TELEGRAM BOT */}
             {currentStep === 2 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                    <Send size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                      {t("onboarding.telegram_title")}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                      {t("onboarding.telegram_desc")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.telegram_feature_1")}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.telegram_feature_2")}</span>
+                  </div>
+                </div>
+
+                {/* Simulated chat bubble mockup */}
+                <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-3 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
+                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                    {t("onboarding.catat_practice_title")} (Simulasi)
+                  </h3>
+
+                  <div className="flex justify-end">
+                    <div className="max-w-[75%] bg-indigo-500 text-white text-xs sm:text-sm px-3.5 py-2 rounded-2xl rounded-tr-sm shadow-sm">
+                      {t("onboarding.telegram_mock_user_msg")}
+                    </div>
+                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: 0.4 }}
+                    className="flex justify-start"
+                  >
+                    <div className="max-w-[75%] bg-slate-900 border border-slate-800 text-slate-200 text-xs sm:text-sm px-3.5 py-2 rounded-2xl rounded-tl-sm shadow-sm light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-700">
+                      {t("onboarding.telegram_mock_bot_reply")}
+                    </div>
+                  </motion.div>
+                </div>
+
+                <p className="text-[clamp(0.625rem,2.6vw,0.6875rem)] text-slate-500 light_sakura:text-slate-500 text-center">
+                  {t("onboarding.telegram_setup_hint")}
+                </p>
+              </div>
+            )}
+
+            {/* STEP 3: RIWAYAT TRANSAKSI AND FILTERS */}
+            {currentStep === 3 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
@@ -432,8 +494,61 @@ export const Onboarding: React.FC = () => {
               </div>
             )}
 
-            {/* STEP 3: BUDGET */}
-            {currentStep === 3 && (
+            {/* STEP 4: WALLETS */}
+            {currentStep === 4 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                    <Wallet size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                      {t("onboarding.wallet_title")}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                      {t("onboarding.wallet_desc")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.wallet_feature_1")}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.wallet_feature_2")}</span>
+                  </div>
+                </div>
+
+                {/* Simulated wallet list */}
+                <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-3 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
+                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                    {t("onboarding.catat_practice_title")} (Simulasi)
+                  </h3>
+
+                  {[
+                    { label: "GoPay", amount: "Rp250.000" },
+                    { label: "BCA", amount: "Rp2.100.000" },
+                    { label: t("wallet.group_cash"), amount: "Rp50.000" },
+                  ].map((w, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 light_sakura:bg-rose-50 light_sakura:text-rose-500">
+                          <Wallet size={14} />
+                        </div>
+                        <span className="text-sm font-semibold text-white light_sakura:text-slate-800">{w.label}</span>
+                      </div>
+                      <span className="text-sm font-mono text-slate-300 light_sakura:text-slate-600">{w.amount}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* STEP 5: BUDGET */}
+            {currentStep === 5 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
@@ -495,8 +610,165 @@ export const Onboarding: React.FC = () => {
               </div>
             )}
 
-            {/* STEP 4: BILLS */}
-            {currentStep === 4 && (
+            {/* STEP 6: SAVINGS POCKETS */}
+            {currentStep === 6 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                    <Target size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                      {t("onboarding.savings_title")}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                      {t("onboarding.savings_desc")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.savings_feature_1")}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.savings_feature_2")}</span>
+                  </div>
+                </div>
+
+                {/* Simulated savings progress */}
+                <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-4 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
+                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                    {t("onboarding.catat_practice_title")} (Simulasi)
+                  </h3>
+
+                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-semibold text-white light_sakura:text-slate-800">{t("onboarding.savings_mock_pocket_name")}</span>
+                      <span className="text-xs text-emerald-400 light_sakura:text-rose-500 font-mono">35%</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden light_sakura:bg-rose-50">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: "35%" }}
+                        transition={{ duration: 1, delay: 0.5 }}
+                        className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 light_sakura:from-rose-500 light_sakura:to-rose-300"
+                      />
+                    </div>
+                    <div className="flex justify-between items-center mt-2 text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500">
+                      <span>Rp3.500.000</span>
+                      <span>{t("onboarding.savings_mock_target")}: Rp10.000.000</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 7: GOLD SAVINGS */}
+            {currentStep === 7 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                    <Coins size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                      {t("gold.page_title")}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                      {t("onboarding.gold_desc")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.gold_feature_1")}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.gold_feature_2")}</span>
+                  </div>
+                </div>
+
+                {/* Simulated gold pocket card */}
+                <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-4 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
+                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                    {t("onboarding.catat_practice_title")} (Simulasi)
+                  </h3>
+
+                  <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-slate-900 border border-amber-500/20 light_sakura:from-amber-50 light_sakura:to-white light_sakura:border-amber-200 shadow-sm">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-bold text-white light_sakura:text-slate-800">2.5 gram Antam</p>
+                        <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-0.5">{t("gold.stat_market_value")}: Rp3.250.000</p>
+                      </div>
+                      <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-700">
+                        +Rp150.000
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 8: INSTALLMENTS */}
+            {currentStep === 8 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                    <CalendarClock size={20} />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                      {t("installments.page_title")}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                      {t("onboarding.installments_desc")}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.installments_feature_1")}</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
+                    <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
+                    <span>{t("onboarding.installments_feature_2")}</span>
+                  </div>
+                </div>
+
+                {/* Simulated installment progress */}
+                <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-4 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
+                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                    {t("onboarding.catat_practice_title")} (Simulasi)
+                  </h3>
+
+                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm font-semibold text-white light_sakura:text-slate-800">{t("onboarding.installments_mock_name")}</span>
+                      <span className="text-xs text-slate-400 font-mono">8/24 {t("onboarding.installments_mock_unit")}</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden light_sakura:bg-rose-50">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: "33%" }}
+                        transition={{ duration: 1, delay: 0.5 }}
+                        className="h-full bg-gradient-to-r from-sky-500 to-indigo-400"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 9: BILLS */}
+            {currentStep === 9 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
@@ -567,8 +839,8 @@ export const Onboarding: React.FC = () => {
               </div>
             )}
 
-            {/* STEP 5: WRAP UP / GET STARTED */}
-            {currentStep === 5 && (
+            {/* STEP 10: WRAP UP / GET STARTED */}
+            {currentStep === 10 && (
               <div className="text-center space-y-6 py-4">
                 <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500 animate-bounce">
                   <CheckCircle2 size={32} />
@@ -616,7 +888,7 @@ export const Onboarding: React.FC = () => {
               onClick={handleNext}
               className="py-2 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 shadow-lg shadow-emerald-500/20 light_sakura:shadow-rose-500/20"
             >
-              <span>{currentStep === 5 ? t("onboarding.btn_finish") : t("onboarding.btn_next")}</span>
+              <span>{currentStep === stepsCount - 1 ? t("onboarding.btn_finish") : t("onboarding.btn_next")}</span>
               <ArrowRight size={16} />
             </button>
           </div>
