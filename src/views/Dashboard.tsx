@@ -19,9 +19,6 @@ import { DashboardInstallments } from "../components/DashboardInstallments";
 import { DashboardOverviewCard } from "../components/DashboardOverviewCard";
 import { DashboardWalletCards } from "../components/DashboardWalletCards";
 import { useCategories } from "../hooks/useCategories";
-import { ErrorState } from "../components/ErrorState";
-import { Button } from "../components/ui/Button";
-import { Card } from "../components/ui/Card";
 
 interface DashboardProps {
   transactionsUpdatedTrigger: number;
@@ -75,8 +72,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [summary, setSummary] = useState({ income: 0, expense: 0, balance: 0 });
   const [sparkPoints, setSparkPoints] = useState<number[]>([]);
   const [telegramStatus, setTelegramStatus] = useState<{ linked: boolean, lastSync: string | null }>({ linked: false, lastSync: null });
-  const [error, setError] = useState<string | null>(null);
-  const [isRetrying, setIsRetrying] = useState(false);
 
   // Interactive Recharts configuration states
   const [chartMode, setChartMode] = useState<"area" | "line">("area");
@@ -92,9 +87,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   // Load current month metrics
   useEffect(() => {
-    const loadData = async (retrying = false) => {
-      if (retrying) setIsRetrying(true);
-      setError(null);
+    const loadData = async () => {
       const today = new Date();
       const currentMonthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`; // e.g., "2026-06"
       
@@ -145,9 +138,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         setSparkPoints(historyPoints);
       } catch (err) {
         console.error('Dashboard load error:', err);
-        setError('Gagal mengambil data dasbor');
-      } finally {
-        if (retrying) setIsRetrying(false);
       }
     };
 
@@ -230,59 +220,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const chartData = getChartData();
 
-  if (error) {
-    return (
-      <div className="space-y-6 pb-24 relative">
-        <DashboardHeader 
-          currentUser={currentUser} 
-          telegramStatus={telegramStatus} 
-        />
-        <Card className="rounded-3xl border border-slate-800 bg-slate-900 p-6 light_sakura:bg-white light_sakura:border-rose-100 flex items-center justify-center min-h-[300px]">
-          <ErrorState onRetry={() => {
-            const today = new Date();
-            const currentMonthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
-            setIsRetrying(true);
-            setError(null);
-            Promise.all([
-              dbService.getTransactions(currentUser.id, currentMonthPrefix),
-              supabase.from("users").select("telegram_chat_id").eq("id", currentUser.id).single()
-            ]).then(([data, userRes]) => {
-              setTransactions(data);
-              if (userRes.data?.telegram_chat_id) {
-                const latestTelegramTx = data
-                  .filter(t => t.source === 'telegram')
-                  .sort((a,b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
-                setTelegramStatus({
-                  linked: true,
-                  lastSync: latestTelegramTx ? new Date(latestTelegramTx.created_at).toLocaleTimeString() : null
-                });
-              }
-              let inc = 0;
-              let exp = 0;
-              data.forEach(t => {
-                if (t.type === "income") inc += t.amount;
-                else exp += t.amount;
-              });
-              setSummary({ income: inc, expense: exp, balance: inc - exp });
-              const sortedData = [...data].sort((a, b) => a.transaction_date.localeCompare(b.transaction_date));
-              let runBal = 0;
-              const historyPoints = sortedData.map(t => {
-                runBal += (t.type === "income" ? t.amount : -t.amount);
-                return runBal;
-              });
-              setSparkPoints(historyPoints);
-            }).catch(err => {
-              console.error(err);
-              setError('Gagal mengambil data dasbor');
-            }).finally(() => {
-              setIsRetrying(false);
-            });
-           }} isRetrying={isRetrying} />
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6 pb-24 relative">
       {/* 1. Welcome Message Banner */}
@@ -328,27 +265,25 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
           </div>
           <div className="flex items-center gap-2.5 self-end sm:self-auto">
-            <Button
-              variant="ghost"
+            <button
               onClick={() => {
                 audioFeedback.playClick();
                 setShowOnboardingBanner(false);
                 localStorage.setItem("ewallet_onboarding_completed", "true");
               }}
-              className="px-3.5 py-1.5 h-auto min-h-0 text-xs font-semibold text-slate-400 hover:text-slate-300 hover:bg-slate-800/50 rounded-xl transition-colors light_sakura:text-slate-500 light_sakura:hover:text-slate-700 light_sakura:hover:bg-rose-50"
+              className="px-3.5 py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-300 hover:bg-slate-800/50 rounded-xl transition-colors light_sakura:text-slate-500 light_sakura:hover:text-slate-700 light_sakura:hover:bg-rose-50"
             >
               {t("onboarding.dashboard_banner_btn_dismiss")}
-            </Button>
-            <Button
-              variant="primary"
+            </button>
+            <button
               onClick={() => {
                 audioFeedback.playClick();
                 navigate("/onboarding");
               }}
-              className="px-4 py-2 h-auto min-h-0 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl shadow-lg shadow-emerald-500/10 flex items-center gap-1.5 transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+              className="px-4 py-2 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-white rounded-xl shadow-lg shadow-emerald-500/10 flex items-center gap-1.5 transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
             >
               <span>{t("onboarding.dashboard_banner_btn_start")}</span>
-            </Button>
+            </button>
           </div>
         </motion.div>
       )}

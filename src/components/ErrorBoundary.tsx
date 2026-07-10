@@ -1,9 +1,9 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
+import React from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 import { reportFrontendError } from "../lib/errorReporter";
 
 interface Props {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 interface State {
@@ -38,20 +38,17 @@ const COPY = isIndonesian
  * "frontend:react-boundary") lewat reportFrontendError -- muncul di
  * Admin Panel > Monitor Error dengan componentStack di kolom context.
  */
-export class ErrorBoundary extends Component<Props, State> {
-  public props: Props;
-  public state: State = { hasError: false };
-
+export class ErrorBoundary extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.props = props;
+    this.state = { hasError: false };
   }
 
   static getDerivedStateFromError(): State {
     return { hasError: true };
   }
 
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("[ErrorBoundary] Render crash tertangkap:", error, errorInfo);
     void reportFrontendError({
       source: "frontend:react-boundary",

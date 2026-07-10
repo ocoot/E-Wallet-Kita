@@ -1277,12 +1277,5 @@
     "field_phone": "Phone Number",
     "field_account_number": "Account Number",
     "earmarked_note": "{earmarked} earmarked for Savings/Gold · Available {available}"
-  },
-  "network": {
-    "offline_banner_title": "You Are Offline",
-    "offline_banner_desc": "Internet connection lost. Transaction saving and updates are temporarily disabled.",
-    "retry_button": "Retry",
-    "error_fetching_data": "Failed to fetch data from the server.",
-    "error_fallback_desc": "Please check your internet connection or try again in a few moments."
   }
 }

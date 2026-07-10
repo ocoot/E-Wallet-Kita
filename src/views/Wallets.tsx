@@ -10,10 +10,6 @@ import { WalletType, WalletWithBalance } from "../types";
 import { useNavigate } from "react-router-dom";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { EmptyState } from "../components/EmptyState";
-import { Button } from "../components/ui/Button";
-import { Card } from "../components/ui/Card";
-import { Input } from "../components/ui/Input";
-import { Badge } from "../components/ui/Badge";
 
 const GROUP_META: Record<Exclude<WalletType, "general">, { icon: string; labelKey: string; addKey: string; placeholderKey: string }> = {
   ewallet: { icon: "📱", labelKey: "wallet.group_ewallet", addKey: "wallet.add_wallet", placeholderKey: "wallet.field_name_placeholder_ewallet" },
@@ -144,147 +140,138 @@ export const Wallets: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
+        className={`rounded-2xl border p-4 space-y-3 ${
+          isGeneral
+            ? "bg-indigo-500/5 border-indigo-500/30 light_sakura:bg-indigo-50/40 light_sakura:border-indigo-200"
+            : "bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40"
+        }`}
       >
-        <Card
-          className={`p-4 space-y-3 ${
-            isGeneral
-              ? "bg-indigo-500/5 border-indigo-500/30 light_sakura:bg-indigo-50/40 light_sakura:border-indigo-200"
-              : "border-slate-800/60 light_sakura:border-rose-100/40"
-          }`}
-        >
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0 text-left">
-              <p className="font-sans font-bold text-sm text-white truncate light_sakura:text-slate-900">{wallet.name}</p>
-              {wallet.provider && (
-                <p className="font-sans text-[11px] text-slate-400 truncate light_sakura:text-slate-500">{wallet.provider}</p>
-              )}
-            </div>
-            <button
-              onClick={() => handleToggleArchive(wallet)}
-              title={wallet.is_archived ? t("wallet.unarchive") : t("wallet.archive")}
-              disabled={isGeneral}
-              className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-800 hover:text-white cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shrink-0 light_sakura:hover:bg-rose-100"
-            >
-              {wallet.is_archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
-            </button>
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="font-sans font-bold text-sm text-white truncate light_sakura:text-slate-900">{wallet.name}</p>
+            {wallet.provider && (
+              <p className="font-sans text-[11px] text-slate-400 truncate light_sakura:text-slate-500">{wallet.provider}</p>
+            )}
           </div>
+          <button
+            onClick={() => handleToggleArchive(wallet)}
+            title={wallet.is_archived ? t("wallet.unarchive") : t("wallet.archive")}
+            disabled={isGeneral}
+            className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-800 hover:text-white cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shrink-0 light_sakura:hover:bg-rose-100"
+          >
+            {wallet.is_archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
+          </button>
+        </div>
 
-          {/* Nomor HP (e-wallet) / Nomor Rekening (bank) -- bisa disembunyikan */}
-          {canHaveContact && (
-            editingContactId === wallet.id ? (
-              <div className="space-y-2">
-                <Input
-                  autoFocus
-                  value={contactInput}
-                  onChange={(e) => setContactInput(e.target.value)}
-                  placeholder={contactLabel}
-                  className="text-xs py-2 min-h-0 bg-slate-950"
-                />
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => handleSaveContact(wallet)}
-                    disabled={busy}
-                    loading={busy}
-                    className="flex-1 py-1.5 h-auto min-h-0 text-xs font-bold"
-                  >
-                    {t("common.save")}
-                  </Button>
-                  <Button
-                    variant="secondary"
-                    onClick={() => setEditingContactId(null)}
-                    className="flex-1 py-1.5 h-auto min-h-0 text-xs font-bold"
-                  >
-                    {t("common.cancel")}
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <button
-                onClick={() => { setEditingContactId(wallet.id); setContactInput(contactValue || ""); }}
-                className="flex items-center gap-2 w-full text-left px-2.5 py-1.5 rounded-lg bg-slate-950/40 hover:bg-slate-800/60 light_sakura:bg-rose-50/40 light_sakura:hover:bg-rose-100/60 cursor-pointer group"
-              >
-                {wallet.type === "ewallet" ? <Phone size={12} className="text-slate-500 shrink-0" /> : <CreditCard size={12} className="text-slate-500 shrink-0" />}
-                <span className="font-sans text-[11px] text-slate-400 tabular-nums truncate light_sakura:text-slate-500 group-hover:text-slate-300">
-                  {contactValue
-                    ? (isContactVisible ? contactValue : maskContact(contactValue))
-                    : `+ ${contactLabel}`}
-                </span>
-                {contactValue && (
-                  <span
-                    role="button"
-                    onClick={(e) => { e.stopPropagation(); toggleContactVisibility(wallet.id); }}
-                    className="ml-auto p-1 rounded text-slate-500 hover:text-white cursor-pointer shrink-0"
-                  >
-                    {isContactVisible ? <EyeOff size={12} /> : <Eye size={12} />}
-                  </span>
-                )}
-              </button>
-            )
-          )}
-
-          {editingBalanceId === wallet.id ? (
+        {/* Nomor HP (e-wallet) / Nomor Rekening (bank) -- bisa disembunyikan */}
+        {canHaveContact && (
+          editingContactId === wallet.id ? (
             <div className="space-y-2">
-              <Input
-                type="number"
+              <input
                 autoFocus
-                value={balanceInput}
-                onChange={(e) => setBalanceInput(e.target.value === "" ? "" : Number(e.target.value))}
-                className="text-xs py-2 min-h-0 bg-slate-950"
+                value={contactInput}
+                onChange={(e) => setContactInput(e.target.value)}
+                placeholder={contactLabel}
+                className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
               />
               <div className="flex gap-2">
-                <Button
-                  onClick={() => handleSaveBalance(wallet.id)}
+                <button
+                  onClick={() => handleSaveContact(wallet)}
                   disabled={busy}
-                  loading={busy}
-                  className="flex-1 py-1.5 h-auto min-h-0 text-xs font-bold"
+                  className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-50"
                 >
                   {t("common.save")}
-                </Button>
-                <Button
-                  variant="secondary"
-                  onClick={() => setEditingBalanceId(null)}
-                  className="flex-1 py-1.5 h-auto min-h-0 text-xs font-bold"
+                </button>
+                <button
+                  onClick={() => setEditingContactId(null)}
+                  className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
                 >
                   {t("common.cancel")}
-                </Button>
+                </button>
               </div>
             </div>
           ) : (
-            <>
-              <p className="font-sans font-black text-xl tabular-nums text-white text-left light_sakura:text-slate-900">
-                {formatIDR(wallet.balance)}
-              </p>
-              {wallet.earmarked_amount > 0 && (
-                <p className="font-sans text-[10px] text-amber-400/90 -mt-2 text-left">
-                  {t("wallet.earmarked_note", { earmarked: formatIDR(wallet.earmarked_amount), available: formatIDR(wallet.available_balance) })}
-                </p>
+            <button
+              onClick={() => { setEditingContactId(wallet.id); setContactInput(contactValue || ""); }}
+              className="flex items-center gap-2 w-full text-left px-2.5 py-1.5 rounded-lg bg-slate-950/40 hover:bg-slate-800/60 light_sakura:bg-rose-50/40 light_sakura:hover:bg-rose-100/60 cursor-pointer group"
+            >
+              {wallet.type === "ewallet" ? <Phone size={12} className="text-slate-500 shrink-0" /> : <CreditCard size={12} className="text-slate-500 shrink-0" />}
+              <span className="font-sans text-[11px] text-slate-400 tabular-nums truncate light_sakura:text-slate-500 group-hover:text-slate-300">
+                {contactValue
+                  ? (isContactVisible ? contactValue : maskContact(contactValue))
+                  : `+ ${contactLabel}`}
+              </span>
+              {contactValue && (
+                <span
+                  role="button"
+                  onClick={(e) => { e.stopPropagation(); toggleContactVisibility(wallet.id); }}
+                  className="ml-auto p-1 rounded text-slate-500 hover:text-white cursor-pointer shrink-0"
+                >
+                  {isContactVisible ? <EyeOff size={12} /> : <Eye size={12} />}
+                </span>
               )}
-              <div className="flex items-center gap-2 pt-1">
-                <Button
-                  onClick={() => { setEditingBalanceId(wallet.id); setBalanceInput(Math.round(wallet.balance)); }}
-                  variant="secondary"
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold"
-                >
-                  <Pencil size={11} /> {t("wallet.edit_balance")}
-                </Button>
-                <Button
-                  onClick={() => navigate("/transactions", { state: { filterWalletId: wallet.id } })}
-                  variant="secondary"
-                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold"
-                >
-                  <HistoryIcon size={11} /> {t("wallet.view_history")}
-                </Button>
-              </div>
-            </>
-          )}
-        </Card>
+            </button>
+          )
+        )}
+
+        {editingBalanceId === wallet.id ? (
+          <div className="space-y-2">
+            <input
+              type="number"
+              autoFocus
+              value={balanceInput}
+              onChange={(e) => setBalanceInput(e.target.value === "" ? "" : Number(e.target.value))}
+              className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleSaveBalance(wallet.id)}
+                disabled={busy}
+                className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-50"
+              >
+                {t("common.save")}
+              </button>
+              <button
+                onClick={() => setEditingBalanceId(null)}
+                className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
+              >
+                {t("common.cancel")}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="font-sans font-black text-xl tabular-nums text-white light_sakura:text-slate-900">
+              {formatIDR(wallet.balance)}
+            </p>
+            {wallet.earmarked_amount > 0 && (
+              <p className="font-sans text-[10px] text-amber-400/90 -mt-2">
+                {t("wallet.earmarked_note", { earmarked: formatIDR(wallet.earmarked_amount), available: formatIDR(wallet.available_balance) })}
+              </p>
+            )}
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                onClick={() => { setEditingBalanceId(wallet.id); setBalanceInput(Math.round(wallet.balance)); }}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800/70 hover:bg-slate-700 text-slate-300 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100 light_sakura:text-slate-600"
+              >
+                <Pencil size={11} /> {t("wallet.edit_balance")}
+              </button>
+              <button
+                onClick={() => navigate("/transactions", { state: { filterWalletId: wallet.id } })}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800/70 hover:bg-slate-700 text-slate-300 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100 light_sakura:text-slate-600"
+              >
+                <HistoryIcon size={11} /> {t("wallet.view_history")}
+              </button>
+            </div>
+          </>
+        )}
       </motion.div>
     );
   };
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <Card className="rounded-3xl border-slate-800/60 light_sakura:border-rose-100/40 overflow-hidden p-0 shadow-lg">
+      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -329,65 +316,72 @@ export const Wallets: React.FC = () => {
                   <h2 className="font-sans text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 light_sakura:text-slate-600">
                     <span>{meta.icon}</span> {t(meta.labelKey)}
                   </h2>
-                  <Button
+                  <button
                     onClick={() => { setCreatingType(type); setNewName(""); setNewStartBalance(""); setNewContact(""); }}
-                    variant="secondary"
-                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100 light_sakura:text-rose-600"
                   >
                     <Plus size={12} /> {t(meta.addKey)}
-                  </Button>
+                  </button>
                 </div>
 
                 {creatingType === type && (
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
-                    className="space-y-3"
+                    className="rounded-2xl border border-indigo-500/30 bg-indigo-500/5 p-4 space-y-3 light_sakura:bg-indigo-50/30"
                   >
-                    <Card className="p-4 space-y-3 border-indigo-500/30 bg-indigo-500/5 light_sakura:bg-indigo-50/30">
-                      <Input
-                        label={t("wallet.field_name")}
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">
+                        {t("wallet.field_name")}
+                      </label>
+                      <input
                         autoFocus
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
                         placeholder={t(meta.placeholderKey)}
-                        className="text-xs bg-slate-950"
+                        className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
                       />
-                      <Input
-                        label={t("wallet.field_starting_balance")}
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">
+                        {t("wallet.field_starting_balance")}
+                      </label>
+                      <input
                         type="number"
                         value={newStartBalance}
                         onChange={(e) => setNewStartBalance(e.target.value === "" ? "" : Number(e.target.value))}
                         placeholder="0"
-                        className="text-xs bg-slate-950"
+                        className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
                       />
-                      {(type === "ewallet" || type === "bank") && (
-                        <Input
-                          label={type === "ewallet" ? t("wallet.field_phone") : t("wallet.field_account_number")}
+                    </div>
+                    {(type === "ewallet" || type === "bank") && (
+                      <div>
+                        <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">
+                          {type === "ewallet" ? t("wallet.field_phone") : t("wallet.field_account_number")}
+                        </label>
+                        <input
                           value={newContact}
                           onChange={(e) => setNewContact(e.target.value)}
                           placeholder={type === "ewallet" ? "08xxxxxxxxxx" : "1234567890"}
-                          className="text-xs bg-slate-950"
+                          className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
                         />
-                      )}
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => handleCreateWallet(type)}
-                          disabled={busy || !newName.trim()}
-                          loading={busy}
-                          className="flex-1 text-xs py-2"
-                        >
-                          {t("wallet.btn_save_wallet")}
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          onClick={() => setCreatingType(null)}
-                          className="flex-1 text-xs py-2"
-                        >
-                          {t("wallet.btn_cancel")}
-                        </Button>
                       </div>
-                    </Card>
+                    )}
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleCreateWallet(type)}
+                        disabled={busy || !newName.trim()}
+                        className="flex-1 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-50"
+                      >
+                        {t("wallet.btn_save_wallet")}
+                      </button>
+                      <button
+                        onClick={() => setCreatingType(null)}
+                        className="flex-1 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
+                      >
+                        {t("wallet.btn_cancel")}
+                      </button>
+                    </div>
                   </motion.div>
                 )}
 
@@ -414,7 +408,7 @@ export const Wallets: React.FC = () => {
           {!isLoading && activeWallets.length === 0 && <EmptyState />}
 
         </div>
-      </Card>
+      </div>
 
       <LoadingOverlay isOpen={busy} message={t("common.loading")} />
     </div>

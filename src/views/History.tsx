@@ -25,8 +25,6 @@ import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "../components/PremiumModal";
 import { useCategories } from "../hooks/useCategories";
 import { useWallets } from "../hooks/useWallets";
-import { Button } from "../components/ui/Button";
-import { Card } from "../components/ui/Card";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -258,7 +256,7 @@ export const History: React.FC<HistoryProps> = ({
     <div className="space-y-5">
 
       {/* ── Header card ─────────────────────────────────────────────── */}
-      <Card className="rounded-3xl border-slate-800/60 light_sakura:border-rose-100/40 overflow-hidden p-0 shadow-lg">
+      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
         {/* Accent stripe */}
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">
@@ -380,7 +378,7 @@ export const History: React.FC<HistoryProps> = ({
             totalItems={totalItems}
           />
         </div>
-      </Card>
+      </div>
 
       {/* ── Modals ──────────────────────────────────────────────────── */}
       <HistoryDeleteModal

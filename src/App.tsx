@@ -16,7 +16,6 @@ import { useAdmin } from "./hooks/useAdmin";
 import { Modal } from "./components/Modal";
 import { ResetPasswordModal } from "./components/ResetPasswordModal";
 import { MaintenanceBanner } from "./components/MaintenanceBanner";
-import { OfflineBanner } from "./components/OfflineBanner";
 import { FeatureLockGate } from "./components/FeatureLockGate";
 import { SupportChatWidget } from "./components/SupportChatWidget";
 import { UpdatePrompt } from "./components/UpdatePrompt";
@@ -387,7 +386,6 @@ export default function App() {
           <AdminProvider>
           <MaintenanceProvider>
             <CategoriesProvider>
-              <OfflineBanner />
               <Routes>
                  <Route path="/login" element={<Login />} />
                  <Route path="/auth/callback" element={<AuthCallback />} />
