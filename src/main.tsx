@@ -78,7 +78,17 @@ const updateSW = registerSW({
 // the app is open. The toast uses the existing showToast infra
 // which is only available inside ToastProvider — we stash the
 // payload here and let App.tsx pick it up via a custom event.
-onForegroundFcmMessage(({ title, body }) => {
+//
+// Pengecualian: kalau payload push ditandai `data.type === "app_update"`
+// (dikirim admin lewat AdminBroadcast → "Beritahu Update Tersedia"),
+// jangan tampilkan sebagai toast biasa — langsung tampilkan dialog
+// UpdatePrompt yang sama dengan yang muncul otomatis dari service worker,
+// supaya pengalamannya konsisten dan user bisa langsung klik "Perbarui".
+onForegroundFcmMessage(({ title, body, data }) => {
+  if (data?.type === "app_update") {
+    window.dispatchEvent(new CustomEvent("pwa-update-available"));
+    return;
+  }
   if (title || body) {
     window.dispatchEvent(
       new CustomEvent("fcm-foreground-message", {

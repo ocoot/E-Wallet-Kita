@@ -1,0 +1,91 @@
+name: Notify Users on Update
+
+# Jalan otomatis setiap kali ada push ke main (branch yang di-deploy Vercel
+# lewat Git integration). Bisa juga dipicu manual dari tab Actions di GitHub
+# (workflow_dispatch) untuk testing tanpa harus push commit baru.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    # Lewati notifikasi kalau pesan commit mengandung "[skip-notify]" —
+    # berguna untuk deploy kecil (typo, copy text, dsb) yang tidak perlu
+    # mengganggu semua user dengan push notification.
+    if: ${{ !contains(github.event.head_commit.message, '[skip-notify]') }}
+    steps:
+      # ── 1. Tunggu sampai deployment Vercel untuk commit ini READY ──────────
+      # Vercel deploy production terjadi otomatis lewat Git integration
+      # (bukan lewat GitHub Actions ini), jadi di sini kita cuma POLLING
+      # status deployment lewat Vercel API sampai statenya READY, lalu baru
+      # kirim notifikasi. Kalau build GAGAL atau timeout, job berhenti di
+      # step ini dan notifikasi TIDAK dikirim — supaya user tidak disuruh
+      # "update" ke versi yang sebenarnya belum ter-deploy.
+      - name: Wait for Vercel deployment to be ready
+        id: wait
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          set -e
+          MAX_ATTEMPTS=40       # 40 x 15 detik = maksimal 10 menit menunggu
+          SLEEP_SECONDS=15
+          TEAM_QS=""
+          if [ -n "$VERCEL_TEAM_ID" ]; then TEAM_QS="&teamId=$VERCEL_TEAM_ID"; fi
+
+          for i in $(seq 1 $MAX_ATTEMPTS); do
+            RESPONSE=$(curl -s -H "Authorization: Bearer $VERCEL_TOKEN" \
+              "https://api.vercel.com/v6/deployments?projectId=$VERCEL_PROJECT_ID&limit=15$TEAM_QS")
+
+            STATE=$(node -e "
+              const data = JSON.parse(process.argv[1]);
+              const sha = process.argv[2];
+              const dep = (data.deployments || []).find(d => d.meta && d.meta.githubCommitSha === sha);
+              console.log(dep ? dep.state : 'NOT_FOUND');
+            " "$RESPONSE" "$COMMIT_SHA")
+
+            echo "Percobaan $i/$MAX_ATTEMPTS — status deployment: $STATE"
+
+            if [ "$STATE" = "READY" ]; then
+              echo "ready=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+
+            if [ "$STATE" = "ERROR" ] || [ "$STATE" = "CANCELED" ]; then
+              echo "::error::Deployment gagal (status: $STATE) — notifikasi update TIDAK dikirim."
+              exit 1
+            fi
+
+            sleep $SLEEP_SECONDS
+          done
+
+          echo "::error::Timeout menunggu deployment READY — notifikasi update TIDAK dikirim."
+          exit 1
+
+      # ── 2. Kirim push notification "update tersedia" ke semua user ─────────
+      - name: Send update push notification
+        if: steps.wait.outputs.ready == 'true'
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          UPDATE_NOTIFY_SECRET: ${{ secrets.UPDATE_NOTIFY_SECRET }}
+        run: |
+          set -e
+          HTTP_CODE=$(curl -s -o /tmp/broadcast_response.json -w "%{http_code}" \
+            -X POST "$APP_URL/api/admin/broadcast" \
+            -H "Content-Type: application/json" \
+            -H "x-update-secret: $UPDATE_NOTIFY_SECRET" \
+            -d '{"channel":"push"}')
+
+          echo "HTTP $HTTP_CODE — response:"
+          cat /tmp/broadcast_response.json
+
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "✅ Notifikasi update berhasil dikirim."
+          else
+            echo "::error::❌ Gagal mengirim notifikasi update (HTTP $HTTP_CODE)."
+            exit 1
+          fi

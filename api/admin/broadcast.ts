@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { timingSafeEqual } from 'crypto';
 import { sendPushNotificationBatch } from '../_lib/fcm.js';
 import { sendTelegramMessageOrThrow } from '../_lib/telegram.js';
 import { logError } from '../_lib/errorLogger.js';
@@ -7,10 +8,24 @@ import { logError } from '../_lib/errorLogger.js';
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const updateNotifySecret = process.env.UPDATE_NOTIFY_SECRET || '';
 
 const PUSH_BATCH_SIZE = 500;
 const TELEGRAM_BATCH_SIZE = 20;
 const TELEGRAM_BATCH_DELAY_MS = 1000;
+
+/**
+ * Bandingkan dua string secara constant-time supaya waktu eksekusi tidak
+ * bocor informasi soal seberapa banyak karakter awal yang cocok (mencegah
+ * timing attack terhadap UPDATE_NOTIFY_SECRET). Panjang berbeda dianggap
+ * langsung tidak cocok tanpa membandingkan isi.
+ */
+function timingSafeEqualStr(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+}
 
 /**
  * Unified admin broadcast endpoint.
@@ -23,8 +38,16 @@ const TELEGRAM_BATCH_DELAY_MS = 1000;
  *   channel  : "push" | "telegram"
  *   title    : string  — required for "push"; ignored for "telegram"
  *   message  : string  — required for both
+ *   data     : object  — opsional, hanya dipakai untuk channel "push"
+ *                        (mis. { type: "app_update" } agar frontend/SW bisa
+ *                        membedakan notifikasi update versi dari broadcast biasa)
  *
- * Auth: Bearer JWT (user must have role "admin" or "owner").
+ * Auth: salah satu dari —
+ *   1. Bearer JWT (user harus role "admin" atau "owner") — dipakai Admin Panel.
+ *   2. Header "x-update-secret" (harus cocok dengan env UPDATE_NOTIFY_SECRET)
+ *      — dipakai otomatis oleh CI/CD (lihat .github/workflows/notify-update.yml)
+ *      setelah deploy sukses. Jalur ini dikunci hanya untuk channel push
+ *      bertanda data.type="app_update".
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -32,7 +55,54 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  // ── Auth check ─────────────────────────────────────────────────────────────
+  // ── Jalur khusus: system-to-system call dari CI/CD (GitHub Actions) ──
+  //
+  // Dipakai HANYA untuk notifikasi otomatis "versi baru tersedia" setelah
+  // deploy sukses (lihat .github/workflows/notify-update.yml). Sengaja
+  // TIDAK memakai JWT user karena tidak ada user yang login di pipeline
+  // CI — sebagai gantinya memakai secret tetap yang hanya diketahui oleh
+  // Vercel (env var) dan GitHub Actions (repo secret).
+  //
+  // Untuk membatasi blast radius kalau secret ini bocor, jalur ini SENGAJA
+  // dikunci: hanya boleh channel push, judul/isi boleh dioverride lewat
+  // body tapi selalu ditandai data.type="app_update" (tidak bisa dipakai
+  // mengirim pesan bebas ke Telegram atau push dengan tag lain).
+  const updateSecretHeader = req.headers['x-update-secret'];
+  const providedSecret = Array.isArray(updateSecretHeader) ? updateSecretHeader[0] : updateSecretHeader;
+
+  if (typeof providedSecret === 'string' && providedSecret.length > 0) {
+    if (!updateNotifySecret) {
+      res.status(500).json({ error: 'UPDATE_NOTIFY_SECRET tidak dikonfigurasi di server' });
+      return;
+    }
+    if (!timingSafeEqualStr(providedSecret, updateNotifySecret)) {
+      // Catat percobaan gagal (tanpa mencatat nilai secret itu sendiri)
+      // sebagai sinyal keamanan kalau ada yang mencoba menebak secret.
+      if (supabaseServiceKey) {
+        await logError(createClient(supabaseUrl, supabaseServiceKey), {
+          source: 'admin/broadcast:system-auth',
+          level: 'warning',
+          message: 'Percobaan x-update-secret tidak valid pada /api/admin/broadcast',
+        });
+      }
+      res.status(401).json({ error: 'Invalid update secret' });
+      return;
+    }
+
+    if (!supabaseServiceKey) {
+      res.status(500).json({ error: 'SUPABASE_SERVICE_ROLE_KEY tidak dikonfigurasi' });
+      return;
+    }
+
+    const bodyTitle = typeof req.body?.title === 'string' ? req.body.title.trim() : '';
+    const bodyMessage = typeof req.body?.message === 'string' ? req.body.message.trim() : '';
+    const finalTitle = bodyTitle || 'Pembaruan Tersedia';
+    const finalMessage = bodyMessage || 'Versi terbaru E-Wallet Kita sudah siap. Ketuk untuk memperbarui.';
+
+    return handlePushBroadcast(res, finalTitle, finalMessage, { type: 'app_update' });
+  }
+
+  // ── Auth check (jalur normal: admin/owner login lewat Admin Panel) ──────────
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     res.status(401).json({ error: 'Missing authorization header' });
@@ -78,9 +148,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
+  // Data tambahan opsional untuk push (mis. { type: "app_update" }) yang
+  // dipakai firebase-messaging-sw.js untuk membedakan notifikasi update
+  // versi dari broadcast biasa (lihat scripts/inject-push-handler.mjs).
+  const pushData = (req.body?.data && typeof req.body.data === 'object')
+    ? req.body.data as Record<string, string>
+    : undefined;
+
   // ── Route to correct channel ───────────────────────────────────────────────
   if (channel === 'push') {
-    return handlePushBroadcast(res, title, message);
+    return handlePushBroadcast(res, title, message, pushData);
   } else {
     return handleTelegramBroadcast(req, res, authHeader, message);
   }
@@ -94,6 +171,7 @@ async function handlePushBroadcast(
   res: VercelResponse,
   title: string,
   message: string,
+  data?: Record<string, string>,
 ) {
   if (!title || typeof title !== 'string' || title.trim().length < 3) {
     res.status(400).json({ error: 'Judul broadcast minimal 3 karakter' });
@@ -135,7 +213,7 @@ async function handlePushBroadcast(
   for (let i = 0; i < total; i += PUSH_BATCH_SIZE) {
     const batch = allTokens.slice(i, i + PUSH_BATCH_SIZE);
     try {
-      const result = await sendPushNotificationBatch(batch, title.trim(), message.trim());
+      const result = await sendPushNotificationBatch(batch, title.trim(), message.trim(), data);
       successCount += result.successCount;
       failCount += result.failCount;
     } catch (err) {

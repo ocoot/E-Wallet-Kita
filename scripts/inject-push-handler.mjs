@@ -68,8 +68,33 @@ firebase.initializeApp({
   appId: '${FIREBASE_APP_ID}',
 });
 var messaging=firebase.messaging();
-messaging.onBackgroundMessage(function(p){self.registration.showNotification(p.notification?.title||'E-Wallet Kita',{body:p.notification?.body||'',icon:'/icon-192.png',badge:'/icon-192.png'});});
-self.addEventListener('notificationclick',function(e){e.notification.close();e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(function(c){for(var x of c)if(x.url.includes(self.location.origin)&&'focus'in x)return x.focus();if(clients.openWindow)return clients.openWindow('/');}));});
+messaging.onBackgroundMessage(function(p){
+  var data=p.data||{};
+  self.registration.showNotification(p.notification?.title||'E-Wallet Kita',{
+    body:p.notification?.body||'',
+    icon:'/icon-192.png',
+    badge:'/icon-192.png',
+    data:data,
+  });
+});
+self.addEventListener('notificationclick',function(e){
+  e.notification.close();
+  var isAppUpdate=e.notification.data&&e.notification.data.type==='app_update';
+  e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(function(c){
+    for(var x of c){
+      if(x.url.includes(self.location.origin)&&'focus'in x){
+        // Untuk notifikasi update versi: fokus tab yang ada LALU reload
+        // supaya user langsung mendapat build terbaru, bukan cuma
+        // membuka kembali tab lama yang masih menjalankan versi lama.
+        if(isAppUpdate&&'navigate'in x){
+          return x.focus().then(function(){return x.navigate(x.url);});
+        }
+        return x.focus();
+      }
+    }
+    if(clients.openWindow)return clients.openWindow('/');
+  }));
+});
 `;
 fs.writeFileSync(fcmPath, fcmCode);
 console.log('[inject] ✅ Created firebase-messaging-sw.js with Firebase config');

@@ -669,6 +669,10 @@
     "send_both_broadcast_btn": "Send to {telegramCount} Telegram + {pushCount} Push",
     "push_broadcast_result": "Push: {success} sent, {failed} failed",
     "channel_help_text": "Choose how to deliver this announcement",
+    "update_notif_btn": "🔄 Notify Update Available",
+    "update_notif_hint": "Title & message are auto-filled to tell users a new version is ready. You can still edit them before sending.",
+    "update_notif_title_default": "Update Available",
+    "update_notif_message_default": "A new version of E-Wallet Kita is ready. Tap this notification to update your app.",
     "category_title": "Categories Management",
     "category_desc": "Disabling a category won't affect existing transactions.",
     "category_add": "Add Category",
@@ -1028,7 +1032,8 @@
   "pwa": {
     "update_title": "Update Available",
     "update_desc": "A new version of E-Wallet Kita is ready.",
-    "update_btn": "Update Now"
+    "update_btn": "Update Now",
+    "update_dismiss": "Later"
   },
   "installments": {
     "page_title": "Installments & Long-Term Debt",

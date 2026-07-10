@@ -669,6 +669,10 @@
     "send_both_broadcast_btn": "Kirim ke {telegramCount} Telegram + {pushCount} Push",
     "push_broadcast_result": "Push: {success} terkirim, {failed} gagal",
     "channel_help_text": "Pilih cara pengiriman pengumuman",
+    "update_notif_btn": "🔄 Beritahu Update Tersedia",
+    "update_notif_hint": "Isi judul & pesan otomatis terisi untuk memberi tahu pengguna bahwa versi baru sudah bisa dipakai. Bisa diedit sebelum dikirim.",
+    "update_notif_title_default": "Pembaruan Tersedia",
+    "update_notif_message_default": "Versi terbaru E-Wallet Kita sudah siap. Ketuk notifikasi ini untuk memperbarui aplikasi Anda.",
     "category_title": "Manajemen Kategori",
     "category_desc": "Nonaktifkan kategori tidak akan menghapus transaksi yang sudah ada.",
     "category_add": "Tambah Kategori",
@@ -1028,7 +1032,8 @@
   "pwa": {
     "update_title": "Pembaruan Tersedia",
     "update_desc": "Versi terbaru E-Wallet Kita sudah siap.",
-    "update_btn": "Perbarui Sekarang"
+    "update_btn": "Perbarui Sekarang",
+    "update_dismiss": "Nanti Saja"
   },
   "installments": {
     "page_title": "Cicilan & Utang Jangka Panjang",

@@ -4,7 +4,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
-import { Send, Users, MessageSquare, AlertTriangle, Bell } from "lucide-react";
+import { Send, Users, MessageSquare, AlertTriangle, Bell, RefreshCw } from "lucide-react";
 
 type BroadcastChannel = "telegram" | "push" | "both";
 
@@ -20,6 +20,7 @@ export const AdminBroadcast: React.FC = () => {
   const [message, setMessage] = useState("");
   const [title, setTitle] = useState("");
   const [channel, setChannel] = useState<BroadcastChannel>("telegram");
+  const [isUpdateNotif, setIsUpdateNotif] = useState(false);
   const [linkedCount, setLinkedCount] = useState<number | null>(null);
   const [pushTokenCount, setPushTokenCount] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
@@ -92,6 +93,7 @@ export const AdminBroadcast: React.FC = () => {
               channel: "push",
               title: title.trim() || "E-Wallet Kita",
               message: message.trim(),
+              ...(isUpdateNotif ? { data: { type: "app_update" } } : {}),
             }),
           });
           const json = await res.json();
@@ -126,6 +128,7 @@ export const AdminBroadcast: React.FC = () => {
       if (channel !== "both") {
         setMessage("");
         setTitle("");
+        setIsUpdateNotif(false);
       }
     } catch (err: any) {
       showToast(err.message || "Broadcast gagal", "error");
@@ -189,6 +192,32 @@ export const AdminBroadcast: React.FC = () => {
             {t("admin.channel_help_text")}
           </p>
         </div>
+
+        {/* Shortcut: prefill push broadcast untuk beritahu ada versi baru.
+            Ini melengkapi dialog UpdatePrompt di web — kalau user sedang
+            tidak membuka app, mereka tetap dapat notifikasi lewat push. */}
+        <button
+          type="button"
+          onClick={() => {
+            setChannel("push");
+            setTitle(t("admin.update_notif_title_default"));
+            setMessage(t("admin.update_notif_message_default"));
+            setIsUpdateNotif(true);
+          }}
+          className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl border border-dashed border-indigo-500/40 bg-indigo-500/5 hover:bg-indigo-500/10 text-left transition-colors cursor-pointer"
+        >
+          <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-400 shrink-0">
+            <RefreshCw size={18} />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-indigo-300">
+              {t("admin.update_notif_btn")}
+            </p>
+            <p className="text-xs text-slate-400 light_sakura:text-slate-500 truncate">
+              {t("admin.update_notif_hint")}
+            </p>
+          </div>
+        </button>
 
         {/* Recipient count indicators */}
         <div className="flex flex-col sm:flex-row gap-4">

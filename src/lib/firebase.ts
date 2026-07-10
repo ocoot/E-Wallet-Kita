@@ -246,7 +246,7 @@ export function resetFcmState(): void {
  * Returns an unsubscribe function.
  */
 export const onForegroundFcmMessage = (
-  callback: (payload: { title?: string; body?: string }) => void
+  callback: (payload: { title?: string; body?: string; data?: Record<string, string> }) => void
 ): (() => void) => {
   const m = getOrInitMessaging();
   if (!m) return () => {};
@@ -254,7 +254,7 @@ export const onForegroundFcmMessage = (
   return onMessage(m, (payload) => {
     const title = payload.notification?.title || payload.data?.title || '';
     const body = payload.notification?.body || payload.data?.body || '';
-    callback({ title, body });
+    callback({ title, body, data: payload.data });
   });
 };
 
