@@ -8,6 +8,7 @@ import { useToast } from "../contexts/ToastContext";
 import { motion, useAnimation, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
+import { WalletPickerField } from "../components/WalletPickerField";
 import { useNavigate, useLocation } from "react-router-dom";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ReceiptUploader } from "../components/ReceiptUploader";
@@ -475,20 +476,18 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                   <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
                     {t("wallet.label_pos")}
                   </label>
-                  <select
-                    disabled={isLoading}
+                  <WalletPickerField
                     value={walletId ?? ""}
-                    onChange={(e) => setWalletId(e.target.value || null)}
-                    className="w-full px-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-                  >
-                    {activeWallets.map((w) => (
-                      <option key={w.id} value={w.id}>
-                        {w.type === "general" ? "💰" : w.type === "ewallet" ? "📱" : w.type === "bank" ? "🏦" : "💵"}{" "}
-                        {w.name}{w.provider ? ` · ${w.provider}` : ""} ({formatIDR(w.balance)})
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(v) => setWalletId(v || null)}
+                    disabled={isLoading}
+                    placeholder={t("wallet.label_pos")}
+                    options={activeWallets.map((w) => {
+                      const icon = w.type === "general" ? "💰" : w.type === "ewallet" ? "📱" : w.type === "bank" ? "🏦" : "💵";
+                      return { value: w.id, label: `${icon} ${w.name}${w.provider ? ` · ${w.provider}` : ""} (${formatIDR(w.balance)})` };
+                    })}
+                  />
                 </div>
+
 
                 {/* 4 ── Date + Note ─────────────────────────────────────── */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

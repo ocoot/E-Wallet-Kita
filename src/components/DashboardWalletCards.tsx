@@ -66,11 +66,20 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
           const contactValue = w.type === "ewallet" ? w.phone_number : w.type === "bank" ? w.account_number : null;
           const isVisible = visibleContactIds.has(w.id);
           return (
-            <motion.button
+            <motion.div
               key={w.id}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
+              role="button"
+              tabIndex={0}
               onClick={() => { audioFeedback.playClick(); navigate("/wallets"); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  audioFeedback.playClick();
+                  navigate("/wallets");
+                }
+              }}
               className="shrink-0 w-[168px] snap-start text-left rounded-2xl border p-4 space-y-2 cursor-pointer transition-colors bg-slate-950/40 border-slate-800/60 hover:bg-slate-800/60 light_sakura:bg-rose-50/30 light_sakura:border-rose-100/50 light_sakura:hover:bg-rose-50/60"
             >
               <div className="flex items-center gap-1.5">
@@ -94,7 +103,7 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
               ) : (
                 <p className="text-[10px] text-slate-600">&nbsp;</p>
               )}
-            </motion.button>
+            </motion.div>
           );
         })}
       </div>

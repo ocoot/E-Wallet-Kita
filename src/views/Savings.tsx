@@ -7,6 +7,7 @@ import { useSavings, SavingsPocketWithProgress } from "../hooks/useSavings";
 import { useWallets } from "../hooks/useWallets";
 import { SavingsPocketType } from "../types";
 import { Modal } from "../components/Modal";
+import { WalletPickerField } from "../components/WalletPickerField";
 import { EmptyState } from "../components/EmptyState";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
@@ -352,12 +353,14 @@ export const Savings: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
-                  <select value={form.wallet_id} onChange={e => setForm(f => ({ ...f, wallet_id: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer transition-colors">
-                    <option value="">{t("wallet.group_general")}</option>
-                    {activeWallets.filter(w => w.type !== "general").map(w => (
-                      <option key={w.id} value={w.id}>{w.name}{w.provider ? ` · ${w.provider}` : ""}</option>
-                    ))}
-                  </select>
+                  <WalletPickerField
+                    value={form.wallet_id}
+                    onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
+                    options={[
+                      { value: "", label: t("wallet.group_general") },
+                      ...activeWallets.filter(w => w.type !== "general").map(w => ({ value: w.id, label: `${w.name}${w.provider ? ` · ${w.provider}` : ""}` }))
+                    ]}
+                  />
                 </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_notes")}</label>

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, X } from "lucide-react";
 import { Category, WalletWithBalance, WalletType } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
+import { WalletPickerField } from "./WalletPickerField";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   food_drink: "🍜", transport: "🚗", shopping: "🛒", health: "💊",
@@ -151,17 +152,14 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
               <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
                 {t("wallet.label_pos")}
               </label>
-              <select
+              <WalletPickerField
                 value={draft.walletId ?? ""}
-                onChange={(e) => onChange({ ...draft, walletId: e.target.value || null })}
-                className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
-              >
-                {activeWallets.map((w) => (
-                  <option key={w.id} value={w.id}>
-                    {walletLabel(w)} ({formatIDR(w.balance)})
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => onChange({ ...draft, walletId: v || null })}
+                options={activeWallets.map((w) => ({
+                  value: w.id,
+                  label: `${walletLabel(w)} (${formatIDR(w.balance)})`
+                }))}
+              />
             </div>
 
             {/* Tanggal (editable) */}
