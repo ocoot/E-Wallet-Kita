@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { FileText, X } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useWallets } from "../hooks/useWallets";
-import { WalletPickerField } from "./WalletPickerField";
+import { DropdownField } from "./DropdownField";
 
 interface ExportSummaryModalProps {
   isOpen: boolean;
@@ -71,7 +71,7 @@ export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
               <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
                 {t("wallet.label_pos")}
               </label>
-              <WalletPickerField
+              <DropdownField
                 value={walletId}
                 onChange={setWalletId}
                 options={[

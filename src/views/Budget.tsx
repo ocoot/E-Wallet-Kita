@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { PiggyBank, Plus, X, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { BudgetProgressCard } from "../components/BudgetProgressCard";
+import { DropdownField } from "../components/DropdownField";
 
 export const Budget: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -355,20 +356,15 @@ export const Budget: React.FC = () => {
                   <label className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-medium text-slate-400 light_sakura:text-slate-500 block mb-1.5">
                     {t("budget.select_category_label")}
                   </label>
-                  <select
+                  <DropdownField
                     value={addCategoryKey}
-                    onChange={(e) => setAddCategoryKey(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
-                  >
-                    <option value="" disabled>
-                      {t("budget.select_category_placeholder")}
-                    </option>
-                    {availableCategories.map((c) => (
-                      <option key={c.key} value={c.key}>
-                        {locale === "id" ? c.label_id || c.key : c.label_en || c.key}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setAddCategoryKey}
+                    placeholder={t("budget.select_category_placeholder")}
+                    options={availableCategories.map((c) => ({
+                      value: c.key,
+                      label: locale === "id" ? c.label_id || c.key : c.label_en || c.key,
+                    }))}
+                  />
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5">

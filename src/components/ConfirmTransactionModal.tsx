@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, X } from "lucide-react";
 import { Category, WalletWithBalance, WalletType } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
-import { WalletPickerField } from "./WalletPickerField";
+import { DropdownField } from "./DropdownField";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   food_drink: "🍜", transport: "🚗", shopping: "🛒", health: "💊",
@@ -134,17 +134,14 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
               <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
                 {t("transaction.label_category")}
               </label>
-              <select
+              <DropdownField
                 value={draft.category}
-                onChange={(e) => onChange({ ...draft, category: e.target.value })}
-                className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
-              >
-                {categoryOptions.map((c) => (
-                  <option key={c.key} value={c.key}>
-                    {getCategoryEmoji(c.key)} {locale === "id" ? c.label_id || c.key : c.label_en || c.key}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => onChange({ ...draft, category: v })}
+                options={categoryOptions.map((c) => ({
+                  value: c.key,
+                  label: `${getCategoryEmoji(c.key)} ${locale === "id" ? c.label_id || c.key : c.label_en || c.key}`,
+                }))}
+              />
             </div>
 
             {/* Pos Dompet (editable) */}
@@ -152,7 +149,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
               <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
                 {t("wallet.label_pos")}
               </label>
-              <WalletPickerField
+              <DropdownField
                 value={draft.walletId ?? ""}
                 onChange={(v) => onChange({ ...draft, walletId: v || null })}
                 options={activeWallets.map((w) => ({

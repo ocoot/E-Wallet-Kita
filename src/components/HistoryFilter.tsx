@@ -1,6 +1,7 @@
 import React from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Search, Filter } from "lucide-react";
+import { DropdownField } from "./DropdownField";
 import { audioFeedback } from "../lib/audio";
 import { Category } from "../types";
 
@@ -38,22 +39,11 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
         <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
           {t("history.filter_month")}
         </label>
-        <div className="relative">
-          <select
-            value={filterMonth}
-            onChange={(e) => {
-              audioFeedback.playClick();
-              setFilterMonth(e.target.value);
-            }}
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
-          >
-            {monthOptions.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        <DropdownField
+          value={filterMonth}
+          onChange={(v) => { audioFeedback.playClick(); setFilterMonth(v); }}
+          options={monthOptions}
+        />
       </div>
 
       {/* 2. Category Filter */}
@@ -62,21 +52,17 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
           <Filter size={10} />
           <span>{t("transaction.label_category")}</span>
         </label>
-        <select
+        <DropdownField
           value={filterCategory}
-          onChange={(e) => {
-            audioFeedback.playClick();
-            setFilterCategory(e.target.value);
-          }}
-          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
-        >
-          <option value="all">{locale === "id" ? "Semua Kategori" : "All Categories"}</option>
-          {categories.map((cat) => (
-            <option key={cat.key} value={cat.key}>
-              {locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key)}
-            </option>
-          ))}
-        </select>
+          onChange={(v) => { audioFeedback.playClick(); setFilterCategory(v); }}
+          options={[
+            { value: "all", label: locale === "id" ? "Semua Kategori" : "All Categories" },
+            ...categories.map((cat) => ({
+              value: cat.key,
+              label: locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key),
+            })),
+          ]}
+        />
       </div>
 
       {/* 3. Text Filter search bar */}
@@ -108,22 +94,21 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
         <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
           {t("history.page_size")}
         </label>
-        <select
-          value={pageSize}
-          onChange={(e) => {
+        <DropdownField
+          value={String(pageSize)}
+          onChange={(v) => {
             audioFeedback.playClick();
-            const val = e.target.value;
-            setPageSize(val === "all" ? "all" : parseInt(val));
+            setPageSize(v === "all" ? "all" : parseInt(v));
           }}
-          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
-        >
-          <option value={5}>5</option>
-          <option value={10}>10</option>
-          <option value={15}>15</option>
-          <option value={20}>20</option>
-          <option value={50}>50</option>
-          <option value="all">{t("history.show_all")}</option>
-        </select>
+          options={[
+            { value: "5", label: "5" },
+            { value: "10", label: "10" },
+            { value: "15", label: "15" },
+            { value: "20", label: "20" },
+            { value: "50", label: "50" },
+            { value: "all", label: t("history.show_all") },
+          ]}
+        />
       </div>
     </div>
   );

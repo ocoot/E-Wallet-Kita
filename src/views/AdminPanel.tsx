@@ -7,6 +7,7 @@ import { useAdmin } from "../hooks/useAdmin";
 import { UserProfile } from "../types";
 import { audioFeedback } from "../lib/audio";
 import { EmptyState } from "../components/EmptyState";
+import { DropdownField } from "../components/DropdownField";
 import { 
   Shield, 
   User, 
@@ -580,40 +581,40 @@ export const AdminPanel: React.FC = () => {
               </div>
               
               <div>
-                <select
+                <DropdownField
                   value={roleFilter}
-                  onChange={(e) => setRoleFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-700"
-                >
-                  <option value="all">{t("admin.filter_role")}: {t("common.all")}</option>
-                  <option value="owner">{t("admin.filter_role")}: Owner</option>
-                  <option value="admin">{t("admin.filter_role")}: Admin</option>
-                  <option value="user">{t("admin.filter_role")}: User</option>
-                </select>
+                  onChange={setRoleFilter}
+                  options={[
+                    { value: "all", label: `${t("admin.filter_role")}: ${t("common.all")}` },
+                    { value: "owner", label: `${t("admin.filter_role")}: Owner` },
+                    { value: "admin", label: `${t("admin.filter_role")}: Admin` },
+                    { value: "user", label: `${t("admin.filter_role")}: User` },
+                  ]}
+                />
               </div>
 
               <div>
-                <select
+                <DropdownField
                   value={premiumFilter}
-                  onChange={(e) => setPremiumFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-700"
-                >
-                  <option value="all">{t("admin.filter_premium")}: {t("common.all")}</option>
-                  <option value="premium">{t("admin.filter_premium")}: {t("admin.status_active")}</option>
-                  <option value="normal">{t("admin.filter_premium")}: {t("admin.premium_lite")}</option>
-                </select>
+                  onChange={setPremiumFilter}
+                  options={[
+                    { value: "all", label: `${t("admin.filter_premium")}: ${t("common.all")}` },
+                    { value: "premium", label: `${t("admin.filter_premium")}: ${t("admin.status_active")}` },
+                    { value: "normal", label: `${t("admin.filter_premium")}: ${t("admin.premium_lite")}` },
+                  ]}
+                />
               </div>
 
               <div>
-                <select
+                <DropdownField
                   value={banFilter}
-                  onChange={(e) => setBanFilter(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-700"
-                >
-                  <option value="all">{t("admin.filter_status")}: {t("common.all")}</option>
-                  <option value="normal">{t("admin.filter_status")}: {t("admin.status_active")}</option>
-                  <option value="banned">{t("admin.filter_status")}: {t("admin.metrics.suspended")}</option>
-                </select>
+                  onChange={setBanFilter}
+                  options={[
+                    { value: "all", label: `${t("admin.filter_status")}: ${t("common.all")}` },
+                    { value: "normal", label: `${t("admin.filter_status")}: ${t("admin.status_active")}` },
+                    { value: "banned", label: `${t("admin.filter_status")}: ${t("admin.metrics.suspended")}` },
+                  ]}
+                />
               </div>
             </div>
           </div>
@@ -834,21 +835,21 @@ export const AdminPanel: React.FC = () => {
             {/* Page Size Selector */}
             <div className="flex items-center gap-2">
               <span>{t("admin.rows_per_page")}</span>
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setPageSize(val === "all" ? "all" : Number(val));
+              <DropdownField
+                className="w-24"
+                value={String(pageSize)}
+                onChange={(v) => {
+                  setPageSize(v === "all" ? "all" : Number(v));
                   setPage(0);
                 }}
-                className="bg-slate-800 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-              >
-                <option value={5}>5</option>
-                <option value={10}>10</option>
-                <option value={15}>15</option>
-                <option value={20}>20</option>
-                <option value="all">{t("common.all")}</option>
-              </select>
+                options={[
+                  { value: "5", label: "5" },
+                  { value: "10", label: "10" },
+                  { value: "15", label: "15" },
+                  { value: "20", label: "20" },
+                  { value: "all", label: t("common.all") },
+                ]}
+              />
             </div>
 
             {/* Pagination Info & Buttons */}

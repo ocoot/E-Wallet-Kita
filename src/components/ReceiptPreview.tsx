@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { audioFeedback } from "../lib/audio";
 import { useCategories } from "../hooks/useCategories";
+import { DropdownField } from "./DropdownField";
 
 interface ReceiptItem {
   name: string;
@@ -199,17 +200,14 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                 <Tag size={10} />
                 <span>{t("transaction.category_label")}</span>
               </label>
-              <select
+              <DropdownField
                 value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1.5 text-white focus:border-indigo-500 outline-none light_sakura:bg-white light_sakura:border-rose-200/60 light_sakura:text-slate-800"
-              >
-                {expenseCategories.map((cat) => (
-                  <option key={cat.key} value={cat.key}>
-                    {locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key)}
-                  </option>
-                ))}
-              </select>
+                onChange={setCategory}
+                options={expenseCategories.map((cat) => ({
+                  value: cat.key,
+                  label: locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key),
+                }))}
+              />
             </div>
 
             {/* Dynamic Total Amount */}

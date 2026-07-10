@@ -5,6 +5,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useCategories } from "../hooks/useCategories";
 import { audioFeedback } from "../lib/audio";
 import type { VoiceParsedResult } from "./VoiceRecorder";
+import { DropdownField } from "./DropdownField";
 
 export type VoiceModalStatus = "processing" | "error" | "success" | null;
 
@@ -254,17 +255,14 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
                   <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest font-bold opacity-50 block">
                     {t("transaction.category_label")}
                   </label>
-                  <select
+                  <DropdownField
                     value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2 py-2 focus:border-indigo-500 outline-none light_sakura:bg-white light_sakura:border-rose-200/60"
-                  >
-                    {activeCategories.map((cat) => (
-                      <option key={cat.key} value={cat.key}>
-                        {locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key)}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={setCategory}
+                    options={activeCategories.map((cat) => ({
+                      value: cat.key,
+                      label: locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key),
+                    }))}
+                  />
                 </div>
               </div>
 

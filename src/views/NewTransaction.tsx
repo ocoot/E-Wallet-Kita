@@ -8,7 +8,7 @@ import { useToast } from "../contexts/ToastContext";
 import { motion, useAnimation, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
-import { WalletPickerField } from "../components/WalletPickerField";
+import { DropdownField } from "../components/DropdownField";
 import { useNavigate, useLocation } from "react-router-dom";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ReceiptUploader } from "../components/ReceiptUploader";
@@ -476,7 +476,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                   <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
                     {t("wallet.label_pos")}
                   </label>
-                  <WalletPickerField
+                  <DropdownField
                     value={walletId ?? ""}
                     onChange={(v) => setWalletId(v || null)}
                     disabled={isLoading}

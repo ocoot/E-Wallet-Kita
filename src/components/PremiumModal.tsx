@@ -8,6 +8,7 @@ import { supabase } from "../lib/supabase";
 import { audioFeedback } from "../lib/audio";
 import { createPremiumTransaction, checkPremiumStatus, isSandboxMode, PREMIUM_AMOUNT, QRIS_EXPIRY_SECONDS, PremiumTransaction, getPremiumPricing } from "../lib/premium";
 import { useVoucher } from "../hooks/useVoucher";
+import { DropdownField } from "./DropdownField";
 import { PremiumVoucher, PremiumPricing } from "../types";
 import { generatePremiumReceipt } from "../lib/receipt";
 import { sendPremiumReceiptEmail } from "../lib/email";
@@ -219,13 +220,14 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               {activeVouchers.length > 0 && (
                 <div className="mt-4">
                   <p className="text-xs text-slate-400 mb-2">{t("voucher.title")}</p>
-                  <select 
-                    className="w-full h-12 px-4 bg-slate-800/80 border border-slate-700 rounded-xl text-white font-medium focus:ring-2 focus:ring-indigo-500"
-                    onChange={(e) => setSelectedVoucher(activeVouchers.find(v => v.id === e.target.value) || null)}
-                  >
-                    <option value="">{t("voucher.no_voucher")}</option>
-                    {activeVouchers.map(v => <option key={v.id} value={v.id}>{v.code} - {v.discount_percent}% OFF</option>)}
-                  </select>
+                  <DropdownField
+                    value={selectedVoucher?.id ?? ""}
+                    onChange={(v) => setSelectedVoucher(activeVouchers.find(vo => vo.id === v) || null)}
+                    options={[
+                      { value: "", label: t("voucher.no_voucher") },
+                      ...activeVouchers.map(v => ({ value: v.id, label: `${v.code} - ${v.discount_percent}% OFF` })),
+                    ]}
+                  />
                 </div>
               )}
 

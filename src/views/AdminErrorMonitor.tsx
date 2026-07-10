@@ -6,6 +6,7 @@ import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { EmptyState } from "../components/EmptyState";
+import { DropdownField } from "../components/DropdownField";
 import {
   AlertTriangle,
   XCircle,
@@ -355,20 +356,20 @@ export const AdminErrorMonitor: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">
         <div className="flex items-center gap-2">
           <span>{t("admin.rows_per_page")}</span>
-          <select
-            value={pageSize}
-            onChange={(e) => {
-              const val = e.target.value;
-              setPageSize(val === "all" ? "all" : Number(val));
+          <DropdownField
+            className="w-24"
+            value={String(pageSize)}
+            onChange={(v) => {
+              setPageSize(v === "all" ? "all" : Number(v));
             }}
-            className="bg-slate-800 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-          >
-            <option value={10}>10</option>
-            <option value={15}>15</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value="all">{t("common.all")}</option>
-          </select>
+            options={[
+              { value: "10", label: "10" },
+              { value: "15", label: "15" },
+              { value: "25", label: "25" },
+              { value: "50", label: "50" },
+              { value: "all", label: t("common.all") },
+            ]}
+          />
         </div>
 
         {pageSize !== "all" && totalCount > pageSize ? (

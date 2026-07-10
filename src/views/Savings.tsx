@@ -7,7 +7,7 @@ import { useSavings, SavingsPocketWithProgress } from "../hooks/useSavings";
 import { useWallets } from "../hooks/useWallets";
 import { SavingsPocketType } from "../types";
 import { Modal } from "../components/Modal";
-import { WalletPickerField } from "../components/WalletPickerField";
+import { DropdownField } from "../components/DropdownField";
 import { EmptyState } from "../components/EmptyState";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
@@ -336,9 +336,11 @@ export const Savings: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_type")}</label>
-                  <select value={form.pocket_type} onChange={e => setForm(f => ({ ...f, pocket_type: e.target.value as SavingsPocketType }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer">
-                    {POCKET_TYPES.map(pt => <option key={pt} value={pt}>{t(`savings.pocket_type_${pt}`)}</option>)}
-                  </select>
+                  <DropdownField
+                    value={form.pocket_type}
+                    onChange={(v) => setForm(f => ({ ...f, pocket_type: v as SavingsPocketType }))}
+                    options={POCKET_TYPES.map(pt => ({ value: pt, label: t(`savings.pocket_type_${pt}`) }))}
+                  />
                   <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5 leading-relaxed">{t(`savings.pocket_type_${form.pocket_type}_desc`)}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
@@ -353,7 +355,7 @@ export const Savings: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
-                  <WalletPickerField
+                  <DropdownField
                     value={form.wallet_id}
                     onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
                     options={[

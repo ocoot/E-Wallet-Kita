@@ -9,7 +9,7 @@ import { GoldPocket, GoldBrand, ACTIVE_GOLD_BRANDS } from "../types";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
 import { InfoTooltip } from "../components/InfoTooltip";
-import { WalletPickerField } from "../components/WalletPickerField";
+import { DropdownField } from "../components/DropdownField";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import {
@@ -515,16 +515,20 @@ export const GoldSavings: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_brand")}</label>
-                  <select value={form.brand} disabled={!!editTarget} onChange={e => setForm(f => ({ ...f, brand: e.target.value as GoldBrand }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-amber-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                    {formBrandOptions.map(b => <option key={b} value={b}>{t(`gold.brand_${b}`)}</option>)}
-                  </select>
+                  <DropdownField
+                    accent="amber"
+                    value={form.brand}
+                    disabled={!!editTarget}
+                    onChange={(v) => setForm(f => ({ ...f, brand: v as GoldBrand }))}
+                    options={formBrandOptions.map(b => ({ value: b, label: t(`gold.brand_${b}`) }))}
+                  />
                   <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5 leading-relaxed">
                     {editTarget ? t("gold.form_brand_locked_hint") : t("gold.form_brand_hint")}
                   </p>
                 </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
-                  <WalletPickerField
+                  <DropdownField
                     accent="amber"
                     value={form.wallet_id}
                     onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}

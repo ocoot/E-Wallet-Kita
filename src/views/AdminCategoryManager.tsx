@@ -5,6 +5,7 @@ import { useToast } from "../contexts/ToastContext";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
+import { DropdownField } from "../components/DropdownField";
 import { Tag, Plus, Pencil, Check, X, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Category {
@@ -187,15 +188,15 @@ export const AdminCategoryManager: React.FC = () => {
               onChange={v => setAddForm(f => ({ ...f, key: v }))} placeholder="e.g., transport_online" />
             <div>
               <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-1.5">{t("admin.type_label")}</label>
-              <select
+              <DropdownField
                 value={addForm.type}
-                onChange={e => setAddForm(f => ({ ...f, type: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl border border-slate-700 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-slate-50 text-white light_sakura:text-slate-900 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
-              >
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-                <option value="both">Both</option>
-              </select>
+                onChange={(v) => setAddForm(f => ({ ...f, type: v }))}
+                options={[
+                  { value: "income", label: "Income" },
+                  { value: "expense", label: "Expense" },
+                  { value: "both", label: "Both" },
+                ]}
+              />
             </div>
             <InputField label={t("admin.label_id_label")} value={addForm.label_id}
               onChange={v => setAddForm(f => ({ ...f, label_id: v }))} placeholder="e.g., Online Transport" />
@@ -272,12 +273,16 @@ export const AdminCategoryManager: React.FC = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <select value={editForm.type} onChange={e => setEditForm(f => ({ ...f, type: e.target.value as any }))}
-                            className="px-3 py-2 text-sm bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 rounded-xl text-white light_sakura:text-slate-900 focus:ring-2 focus:ring-indigo-500 cursor-pointer">
-                            <option value="income">Income</option>
-                            <option value="expense">Expense</option>
-                            <option value="both">Both</option>
-                          </select>
+                          <DropdownField
+                            className="w-32"
+                            value={editForm.type}
+                            onChange={(v) => setEditForm(f => ({ ...f, type: v as any }))}
+                            options={[
+                              { value: "income", label: "Income" },
+                              { value: "expense", label: "Expense" },
+                              { value: "both", label: "Both" },
+                            ]}
+                          />
                         </td>
                         <td className="px-6 py-4">
                           <button onClick={() => setEditForm(f => ({ ...f, is_active: !f.is_active }))}
@@ -337,21 +342,21 @@ export const AdminCategoryManager: React.FC = () => {
           {/* Page Size Selector */}
           <div className="flex items-center gap-2">
             <span>{t("admin.rows_per_page")}</span>
-            <select
-              value={pageSize}
-              onChange={(e) => {
-                const val = e.target.value;
-                setPageSize(val === "all" ? "all" : Number(val));
+            <DropdownField
+              className="w-24"
+              value={String(pageSize)}
+              onChange={(v) => {
+                setPageSize(v === "all" ? "all" : Number(v));
                 setPage(0);
               }}
-              className="bg-slate-800 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={15}>15</option>
-              <option value={20}>20</option>
-              <option value="all">{t("common.all")}</option>
-            </select>
+              options={[
+                { value: "5", label: "5" },
+                { value: "10", label: "10" },
+                { value: "15", label: "15" },
+                { value: "20", label: "20" },
+                { value: "all", label: t("common.all") },
+              ]}
+            />
           </div>
 
           {/* Pagination Info & Buttons */}

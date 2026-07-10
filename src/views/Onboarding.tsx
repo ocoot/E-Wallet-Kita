@@ -26,6 +26,7 @@ import {
   CalendarClock
 } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
+import { DropdownField } from "../components/DropdownField";
 
 export const Onboarding: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -251,17 +252,17 @@ export const Onboarding: React.FC = () => {
                         <label className="block text-xs font-medium text-slate-400 light_sakura:text-slate-600 mb-1">
                           {t("onboarding.catat_practice_cat")}
                         </label>
-                        <select
+                        <DropdownField
                           value={practiceCategory}
-                          onChange={(e) => setPracticeCategory(e.target.value)}
+                          onChange={setPracticeCategory}
                           disabled={hasPracticedCatat}
-                          className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-900 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:focus:border-rose-400 disabled:opacity-50"
-                        >
-                          <option value="food_drink">{t("categories.food_drink")}</option>
-                          <option value="transport">{t("categories.transport")}</option>
-                          <option value="shopping">{t("categories.shopping")}</option>
-                          <option value="other">{t("categories.other")}</option>
-                        </select>
+                          options={[
+                            { value: "food_drink", label: t("categories.food_drink") },
+                            { value: "transport", label: t("categories.transport") },
+                            { value: "shopping", label: t("categories.shopping") },
+                            { value: "other", label: t("categories.other") },
+                          ]}
+                        />
                       </div>
                     </div>
 

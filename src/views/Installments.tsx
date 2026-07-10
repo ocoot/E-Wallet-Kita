@@ -7,7 +7,7 @@ import { useCategories } from "../hooks/useCategories";
 import { useInstallments, InstallmentWithProgress } from "../hooks/useInstallments";
 import { useWallets } from "../hooks/useWallets";
 import { Modal } from "../components/Modal";
-import { WalletPickerField } from "../components/WalletPickerField";
+import { DropdownField } from "../components/DropdownField";
 import { EmptyState } from "../components/EmptyState";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { motion, AnimatePresence } from "motion/react";
@@ -348,9 +348,11 @@ export const Installments: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_category")}</label>
-                  <select value={form.category_key} onChange={e => setForm(f => ({ ...f, category_key: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors cursor-pointer">
-                    {expenseCategories.map(c => <option key={c.key} value={c.key}>{locale === "id" ? c.label_id || c.key : c.label_en || c.key}</option>)}
-                  </select>
+                  <DropdownField
+                    value={form.category_key}
+                    onChange={(v) => setForm(f => ({ ...f, category_key: v }))}
+                    options={expenseCategories.map(c => ({ value: c.key, label: locale === "id" ? c.label_id || c.key : c.label_en || c.key }))}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -372,7 +374,7 @@ export const Installments: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
-                  <WalletPickerField
+                  <DropdownField
                     value={form.wallet_id}
                     onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
                     options={[

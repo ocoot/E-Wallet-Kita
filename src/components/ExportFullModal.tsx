@@ -4,7 +4,7 @@ import { FileText, X } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { isRangeValid, diffMonthsInclusive, MAX_RANGE_MONTHS } from "../lib/pdf/dateRange";
 import { useWallets } from "../hooks/useWallets";
-import { WalletPickerField } from "./WalletPickerField";
+import { DropdownField } from "./DropdownField";
 
 interface ExportFullModalProps {
   isOpen: boolean;
@@ -85,34 +85,22 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
                 <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
                   {t("export.from_month")}
                 </label>
-                <select
+                <DropdownField
                   value={fromMonth}
-                  onChange={(e) => setFromMonth(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
-                >
-                  {monthOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setFromMonth}
+                  options={monthOptions}
+                />
               </div>
 
               <div className="space-y-1.5">
                 <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
                   {t("export.to_month")}
                 </label>
-                <select
+                <DropdownField
                   value={toMonth}
-                  onChange={(e) => setToMonth(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 cursor-pointer"
-                >
-                  {monthOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setToMonth}
+                  options={monthOptions}
+                />
               </div>
             </div>
 
@@ -120,7 +108,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
               <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
                 {t("wallet.label_pos")}
               </label>
-              <WalletPickerField
+              <DropdownField
                 value={walletId}
                 onChange={setWalletId}
                 options={[

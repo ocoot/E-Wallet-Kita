@@ -5,6 +5,7 @@ import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { EmptyState } from "../components/EmptyState";
+import { DropdownField } from "../components/DropdownField";
 import {
   Brain,
   RefreshCw,
@@ -351,21 +352,21 @@ export const AdminAiMonitor: React.FC = () => {
                 {/* Page Size Selector */}
                 <div className="flex items-center gap-2">
                   <span>{t("admin.rows_per_page")}</span>
-                  <select
-                    value={pageSize}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setPageSize(val === "all" ? "all" : Number(val));
+                  <DropdownField
+                    className="w-24"
+                    value={String(pageSize)}
+                    onChange={(v) => {
+                      setPageSize(v === "all" ? "all" : Number(v));
                       setPage(0);
                     }}
-                    className="bg-slate-900 border border-slate-700 text-slate-300 rounded px-2 py-1 text-xs light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-                  >
-                    <option value={5}>5</option>
-                    <option value={10}>10</option>
-                    <option value={15}>15</option>
-                    <option value={20}>20</option>
-                    <option value="all">{t("common.all")}</option>
-                  </select>
+                    options={[
+                      { value: "5", label: "5" },
+                      { value: "10", label: "10" },
+                      { value: "15", label: "15" },
+                      { value: "20", label: "20" },
+                      { value: "all", label: t("common.all") },
+                    ]}
+                  />
                 </div>
 
                 {/* Pagination Info & Buttons */}
