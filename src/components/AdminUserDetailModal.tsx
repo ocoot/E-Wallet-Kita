@@ -5,6 +5,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import {
   X, Shield, Ban, Crown, Mail, MessageCircle, Calendar, Hash, Wallet, TrendingUp, TrendingDown
 } from "lucide-react";
+import { ModalShell } from "./ModalShell";
 
 interface UserDetail extends UserProfile {
   telegram_chat_id?: number | null;
@@ -80,121 +81,117 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal Card */}
-      <div className="relative z-10 w-full max-w-md bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden light_sakura:bg-rose-50/95 light_sakura:border-rose-100">
-
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/60 bg-slate-900/50 light_sakura:border-rose-100/60 light_sakura:bg-rose-100/20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center font-black text-indigo-400 text-lg light_sakura:bg-rose-200/50 light_sakura:border-rose-300 light_sakura:text-rose-600">
-              {user.display_name.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <h2 className="font-black text-sm text-white light_sakura:text-slate-800">{user.display_name}</h2>
-              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-400 font-mono light_sakura:text-slate-500">{user.id.slice(0, 16)}...</p>
-            </div>
+    <ModalShell
+      isOpen={user !== null}
+      onClose={onClose}
+      ariaLabelledBy="admin-user-title"
+      ariaDescribedBy="admin-user-desc"
+      className="relative z-10 w-full max-w-md bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden light_sakura:bg-rose-50/95 light_sakura:border-rose-100 p-0"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/60 bg-slate-900/50 light_sakura:border-rose-100/60 light_sakura:bg-rose-100/20">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center font-black text-indigo-400 text-lg light_sakura:bg-rose-200/50 light_sakura:border-rose-300 light_sakura:text-rose-600">
+            {user.display_name.charAt(0).toUpperCase()}
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl hover:bg-slate-800 text-slate-400 cursor-pointer transition-colors light_sakura:hover:bg-rose-200/40 light_sakura:text-slate-500"
-          >
-            <X size={16} />
-          </button>
+          <div>
+            <h2 id="admin-user-title" className="font-black text-sm text-white light_sakura:text-slate-800">{user.display_name}</h2>
+            <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-400 font-mono light_sakura:text-slate-500">{user.id.slice(0, 16)}...</p>
+          </div>
         </div>
-
-        {/* Body Content */}
-        {loading ? (
-          <div className="py-16 text-center text-slate-500 text-sm light_sakura:text-rose-600/70">
-            {t("admin.loading_user_detail")}
-          </div>
-        ) : detail ? (
-          <div className="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
-
-            {/* Status Badges */}
-            <div className="flex flex-wrap gap-2">
-              <span className={`px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase border flex items-center gap-1
-                ${detail.role === "owner" ? "bg-red-500/10 border-red-500/20 text-red-400"
-                  : detail.role === "admin" ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400 light_sakura:bg-rose-200/40 light_sakura:text-rose-600 light_sakura:border-rose-300"
-                  : "bg-slate-800 border-slate-700 text-slate-400 light_sakura:bg-slate-200 light_sakura:border-slate-300 light_sakura:text-slate-600"}`}>
-                <Shield size={9} />
-                {detail.role}
-              </span>
-              {detail.is_premium && (
-                <span className="px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center gap-1">
-                  <Crown size={9} />
-                  Premium
-                </span>
-              )}
-              {detail.is_banned && (
-                <span className="px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-1">
-                  <Ban size={9} />
-                  {t("admin.suspended_badge")}
-                </span>
-              )}
-            </div>
-
-            {/* General Fields */}
-            <div className="space-y-3 rounded-2xl bg-slate-900/40 border border-slate-800/50 p-4 light_sakura:bg-rose-100/20 light_sakura:border-rose-100/50">
-              <InfoRow icon={<Mail size={13} />}   label="Email" value={detail.email || "—"} />
-              <InfoRow icon={<Hash size={13} />}   label={t("admin.user_id_label")} value={detail.id} mono />
-              <InfoRow icon={<MessageCircle size={13} />} label={t("admin.telegram_chat_id_label")} value={detail.telegram_chat_id ? String(detail.telegram_chat_id) : t("admin.not_connected")} />
-              <InfoRow icon={<Calendar size={13} />} label={t("admin.joined_label")} value={formatDate(detail.created_at)} />
-              {detail.is_premium && (
-                <InfoRow icon={<Crown size={13} />} label={t("admin.premium_joined_label")} value={formatDate(detail.premium_paid_at)} />
-              )}
-            </div>
-
-            {/* Stats Summary */}
-            <div>
-              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase tracking-wider text-slate-400 mb-2 light_sakura:text-slate-500">
-                {t("admin.transaction_stats_title")}
-              </p>
-              <div className="grid grid-cols-3 gap-3">
-                <StatCard
-                  icon={<Wallet size={14} className="text-slate-400 light_sakura:text-slate-500" />}
-                  label={t("admin.stats_count")}
-                  value={String(detail.totalTransactions)}
-                  color="text-slate-300 light_sakura:text-slate-700"
-                />
-                <StatCard
-                  icon={<TrendingUp size={14} className="text-emerald-400" />}
-                  label={t("admin.stats_income")}
-                  value={formatIDR(detail.totalIncome ?? 0)}
-                  color="text-emerald-400"
-                />
-                <StatCard
-                  icon={<TrendingDown size={14} className="text-red-400" />}
-                  label={t("admin.stats_expense")}
-                  value={formatIDR(detail.totalExpense ?? 0)}
-                  color="text-red-400"
-                />
-              </div>
-            </div>
-
-            {/* Net Savings Panel */}
-            <div className="rounded-2xl bg-indigo-500/5 border border-indigo-500/20 p-4 text-center light_sakura:bg-rose-200/10 light_sakura:border-rose-200">
-              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase tracking-wider text-indigo-400/70 mb-1 light_sakura:text-rose-600/70">
-                {t("admin.net_balance_lifetime")}
-              </p>
-              <p className="font-black text-xl text-indigo-400 light_sakura:text-rose-600">
-                {formatIDR((detail.totalIncome ?? 0) - (detail.totalExpense ?? 0))}
-              </p>
-            </div>
-
-          </div>
-        ) : (
-          <div className="py-16 text-center text-slate-500 text-sm">{t("toast.error_general")}</div>
-        )}
-
+        <button
+          onClick={onClose}
+          aria-label={t("common.close") || "Close"}
+          className="p-2 rounded-xl hover:bg-slate-800 text-slate-400 cursor-pointer transition-colors light_sakura:hover:bg-rose-200/40 light_sakura:text-slate-500"
+        >
+          <X size={16} />
+        </button>
       </div>
-    </div>
+
+      {/* Body Content */}
+      {loading ? (
+        <div className="py-16 text-center text-slate-500 text-sm light_sakura:text-rose-600/70">
+          {t("admin.loading_user_detail")}
+        </div>
+      ) : detail ? (
+        <div id="admin-user-desc" className="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
+
+          {/* Status Badges */}
+          <div className="flex flex-wrap gap-2">
+            <span className={`px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase border flex items-center gap-1
+              ${detail.role === "owner" ? "bg-red-500/10 border-red-500/20 text-red-400"
+                : detail.role === "admin" ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400 light_sakura:bg-rose-200/40 light_sakura:text-rose-600 light_sakura:border-rose-300"
+                : "bg-slate-800 border-slate-700 text-slate-400 light_sakura:bg-slate-200 light_sakura:border-slate-300 light_sakura:text-slate-600"}`}>
+              <Shield size={9} />
+              {detail.role}
+            </span>
+            {detail.is_premium && (
+              <span className="px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center gap-1">
+                <Crown size={9} />
+                Premium
+              </span>
+            )}
+            {detail.is_banned && (
+              <span className="px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-1">
+                <Ban size={9} />
+                {t("admin.suspended_badge")}
+              </span>
+            )}
+          </div>
+
+          {/* General Fields */}
+          <div className="space-y-3 rounded-2xl bg-slate-900/40 border border-slate-800/50 p-4 light_sakura:bg-rose-100/20 light_sakura:border-rose-100/50">
+            <InfoRow icon={<Mail size={13} />}   label="Email" value={detail.email || "—"} />
+            <InfoRow icon={<Hash size={13} />}   label={t("admin.user_id_label")} value={detail.id} mono />
+            <InfoRow icon={<MessageCircle size={13} />} label={t("admin.telegram_chat_id_label")} value={detail.telegram_chat_id ? String(detail.telegram_chat_id) : t("admin.not_connected")} />
+            <InfoRow icon={<Calendar size={13} />} label={t("admin.joined_label")} value={formatDate(detail.created_at)} />
+            {detail.is_premium && (
+              <InfoRow icon={<Crown size={13} />} label={t("admin.premium_joined_label")} value={formatDate(detail.premium_paid_at)} />
+            )}
+          </div>
+
+          {/* Stats Summary */}
+          <div>
+            <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase tracking-wider text-slate-400 mb-2 light_sakura:text-slate-500">
+              {t("admin.transaction_stats_title")}
+            </p>
+            <div className="grid grid-cols-3 gap-3">
+              <StatCard
+                icon={<Wallet size={14} className="text-slate-400 light_sakura:text-slate-500" />}
+                label={t("admin.stats_count")}
+                value={String(detail.totalTransactions)}
+                color="text-slate-300 light_sakura:text-slate-700"
+              />
+              <StatCard
+                icon={<TrendingUp size={14} className="text-emerald-400" />}
+                label={t("admin.stats_income")}
+                value={formatIDR(detail.totalIncome ?? 0)}
+                color="text-emerald-400"
+              />
+              <StatCard
+                icon={<TrendingDown size={14} className="text-red-400" />}
+                label={t("admin.stats_expense")}
+                value={formatIDR(detail.totalExpense ?? 0)}
+                color="text-red-400"
+              />
+            </div>
+          </div>
+
+          {/* Net Savings Panel */}
+          <div className="rounded-2xl bg-indigo-500/5 border border-indigo-500/20 p-4 text-center light_sakura:bg-rose-200/10 light_sakura:border-rose-200">
+            <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase tracking-wider text-indigo-400/70 mb-1 light_sakura:text-rose-600/70">
+              {t("admin.net_balance_lifetime")}
+            </p>
+            <p className="font-black text-xl text-indigo-400 light_sakura:text-rose-600">
+              {formatIDR((detail.totalIncome ?? 0) - (detail.totalExpense ?? 0))}
+            </p>
+          </div>
+
+        </div>
+      ) : (
+        <div className="py-16 text-center text-slate-500 text-sm">{t("toast.error_general")}</div>
+      )}
+    </ModalShell>
   );
 };
 

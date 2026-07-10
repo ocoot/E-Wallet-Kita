@@ -46,6 +46,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -78,12 +79,74 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
 
   const selected = options.find((o) => o.value === value);
 
+  const handleTriggerKeyDown = (e: React.KeyboardEvent) => {
+    if (disabled) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      audioFeedback.playClick();
+      setOpen((v) => !v);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setOpen(false);
+    } else if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (!open) {
+        setOpen(true);
+      } else {
+        // Focus first option
+        setTimeout(() => {
+          const list = containerRef.current?.querySelectorAll('[role="option"]');
+          if (list && list.length > 0) {
+            (list[0] as HTMLElement).focus();
+          }
+        }, 50);
+      }
+    }
+  };
+
+  const handleOptionKeyDown = (e: React.KeyboardEvent, index: number) => {
+    const list = containerRef.current?.querySelectorAll('[role="option"]');
+    if (!list) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      const nextIndex = (index + 1) % list.length;
+      (list[nextIndex] as HTMLElement).focus();
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      const prevIndex = index - 1;
+      if (prevIndex >= 0) {
+        (list[prevIndex] as HTMLElement).focus();
+      } else {
+        triggerRef.current?.focus();
+      }
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setOpen(false);
+      triggerRef.current?.focus();
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      const opt = options[index];
+      if (opt.disabled) return;
+      audioFeedback.playClick();
+      onChange(opt.value);
+      setOpen(false);
+      triggerRef.current?.focus();
+    }
+  };
+
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       <button
+        ref={triggerRef}
         type="button"
         disabled={disabled}
         onClick={() => { audioFeedback.playClick(); setOpen((v) => !v); }}
+        onKeyDown={handleTriggerKeyDown}
+        role="combobox"
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-controls="dropdown-listbox"
         className={`w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 outline-none ${focusBorder} cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
       >
         <span className="truncate text-left">{selected ? selected.label : placeholder}</span>
@@ -96,17 +159,23 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
             initial={{ opacity: 0, y: -6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
+            id="dropdown-listbox"
+            role="listbox"
             className={`absolute z-30 mt-1.5 w-full max-h-56 overflow-y-auto rounded-xl border bg-slate-900 border-slate-800 shadow-xl light_sakura:bg-white light_sakura:border-rose-100 p-1 ${panelClassName}`}
           >
-            {options.map((opt) => {
+            {options.map((opt, idx) => {
               const isSelected = opt.value === value;
               return (
                 <button
                   key={opt.value || "__default__"}
                   type="button"
                   disabled={opt.disabled}
-                  onClick={() => { if (opt.disabled) return; audioFeedback.playClick(); onChange(opt.value); setOpen(false); }}
-                  className={`w-full text-left px-3 py-2.5 rounded-lg font-sans text-xs transition-colors ${
+                  role="option"
+                  aria-selected={isSelected}
+                  tabIndex={open && !opt.disabled ? 0 : -1}
+                  onKeyDown={(e) => handleOptionKeyDown(e, idx)}
+                  onClick={() => { if (opt.disabled) return; audioFeedback.playClick(); onChange(opt.value); setOpen(false); triggerRef.current?.focus(); }}
+                  className={`w-full text-left px-3 py-2.5 rounded-lg font-sans text-xs transition-colors outline-none focus:bg-slate-800 focus:text-white light_sakura:focus:bg-rose-100/80 light_sakura:focus:text-slate-900 ${
                     opt.disabled
                       ? "text-slate-600 cursor-not-allowed opacity-50"
                       : isSelected

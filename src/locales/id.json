@@ -1277,5 +1277,12 @@
     "field_phone": "Nomor HP / Telepon",
     "field_account_number": "Nomor Rekening",
     "earmarked_note": "{earmarked} dititipkan ke Tabungan/Emas · Tersedia {available}"
+  },
+  "network": {
+    "offline_banner_title": "Anda Sedang Offline",
+    "offline_banner_desc": "Koneksi internet terputus. Pembaruan dan penyimpanan transaksi dinonaktifkan sementara.",
+    "retry_button": "Coba Lagi",
+    "error_fetching_data": "Gagal mengambil data dari server.",
+    "error_fallback_desc": "Silakan periksa koneksi internet Anda atau coba lagi beberapa saat lagi."
   }
 }

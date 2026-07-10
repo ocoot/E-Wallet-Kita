@@ -12,6 +12,10 @@ import { audioFeedback } from "../lib/audio";
 import { PiggyBank, Plus, X, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { BudgetProgressCard } from "../components/BudgetProgressCard";
 import { DropdownField } from "../components/DropdownField";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
+import { Badge } from "../components/ui/Badge";
 
 export const Budget: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -175,22 +179,22 @@ export const Budget: React.FC = () => {
   const statusBadge = (status: "safe" | "warning" | "danger") => {
     if (status === "danger") {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-600">
-          <AlertTriangle size={12} /> {t("budget.status_danger")}
-        </span>
+        <Badge variant="danger" className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] py-1 px-2.5">
+          <AlertTriangle size={12} className="mr-1 shrink-0" /> {t("budget.status_danger")}
+        </Badge>
       );
     }
     if (status === "warning") {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-amber-500/15 text-amber-400 light_sakura:bg-amber-50 light_sakura:text-amber-600">
-          <AlertTriangle size={12} /> {t("budget.status_warning")}
-        </span>
+        <Badge variant="warning" className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] py-1 px-2.5">
+          <AlertTriangle size={12} className="mr-1 shrink-0" /> {t("budget.status_warning")}
+        </Badge>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-600">
-        <CheckCircle2 size={12} /> {t("budget.status_safe")}
-      </span>
+      <Badge variant="success" className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] py-1 px-2.5">
+        <CheckCircle2 size={12} className="mr-1 shrink-0" /> {t("budget.status_safe")}
+      </Badge>
     );
   };
 
@@ -199,7 +203,7 @@ export const Budget: React.FC = () => {
   return (
     <div className="space-y-6 pb-12">
       {/* Massive Cohesive Card Container */}
-      <div className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6">
+      <Card className="p-6 md:p-8 rounded-3xl border-slate-900 light_sakura:border-rose-100/10 shadow-lg space-y-6">
 
       {/* Header */}
       <div className="flex items-start justify-between gap-3.5 flex-wrap border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
@@ -218,15 +222,16 @@ export const Budget: React.FC = () => {
         </div>
 
         {!loading && expenseCategories.length > 0 && (
-          <button
+          <Button
             onClick={openAddModal}
             disabled={availableCategories.length === 0}
             title={availableCategories.length === 0 ? t("budget.all_categories_budgeted") : undefined}
-            className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 cursor-pointer shrink-0"
+            variant="primary"
+            className="px-4.5 py-2.5 rounded-xl text-xs font-bold shrink-0"
           >
             <Plus size={15} />
             {t("budget.add_budget_cta")}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -368,49 +373,42 @@ export const Budget: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5">
-                  <div>
-                    <label className="block text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
-                      {t("budget.monthly_limit_label")}
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      value={addLimit}
-                      onChange={(e) => setAddLimit(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl text-sm bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-rose-50/50 light_sakura:border-rose-200 light_sakura:text-slate-800"
-                      placeholder="500000"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
-                      {t("budget.alert_threshold_label")}
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={addThreshold}
-                      onChange={(e) => setAddThreshold(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl text-sm bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-rose-50/50 light_sakura:border-rose-200 light_sakura:text-slate-800"
-                      placeholder="80"
-                    />
-                  </div>
+                  <Input
+                    label={t("budget.monthly_limit_label")}
+                    type="number"
+                    min={1}
+                    value={addLimit}
+                    onChange={(e) => setAddLimit(e.target.value)}
+                    placeholder="500000"
+                  />
+                  <Input
+                    label={t("budget.alert_threshold_label")}
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={addThreshold}
+                    onChange={(e) => setAddThreshold(e.target.value)}
+                    placeholder="80"
+                  />
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-2">
-                  <button
+                  <Button
+                    variant="secondary"
                     onClick={closeAddModal}
-                    className="rounded-xl px-4 py-2 font-sans text-sm font-medium hover:bg-slate-800 hover:text-white cursor-pointer light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                    className="px-4 py-2 font-sans text-sm font-medium"
                   >
                     {t("common.cancel")}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
+                    variant="primary"
                     onClick={handleAddSave}
                     disabled={isAdding}
-                    className="rounded-xl px-4.5 py-2 font-sans text-sm font-semibold text-white shadow-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                    loading={isAdding}
+                    className="px-4.5 py-2 font-sans text-sm font-semibold"
                   >
                     {t("budget.save")}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </motion.div>
@@ -429,7 +427,7 @@ export const Budget: React.FC = () => {
         onCancel={() => setDeleteTarget(null)}
         confirmDisabled={isDeleting}
       />
-      </div>{/* end card container */}
+      </Card>{/* end card container */}
     </div>
   );
 };

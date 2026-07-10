@@ -3,8 +3,9 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { supabase } from "../lib/supabase";
 import { useToast } from "../contexts/ToastContext";
 import { audioFeedback } from "../lib/audio";
-import { Lock, Eye, EyeOff, Save, CheckCircle2, ShieldCheck, X } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { Lock, Eye, EyeOff, Save, ShieldCheck, X } from "lucide-react";
+import { motion } from "motion/react";
+import { ModalShell } from "./ModalShell";
 
 interface ResetPasswordModalProps {
   isOpen: boolean;
@@ -63,40 +64,17 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Dark modern backdrop */}
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      ariaLabelledBy="reset-password-title"
+      ariaDescribedBy="reset-password-desc"
+      className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl flex flex-col relative z-20 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:shadow-rose-150/10"
+    >
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={() => {
-          audioFeedback.playClick();
-          onClose();
-        }}
-        className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
-      />
-
-      {/* Decorative colored glow orbs */}
-      <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-      {/* Main card viewport */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
-        animate={{ 
-          opacity: 1, 
-          scale: 1, 
-          y: 0,
-          x: shakeTrigger ? [0, -6, 6, -6, 6, 0] : 0
-        }}
-        transition={{ 
-          x: { duration: 0.4, ease: "easeInOut" },
-          default: { duration: 0.3, ease: "easeOut" }
-        }}
-        className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl flex flex-col relative z-20 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:shadow-rose-150/10"
+        animate={{ x: shakeTrigger ? [0, -6, 6, -6, 6, 0] : 0 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
       >
         {/* Close Button */}
         <button
@@ -104,6 +82,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
             audioFeedback.playClick();
             onClose();
           }}
+          aria-label={t("common.close") || "Close"}
           className="absolute top-5 right-5 p-1.5 text-slate-400 hover:text-white rounded-full bg-slate-950/20 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:text-slate-500 light_sakura:hover:text-slate-800 light_sakura:hover:bg-rose-50"
         >
           <X size={16} />
@@ -114,10 +93,10 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
           <div className="p-3 w-14 h-14 bg-indigo-600/10 text-indigo-400 rounded-2xl flex items-center justify-center mb-4 shadow-inner light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
             <ShieldCheck size={32} />
           </div>
-          <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+          <h2 id="reset-password-title" className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
             {t("auth.reset_password_title")}
           </h2>
-          <p className="font-sans text-xs mt-2 px-2 text-slate-400 leading-relaxed light_sakura:text-slate-600">
+          <p id="reset-password-desc" className="font-sans text-xs mt-2 px-2 text-slate-400 leading-relaxed light_sakura:text-slate-600">
             {t("auth.reset_password_desc")}
           </p>
         </div>
@@ -141,7 +120,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
                 disabled={isLoading}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-11 pr-11 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-sm outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+                className="w-full pl-11 pr-11 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-sm outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 min-h-[44px]"
               />
               <button
                 type="button"
@@ -174,7 +153,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
                 disabled={isLoading}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full pl-11 pr-11 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-sm outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+                className="w-full pl-11 pr-11 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-sm outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800 min-h-[44px]"
               />
               <button
                 type="button"
@@ -191,12 +170,10 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
           </div>
 
           {/* Action button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <button
             type="submit"
             disabled={isLoading}
-            className="w-full cursor-pointer py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-sm font-semibold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:pointer-events-none mt-4 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+            className="w-full cursor-pointer py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-sm font-semibold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:pointer-events-none mt-4 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 min-h-[44px]"
           >
             {isLoading ? (
               <span className="w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin" />
@@ -206,9 +183,9 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
                 <span>{t("auth.reset_submit_btn")}</span>
               </>
             )}
-          </motion.button>
+          </button>
         </form>
       </motion.div>
-    </div>
+    </ModalShell>
   );
 };

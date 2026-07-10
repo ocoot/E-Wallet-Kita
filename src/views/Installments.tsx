@@ -12,6 +12,10 @@ import { EmptyState } from "../components/EmptyState";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
+import { Badge } from "../components/ui/Badge";
 import {
   Landmark, Plus, Trash2, CheckCircle2, Edit2, RotateCcw, PartyPopper
 } from "lucide-react";
@@ -177,7 +181,7 @@ export const Installments: React.FC = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
-      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
+      <Card className="rounded-3xl border-slate-800/60 light_sakura:border-rose-100/40 overflow-hidden p-0 shadow-lg">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -191,10 +195,11 @@ export const Installments: React.FC = () => {
                 {t("installments.page_subtitle")}
               </p>
             </div>
-            <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/20 shrink-0 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-500/20 cursor-pointer">
+            <Button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
+              variant="primary"
+              className="px-5 py-2.5 rounded-2xl shrink-0">
               <Plus size={16} /> {t("installments.add_button")}
-            </button>
+            </Button>
           </div>
 
           {/* Summary */}
@@ -327,7 +332,7 @@ export const Installments: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Form modal */}
       <AnimatePresence>
@@ -342,10 +347,12 @@ export const Installments: React.FC = () => {
                 <h2 className="font-sans font-bold text-lg text-slate-100 light_sakura:text-slate-900">
                   {editTarget ? t("installments.edit_title") : t("installments.add_title")}
                 </h2>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_name")}</label>
-                  <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={t("installments.form_name_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("installments.form_name")}
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder={t("installments.form_name_placeholder")}
+                />
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_category")}</label>
                   <DropdownField
@@ -355,23 +362,36 @@ export const Installments: React.FC = () => {
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_monthly_amount")}</label>
-                    <input type="number" value={form.monthly_amount} onChange={e => setForm(f => ({ ...f, monthly_amount: e.target.value }))} placeholder={t("installments.form_monthly_amount_placeholder")} min={0} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
-                  </div>
-                  <div>
-                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_total_months")}</label>
-                    <input type="number" value={form.total_months} onChange={e => setForm(f => ({ ...f, total_months: e.target.value }))} min={1} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
-                  </div>
+                  <Input
+                    label={t("installments.form_monthly_amount")}
+                    type="number"
+                    value={form.monthly_amount}
+                    onChange={e => setForm(f => ({ ...f, monthly_amount: e.target.value }))}
+                    placeholder={t("installments.form_monthly_amount_placeholder")}
+                    min={0}
+                  />
+                  <Input
+                    label={t("installments.form_total_months")}
+                    type="number"
+                    value={form.total_months}
+                    onChange={e => setForm(f => ({ ...f, total_months: e.target.value }))}
+                    min={1}
+                  />
                 </div>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_principal")}</label>
-                  <input type="number" value={form.principal_amount} onChange={e => setForm(f => ({ ...f, principal_amount: e.target.value }))} placeholder={t("installments.form_principal_placeholder")} min={0} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
-                </div>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_start_date")}</label>
-                  <input type="date" value={form.start_date} onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("installments.form_principal")}
+                  type="number"
+                  value={form.principal_amount}
+                  onChange={e => setForm(f => ({ ...f, principal_amount: e.target.value }))}
+                  placeholder={t("installments.form_principal_placeholder")}
+                  min={0}
+                />
+                <Input
+                  label={t("installments.form_start_date")}
+                  type="date"
+                  value={form.start_date}
+                  onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))}
+                />
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
                   <DropdownField
@@ -383,13 +403,25 @@ export const Installments: React.FC = () => {
                     ]}
                   />
                 </div>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_notes")}</label>
-                  <input type="text" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder={t("installments.form_notes_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("installments.form_notes")}
+                  value={form.notes}
+                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                  placeholder={t("installments.form_notes_placeholder")}
+                />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={() => setIsFormOpen(false)} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
-                  <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 text-white font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/20 disabled:opacity-50 cursor-pointer">{isSaving ? t("common.loading") : t("common.save")}</button>
+                  <Button variant="secondary" onClick={() => setIsFormOpen(false)} className="flex-1 py-3 text-sm">
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    loading={isSaving}
+                    className="flex-1 py-3 text-sm bg-indigo-600 hover:bg-indigo-500 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                  >
+                    {t("common.save")}
+                  </Button>
                 </div>
               </div>
             </motion.div>

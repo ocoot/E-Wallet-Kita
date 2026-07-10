@@ -18,6 +18,11 @@ import { useCategories } from "../hooks/useCategories";
 import { useWallets } from "../hooks/useWallets";
 import { checkSingleCategoryBudget } from "../hooks/useBudgets";
 import { ConfirmTransactionModal, ConfirmTransactionDraft } from "../components/ConfirmTransactionModal";
+import { useOnlineStatus } from "../hooks/useOnlineStatus";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
+import { Badge } from "../components/ui/Badge";
 
 // Emoji map for category keys — fallback to 💰 if key not found
 const CATEGORY_EMOJI: Record<string, string> = {
@@ -55,6 +60,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   onTransactionAdded,
   userDisplayName,
 }) => {
+  const isOnline = useOnlineStatus();
   const navigate = useNavigate();
   const location = useLocation();
   const prefill = (location.state as {
@@ -343,12 +349,26 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
             {/* ── AI Receipt uploader (panel) ───────────────────────────── */}
             {activeInputTab === "receipt" && (
-              <ReceiptUploader onParsed={(draft) => setReceiptDraft(draft)} />
+              !isOnline ? (
+                <div className="flex flex-col items-center justify-center p-8 text-center bg-slate-950/40 border border-slate-800 rounded-2xl light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
+                  <p className="font-sans text-sm font-semibold text-slate-300 light_sakura:text-slate-700">{t("network.offline_banner_title")}</p>
+                  <p className="font-sans text-xs text-slate-500 light_sakura:text-slate-400 mt-1">Unggah struk memerlukan koneksi internet aktif.</p>
+                </div>
+              ) : (
+                <ReceiptUploader onParsed={(draft) => setReceiptDraft(draft)} />
+              )
             )}
 
             {/* ── AI Voice note recorder (panel) ────────────────────────── */}
             {activeInputTab === "voice" && (
-              <VoiceRecorder onApprove={handleVoiceApprove} />
+              !isOnline ? (
+                <div className="flex flex-col items-center justify-center p-8 text-center bg-slate-950/40 border border-slate-800 rounded-2xl light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
+                  <p className="font-sans text-sm font-semibold text-slate-300 light_sakura:text-slate-700">{t("network.offline_banner_title")}</p>
+                  <p className="font-sans text-xs text-slate-500 light_sakura:text-slate-400 mt-1">Perekaman suara memerlukan koneksi internet aktif.</p>
+                </div>
+              ) : (
+                <VoiceRecorder onApprove={handleVoiceApprove} />
+              )
             )}
 
             {/* ── Form manual (panel) ───────────────────────────────────── */}
@@ -491,33 +511,25 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
                 {/* 4 ── Date + Note ─────────────────────────────────────── */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
-                      {t("transaction.label_date")}
-                    </label>
-                    <input
-                      type="date"
-                      required
-                      disabled={isLoading}
-                      value={date}
-                      max={new Date().toISOString().split("T")[0]}
-                      onChange={(e) => setDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
-                      {t("transaction.label_note")}
-                    </label>
-                    <input
-                      type="text"
-                      placeholder={t("transaction.placeholder_note")}
-                      disabled={isLoading}
-                      value={note}
-                      onChange={(e) => setNote(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors placeholder:text-slate-600 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-                    />
-                  </div>
+                  <Input
+                    label={t("transaction.label_date")}
+                    type="date"
+                    required
+                    disabled={isLoading}
+                    value={date}
+                    max={new Date().toISOString().split("T")[0]}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="text-xs bg-slate-950 border border-slate-800"
+                  />
+                  <Input
+                    label={t("transaction.label_note")}
+                    type="text"
+                    placeholder={t("transaction.placeholder_note")}
+                    disabled={isLoading}
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    className="text-xs bg-slate-950 border border-slate-800"
+                  />
                 </div>
 
                 {/* 5 ── Submit preview + button ─────────────────────────── */}
@@ -531,18 +543,16 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                       </span>
                     </div>
                   )}
-                  <button
+                  <Button
                     type="submit"
-                    disabled={isLoading || amount === "" || amount === 0}
-                    className={`ml-auto cursor-pointer py-3 px-6 text-white rounded-xl font-sans text-xs font-bold flex items-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none active:scale-[0.98] ${
-                      isExpense
-                        ? "bg-red-600 hover:bg-red-500 shadow-lg shadow-red-900/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
-                        : "bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-900/20"
-                    }`}
+                    variant={isExpense ? "danger" : "primary"}
+                    disabled={isLoading || amount === "" || amount === 0 || !isOnline}
+                    loading={isLoading}
+                    className="ml-auto text-xs font-bold px-6 gap-2"
                   >
                     <span className="text-sm leading-none">✓</span>
-                    <span>{t("transaction.btn_submit")}</span>
-                  </button>
+                    <span>{!isOnline ? t("network.offline_banner_title") : t("transaction.btn_submit")}</span>
+                  </Button>
                 </div>
 
               </form>

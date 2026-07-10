@@ -18,6 +18,10 @@ import {
 } from "lucide-react";
 import { BillReminder } from "../types";
 import { useNavigate } from "react-router-dom";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
+import { Badge } from "../components/ui/Badge";
 
 const REMINDER_HOUR_OPTIONS = [9, 12, 15, 18, 21] as const;
 type RecurrenceType = "monthly" | "yearly" | "one_time";
@@ -178,7 +182,7 @@ export const BillReminders: React.FC = () => {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
       {/* ── Main card ──────────────────────────────────────────────── */}
-      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
+      <Card className="rounded-3xl border-slate-800/60 light_sakura:border-rose-100/40 overflow-hidden p-0 shadow-lg">
         <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -192,10 +196,11 @@ export const BillReminders: React.FC = () => {
                 {t("bill_reminders.page_subtitle")}
               </p>
             </div>
-            <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-sm transition-colors shadow-lg shadow-emerald-500/20 shrink-0 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-500/20 cursor-pointer">
+            <Button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
+              variant="primary"
+              className="px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-sm transition-colors shadow-lg shadow-emerald-500/20 shrink-0 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-500/20 cursor-pointer">
               <Plus size={16} /> {t("bill_reminders.add_button")}
-            </button>
+            </Button>
           </div>
 
           {/* ── Counter stats: formasi strip chip horizontal ─────────── */}
@@ -314,7 +319,7 @@ export const BillReminders: React.FC = () => {
             </AnimatePresence>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* ── Form modal ──────────────────────────────────────────────── */}
       <AnimatePresence>
@@ -330,10 +335,12 @@ export const BillReminders: React.FC = () => {
                   {editTarget ? t("bill_reminders.edit_title") : t("bill_reminders.add_title")}
                 </h2>
                 {/* Name */}
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_name")}</label>
-                  <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={t("bill_reminders.form_name_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 placeholder:text-slate-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("bill_reminders.form_name")}
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder={t("bill_reminders.form_name_placeholder")}
+                />
                 {/* Category */}
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_category")}</label>
@@ -344,10 +351,14 @@ export const BillReminders: React.FC = () => {
                   />
                 </div>
                 {/* Amount */}
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_amount")}</label>
-                  <input type="number" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder={t("bill_reminders.form_amount_placeholder")} min={0} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("bill_reminders.form_amount")}
+                  type="number"
+                  value={form.amount}
+                  onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
+                  placeholder={t("bill_reminders.form_amount_placeholder")}
+                  min={0}
+                />
                 {/* Recurrence */}
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_recurrence")}</label>
@@ -361,15 +372,21 @@ export const BillReminders: React.FC = () => {
                 </div>
                 {/* Due day/date */}
                 {form.recurrence_type === "monthly" ? (
-                  <div>
-                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_due_day")}</label>
-                    <input type="number" value={form.due_day} onChange={e => setForm(f => ({ ...f, due_day: e.target.value }))} min={1} max={31} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
-                  </div>
+                  <Input
+                    label={t("bill_reminders.form_due_day")}
+                    type="number"
+                    value={form.due_day}
+                    onChange={e => setForm(f => ({ ...f, due_day: e.target.value }))}
+                    min={1}
+                    max={31}
+                  />
                 ) : (
-                  <div>
-                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_due_date")}</label>
-                    <input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
-                  </div>
+                  <Input
+                    label={t("bill_reminders.form_due_date")}
+                    type="date"
+                    value={form.due_date}
+                    onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))}
+                  />
                 )}
                 {/* Notes */}
                 <div>
@@ -383,14 +400,26 @@ export const BillReminders: React.FC = () => {
                     ]}
                   />
                 </div>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_notes")}</label>
-                  <input type="text" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder={t("bill_reminders.form_notes_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("bill_reminders.form_notes")}
+                  value={form.notes}
+                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                  placeholder={t("bill_reminders.form_notes_placeholder")}
+                />
                 {/* Actions */}
                 <div className="flex gap-3 pt-1">
-                  <button onClick={() => setIsFormOpen(false)} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
-                  <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 text-white font-semibold text-sm transition-colors shadow-lg shadow-emerald-500/20 disabled:opacity-50 cursor-pointer">{isSaving ? t("common.loading") : t("common.save")}</button>
+                  <Button variant="secondary" onClick={() => setIsFormOpen(false)} className="flex-1 py-3 text-sm">
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    loading={isSaving}
+                    className="flex-1 py-3 text-sm bg-emerald-500 hover:bg-emerald-400 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 text-white shadow-lg shadow-emerald-500/20"
+                  >
+                    {t("common.save")}
+                  </Button>
                 </div>
               </div>
             </motion.div>

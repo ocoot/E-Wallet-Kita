@@ -12,6 +12,10 @@ import { InfoTooltip } from "../components/InfoTooltip";
 import { DropdownField } from "../components/DropdownField";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
+import { Badge } from "../components/ui/Badge";
 import {
   Coins, Plus, Trash2, Edit2, ArrowDownCircle, ArrowUpCircle,
   Archive, ArchiveRestore, Info, AlertTriangle, PackagePlus, PackageMinus
@@ -387,7 +391,7 @@ export const GoldSavings: React.FC = () => {
         />
       )}
 
-      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
+      <Card className="rounded-3xl border-slate-800/60 light_sakura:border-rose-100/40 overflow-hidden p-0 shadow-lg">
         <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -400,10 +404,11 @@ export const GoldSavings: React.FC = () => {
                 {t("gold.page_subtitle")}
               </p>
             </div>
-            <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm transition-colors shadow-lg shadow-amber-500/20 shrink-0 cursor-pointer">
+            <Button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
+              variant="primary"
+              className="px-5 py-2.5 rounded-2xl shrink-0">
               <Plus size={16} /> {t("gold.add_button")}
-            </button>
+            </Button>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -494,7 +499,7 @@ export const GoldSavings: React.FC = () => {
             </AnimatePresence>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Add/Edit pocket form modal */}
       <AnimatePresence>
@@ -509,10 +514,12 @@ export const GoldSavings: React.FC = () => {
                 <h2 className="font-sans font-bold text-lg text-slate-100 light_sakura:text-slate-900">
                   {editTarget ? t("gold.edit_title") : t("gold.add_title")}
                 </h2>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_name")}</label>
-                  <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={t("gold.form_name_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-amber-500 placeholder:text-slate-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("gold.form_name")}
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder={t("gold.form_name_placeholder")}
+                />
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_brand")}</label>
                   <DropdownField
@@ -538,13 +545,25 @@ export const GoldSavings: React.FC = () => {
                     ]}
                   />
                 </div>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_notes")}</label>
-                  <input type="text" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder={t("gold.form_notes_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-amber-500 placeholder:text-slate-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("gold.form_notes")}
+                  value={form.notes}
+                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                  placeholder={t("gold.form_notes_placeholder")}
+                />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={() => setIsFormOpen(false)} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
-                  <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm transition-colors shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer">{isSaving ? t("common.loading") : t("common.save")}</button>
+                  <Button variant="secondary" onClick={() => setIsFormOpen(false)} className="flex-1 py-3 text-sm">
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    loading={isSaving}
+                    className="flex-1 py-3 text-sm bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold"
+                  >
+                    {t("common.save")}
+                  </Button>
                 </div>
               </div>
             </motion.div>
@@ -568,25 +587,38 @@ export const GoldSavings: React.FC = () => {
                   </h2>
                   <p className="text-xs text-slate-400 mt-1">{t(copy.desc)}</p>
                 </div>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    {isGramInput ? t("gold.form_grams") : t("gold.form_idr_amount")}
-                  </label>
-                  <input type="number" value={moveValue} onChange={e => setMoveValue(e.target.value)} placeholder={isGramInput ? t("gold.form_grams_placeholder") : t("gold.form_idr_amount_placeholder")} min={0} step={isGramInput ? "0.0001" : "1000"} autoFocus className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-amber-500 placeholder:text-slate-500 transition-colors" />
-                  {(moveTarget.direction === "sell" || moveTarget.direction === "manual_remove") && (
-                    <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5">{t("gold.owned_grams_hint", { amount: formatGrams(moveTarget.pocket.grams_owned) })}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_entry_note")}</label>
-                  <input type="text" value={moveNote} onChange={e => setMoveNote(e.target.value)} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-amber-500 transition-colors" />
-                </div>
+                <Input
+                  label={isGramInput ? t("gold.form_grams") : t("gold.form_idr_amount")}
+                  type="number"
+                  value={moveValue}
+                  onChange={e => setMoveValue(e.target.value)}
+                  placeholder={isGramInput ? t("gold.form_grams_placeholder") : t("gold.form_idr_amount_placeholder")}
+                  min={0}
+                  step={isGramInput ? "0.0001" : "1000"}
+                  autoFocus
+                />
+                {(moveTarget.direction === "sell" || moveTarget.direction === "manual_remove") && (
+                  <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 -mt-2.5">{t("gold.owned_grams_hint", { amount: formatGrams(moveTarget.pocket.grams_owned) })}</p>
+                )}
+                <Input
+                  label={t("gold.form_entry_note")}
+                  type="text"
+                  value={moveNote}
+                  onChange={e => setMoveNote(e.target.value)}
+                />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={() => setMoveTarget(null)} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
-                  <button onClick={executeMove} disabled={isMoving}
-                    className={`flex-1 py-3 rounded-2xl text-white font-semibold text-sm transition-colors shadow-lg disabled:opacity-50 cursor-pointer ${copy.buttonClass}`}>
-                    {isMoving ? t("common.loading") : t(copy.button)}
-                  </button>
+                  <Button variant="secondary" onClick={() => setMoveTarget(null)} className="flex-1 py-3 text-sm">
+                    {t("common.cancel")}
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={executeMove}
+                    disabled={isMoving}
+                    loading={isMoving}
+                    className={`flex-1 py-3 text-sm text-white font-semibold transition-colors shadow-lg ${copy.buttonClass}`}
+                  >
+                    {t(copy.button)}
+                  </Button>
                 </div>
               </div>
             </motion.div>

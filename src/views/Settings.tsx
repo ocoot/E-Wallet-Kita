@@ -32,6 +32,10 @@ import { motion } from "motion/react";
 import { UserSession } from "../types";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "../components/PremiumModal";
+import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
+import { Badge } from "../components/ui/Badge";
 
 interface SettingsProps {
   onUserPrefUpdated: (user: UserSession) => void;
@@ -118,6 +122,7 @@ export const Settings: React.FC<SettingsProps> = ({
   // Profile Edit States
   const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.email?.split('@')[0] || "");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isUpdatingProfile, setIsUpdatingProfile] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -141,6 +146,8 @@ export const Settings: React.FC<SettingsProps> = ({
   const [isTelegramLinked, setIsTelegramLinked] = useState(false);
   const [telegramChatId, setTelegramChatId] = useState("");
   const [isUnlinkModalOpen, setIsUnlinkModalOpen] = useState(false);
+  const [isUnlinkingTelegram, setIsUnlinkingTelegram] = useState(false);
+  const [isGeneratingCode, setIsGeneratingCode] = useState(false);
 
   // Privacy & Data controls
   const [isExportingData, setIsExportingData] = useState(false);
@@ -223,6 +230,8 @@ export const Settings: React.FC<SettingsProps> = ({
   };
 
   const executeUpdateProfileName = async () => {
+    if (isUpdatingProfile) return;
+    setIsUpdatingProfile(true);
     audioFeedback.playChime();
     
     try {
@@ -256,17 +265,25 @@ export const Settings: React.FC<SettingsProps> = ({
       showToast(t("toast.success_profile"), "success");
     } catch (err: any) {
       showToast(err.message, "error");
+    } finally {
+      setIsUpdatingProfile(false);
     }
   };
 
   // Telegram Generator code
   const handleGenerateLinkingCode = async () => {
+    if (isGeneratingCode) return;
+    setIsGeneratingCode(true);
     audioFeedback.playClick();
-    if (!user) return;
+    if (!user) {
+      setIsGeneratingCode(false);
+      return;
+    }
 
     if (!isPremium) {
       showToast(t("premium.locked_telegram"), "error");
       setIsPremiumOpen(true);
+      setIsGeneratingCode(false);
       return;
     }
 
@@ -289,6 +306,8 @@ export const Settings: React.FC<SettingsProps> = ({
       setTimerSeconds(600); // 10 minutes reset
     } catch (err: any) {
       showToast(t("settings.toast_generate_code_error", { message: err.message }), "error");
+    } finally {
+      setIsGeneratingCode(false);
     }
   };
 
@@ -312,6 +331,8 @@ export const Settings: React.FC<SettingsProps> = ({
   };
 
   const executeUnlinkTelegram = async () => {
+    if (isUnlinkingTelegram) return;
+    setIsUnlinkingTelegram(true);
     setIsUnlinkModalOpen(false);
     showToast(t("settings.toast_unlinking_telegram"), "info");
 
@@ -330,6 +351,8 @@ export const Settings: React.FC<SettingsProps> = ({
       showToast(t("toast.success_unlink"), "success");
     } catch (err: any) {
       showToast(err.message, "error");
+    } finally {
+      setIsUnlinkingTelegram(false);
     }
   };
 
@@ -400,9 +423,9 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
           {!isGuest && (
             isPremium ? (
-              <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold bg-amber-500/15 text-amber-400 light_sakura:bg-rose-100 light_sakura:text-rose-600">
+              <Badge variant="warning" className="shrink-0 gap-1 px-2.5 py-1 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold">
                 <Sparkles size={11} /> {t("premium.badge_active")}
-              </span>
+              </Badge>
             ) : (
               <button onClick={() => { audioFeedback.playClick(); setIsPremiumOpen(true); }}
                 className="shrink-0 cursor-pointer px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors light_sakura:bg-slate-100 light_sakura:text-slate-500">
@@ -419,7 +442,7 @@ export const Settings: React.FC<SettingsProps> = ({
           <div className="space-y-6">
             
             {/* Section 1: Profiles Name edit */}
-            <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
+            <Card className="bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 p-5 space-y-4 shadow-sm">
             <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100">
               {t("settings.profile_section")}
             </h3>
@@ -429,27 +452,27 @@ export const Settings: React.FC<SettingsProps> = ({
                 {t("settings.display_name")}
               </label>
               
-              <input
+              <Input
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+                disabled={isUpdatingProfile}
+                className="text-xs bg-slate-950"
               />
             </div>
 
-            <motion.button
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.99 }}
-              type="button"
+            <Button
+              variant="primary"
               onClick={handleUpdateProfileName}
-              className="w-full cursor-pointer border border-transparent bg-indigo-600 hover:bg-indigo-500 py-2.5 rounded-xl font-sans text-xs font-semibold text-white tracking-tight transition-all"
+              disabled={isUpdatingProfile}
+              className="w-full text-xs"
             >
               {t("settings.btn_update_profile")}
-            </motion.button>
-          </div>
+            </Button>
+          </Card>
 
           {/* Section 2: Quick instant Switcher controls */}
-          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
+          <Card className="bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 p-5 space-y-5 shadow-sm">
             <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100">
               {t("settings.preferences")}
             </h3>
@@ -462,36 +485,34 @@ export const Settings: React.FC<SettingsProps> = ({
               </label>
               
               <div className="grid grid-cols-2 gap-2">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <Button
+                  variant="ghost"
                   onClick={() => {
                     audioFeedback.playClick();
                     setLocale("id");
                   }}
-                  className={`py-3 rounded-xl font-sans text-xs font-bold border transition-all cursor-pointer
+                  className={`py-3 text-xs font-bold border transition-all cursor-pointer min-h-[44px]
                     ${locale === "id" 
-                      ? "bg-indigo-600/10 border-indigo-500 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:border-rose-550 light_sakura:text-rose-600" 
+                      ? "bg-indigo-600/10 border-indigo-500 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:border-rose-500 light_sakura:text-rose-600" 
                       : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
                     }`}
                 >
                   Bahasa Indonesia (ID)
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                </Button>
+                <Button
+                  variant="ghost"
                   onClick={() => {
                     audioFeedback.playClick();
                     setLocale("en");
                   }}
-                  className={`py-3 rounded-xl font-sans text-xs font-bold border transition-all cursor-pointer
+                  className={`py-3 text-xs font-bold border transition-all cursor-pointer min-h-[44px]
                     ${locale === "en" 
-                      ? "bg-indigo-600/10 border-indigo-500 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:border-rose-550 light_sakura:text-rose-600" 
+                      ? "bg-indigo-600/10 border-indigo-500 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:border-rose-500 light_sakura:text-rose-600" 
                       : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
                     }`}
                 >
                   English (EN)
-                </motion.button>
+                </Button>
               </div>
             </div>
 
@@ -503,43 +524,41 @@ export const Settings: React.FC<SettingsProps> = ({
               </label>
               
               <div className="grid grid-cols-2 gap-2">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                <Button
+                  variant="ghost"
                   onClick={() => {
                     audioFeedback.playChime();
                     setTheme("dark_obsidian");
                   }}
-                  className={`py-3 rounded-xl font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-bold border transition-all cursor-pointer
+                  className={`py-3 text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-bold border transition-all cursor-pointer min-h-[44px]
                     ${theme === "dark_obsidian" 
                       ? "bg-indigo-600/10 border-indigo-500 text-indigo-400" 
                       : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
                     }`}
                 >
                   {t("settings.theme_dark_obsidian")}
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                </Button>
+                <Button
+                  variant="ghost"
                   onClick={() => {
                     audioFeedback.playChime();
                     setTheme("light_sakura");
                   }}
-                  className={`py-3 rounded-xl font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-bold border transition-all cursor-pointer
+                  className={`py-3 text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-bold border transition-all cursor-pointer min-h-[44px]
                     ${theme === "light_sakura" 
                       ? "bg-rose-500/10 border-rose-500 text-rose-600" 
                       : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
                     }`}
                 >
                   {t("settings.theme_light_sakura")}
-                </motion.button>
+                </Button>
               </div>
             </div>
 
-          </div>
+          </Card>
 
           {/* Section 3: PWA Installation Block */}
-          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
+          <Card className="bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 p-5 space-y-4 shadow-sm">
             <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
               <Smartphone size={14} className="text-indigo-400 light_sakura:text-rose-500" />
               <span>{t("settings.pwa_section")}</span>
@@ -555,16 +574,14 @@ export const Settings: React.FC<SettingsProps> = ({
                 <span className="font-sans text-xs font-semibold">{t("settings.pwa_installed")}</span>
               </div>
             ) : canInstall ? (
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="button"
+              <Button
+                variant="primary"
                 onClick={handleInstallClick}
-                className="w-full cursor-pointer py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 transition-all"
+                className="w-full text-xs font-bold"
               >
                 <Smartphone size={14} />
                 <span>{t("settings.pwa_btn_install")}</span>
-              </motion.button>
+              </Button>
             ) : (
               <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-slate-400 text-xs leading-relaxed light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 light_sakura:text-slate-600">
                 <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)]">
@@ -572,10 +589,10 @@ export const Settings: React.FC<SettingsProps> = ({
                 </p>
               </div>
             )}
-          </div>
+          </Card>
 
             {/* Section 4: Privacy & Data controls (self-service export & account deletion) */}
-            <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
+            <Card className="bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 p-5 space-y-4 shadow-sm">
               <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
                 <ShieldQuestion size={14} className="text-indigo-400 light_sakura:text-rose-500" />
                 <span>{t("settings.privacy_section")}</span>
@@ -598,17 +615,16 @@ export const Settings: React.FC<SettingsProps> = ({
                     </p>
                   </div>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  type="button"
+                <Button
+                  variant="secondary"
                   onClick={handleExportMyData}
                   disabled={isExportingData}
-                  className="w-full cursor-pointer border border-slate-700 bg-slate-900 hover:bg-slate-800 py-2.5 rounded-xl font-sans text-xs font-semibold text-slate-200 tracking-tight transition-all disabled:opacity-50 flex items-center justify-center gap-2 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                  loading={isExportingData}
+                  className="w-full text-xs font-semibold"
                 >
                   <Download size={13} />
                   <span>{isExportingData ? t("common.loading") : t("settings.privacy_export_button")}</span>
-                </motion.button>
+                </Button>
               </div>
 
               {/* Delete account */}
@@ -624,27 +640,23 @@ export const Settings: React.FC<SettingsProps> = ({
                     </p>
                   </div>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  type="button"
+                <Button
+                  variant="danger"
                   onClick={() => { audioFeedback.playClick(); setIsDeleteAccountModalOpen(true); }}
-                  className="w-full cursor-pointer border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 py-2.5 rounded-xl font-sans text-xs font-semibold text-red-400 tracking-tight transition-all flex items-center justify-center gap-2"
+                  className="w-full text-xs font-semibold"
                 >
                   <Trash2 size={13} />
                   <span>{t("settings.privacy_delete_button")}</span>
-                </motion.button>
+                </Button>
               </div>
-            </div>
-
-            {/* Section 5: Unit Test scenarios validator diagnostics - REMOVED */}
+            </Card>
           </div>
 
         {/* Panel Right: Telegram linking & Account promotion */}
         <div className="space-y-6">
           
           {/* Section 3: Telegram Bot Integration block */}
-          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
+          <Card className="bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 p-5 space-y-5 shadow-sm">
             <div className="flex items-center justify-between border-b border-slate-800/10 pb-2.5 light_sakura:border-rose-100">
               <h3 className="font-sans font-bold text-sm text-slate-200 light_sakura:text-slate-800 flex items-center gap-2">
                 <Send size={14} className="text-indigo-400" />
@@ -652,9 +664,9 @@ export const Settings: React.FC<SettingsProps> = ({
                 {isTelegramLocked && <Lock size={12} className="text-amber-500 light_sakura:text-rose-500" />}
               </h3>
               {isTelegramLinked && !isTelegramLocked && (
-                <span className="px-2 py-0.5 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/30">
+                <Badge variant="success" className="px-2 py-0.5 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-bold tracking-wider uppercase rounded-md">
                   {t("common.active")}
-                </span>
+                </Badge>
               )}
             </div>
 
@@ -680,18 +692,17 @@ export const Settings: React.FC<SettingsProps> = ({
                   </p>
                 </div>
                 {!isGuest && (
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
+                  <Button
+                    variant="warning"
                     onClick={() => {
                       audioFeedback.playClick();
                       setIsPremiumOpen(true);
                     }}
-                    className="cursor-pointer px-4 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl shadow-lg shadow-amber-500/10 flex items-center gap-1.5 transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:text-white"
+                    className="text-xs font-bold gap-1.5"
                   >
                     <Sparkles size={13} />
                     <span>{t("premium.menu_label")}</span>
-                  </motion.button>
+                  </Button>
                 )}
               </div>
             ) : isTelegramLinked ? (
@@ -736,15 +747,14 @@ export const Settings: React.FC<SettingsProps> = ({
 
                 {/* Bill Reminder Time Preference dipindahkan ke halaman Tagihan */}
 
-                <motion.button
-                  whileHover={{ scale: 1.01 }}
-                  whileTap={{ scale: 0.99 }}
-                  type="button"
+                <Button
+                  variant="danger"
                   onClick={handleUnlinkTelegramClick}
-                  className="w-full cursor-pointer py-3 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl font-sans text-xs font-semibold transition-colors"
+                  disabled={isUnlinkingTelegram}
+                  className="w-full text-xs font-semibold"
                 >
                   {t("settings.btn_unlink")}
-                </motion.button>
+                </Button>
               </div>
             ) : (
               <div className="space-y-5">
@@ -772,15 +782,15 @@ export const Settings: React.FC<SettingsProps> = ({
                 </div>
 
                 {!linkingCode ? (
-                  <motion.button
-                    whileHover={{ scale: 1.02, y: -1 }}
-                    whileTap={{ scale: 0.98 }}
-                    type="button"
+                  <Button
+                    variant="primary"
                     onClick={handleGenerateLinkingCode}
-                    className="w-full cursor-pointer py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                    loading={isGeneratingCode}
+                    disabled={isGeneratingCode}
+                    className="w-full text-xs font-bold"
                   >
                     {t("settings.btn_generate_code")}
-                  </motion.button>
+                  </Button>
                 ) : (
                   <div className="p-5 rounded-2xl border-2 border-dashed border-indigo-500/30 bg-indigo-500/5 light_sakura:border-rose-200 light_sakura:bg-rose-50/40 space-y-4 flex flex-col items-center w-full">
                     <div className="text-center space-y-1">
@@ -816,7 +826,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 )}
               </div>
             )}
-          </div>
+          </Card>
 
       {/* Confirmation - Modify Profiles Name */}
       </div>{/* panel-right */}
@@ -833,6 +843,7 @@ export const Settings: React.FC<SettingsProps> = ({
           audioFeedback.playClick();
           setIsProfileModalOpen(false);
         }}
+        confirmDisabled={isUpdatingProfile}
       />
 
       {/* Confirmation - Unlink Bot */}
@@ -848,6 +859,7 @@ export const Settings: React.FC<SettingsProps> = ({
           audioFeedback.playClick();
           setIsUnlinkModalOpen(false);
         }}
+        confirmDisabled={isUnlinkingTelegram}
       />
 
       <PremiumModal 
