@@ -5,6 +5,7 @@ import { useToast } from "../contexts/ToastContext";
 import { audioFeedback } from "../lib/audio";
 import { Lock, Eye, EyeOff, Save, CheckCircle2, ShieldCheck, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 interface ResetPasswordModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ interface ResetPasswordModalProps {
 export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, onClose }) => {
   const { t } = useLanguage();
   const { showToast } = useToast();
+  useLockBodyScroll(isOpen);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -66,7 +68,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
       {/* Dark modern backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -96,7 +98,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
           x: { duration: 0.4, ease: "easeInOut" },
           default: { duration: 0.3, ease: "easeOut" }
         }}
-        className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl flex flex-col relative z-20 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:shadow-rose-150/10"
+        className="w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl flex flex-col relative z-20 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:shadow-rose-150/10"
       >
         {/* Close Button */}
         <button

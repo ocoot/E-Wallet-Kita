@@ -1,6 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 interface LoadingOverlayProps {
   isOpen: boolean;
@@ -8,6 +9,8 @@ interface LoadingOverlayProps {
 }
 
 export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ isOpen, message = "Memproses..." }) => {
+  useLockBodyScroll(isOpen);
+
   return (
     <AnimatePresence>
       {isOpen && (

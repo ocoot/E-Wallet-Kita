@@ -25,6 +25,7 @@ import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "../components/PremiumModal";
 import { useCategories } from "../hooks/useCategories";
 import { useWallets } from "../hooks/useWallets";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -85,6 +86,7 @@ export const History: React.FC<HistoryProps> = ({
   const [editTarget, setEditTarget] = useState<Transaction | null>(null);
   const [isEditSaving, setIsEditSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  useLockBodyScroll(isLoading);
   const { isPremium, refresh: refreshPremium } = usePremium();
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);

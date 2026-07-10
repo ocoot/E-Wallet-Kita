@@ -9,6 +9,7 @@ import { GoldPocket, GoldBrand, ACTIVE_GOLD_BRANDS } from "../types";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
 import { InfoTooltip } from "../components/InfoTooltip";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { DropdownField } from "../components/DropdownField";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
@@ -92,6 +93,8 @@ export const GoldSavings: React.FC = () => {
   const [moveValue, setMoveValue] = useState("");
   const [moveNote, setMoveNote] = useState("");
   const [isMoving, setIsMoving] = useState(false);
+
+  useLockBodyScroll(isFormOpen || !!moveTarget);
   const [busyId, setBusyId] = useState<string | null>(null);
   // Kartu emas "fisik" (Konsep D): id pos yang sedang di-flip (nampilkan sisi
   // aksi). Set (bukan single value) supaya beberapa kartu bisa flip
@@ -500,10 +503,10 @@ export const GoldSavings: React.FC = () => {
       <AnimatePresence>
         {isFormOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-slate-950/70 backdrop-blur-sm"
             onClick={e => { if (e.target === e.currentTarget) setIsFormOpen(false); }}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              className="w-full max-w-md bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto">
+              className="w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl">
               <div className="h-1 w-full bg-gradient-to-r from-amber-500 to-yellow-500" />
               <div className="p-6 space-y-4">
                 <h2 className="font-sans font-bold text-lg text-slate-100 light_sakura:text-slate-900">
@@ -556,10 +559,10 @@ export const GoldSavings: React.FC = () => {
       <AnimatePresence>
         {moveTarget && copy && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-slate-950/70 backdrop-blur-sm"
             onClick={e => { if (e.target === e.currentTarget) setMoveTarget(null); }}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              className="w-full max-w-sm bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl overflow-hidden">
+              className="w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl">
               <div className={`h-1 w-full ${copy.barClass}`} />
               <div className="p-6 space-y-4">
                 <div>

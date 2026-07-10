@@ -34,6 +34,7 @@ import {
 import { audioFeedback } from "../lib/audio";
 import { useAdmin } from "../hooks/useAdmin";
 import { useMaintenance } from "../contexts/MaintenanceContext";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 interface SidebarProps {
   onLogoutClick: () => void;
@@ -57,6 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   
   // Mobile drawer overlay state
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  useLockBodyScroll(isMobileOpen);
 
   // In Supabase, is_guest can be inferred from is_anonymous
   const isGuest = user?.is_anonymous ?? false;

@@ -1,7 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
+import { useDropdownPosition } from "../hooks/useDropdownPosition";
 
 export interface DropdownOption {
   /** Value disimpan ke form state -- boleh string kosong "" untuk opsi default. */
@@ -33,6 +35,12 @@ interface DropdownFieldProps {
  * diblokir oleh sandbox iframe. Dropdown ini sepenuhnya dikontrol lewat
  * state React + elemen <button>/<div> biasa, jadi selalu bisa di-tap di
  * environment manapun, dan tampilannya konsisten dengan gaya card di app ini.
+ *
+ * Panel opsi di-render lewat React Portal ke document.body (position: fixed,
+ * dihitung dari getBoundingClientRect tombol trigger) supaya TIDAK PERNAH
+ * terpotong oleh ancestor yang punya overflow-hidden/auto -- termasuk saat
+ * dropdown ini dipakai di dalam modal/dialog konfirmasi. Lihat
+ * `useDropdownPosition` untuk detail perhitungannya.
  */
 export const DropdownField: React.FC<DropdownFieldProps> = ({
   options,
@@ -46,13 +54,24 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const position = useDropdownPosition(open, containerRef);
 
   useEffect(() => {
     if (!open) return;
     const handleOutside = (e: MouseEvent | TouchEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
+      const target = e.target as Node;
+      // Panel di-render lewat portal, jadi secara DOM dia bukan descendant
+      // dari containerRef -- harus dicek terpisah, kalau tidak klik pada
+      // opsi dropdown akan selalu dianggap "di luar" dan menutup panel
+      // sebelum onClick opsi sempat jalan.
+      if (
+        containerRef.current?.contains(target) ||
+        panelRef.current?.contains(target)
+      ) {
+        return;
       }
+      setOpen(false);
     };
     document.addEventListener("mousedown", handleOutside);
     document.addEventListener("touchstart", handleOutside);
@@ -90,37 +109,49 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
         <ChevronDown size={14} className={`shrink-0 text-slate-500 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            className={`absolute z-30 mt-1.5 w-full max-h-56 overflow-y-auto rounded-xl border bg-slate-900 border-slate-800 shadow-xl light_sakura:bg-white light_sakura:border-rose-100 p-1 ${panelClassName}`}
-          >
-            {options.map((opt) => {
-              const isSelected = opt.value === value;
-              return (
-                <button
-                  key={opt.value || "__default__"}
-                  type="button"
-                  disabled={opt.disabled}
-                  onClick={() => { if (opt.disabled) return; audioFeedback.playClick(); onChange(opt.value); setOpen(false); }}
-                  className={`w-full text-left px-3 py-2.5 rounded-lg font-sans text-xs transition-colors ${
-                    opt.disabled
-                      ? "text-slate-600 cursor-not-allowed opacity-50"
-                      : isSelected
-                        ? `${selectedStyle} cursor-pointer`
-                        : "text-slate-300 hover:bg-slate-800/60 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50/60 cursor-pointer"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {open && createPortal(
+        <AnimatePresence>
+          {open && (
+            <motion.div
+              ref={panelRef}
+              initial={{ opacity: 0, y: position.openUpward ? 6 : -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: position.openUpward ? 6 : -6 }}
+              style={{
+                position: "fixed",
+                left: position.left,
+                width: position.width,
+                top: position.top ?? undefined,
+                bottom: position.bottom ?? undefined,
+                maxHeight: position.maxHeight,
+              }}
+              className={`z-[70] overflow-y-auto rounded-xl border bg-slate-900 border-slate-800 shadow-xl light_sakura:bg-white light_sakura:border-rose-100 p-1 ${panelClassName}`}
+            >
+              {options.map((opt) => {
+                const isSelected = opt.value === value;
+                return (
+                  <button
+                    key={opt.value || "__default__"}
+                    type="button"
+                    disabled={opt.disabled}
+                    onClick={() => { if (opt.disabled) return; audioFeedback.playClick(); onChange(opt.value); setOpen(false); }}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg font-sans text-xs transition-colors ${
+                      opt.disabled
+                        ? "text-slate-600 cursor-not-allowed opacity-50"
+                        : isSelected
+                          ? `${selectedStyle} cursor-pointer`
+                          : "text-slate-300 hover:bg-slate-800/60 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50/60 cursor-pointer"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 };

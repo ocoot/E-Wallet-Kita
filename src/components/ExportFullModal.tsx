@@ -5,6 +5,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { isRangeValid, diffMonthsInclusive, MAX_RANGE_MONTHS } from "../lib/pdf/dateRange";
 import { useWallets } from "../hooks/useWallets";
 import { DropdownField } from "./DropdownField";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 interface ExportFullModalProps {
   isOpen: boolean;
@@ -41,10 +42,12 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
   const valid = isRangeValid(fromMonth, toMonth);
   const monthsSelected = fromMonth && toMonth ? diffMonthsInclusive(fromMonth, toMonth) : 0;
 
+  useLockBodyScroll(isOpen);
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -58,7 +61,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border p-6 shadow-2xl bg-slate-900 border-indigo-500/20 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-rose-100"
+            className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl bg-slate-900 border-indigo-500/20 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-rose-100"
           >
             <button
               onClick={onCancel}

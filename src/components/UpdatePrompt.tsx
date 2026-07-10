@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { RefreshCw, X } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 /**
  * Banner "Versi baru tersedia" yang muncul otomatis saat service worker
@@ -36,10 +37,12 @@ export const UpdatePrompt: React.FC = () => {
 
   const handleDismiss = () => setVisible(false);
 
+  useLockBodyScroll(visible);
+
   return (
     <AnimatePresence>
       {visible && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -59,7 +62,7 @@ export const UpdatePrompt: React.FC = () => {
             role="dialog"
             aria-modal="true"
             aria-labelledby="update-prompt-title"
-            className="relative w-full max-w-[22rem] sm:max-w-sm md:max-w-md"
+            className="relative w-full max-w-[22rem] sm:max-w-sm md:max-w-md my-auto max-h-[85vh] overflow-y-auto"
           >
             <div className="relative flex flex-col gap-4 p-5 sm:p-6 rounded-2xl shadow-2xl border bg-slate-900 border-indigo-500/30 text-white light_sakura:bg-white light_sakura:border-rose-300/50 light_sakura:text-slate-800">
               <button

@@ -10,6 +10,7 @@ import { useWallets } from "../hooks/useWallets";
 import { Modal } from "../components/Modal";
 import { DropdownField } from "../components/DropdownField";
 import { EmptyState } from "../components/EmptyState";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import {
@@ -42,6 +43,7 @@ export const BillReminders: React.FC = () => {
   const [form, setForm] = useState<BillFormState>(emptyForm());
   const [isSaving, setIsSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<BillReminderWithUrgency | null>(null);
+  useLockBodyScroll(isFormOpen);
   const [isDeleting, setIsDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [toggleConfirmTarget, setToggleConfirmTarget] = useState<BillReminderWithUrgency | null>(null);
@@ -320,10 +322,10 @@ export const BillReminders: React.FC = () => {
       <AnimatePresence>
         {isFormOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-slate-950/70 backdrop-blur-sm"
             onClick={e => { if (e.target === e.currentTarget) setIsFormOpen(false); }}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              className="w-full max-w-md bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl overflow-hidden">
+              className="w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl">
               <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-teal-400" />
               <div className="p-6 space-y-4">
                 <h2 className="font-sans font-bold text-lg text-slate-100 light_sakura:text-slate-900">

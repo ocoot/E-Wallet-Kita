@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AlertTriangle, X } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -44,10 +45,12 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
     onCancel();
   };
 
+  useLockBodyScroll(isOpen);
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -60,7 +63,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-red-500/30 bg-slate-900 p-6 shadow-2xl light_sakura:bg-white light_sakura:border-red-200"
+            className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-red-500/30 bg-slate-900 p-6 shadow-2xl light_sakura:bg-white light_sakura:border-red-200"
           >
             <button
               onClick={handleClose}

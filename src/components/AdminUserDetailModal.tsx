@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { UserProfile } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import {
   X, Shield, Ban, Crown, Mail, MessageCircle, Calendar, Hash, Wallet, TrendingUp, TrendingDown
 } from "lucide-react";
@@ -24,6 +25,8 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
   const { t, locale } = useLanguage();
   const [detail, setDetail] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useLockBodyScroll(!!user);
 
   useEffect(() => {
     if (!user) return;
@@ -80,7 +83,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
@@ -88,10 +91,10 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
       />
 
       {/* Modal Card */}
-      <div className="relative z-10 w-full max-w-md bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden light_sakura:bg-rose-50/95 light_sakura:border-rose-100">
+      <div className="relative z-10 w-full max-w-md my-auto max-h-[85vh] flex flex-col bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden light_sakura:bg-rose-50/95 light_sakura:border-rose-100">
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/60 bg-slate-900/50 light_sakura:border-rose-100/60 light_sakura:bg-rose-100/20">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-800/60 bg-slate-900/50 light_sakura:border-rose-100/60 light_sakura:bg-rose-100/20">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center font-black text-indigo-400 text-lg light_sakura:bg-rose-200/50 light_sakura:border-rose-300 light_sakura:text-rose-600">
               {user.display_name.charAt(0).toUpperCase()}
@@ -115,7 +118,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
             {t("admin.loading_user_detail")}
           </div>
         ) : detail ? (
-          <div className="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
+          <div className="px-6 py-5 space-y-5 flex-1 overflow-y-auto">
 
             {/* Status Badges */}
             <div className="flex flex-wrap gap-2">

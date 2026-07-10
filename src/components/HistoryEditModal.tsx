@@ -6,6 +6,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useCategories } from "../hooks/useCategories";
 import { useWallets } from "../hooks/useWallets";
 import { DropdownField } from "./DropdownField";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 interface HistoryEditModalProps {
   transaction: Transaction | null;
@@ -30,6 +31,8 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
   const [transactionDate, setTransactionDate] = useState("");
   const [walletId, setWalletId] = useState<string | null>(null);
 
+  useLockBodyScroll(!!transaction);
+
   useEffect(() => {
     if (transaction) {
       setCategory(transaction.category);
@@ -52,7 +55,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -66,7 +69,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 15 }}
           transition={{ type: "spring", duration: 0.3 }}
-          className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
+          className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
         >
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">

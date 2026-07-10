@@ -6,6 +6,7 @@ import { useCategories } from "../hooks/useCategories";
 import { audioFeedback } from "../lib/audio";
 import type { VoiceParsedResult } from "./VoiceRecorder";
 import { DropdownField } from "./DropdownField";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 export type VoiceModalStatus = "processing" | "error" | "success" | null;
 
@@ -67,6 +68,8 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
   const isOpen = status !== null;
   const canConfirm = status === "success" && amount > 0 && !!category;
 
+  useLockBodyScroll(isOpen);
+
   const handleConfirm = () => {
     if (!canConfirm) return;
     audioFeedback.playChime();
@@ -86,7 +89,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
           {/* Overlay */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -103,7 +106,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               transition={{ type: "spring", duration: 0.3 }}
-              className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl border p-8 shadow-2xl bg-slate-900 border-indigo-500/20 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-rose-100 flex flex-col items-center text-center space-y-4"
+              className="relative z-10 w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-8 shadow-2xl bg-slate-900 border-indigo-500/20 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-rose-100 flex flex-col items-center text-center space-y-4"
             >
               <div className="p-3.5 rounded-full bg-indigo-500/10 text-indigo-400 light_sakura:bg-rose-50 light_sakura:text-rose-500">
                 <Loader2 className="animate-spin" size={28} />
@@ -126,7 +129,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               transition={{ type: "spring", duration: 0.3 }}
-              className="relative z-10 w-full max-w-sm overflow-hidden rounded-2xl border p-6 shadow-2xl bg-slate-900 border-red-500/30 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-red-200"
+              className="relative z-10 w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl bg-slate-900 border-red-500/30 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-red-200"
             >
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="p-3.5 rounded-full bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500">
@@ -171,7 +174,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               transition={{ type: "spring", duration: 0.3 }}
-              className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border p-6 shadow-2xl bg-slate-900 border-indigo-500/20 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-rose-100 max-h-[90vh] overflow-y-auto"
+              className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl bg-slate-900 border-indigo-500/20 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-rose-100"
             >
               {/* Header */}
               <div className="flex items-center justify-between border-b border-slate-800/80 pb-4 mb-5 light_sakura:border-rose-100/50">

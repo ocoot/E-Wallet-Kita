@@ -5,6 +5,7 @@ import { AlertTriangle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Modal } from "./Modal";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 interface HistoryDeleteModalProps {
   deleteTargetId: string | null;
@@ -45,6 +46,8 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
     return locale === "id" ? (cat.label_id || key) : (cat.label_en || key);
   };
 
+  useLockBodyScroll(deleteTargetId !== null || isDeleteAllOpen);
+
   return (
     <>
       {/* Confirmation Modal - Single Item */}
@@ -68,7 +71,7 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
       {/* Confirmation Modal - Destruction Safety "HAPUS" verification */}
       <AnimatePresence>
         {isDeleteAllOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -84,7 +87,7 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-10 w-full max-w-md p-6 rounded-2xl bg-slate-900 text-white border border-red-500/30 overflow-hidden light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-red-200"
+              className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden p-6 rounded-2xl bg-slate-900 text-white border border-red-500/30 light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-red-200"
             >
               <div className="flex items-center gap-2.5 text-red-100 mb-3 light_sakura:text-red-600">
                 <AlertTriangle size={24} />

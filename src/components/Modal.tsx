@@ -1,6 +1,7 @@
 import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AlertCircle, HelpCircle, Trash2, CheckCircle } from "lucide-react";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 interface ModalProps {
   isOpen: boolean;
@@ -25,10 +26,12 @@ export const Modal: React.FC<ModalProps> = ({
   onCancel,
   confirmDisabled = false
 }) => {
+  useLockBodyScroll(isOpen);
+
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
           {/* Overlay background */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -44,7 +47,7 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className={`relative z-10 w-full max-w-md overflow-hidden rounded-2xl border p-6 shadow-2xl transition-colors duration-300
+            className={`relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl transition-colors duration-300
               ${type === "danger" 
                 ? "bg-slate-900 border-red-500/30 text-white dark_obsidian:bg-slate-900 light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-red-200" 
                 : "bg-slate-900 border-indigo-500/20 text-white dark_obsidian:bg-slate-900 light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
