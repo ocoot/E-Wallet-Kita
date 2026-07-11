@@ -5,7 +5,6 @@ import { useToast } from "../contexts/ToastContext";
 import { useAdmin } from "../hooks/useAdmin";
 import { useMaintenance } from "../contexts/MaintenanceContext";
 import { LoadingOverlay } from "../components/LoadingOverlay";
-import { ErrorState } from "../components/ErrorState";
 import {
   Wrench,
   Power,
@@ -36,7 +35,6 @@ export const AdminMaintenance: React.FC = () => {
   const [messageEn, setMessageEn] = useState("");
   const [features, setFeatures] = useState<FeatureLockRow[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
   const [savingAction, setSavingAction] = useState<{ isOpen: boolean; message: string }>({
     isOpen: false,
     message: "",
@@ -44,7 +42,6 @@ export const AdminMaintenance: React.FC = () => {
 
   const loadAll = useCallback(async () => {
     setLoading(true);
-    setError(false);
     try {
       const { data, error } = await supabase.rpc("get_maintenance_status");
       if (error) throw error;
@@ -61,7 +58,6 @@ export const AdminMaintenance: React.FC = () => {
           : []
       );
     } catch (err: any) {
-      setError(true);
       showToast(err.message || t("admin.maintenance_load_error"), "error");
     } finally {
       setLoading(false);
@@ -141,10 +137,6 @@ export const AdminMaintenance: React.FC = () => {
 
   if (loading) {
     return <div className="py-12 text-center text-slate-500 text-sm light_sakura:text-rose-500">{t("admin.loading")}</div>;
-  }
-
-  if (error) {
-    return <ErrorState onRetry={loadAll} />;
   }
 
   return (

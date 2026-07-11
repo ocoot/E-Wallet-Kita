@@ -809,7 +809,7 @@ export const Settings: React.FC<SettingsProps> = ({
                         <span>{t("settings.code_expires")}: {formatTimerStr(timerSeconds)}</span>
                       </div>
                       <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 text-center italic">
-                        {t("settings.waiting_for_connection")}
+                        {t("settings.waiting_for_connection", "Menunggu koneksi dari bot...")}
                       </p>
                     </div>
                   </div>

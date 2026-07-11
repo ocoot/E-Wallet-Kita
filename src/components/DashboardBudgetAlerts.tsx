@@ -6,7 +6,6 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useCategories } from "../hooks/useCategories";
 import { useBudgets } from "../hooks/useBudgets";
-import { ErrorState } from "./ErrorState";
 import { audioFeedback } from "../lib/audio";
 
 /**
@@ -19,17 +18,9 @@ export const DashboardBudgetAlerts: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { categories } = useCategories();
-  const { budgets, loading, error, refresh } = useBudgets(user?.id);
+  const { budgets, loading } = useBudgets(user?.id);
 
   const alerts = budgets.filter((b) => b.status !== "safe");
-
-  if (error) {
-    return (
-      <div className="rounded-3xl bg-slate-900 border border-slate-900 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg transition-colors duration-300">
-        <ErrorState onRetry={refresh} />
-      </div>
-    );
-  }
 
   if (loading || alerts.length === 0) return null;
 

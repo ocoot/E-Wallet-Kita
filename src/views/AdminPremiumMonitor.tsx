@@ -7,7 +7,6 @@ import { LoadingOverlay } from "../components/LoadingOverlay";
 import { Modal } from "../components/Modal";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { EmptyState } from "../components/EmptyState";
-import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
 import {
   CreditCard, CheckCircle, Clock, XCircle, AlertCircle,
@@ -52,7 +51,6 @@ export const AdminPremiumMonitor: React.FC = () => {
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
 
   // --- Dummy QRIS toggle (app_settings: dummy_qris_enabled) ---
   const [dummyQrisEnabled, setDummyQrisEnabled] = useState(false);
@@ -117,7 +115,6 @@ export const AdminPremiumMonitor: React.FC = () => {
 
   const loadTransactions = useCallback(async () => {
     setLoading(true);
-    setError(false);
     try {
       const limitVal = pageSize === "all" ? 1000000 : pageSize;
       const offsetVal = pageSize === "all" ? 0 : page * pageSize;
@@ -136,7 +133,6 @@ export const AdminPremiumMonitor: React.FC = () => {
       setTransactions(txRes.data || []);
       setTotalCount(countRes.data || 0);
     } catch (err: any) {
-      setError(true);
       showToast(err.message || t("toast.error_general"), "error");
     } finally {
       setLoading(false);
@@ -311,8 +307,6 @@ export const AdminPremiumMonitor: React.FC = () => {
           <div className="py-16 flex items-center justify-center">
             <Clock className="animate-spin text-indigo-500" size={28} />
           </div>
-        ) : error ? (
-          <ErrorState onRetry={loadTransactions} />
         ) : transactions.length === 0 ? (
           <EmptyState message={t("admin.no_transactions_found")} />
         ) : (

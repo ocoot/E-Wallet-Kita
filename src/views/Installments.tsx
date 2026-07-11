@@ -8,7 +8,6 @@ import { useInstallments, InstallmentWithProgress } from "../hooks/useInstallmen
 import { useWallets } from "../hooks/useWallets";
 import { Modal } from "../components/Modal";
 import { DropdownField } from "../components/DropdownField";
-import { Input } from "../components/ui/Input";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
@@ -356,14 +355,10 @@ export const Installments: React.FC = () => {
                 <h2 className="font-sans font-bold text-lg text-slate-100 light_sakura:text-slate-900">
                   {editTarget ? t("installments.edit_title") : t("installments.add_title")}
                 </h2>
-                <Input
-                  label={t("installments.form_name")}
-                  accent="indigo"
-                  type="text"
-                  value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder={t("installments.form_name_placeholder")}
-                />
+                <div>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_name")}</label>
+                  <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={t("installments.form_name_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
+                </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_category")}</label>
                   <DropdownField
@@ -373,40 +368,23 @@ export const Installments: React.FC = () => {
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <Input
-                    label={t("installments.form_monthly_amount")}
-                    accent="indigo"
-                    type="number"
-                    value={form.monthly_amount}
-                    onChange={e => setForm(f => ({ ...f, monthly_amount: e.target.value }))}
-                    placeholder={t("installments.form_monthly_amount_placeholder")}
-                    min={0}
-                  />
-                  <Input
-                    label={t("installments.form_total_months")}
-                    accent="indigo"
-                    type="number"
-                    value={form.total_months}
-                    onChange={e => setForm(f => ({ ...f, total_months: e.target.value }))}
-                    min={1}
-                  />
+                  <div>
+                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_monthly_amount")}</label>
+                    <input type="number" value={form.monthly_amount} onChange={e => setForm(f => ({ ...f, monthly_amount: e.target.value }))} placeholder={t("installments.form_monthly_amount_placeholder")} min={0} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
+                  </div>
+                  <div>
+                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_total_months")}</label>
+                    <input type="number" value={form.total_months} onChange={e => setForm(f => ({ ...f, total_months: e.target.value }))} min={1} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
+                  </div>
                 </div>
-                <Input
-                  label={t("installments.form_principal")}
-                  accent="indigo"
-                  type="number"
-                  value={form.principal_amount}
-                  onChange={e => setForm(f => ({ ...f, principal_amount: e.target.value }))}
-                  placeholder={t("installments.form_principal_placeholder")}
-                  min={0}
-                />
-                <Input
-                  label={t("installments.form_start_date")}
-                  accent="indigo"
-                  type="date"
-                  value={form.start_date}
-                  onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))}
-                />
+                <div>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_principal")}</label>
+                  <input type="number" value={form.principal_amount} onChange={e => setForm(f => ({ ...f, principal_amount: e.target.value }))} placeholder={t("installments.form_principal_placeholder")} min={0} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
+                </div>
+                <div>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_start_date")}</label>
+                  <input type="date" value={form.start_date} onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
+                </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
                   <DropdownField
@@ -418,14 +396,10 @@ export const Installments: React.FC = () => {
                     ]}
                   />
                 </div>
-                <Input
-                  label={t("installments.form_notes")}
-                  accent="indigo"
-                  type="text"
-                  value={form.notes}
-                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                  placeholder={t("installments.form_notes_placeholder")}
-                />
+                <div>
+                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_notes")}</label>
+                  <input type="text" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder={t("installments.form_notes_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
+                </div>
                 <div className="flex gap-3 pt-1">
                   <button onClick={() => setIsFormOpen(false)} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
                   <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 text-white font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/20 disabled:opacity-50 cursor-pointer">{isSaving ? t("common.loading") : t("common.save")}</button>

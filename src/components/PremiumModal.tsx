@@ -16,7 +16,6 @@ import { Modal } from "./Modal";
 import { getPremiumBasePrice } from "../lib/settings";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
-import { Button } from "./ui/Button";
 
 type Step = "terms" | "qris" | "checking" | "success" | "expired" | "failed";
 
@@ -265,8 +264,8 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                 <li>• {t("premium.terms_point_4")}</li>
               </ul>
               <div className="flex gap-3 mt-6">
-                <Button variant="secondary" size="md" onClick={onClose} className="flex-1 rounded-xl">{t("common.cancel")}</Button>
-                <Button variant="primary" size="md" onClick={startPayment} className="flex-1 rounded-xl">{t("premium.terms_agree")}</Button>
+                <button onClick={onClose} className="flex-1 py-3 rounded-xl bg-slate-800 text-slate-300 text-sm font-semibold">{t("common.cancel")}</button>
+                <button onClick={startPayment} className="flex-1 py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold">{t("premium.terms_agree")}</button>
               </div>
             </div>
           )}
@@ -297,15 +296,12 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               {isSandboxMode() && <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-3">{t("premium.sandbox_notice")}</p>}
               {!isSandboxMode() && tx.is_sandbox && <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-3">{t("premium.dummy_qris_notice")}</p>}
               
-              <Button
-                variant="danger-ghost"
-                size="md"
-                fullWidth
+              <button
                 onClick={() => setShowCancelConfirm(true)}
-                className="mt-4 rounded-xl border border-red-500/30 font-medium"
+                className="mt-4 w-full py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-medium text-sm"
               >
                 {t("premium.cancel_transaction")}
-              </Button>
+              </button>
               
               <Modal
                 isOpen={showCancelConfirm}
@@ -328,19 +324,16 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
 
               {askDownload ? (
                 <div className="flex flex-col gap-3 mt-6">
-                  <Button
-                    variant="secondary"
-                    size="md"
-                    fullWidth
+                  <button
                     disabled={actionLoading !== null}
                     onClick={() => {
                       setAskDownload(false);
                       onClose();
                     }}
-                    className="rounded-xl"
+                    className="w-full py-3 rounded-xl bg-slate-800 text-slate-300 text-sm font-semibold hover:bg-slate-700/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {t("premium.skip_receipt")}
-                  </Button>
+                  </button>
 
                   <div className="grid grid-cols-2 gap-3">
                     <button
@@ -381,7 +374,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                   </div>
                 </div>
               ) : (
-                <Button variant="primary" size="md" fullWidth onClick={onClose} className="mt-6 rounded-xl">{t("common.close")}</Button>
+                <button onClick={onClose} className="mt-6 w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-500 transition-colors">{t("common.close")}</button>
               )}
             </div>
           )}
@@ -391,7 +384,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               <Clock className="mx-auto text-amber-400 mb-3" size={40} />
               <h3 className="text-lg font-bold text-white">{t("premium.expired_title")}</h3>
               <p className="text-sm text-slate-400 mt-2">{t("premium.expired_desc")}</p>
-                            <Button variant="primary" size="md" fullWidth onClick={() => setStep("terms")} className="mt-6 rounded-xl">{t("premium.retry")}</Button>
+              <button onClick={() => setStep("terms")} className="mt-6 w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold">{t("premium.retry")}</button>
             </div>
           )}
 
@@ -400,7 +393,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               <XCircle className="mx-auto text-red-400 mb-3" size={40} />
               <h3 className="text-lg font-bold text-white">{t("premium.failed_title")}</h3>
               <p className="text-sm text-slate-400 mt-2">{t("premium.failed_desc")}</p>
-                            <Button variant="primary" size="md" fullWidth onClick={() => setStep("terms")} className="mt-6 rounded-xl">{t("premium.retry")}</Button>
+              <button onClick={() => setStep("terms")} className="mt-6 w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold">{t("premium.retry")}</button>
             </div>
           )}
         </motion.div>

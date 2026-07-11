@@ -6,7 +6,6 @@ import { useAuth } from "../contexts/AuthContext";
 import { dbService } from "../lib/db";
 import { AccumulatedBalance, SavingsSummary, GoldHoldingsSummary } from "../types";
 import { InfoTooltip } from "./InfoTooltip";
-import { ErrorState } from "./ErrorState";
 import { audioFeedback } from "../lib/audio";
 
 interface DashboardOverviewCardProps {
@@ -57,15 +56,12 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
   const [savings, setSavings] = useState<SavingsSummary | null>(null);
   const [gold, setGold] = useState<GoldHoldingsSummary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-  const [reloadCounter, setReloadCounter] = useState(0);
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     if (!user?.id) return;
     let cancelled = false;
     setLoading(true);
-    setError(false);
     Promise.all([
       dbService.getAccumulatedBalance(),
       dbService.getSavingsSummary().catch(() => ({ total_saved: 0, pocket_count: 0 })),
@@ -80,26 +76,14 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
         setSavings(savingsRes);
         setGold(goldRes);
       })
-      .catch(err => {
-        if (cancelled) return;
-        console.error("DashboardOverviewCard error:", err);
-        setError(true);
-      })
+      .catch(err => console.error("DashboardOverviewCard error:", err))
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [user?.id, refreshTrigger, reloadCounter]);
+  }, [user?.id, refreshTrigger]);
 
   if (loading && !data) {
     return (
       <div className="rounded-3xl border border-slate-800/60 bg-slate-900 light_sakura:bg-white light_sakura:border-rose-100/40 p-6 h-[280px] animate-pulse" />
-    );
-  }
-
-  if (error && !data) {
-    return (
-      <div className="rounded-3xl border border-slate-800/60 bg-slate-900 light_sakura:bg-white light_sakura:border-rose-100/40">
-        <ErrorState onRetry={() => setReloadCounter((c) => c + 1)} />
-      </div>
     );
   }
 

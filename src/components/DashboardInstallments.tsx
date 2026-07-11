@@ -5,7 +5,6 @@ import { Landmark, ChevronRight } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useInstallments } from "../hooks/useInstallments";
-import { ErrorState } from "./ErrorState";
 import { audioFeedback } from "../lib/audio";
 
 /**
@@ -17,17 +16,9 @@ export const DashboardInstallments: React.FC = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { installments, loading, error, refresh } = useInstallments(user?.id);
+  const { installments, loading } = useInstallments(user?.id);
 
   const active = installments.filter((i) => !i.is_completed).slice(0, 3);
-
-  if (error) {
-    return (
-      <div className="rounded-3xl bg-slate-900 border border-slate-900 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg transition-colors duration-300">
-        <ErrorState onRetry={refresh} />
-      </div>
-    );
-  }
 
   if (loading || active.length === 0) return null;
 

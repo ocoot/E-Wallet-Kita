@@ -5,7 +5,6 @@ import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { EmptyState } from "../components/EmptyState";
-import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
 import {
   Brain,
@@ -95,7 +94,6 @@ export const AdminAiMonitor: React.FC = () => {
 
   const [summary, setSummary]     = useState<AiUsageSummary | null>(null);
   const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [period, setPeriod]       = useState<PeriodOption>(30);
   const [pageSize, setPageSize]   = useState<number | "all">(10);
@@ -110,7 +108,6 @@ export const AdminAiMonitor: React.FC = () => {
   const load = useCallback(async (showRefreshing = false) => {
     if (showRefreshing) setRefreshing(true);
     else setLoading(true);
-    setError(false);
 
     const { data, error } = await supabase.rpc("get_ai_usage_summary", {
       p_days: period,
@@ -119,7 +116,6 @@ export const AdminAiMonitor: React.FC = () => {
     if (!error && data) {
       setSummary(data as AiUsageSummary);
     } else {
-      setError(true);
       console.error("[AdminAiMonitor] RPC error:", error);
     }
     setLoading(false);
@@ -186,8 +182,6 @@ export const AdminAiMonitor: React.FC = () => {
         <div className="py-20 flex items-center justify-center">
           <Activity className="animate-pulse text-indigo-500" size={32} />
         </div>
-      ) : error ? (
-        <ErrorState onRetry={() => load()} />
       ) : (
         <>
           {/* Provider Summary Cards */}

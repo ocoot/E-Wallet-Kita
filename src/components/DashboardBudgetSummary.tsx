@@ -6,7 +6,6 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useCategories } from "../hooks/useCategories";
 import { useBudgets } from "../hooks/useBudgets";
-import { ErrorState } from "./ErrorState";
 import { audioFeedback } from "../lib/audio";
 
 export const DashboardBudgetSummary: React.FC = () => {
@@ -14,15 +13,7 @@ export const DashboardBudgetSummary: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { categories } = useCategories();
-  const { budgets, loading, error, refresh } = useBudgets(user?.id);
-
-  if (error) {
-    return (
-      <div className="rounded-3xl bg-slate-900 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100/30 shadow-lg transition-all duration-300">
-        <ErrorState onRetry={refresh} />
-      </div>
-    );
-  }
+  const { budgets, loading } = useBudgets(user?.id);
 
   if (loading || budgets.length === 0) return null;
 
@@ -55,7 +46,7 @@ export const DashboardBudgetSummary: React.FC = () => {
               {t("budget.page_title")}
             </h3>
             <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 light_sakura:text-slate-500 uppercase tracking-widest font-bold">
-              {t("budget.summary_subtitle")}
+              {t("budget.summary_subtitle", "Monthly Spending Limits")}
             </p>
           </div>
         </div>
@@ -111,7 +102,7 @@ export const DashboardBudgetSummary: React.FC = () => {
           className="w-full flex items-center justify-center gap-2 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-indigo-400 hover:text-indigo-300 light_sakura:text-rose-500 light_sakura:hover:text-rose-600 transition-colors cursor-pointer"
         >
           <TrendingUp size={14} />
-          {t("budget.view_all_budgets")}
+          {t("budget.view_all_budgets", "Manage All Budgets")}
         </button>
       </div>
     </motion.div>
