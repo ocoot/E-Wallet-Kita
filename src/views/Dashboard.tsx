@@ -337,8 +337,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </>
       )}
 
-      {/* 5. Modern quick add transaction floating action button */}
-      <div className="fixed bottom-6 right-6 z-40 hidden sm:block">
+      {/* 5. Modern quick add transaction floating action button.
+          Hanya tampil di tablet/desktop (>= md) -- di layar handphone (< md)
+          FAB ini disembunyikan karena sudah terwakili oleh ikon "Catat
+          Manual" di navbar bawah (MobileBottomNav.tsx), supaya tidak
+          duplikat/menutupi konten. */}
+      <div className="fixed bottom-6 right-6 z-40 hidden md:block">
         <motion.button
           id="btn-quick-add-transaction-fab"
           onClick={() => {
@@ -351,22 +355,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         >
           <Plus size={18} />
           <span>{t("dashboard.quick_add_fab")}</span>
-        </motion.button>
-      </div>
-
-      {/* Mobile-optimized smaller version of FAB */}
-      <div className="fixed bottom-6 right-6 z-40 sm:hidden">
-        <motion.button
-          id="btn-quick-add-transaction-fab-mobile"
-          onClick={() => {
-            audioFeedback.playClick();
-            navigate("/transactions/new");
-          }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          className="cursor-pointer p-4 bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white rounded-full shadow-2xl flex items-center justify-center border border-indigo-500/30 cursor-pointer light_sakura:from-rose-500 light_sakura:to-rose-600 light_sakura:border-rose-300"
-        >
-          <Plus size={24} />
         </motion.button>
       </div>
     </div>

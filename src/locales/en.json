@@ -17,7 +17,8 @@
     "installments": "Installments",
     "savings": "Savings",
     "gold_savings": "Gold Savings",
-    "wallets": "Wallets"
+    "wallets": "Wallets",
+    "more": "More"
   },
   "auth": {
     "login_title": "Account Sign In",

@@ -17,7 +17,8 @@
     "installments": "Cicilan",
     "savings": "Tabungan",
     "gold_savings": "Tabungan Emas",
-    "wallets": "Dompet"
+    "wallets": "Dompet",
+  "more": "Lainnya"
   },
   "auth": {
     "login_title": "Masuk Akun",

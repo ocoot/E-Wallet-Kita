@@ -9,6 +9,8 @@ import { AdminProvider } from "./contexts/AdminContext";
 import { useAuth } from "./contexts/AuthContext";
 import { usePremium } from "./hooks/usePremium";
 import { Sidebar } from "./components/Sidebar";
+import { MobileBottomNav } from "./components/MobileBottomNav";
+import { MobileTopBar } from "./components/MobileTopBar";
 import { Login } from "./views/Login";
 import { AuthCallback } from "./components/AuthCallback";
 import { Onboarding } from "./views/Onboarding";
@@ -270,7 +272,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
       {/* Banner status koneksi -- muncul di atas seluruh layout, termasuk saat modal terbuka */}
       <OfflineBanner />
 
-      {/*Collapsible responsive Navigation Menu */}
+      {/* Sidebar desktop (persisten, dapat dilipat) -- hanya tampil di layar >= md */}
       <Sidebar
         onLogoutClick={handleLogoutClick}
         isCollapsed={isSidebarCollapsed}
@@ -278,12 +280,26 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
         userDisplayName={userProfile?.display_name}
       />
 
+      {/* Navbar bawah -- menggantikan sidebar di layar handphone (< md) */}
+      <MobileBottomNav
+        onLogoutClick={handleLogoutClick}
+        userDisplayName={userProfile?.display_name}
+      />
+
       {/* Main active subview frame */}
       <main className={`flex-1 min-h-screen overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}>
+        {/* Header khusus tampilan handphone -- tetap menempel di atas (sticky)
+            saat konten di-scroll. Tidak tampil di layar >= md karena
+            digantikan sidebar desktop. */}
+        <MobileTopBar />
+
         {/* Running text maintenance banner, shown globally above all pages */}
         <MaintenanceBanner />
 
-        <div className="p-4 sm:p-6 lg:p-8 pb-40">
+        {/* pb-24: ruang aman di bawah supaya konten tidak tertutup navbar
+            bawah mobile; md:pb-40 mengembalikan spasi asli di layar desktop
+            (yang tidak punya navbar bawah). */}
+        <div className="p-4 sm:p-6 lg:p-8 pb-24 md:pb-40">
           <div className="max-w-7xl mx-auto w-full">
             <Breadcrumbs />
             <AnimatePresence mode="wait">
