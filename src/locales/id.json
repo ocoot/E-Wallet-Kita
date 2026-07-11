@@ -72,6 +72,7 @@
     "confirm_forgot_password_desc": "Apakah Anda yakin ingin mengirim tautan pemulihan kata sandi ke email {email}?",
     "loading_signup_desc": "Mendaftarkan dan menyiapkan buku tabungan baru untuk Anda...",
     "loading_signin_desc": "Menghubungkan akun dan mengambil data mutasi dompet Anda...",
+    "loading_logout_desc": "Mengakhiri sesi dan membersihkan data sementara Anda...",
     "back_to_welcome": "Kembali",
     "panel_tab_signin": "Masuk Akun",
     "panel_tab_signup": "Daftar Baru"

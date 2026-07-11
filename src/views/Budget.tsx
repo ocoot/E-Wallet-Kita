@@ -207,8 +207,17 @@ export const Budget: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Massive Cohesive Card Container */}
-      <div className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6">
+      {/* Header card — pola sama dengan History/Wallets/Settings/BillReminders/
+          Installments/Savings/GoldSavings: wrapper rounded-3xl BERSIH (tanpa
+          padding) + overflow-hidden, accent stripe warna di paling atas, lalu
+          padding sesungguhnya ada di div anak. Sebelumnya halaman ini punya
+          border-slate-900 (identik dgn bg-slate-900 sehingga border tidak
+          kelihatan sama sekali) dan tanpa accent stripe -- beda sendiri dari
+          semua halaman list lainnya. */}
+      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
+      {/* Accent stripe */}
+      <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
+      <div className="p-6 md:p-8 space-y-6">
 
       {/* Header */}
       <div className="flex items-start justify-between gap-3.5 flex-wrap border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
@@ -317,6 +326,9 @@ export const Budget: React.FC = () => {
         </div>
       )}
 
+      </div>{/* end padded content */}
+      </div>{/* end header card */}
+
       {/* Modal: Tambah Anggaran — pilih kategori dari yang belum dianggarkan */}
       <AnimatePresence>
         {isAddOpen && (
@@ -424,7 +436,6 @@ export const Budget: React.FC = () => {
         onCancel={() => setDeleteTarget(null)}
         confirmDisabled={isDeleting}
       />
-      </div>{/* end card container */}
     </div>
   );
 };

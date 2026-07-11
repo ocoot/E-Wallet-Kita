@@ -369,28 +369,48 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
         onCancel={() => setIsSignoutModalOpen(false)}
       />
       
-      {/* Full-Screen Logout loading screen */}
+      {/* Full-Screen Logout loading screen -- strukturnya sengaja disamakan
+          persis dengan overlay loading di Login.tsx (kartu + judul + deskripsi
+          + varian tema terang), supaya transisi logout terasa konsisten
+          dengan transisi login/signup. Sebelumnya overlay ini cuma nampilin
+          logo+spinner tanpa kartu terpusat, judul, deskripsi, atau varian
+          light_sakura -- jadi terlihat "kosong"/beda sendiri dibanding
+          loading login. */}
       <AnimatePresence>
         {isLoggingOut && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-slate-950/90 backdrop-blur-md"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/90 backdrop-blur-md"
           >
-            <div className="p-8 bg-slate-900 border border-slate-800 rounded-3xl shadow-2xl">
-                 <div className="relative w-14 h-14 flex items-center justify-center">
-                   <div className="absolute inset-0 border-[3px] border-indigo-600/20 rounded-full
-                                   light_sakura:border-rose-400/20" />
-                   <div className="absolute inset-0 border-[3px] border-t-indigo-500 rounded-full
-                                   animate-spin light_sakura:border-t-rose-500" />
-                   <img
-                     src={logoUrl}
-                     alt=""
-                     className="w-7 h-7 object-contain animate-pulse"
-                   />
-                 </div>
-            </div>
+            <motion.div
+              initial={{ scale: 0.93, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.93, opacity: 0 }}
+              className="flex flex-col items-center text-center p-8
+                         bg-slate-900 border border-slate-800 rounded-3xl
+                         shadow-2xl max-w-xs w-full
+                         light_sakura:bg-white light_sakura:border-rose-100"
+            >
+              <div className="relative w-14 h-14 flex items-center justify-center mb-4">
+                <div className="absolute inset-0 border-[3px] border-indigo-600/20 rounded-full
+                                light_sakura:border-rose-400/20" />
+                <div className="absolute inset-0 border-[3px] border-t-indigo-500 rounded-full
+                                animate-spin light_sakura:border-t-rose-500" />
+                <img
+                  src={logoUrl}
+                  alt=""
+                  className="w-7 h-7 object-contain animate-pulse"
+                />
+              </div>
+              <h3 className="font-bold text-base text-white mb-1 light_sakura:text-slate-900">
+                {t("common.loading")}
+              </h3>
+              <p className="text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
+                {t("auth.loading_logout_desc")}
+              </p>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

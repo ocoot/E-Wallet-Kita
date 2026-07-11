@@ -72,6 +72,7 @@
     "confirm_forgot_password_desc": "Are you sure you want to send a password reset link to email {email}?",
     "loading_signup_desc": "Registering and configuring your new wallet...",
     "loading_signin_desc": "Connecting your account and loading transaction ledger...",
+    "loading_logout_desc": "Ending your session and clearing temporary data...",
     "back_to_welcome": "Back",
     "panel_tab_signin": "Sign In",
     "panel_tab_signup": "Sign Up"
