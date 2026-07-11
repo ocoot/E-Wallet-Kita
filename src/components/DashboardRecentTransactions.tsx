@@ -5,6 +5,7 @@ import { ArrowUpRight, ArrowDownLeft, ArrowRight, Send, Sparkles, User } from "l
 import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { EmptyState } from "./EmptyState";
+import { Card } from "./ui/Card";
 
 interface DashboardRecentTransactionsProps {
   transactions: Transaction[];
@@ -51,7 +52,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
   };
 
   return (
-    <div id="recent-transactions-panel" className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6">
+    <Card id="recent-transactions-panel" padding="lg" border="subtle" elevation="lg" className="space-y-6">
       <div className="flex items-center justify-between border-b border-slate-800/50 pb-5 light_sakura:border-rose-100/30">
         <div>
           <h3 className="font-sans font-bold text-base text-white tracking-tight light_sakura:text-slate-800">
@@ -127,6 +128,6 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
           })}
         </div>
       )}
-    </div>
+    </Card>
   );
 };

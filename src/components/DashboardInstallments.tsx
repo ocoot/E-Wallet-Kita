@@ -6,6 +6,9 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useInstallments } from "../hooks/useInstallments";
 import { audioFeedback } from "../lib/audio";
+import { Card } from "./ui/Card";
+
+const MotionCard = motion.create(Card);
 
 /**
  * Widget dashboard ringkas untuk cicilan/utang jangka panjang yang masih
@@ -23,10 +26,11 @@ export const DashboardInstallments: React.FC = () => {
   if (loading || active.length === 0) return null;
 
   return (
-    <motion.div
+    <MotionCard
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-6 rounded-3xl bg-slate-900 border border-slate-900 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg transition-colors duration-300"
+      border="subtle"
+      elevation="lg"
     >
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5">
@@ -61,6 +65,6 @@ export const DashboardInstallments: React.FC = () => {
           </div>
         ))}
       </div>
-    </motion.div>
+    </MotionCard>
   );
 };

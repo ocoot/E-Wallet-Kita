@@ -4,6 +4,7 @@ import { Transaction } from "../types";
 import { Activity } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
 import { EmptyState } from "./EmptyState";
+import { Card } from "./ui/Card";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -73,7 +74,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
   };
 
   return (
-    <div id="dashboard-trends-panel" className="p-6 md:p-8 rounded-3xl border bg-slate-900 border-slate-900 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg space-y-6">
+    <Card id="dashboard-trends-panel" padding="lg" border="subtle" elevation="lg" className="space-y-6">
       {/* Chart Header & Tab Options */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800/50 pb-5 light_sakura:border-rose-100/30">
         <div>
@@ -320,6 +321,6 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </Card>
   );
 };

@@ -499,6 +499,7 @@
     "success_create": "Voucher berhasil dibuat",
     "base_price": "Harga Dasar (Rp)",
     "placeholder_code": "Contoh: WELCOME50",
+    "no_vouchers": "Belum ada voucher yang dibuat",
     "activate": "Aktifkan",
     "confirm_activate": "Aktifkan Voucher",
     "confirm_activate_desc": "Voucher akan tersedia kembali untuk digunakan pengguna.",

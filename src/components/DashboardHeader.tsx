@@ -13,6 +13,7 @@ import { EventOverlay } from "./EventOverlay";
 import { getActiveEvent, fetchAllEvents } from "../api/eventCalendar";
 import type { NagerHoliday, SportsDbEvent } from "../api/eventCalendar";
 import type { OverlayType } from "../api/eventCalendar";
+import { Card } from "./ui/Card";
 
 interface DashboardHeaderProps {
   currentUser: UserSession;
@@ -142,9 +143,11 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   };
 
   return (
-    <div 
-      id="dashboard-welcome-banner" 
-      className="relative p-6 rounded-3xl border bg-slate-900 border-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-sm"
+    <Card
+      id="dashboard-welcome-banner"
+      border="subtle"
+      elevation="sm"
+      className="relative flex flex-col md:flex-row md:items-center justify-between gap-4"
     >
       {weatherTheme && effectiveWeather && (
         <DashboardWeatherLayer
@@ -246,6 +249,6 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <span>{t("auth.guest_badge")}</span>
         </motion.div>
       )}
-    </div>
+    </Card>
   );
 };

@@ -6,6 +6,9 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useBillReminders } from "../hooks/useBillReminders";
 import { audioFeedback } from "../lib/audio";
+import { Card } from "./ui/Card";
+
+const MotionCard = motion.create(Card);
 
 /**
  * Widget dashboard untuk pengingat tagihan yang jatuh tempo segera.
@@ -28,10 +31,11 @@ export const DashboardBillReminders: React.FC = () => {
   const hasOverdue = alerts.some((r) => r.urgency === "overdue");
 
   return (
-    <motion.div
+    <MotionCard
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-6 rounded-3xl bg-slate-900 border border-slate-900 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg transition-colors duration-300"
+      border="subtle"
+      elevation="lg"
     >
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5">
@@ -86,6 +90,6 @@ export const DashboardBillReminders: React.FC = () => {
           </li>
         ))}
       </ul>
-    </motion.div>
+    </MotionCard>
   );
 };

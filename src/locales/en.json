@@ -499,6 +499,7 @@
     "success_create": "Voucher successfully created",
     "base_price": "Base Price (Rp)",
     "placeholder_code": "e.g. WELCOME50",
+    "no_vouchers": "No vouchers created yet",
     "activate": "Activate",
     "confirm_activate": "Activate Voucher",
     "confirm_activate_desc": "Voucher will be available again for users to use.",

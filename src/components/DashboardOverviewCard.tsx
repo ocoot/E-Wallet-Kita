@@ -7,6 +7,7 @@ import { dbService } from "../lib/db";
 import { AccumulatedBalance, SavingsSummary, GoldHoldingsSummary } from "../types";
 import { InfoTooltip } from "./InfoTooltip";
 import { audioFeedback } from "../lib/audio";
+import { Card } from "./ui/Card";
 
 interface DashboardOverviewCardProps {
   /** Berubah setiap kali ada transaksi baru/diubah, dipakai untuk trigger refetch. */
@@ -82,9 +83,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
   }, [user?.id, refreshTrigger]);
 
   if (loading && !data) {
-    return (
-      <div className="rounded-3xl border border-slate-800/60 bg-slate-900 light_sakura:bg-white light_sakura:border-rose-100/40 p-6 h-[280px] animate-pulse" />
-    );
+    return <Card padding="lg" elevation="flat" className="h-[280px] animate-pulse" />;
   }
 
   if (!data || (data.income_total === 0 && data.expense_total === 0)) {
@@ -104,6 +103,11 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
   const isPositive = netWorth >= 0;
 
   return (
+    // NOTE: sengaja TIDAK memakai <Card> primitive di sini -- background-nya
+    // gradient kustom (bg-gradient-to-br ...), bukan bg-slate-900 polos, dan
+    // project ini tidak memakai tailwind-merge sehingga override background
+    // lewat className tidak reliable (lihat catatan di Input.tsx/Card.tsx).
+    // Memaksakan migrasi mekanis di sini berisiko menghilangkan gradient-nya.
     <motion.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}

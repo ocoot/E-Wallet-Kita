@@ -6,6 +6,8 @@ import { useToast } from "../contexts/ToastContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Modal } from "../components/Modal";
 import { DropdownField } from "../components/DropdownField";
+import { EmptyState } from "../components/EmptyState";
+import { ErrorState } from "../components/ErrorState";
 import { Trash2, PlusCircle, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface PremiumVoucherWithUsage extends PremiumVoucher {
@@ -24,6 +26,8 @@ export const AdminVoucherManager: React.FC = () => {
   const [isSavingPrice, setIsSavingPrice] = useState(false);
   const [pageSize, setPageSize] = useState<number | "all">(10);
   const [page, setPage] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [vouchersError, setVouchersError] = useState(false);
   const { session } = useAuth();
   const { showToast } = useToast();
   const { t, locale } = useLanguage();
@@ -33,7 +37,9 @@ export const AdminVoucherManager: React.FC = () => {
   }, [pageSize, vouchers.length]);
 
   const fetchVouchers = async () => {
-    const { data } = await supabase
+    setLoading(true);
+    setVouchersError(false);
+    const { data, error } = await supabase
       .from("premium_vouchers")
       .select(`
         *,
@@ -44,6 +50,13 @@ export const AdminVoucherManager: React.FC = () => {
       `)
       .order("is_active", { ascending: false })
       .order("created_at", { ascending: false });
+
+    if (error) {
+      showToast(error.message, "error");
+      setVouchersError(true);
+      setLoading(false);
+      return;
+    }
 
     const mapped = (data || []).map((v: any) => {
       const txs = v.premium_transactions || [];
@@ -59,6 +72,7 @@ export const AdminVoucherManager: React.FC = () => {
     });
 
     setVouchers(mapped);
+    setLoading(false);
   };
 
   const loadPrice = async () => {
@@ -241,6 +255,13 @@ export const AdminVoucherManager: React.FC = () => {
       </div>
 
       <div className="bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm overflow-hidden">
+        {loading ? (
+          <div className="py-16 text-center text-slate-400 light_sakura:text-slate-500 text-sm">{t("admin.loading")}</div>
+        ) : vouchersError ? (
+          <ErrorState onRetry={fetchVouchers} />
+        ) : vouchers.length === 0 ? (
+          <EmptyState message={t("voucher.no_vouchers")} />
+        ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[700px]">
             <thead className="bg-slate-800 light_sakura:bg-slate-50 text-slate-400 light_sakura:text-slate-500 uppercase text-xs">
@@ -289,9 +310,11 @@ export const AdminVoucherManager: React.FC = () => {
             </tbody>
           </table>
         </div>
+        )}
       </div>
 
       {/* Pagination Controls */}
+      {!loading && !vouchersError && vouchers.length > 0 && (
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">
         {/* Page Size Selector */}
         <div className="flex items-center gap-2">
@@ -343,6 +366,7 @@ export const AdminVoucherManager: React.FC = () => {
           </div>
         )}
       </div>
+      )}
 
       <Modal
         isOpen={!!revokeTarget}

@@ -13,6 +13,7 @@ import { PremiumVoucher, PremiumPricing } from "../types";
 import { generatePremiumReceipt } from "../lib/receipt";
 import { sendPremiumReceiptEmail } from "../lib/email";
 import { Modal } from "./Modal";
+import { Button } from "./ui/Button";
 import { getPremiumBasePrice } from "../lib/settings";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
@@ -264,8 +265,8 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                 <li>• {t("premium.terms_point_4")}</li>
               </ul>
               <div className="flex gap-3 mt-6">
-                <button onClick={onClose} className="flex-1 py-3 rounded-xl bg-slate-800 text-slate-300 text-sm font-semibold">{t("common.cancel")}</button>
-                <button onClick={startPayment} className="flex-1 py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold">{t("premium.terms_agree")}</button>
+                <Button variant="secondary" fullWidth onClick={onClose} className="rounded-xl">{t("common.cancel")}</Button>
+                <Button variant="primary" fullWidth onClick={startPayment} className="rounded-xl">{t("premium.terms_agree")}</Button>
               </div>
             </div>
           )}
@@ -296,12 +297,14 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               {isSandboxMode() && <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-3">{t("premium.sandbox_notice")}</p>}
               {!isSandboxMode() && tx.is_sandbox && <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-3">{t("premium.dummy_qris_notice")}</p>}
               
-              <button
+              <Button
+                variant="danger-ghost"
+                fullWidth
                 onClick={() => setShowCancelConfirm(true)}
-                className="mt-4 w-full py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-medium text-sm"
+                className="mt-4 rounded-xl border border-red-500/30"
               >
                 {t("premium.cancel_transaction")}
-              </button>
+              </Button>
               
               <Modal
                 isOpen={showCancelConfirm}
@@ -324,57 +327,45 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
 
               {askDownload ? (
                 <div className="flex flex-col gap-3 mt-6">
-                  <button
+                  <Button
+                    variant="secondary"
+                    fullWidth
                     disabled={actionLoading !== null}
                     onClick={() => {
                       setAskDownload(false);
                       onClose();
                     }}
-                    className="w-full py-3 rounded-xl bg-slate-800 text-slate-300 text-sm font-semibold hover:bg-slate-700/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="rounded-xl"
                   >
                     {t("premium.skip_receipt")}
-                  </button>
+                  </Button>
 
                   <div className="grid grid-cols-2 gap-3">
-                    <button
+                    <Button
+                      variant="secondary"
                       disabled={actionLoading !== null}
+                      isLoading={actionLoading === "download"}
                       onClick={handleDownloadReceipt}
-                      className="py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      icon={<Download size={16} />}
+                      className="rounded-xl"
                     >
-                      {actionLoading === "download" ? (
-                        <>
-                          <Loader2 size={16} className="animate-spin" />
-                          <span>{t("common.generating_pdf")}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Download size={16} />
-                          <span>{t("premium.download_receipt")}</span>
-                        </>
-                      )}
-                    </button>
+                      {actionLoading === "download" ? t("common.generating_pdf") : t("premium.download_receipt")}
+                    </Button>
 
-                    <button
+                    <Button
+                      variant="primary"
                       disabled={actionLoading !== null}
+                      isLoading={actionLoading === "email"}
                       onClick={handleSendReceipt}
-                      className="py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      icon={<Mail size={16} />}
+                      className="rounded-xl"
                     >
-                      {actionLoading === "email" ? (
-                        <>
-                          <Loader2 size={16} className="animate-spin" />
-                          <span>{t("common.sending")}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Mail size={16} />
-                          <span>{t("premium.email_receipt")}</span>
-                        </>
-                      )}
-                    </button>
+                      {actionLoading === "email" ? t("common.sending") : t("premium.email_receipt")}
+                    </Button>
                   </div>
                 </div>
               ) : (
-                <button onClick={onClose} className="mt-6 w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-500 transition-colors">{t("common.close")}</button>
+                <Button variant="primary" fullWidth onClick={onClose} className="mt-6 rounded-xl">{t("common.close")}</Button>
               )}
             </div>
           )}
@@ -384,7 +375,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               <Clock className="mx-auto text-amber-400 mb-3" size={40} />
               <h3 className="text-lg font-bold text-white">{t("premium.expired_title")}</h3>
               <p className="text-sm text-slate-400 mt-2">{t("premium.expired_desc")}</p>
-              <button onClick={() => setStep("terms")} className="mt-6 w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold">{t("premium.retry")}</button>
+              <Button variant="primary" fullWidth onClick={() => setStep("terms")} className="mt-6 rounded-xl">{t("premium.retry")}</Button>
             </div>
           )}
 
@@ -393,7 +384,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               <XCircle className="mx-auto text-red-400 mb-3" size={40} />
               <h3 className="text-lg font-bold text-white">{t("premium.failed_title")}</h3>
               <p className="text-sm text-slate-400 mt-2">{t("premium.failed_desc")}</p>
-              <button onClick={() => setStep("terms")} className="mt-6 w-full py-3 rounded-xl bg-indigo-600 text-white text-sm font-semibold">{t("premium.retry")}</button>
+              <Button variant="primary" fullWidth onClick={() => setStep("terms")} className="mt-6 rounded-xl">{t("premium.retry")}</Button>
             </div>
           )}
         </motion.div>

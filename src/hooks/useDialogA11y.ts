@@ -26,6 +26,18 @@ export function useDialogA11y(
 ): void {
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
+  // Simpan onClose terbaru di ref, BUKAN di dependency array useEffect di
+  // bawah. Sebelumnya onClose ada di deps -- karena hampir semua caller
+  // mengoper inline arrow function (`() => setIsFormOpen(false)`) yang
+  // dibuat ulang setiap render, efek ini bongkar-pasang ULANG setiap kali
+  // parent re-render. Untuk form yang sedang diketik, itu berarti SETIAP
+  // KETUKAN HURUF: cleanup memindahkan fokus balik ke tombol pemicu dialog
+  // (mematikan keyboard HP), lalu efek jalan lagi memindahkan fokus ke
+  // input pertama. Dengan onClose di ref, efek hanya jalan saat `isOpen`
+  // benar-benar berubah, bukan setiap keystroke.
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -45,9 +57,9 @@ export function useDialogA11y(
       const container = containerRef.current;
       if (!container) return;
 
-      if (e.key === "Escape" && onClose) {
+      if (e.key === "Escape" && onCloseRef.current) {
         e.stopPropagation();
-        onClose();
+        onCloseRef.current();
         return;
       }
 
@@ -83,8 +95,15 @@ export function useDialogA11y(
       document.removeEventListener("keydown", handleKeyDown, true);
       // Kembalikan fokus ke elemen pemicu dialog (mis. tombol "Hapus" yang
       // dulu ditekan), supaya keyboard/screen-reader user tidak "kehilangan
-      // posisi" begitu dialog ditutup.
-      previouslyFocused.current?.focus?.({ preventScroll: true });
+      // posisi" begitu dialog ditutup. TAPI hanya kalau elemen itu masih
+      // ada di DOM -- kalau dialognya ditutup karena aksi yang menghapus
+      // elemen tsb dari list (mis. hapus pos anggaran), elemen pemicu
+      // sudah lenyap/posisinya bergeser, dan memaksa focus() ke situ justru
+      // memicu browser scroll balik ke posisi lama meski preventScroll.
+      const prev = previouslyFocused.current;
+      if (prev && document.body.contains(prev)) {
+        prev.focus({ preventScroll: true });
+      }
     };
-  }, [isOpen, containerRef, onClose]);
+  }, [isOpen, containerRef]);
 }

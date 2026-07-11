@@ -7,6 +7,8 @@ import { useLayoutEffect } from "react";
 // snapshot gaya asli <body> milik satu sama lain.
 let lockCount = 0;
 let savedScrollY = 0;
+let anchorEl: Element | null = null;
+let anchorOffset = 0;
 let savedBodyStyles: {
   position: string;
   top: string;
@@ -28,9 +30,17 @@ let savedBodyStyles: {
  * Pendekatan yang dipakai: `position: fixed` pada <body> (bukan sekadar
  * `overflow: hidden`), karena `overflow: hidden` saja terbukti tidak cukup
  * untuk mencegah touch-scroll "tembus" ke belakang overlay di banyak
- * browser mobile (khususnya iOS Safari). Posisi scroll disimpan sebelum
- * dikunci dan dikembalikan persis saat modal ditutup, supaya halaman tidak
- * "melompat" ke atas.
+ * browser mobile (khususnya iOS Safari). Posisi scroll dikembalikan saat
+ * modal ditutup dengan cara "menjangkar" ke elemen DOM nyata yang ada di
+ * bagian atas viewport saat dialog dibuka -- BUKAN sekadar angka piksel
+ * mentah (`window.scrollY`). Kenapa: kalau aksi di dalam dialog mengubah
+ * tinggi konten sebelum dialog ditutup (mis. dialog konfirmasi hapus yang,
+ * setelah berhasil, me-refresh list sehingga 1 kartu hilang SELAGI dialog
+ * masih terkunci), angka piksel lama itu sudah tidak valid -- ia bisa
+ * menunjuk ke bagian konten yang sudah berbeda entah di atas atau di
+ * bawah titik itu. Menjangkar ke elemen sungguhan benar di kedua arah
+ * karena kita mengembalikan scroll ke POSISI ELEMEN ITU SEKARANG, bukan
+ * ke koordinat lama yang mungkin sudah tidak relevan.
  *
  * PENTING -- reference counting: kalau dua pemanggil sama-sama mengunci di
  * saat bersamaan (mis. modal konfirmasi hapus transaksi MASIH terbuka lalu
@@ -54,6 +64,22 @@ export function useLockBodyScroll(isLocked: boolean): void {
 
     if (lockCount === 1) {
       savedScrollY = window.scrollY;
+
+      // Cari elemen sungguhan yang sedang duduk di dekat bagian atas
+      // viewport (bukan pojok paling atas -- kalau ada header/nav yang
+      // sticky di titik (x, 0), elementFromPoint bisa mengembalikan
+      // elemen sticky itu alih-alih konten di baliknya). y=80 kira-kira
+      // aman di bawah header pada kebanyakan halaman.
+      const probeX = Math.floor(window.innerWidth / 2);
+      const probeY = 80;
+      const candidate = document.elementFromPoint(probeX, probeY);
+      if (candidate && candidate !== document.body && candidate !== document.documentElement) {
+        anchorEl = candidate;
+        anchorOffset = candidate.getBoundingClientRect().top;
+      } else {
+        anchorEl = null;
+      }
+
       const { body } = document;
       savedBodyStyles = {
         position: body.style.position,
@@ -83,7 +109,20 @@ export function useLockBodyScroll(isLocked: boolean): void {
         body.style.right = savedBodyStyles.right;
         body.style.width = savedBodyStyles.width;
         body.style.overflowY = savedBodyStyles.overflowY;
-        window.scrollTo(0, savedScrollY);
+        // Kembalikan scroll dengan menjangkar ke elemen nyata (lihat
+        // catatan di atas fungsi). Kalau elemen jangkarnya sudah tidak ada
+        // lagi di dokumen (mis. justru itu yang terhapus), fallback ke
+        // `savedScrollY` mentah tapi dibatasi ke tinggi dokumen yang
+        // tersisa supaya tidak overscroll ke area kosong.
+        const maxScrollY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+        if (anchorEl && document.body.contains(anchorEl)) {
+          const currentTop = anchorEl.getBoundingClientRect().top;
+          const targetScrollY = window.scrollY + currentTop - anchorOffset;
+          window.scrollTo(0, Math.min(Math.max(0, targetScrollY), maxScrollY));
+        } else {
+          window.scrollTo(0, Math.min(savedScrollY, maxScrollY));
+        }
+        anchorEl = null;
         savedBodyStyles = null;
       }
     };

@@ -7,6 +7,9 @@ import { useAuth } from "../contexts/AuthContext";
 import { useCategories } from "../hooks/useCategories";
 import { useBudgets } from "../hooks/useBudgets";
 import { audioFeedback } from "../lib/audio";
+import { Card } from "./ui/Card";
+
+const MotionCard = motion.create(Card);
 
 export const DashboardBudgetSummary: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -31,10 +34,11 @@ export const DashboardBudgetSummary: React.FC = () => {
   const sortedBudgets = [...budgets].sort((a, b) => b.percent - a.percent).slice(0, 3);
 
   return (
-    <motion.div
+    <MotionCard
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-6 rounded-3xl bg-slate-900 border border-slate-800/50 light_sakura:bg-white light_sakura:border-rose-100/30 shadow-lg transition-all duration-300 overflow-hidden relative"
+      elevation="lg"
+      className="overflow-hidden relative"
     >
       <div className="flex items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">
@@ -105,6 +109,6 @@ export const DashboardBudgetSummary: React.FC = () => {
           {t("budget.view_all_budgets", "Manage All Budgets")}
         </button>
       </div>
-    </motion.div>
+    </MotionCard>
   );
 };

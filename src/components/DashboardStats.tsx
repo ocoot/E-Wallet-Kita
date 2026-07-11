@@ -5,6 +5,9 @@ import { TrendingUp, TrendingDown, DollarSign } from "lucide-react";
 import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { InfoTooltip } from "./InfoTooltip";
+import { Card } from "./ui/Card";
+
+const MotionCard = motion.create(Card);
 
 interface DashboardStatsProps {
   summary: { income: number; expense: number; balance: number };
@@ -22,12 +25,14 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
   return (
     <div id="dashboard-scorecards" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {/* Income Card */}
-      <motion.div 
+      <MotionCard
         id="stats-income-card"
         onClick={() => audioFeedback.playClick()}
         whileHover={{ y: -5, scale: 1.02, boxShadow: "0 20px 25px -5px rgba(16, 185, 129, 0.15), 0 8px 10px -6px rgba(16, 185, 129, 0.15)" }}
         transition={{ type: "spring", stiffness: 350, damping: 18 }}
-        className="p-6 rounded-3xl border bg-slate-900 border-slate-900 relative overflow-hidden transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 text-white light_sakura:text-slate-800 shadow-xs cursor-pointer group"
+        border="subtle"
+        elevation="xs"
+        className="relative overflow-hidden cursor-pointer group"
       >
         <div className="flex items-center justify-between mb-4">
           <span className="font-sans text-xs font-semibold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
@@ -43,15 +48,17 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 mt-1 light_sakura:text-slate-500">
           {t("dashboard.this_month")}
         </p>
-      </motion.div>
+      </MotionCard>
 
       {/* Expense Card */}
-      <motion.div 
+      <MotionCard
         id="stats-expense-card"
         onClick={() => audioFeedback.playClick()}
         whileHover={{ y: -5, scale: 1.02, boxShadow: "0 20px 25px -5px rgba(239, 68, 68, 0.15), 0 8px 10px -6px rgba(239, 68, 68, 0.15)" }}
         transition={{ type: "spring", stiffness: 350, damping: 18 }}
-        className="p-6 rounded-3xl border bg-slate-900 border-slate-900 relative overflow-hidden transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 text-white light_sakura:text-slate-800 shadow-xs cursor-pointer group"
+        border="subtle"
+        elevation="xs"
+        className="relative overflow-hidden cursor-pointer group"
       >
         <div className="flex items-center justify-between mb-4">
           <span className="font-sans text-xs font-semibold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
@@ -67,15 +74,17 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
         <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 mt-1 light_sakura:text-slate-500">
           {t("dashboard.this_month")}
         </p>
-      </motion.div>
+      </MotionCard>
 
       {/* Net Balance Card */}
-      <motion.div 
+      <MotionCard
         id="stats-balance-card"
         onClick={() => audioFeedback.playClick()}
         whileHover={{ y: -5, scale: 1.02, boxShadow: "0 20px 25px -5px rgba(20, 184, 166, 0.15), 0 8px 10px -6px rgba(20, 184, 166, 0.15)" }}
         transition={{ type: "spring", stiffness: 350, damping: 18 }}
-        className="p-6 rounded-3xl border bg-slate-900 border-slate-900 relative overflow-hidden transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/10 text-white light_sakura:text-slate-800 shadow-xs group cursor-pointer"
+        border="subtle"
+        elevation="xs"
+        className="relative overflow-hidden group cursor-pointer"
       >
         <div className="flex items-center justify-between mb-4 relative z-10">
           <span className="font-sans text-xs font-semibold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500 flex items-center gap-1.5">
@@ -147,7 +156,7 @@ export const DashboardStats: React.FC<DashboardStatsProps> = ({
             </svg>
           </div>
         )}
-      </motion.div>
+      </MotionCard>
     </div>
   );
 };

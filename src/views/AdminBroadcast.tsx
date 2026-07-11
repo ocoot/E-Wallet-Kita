@@ -23,6 +23,7 @@ export const AdminBroadcast: React.FC = () => {
   const [isUpdateNotif, setIsUpdateNotif] = useState(false);
   const [linkedCount, setLinkedCount] = useState<number | null>(null);
   const [pushTokenCount, setPushTokenCount] = useState<number | null>(null);
+  const [targetsError, setTargetsError] = useState(false);
   const [sending, setSending] = useState(false);
   const [lastResult, setLastResult] = useState<{
     telegram?: ChannelResult;
@@ -31,20 +32,23 @@ export const AdminBroadcast: React.FC = () => {
 
   useEffect(() => {
     if (!isAdmin) return;
-    const load = async () => {
-      try {
-        const [chatResult, pushResult] = await Promise.all([
-          supabase.rpc("admin_get_telegram_chat_ids"),
-          supabase.rpc("admin_get_push_tokens"),
-        ]);
-        setLinkedCount(chatResult.data?.length ?? 0);
-        setPushTokenCount(pushResult.data?.length ?? 0);
-      } catch (err) {
-        console.error("Error loading broadcast targets:", err);
-      }
-    };
-    load();
+    loadTargetCounts();
   }, [isAdmin]);
+
+  const loadTargetCounts = async () => {
+    setTargetsError(false);
+    try {
+      const [chatResult, pushResult] = await Promise.all([
+        supabase.rpc("admin_get_telegram_chat_ids"),
+        supabase.rpc("admin_get_push_tokens"),
+      ]);
+      setLinkedCount(chatResult.data?.length ?? 0);
+      setPushTokenCount(pushResult.data?.length ?? 0);
+    } catch (err) {
+      console.error("Error loading broadcast targets:", err);
+      setTargetsError(true);
+    }
+  };
 
   const handleSend = async () => {
     if (message.trim().length < 5) {
@@ -225,7 +229,9 @@ export const AdminBroadcast: React.FC = () => {
             <Users className="text-indigo-500 shrink-0" size={24} />
             <div>
               <p className="text-sm font-semibold text-white light_sakura:text-slate-800">
-                {linkedCount === null ? t("admin.loading") : t("admin.connected_users", { count: linkedCount })}
+                {targetsError ? (
+                  <button onClick={loadTargetCounts} className="text-red-400 hover:underline">{t("common.retry")}</button>
+                ) : linkedCount === null ? t("admin.loading") : t("admin.connected_users", { count: linkedCount })}
               </p>
               <p className="text-xs text-slate-400 light_sakura:text-slate-500">
                 {t("admin.connected_users_desc")}
@@ -236,7 +242,9 @@ export const AdminBroadcast: React.FC = () => {
             <Bell className="text-indigo-500 shrink-0" size={24} />
             <div>
               <p className="text-sm font-semibold text-white light_sakura:text-slate-800">
-                {pushTokenCount === null ? t("admin.loading") : t("admin.push_users_count", { count: pushTokenCount })}
+                {targetsError ? (
+                  <button onClick={loadTargetCounts} className="text-red-400 hover:underline">{t("common.retry")}</button>
+                ) : pushTokenCount === null ? t("admin.loading") : t("admin.push_users_count", { count: pushTokenCount })}
               </p>
               <p className="text-xs text-slate-400 light_sakura:text-slate-500">
                 {t("admin.connected_users_desc")}

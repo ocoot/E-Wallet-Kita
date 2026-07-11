@@ -7,6 +7,9 @@ import { useAuth } from "../contexts/AuthContext";
 import { useCategories } from "../hooks/useCategories";
 import { useBudgets } from "../hooks/useBudgets";
 import { audioFeedback } from "../lib/audio";
+import { Card } from "./ui/Card";
+
+const MotionCard = motion.create(Card);
 
 /**
  * Tampil hanya kalau ada kategori yang statusnya warning/danger bulan ini.
@@ -31,10 +34,11 @@ export const DashboardBudgetAlerts: React.FC = () => {
   };
 
   return (
-    <motion.div
+    <MotionCard
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="p-6 rounded-3xl bg-slate-900 border border-slate-900 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg transition-colors duration-300"
+      border="subtle"
+      elevation="lg"
     >
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5">
@@ -73,6 +77,6 @@ export const DashboardBudgetAlerts: React.FC = () => {
           </li>
         ))}
       </ul>
-    </motion.div>
+    </MotionCard>
   );
 };
