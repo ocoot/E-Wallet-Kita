@@ -74,22 +74,6 @@ jobs:
           UPDATE_NOTIFY_SECRET: ${{ secrets.UPDATE_NOTIFY_SECRET }}
         run: |
           set -e
-          echo "Target URL: $APP_URL/api/admin/broadcast"
-
-          # Sanity check dulu ke /api/health — endpoint publik tanpa auth.
-          # Kalau ini gagal, hampir pasti APP_URL salah (mis. mengarah ke
-          # deployment URL spesifik yang sudah kedaluwarsa, bukan domain
-          # production yang permanen) — dan kita mau tahu itu SEBELUM
-          # menyalahkan endpoint broadcast.
-          HEALTH_CODE=$(curl -s -o /tmp/health_response.json -w "%{http_code}" "$APP_URL/api/health" || echo "000")
-          echo "Health check: HTTP $HEALTH_CODE"
-          if [ "$HEALTH_CODE" != "200" ]; then
-            echo "::error::APP_URL sepertinya salah/tidak bisa diakses (HTTP $HEALTH_CODE dari /api/health)."
-            echo "::error::Cek Vercel Dashboard → Project → Domains, pastikan APP_URL memakai domain PRODUCTION yang stabil (bukan URL per-deployment)."
-            cat /tmp/health_response.json 2>/dev/null || true
-            exit 1
-          fi
-
           HTTP_CODE=$(curl -s -o /tmp/broadcast_response.json -w "%{http_code}" \
             -X POST "$APP_URL/api/admin/broadcast" \
             -H "Content-Type: application/json" \
