@@ -7,6 +7,7 @@ import { useCategories } from "../hooks/useCategories";
 import { useBudgets } from "../hooks/useBudgets";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
+import { ErrorState } from "../components/ErrorState";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { PiggyBank, Plus, X, AlertTriangle, CheckCircle2 } from "lucide-react";
@@ -20,7 +21,7 @@ export const Budget: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const { categories, loading: loadingCategories } = useCategories();
-  const { budgets, loading: loadingBudgets, refresh } = useBudgets(user?.id);
+  const { budgets, loading: loadingBudgets, error: budgetsError, refresh } = useBudgets(user?.id);
 
   // Hanya kategori expense/both yang relevan untuk budget pengeluaran
   const expenseCategories = categories.filter((c) => c.type === "expense" || c.type === "both");
@@ -239,6 +240,8 @@ export const Budget: React.FC = () => {
 
       {loading ? (
         <div className="text-sm text-slate-400 light_sakura:text-slate-500">…</div>
+      ) : budgetsError ? (
+        <ErrorState onRetry={refresh} />
       ) : expenseCategories.length === 0 ? (
         <EmptyState
           icon={<PiggyBank size={40} className="text-slate-600 light_sakura:text-slate-400" />}

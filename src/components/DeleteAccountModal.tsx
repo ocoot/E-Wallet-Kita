@@ -4,6 +4,8 @@ import { AlertTriangle, X } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -103,13 +105,14 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
             <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider mb-1.5">
               {t("settings.privacy_delete_type_prompt")} <span className="text-red-400">{confirmPhrase}</span>
             </label>
-            <input
+            <Input
               type="text"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               placeholder={confirmPhrase}
               disabled={isDeleting}
-              className="w-full bg-slate-950 border border-red-500/30 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-red-500 placeholder:text-slate-600 light_sakura:bg-slate-50 light_sakura:text-slate-800 disabled:opacity-50"
+              accent="danger"
+              className="bg-slate-950 border-red-500/30 placeholder:text-slate-600 light_sakura:bg-slate-50 light_sakura:text-slate-800"
             />
 
             {error && (
@@ -117,20 +120,25 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
             )}
 
             <div className="mt-5 flex gap-3">
-              <button
+              <Button
+                variant="secondary"
+                fullWidth
                 onClick={handleClose}
                 disabled={isDeleting}
-                className="flex-1 py-2.5 rounded-xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer disabled:opacity-50"
+                className="rounded-xl"
               >
                 {t("common.cancel")}
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="danger"
+                fullWidth
                 onClick={handleConfirm}
                 disabled={!isMatch || isDeleting}
-                className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-semibold text-sm transition-colors shadow-lg shadow-red-600/20 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                isLoading={isDeleting}
+                className="rounded-xl"
               >
                 {isDeleting ? t("common.loading") : t("settings.privacy_delete_confirm_button")}
-              </button>
+              </Button>
             </div>
           </motion.div>
         </div>

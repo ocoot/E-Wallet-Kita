@@ -9,6 +9,7 @@ import { useWallets } from "../hooks/useWallets";
 import { Modal } from "../components/Modal";
 import { DropdownField } from "../components/DropdownField";
 import { EmptyState } from "../components/EmptyState";
+import { ErrorState } from "../components/ErrorState";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
@@ -35,7 +36,7 @@ export const Installments: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const { categories } = useCategories();
-  const { installments, loading, refresh } = useInstallments(user?.id);
+  const { installments, loading, error: installmentsError, refresh } = useInstallments(user?.id);
   const { activeWallets } = useWallets();
   const navigate = useNavigate();
 
@@ -226,6 +227,8 @@ export const Installments: React.FC = () => {
             <div className="flex items-center justify-center py-16">
               <div className="w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
             </div>
+          ) : installmentsError ? (
+            <ErrorState onRetry={refresh} />
           ) : installments.length === 0 ? (
             <EmptyState icon={<Landmark size={40} className="text-slate-600 light_sakura:text-slate-400" />} title={t("installments.empty_title")} description={t("installments.empty_desc")} />
           ) : (

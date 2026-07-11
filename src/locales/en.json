@@ -44,6 +44,8 @@
     "reset_password_title": "Set New Password",
     "reset_password_desc": "Please enter your new password below.",
     "new_password_label": "New Password",
+    "show_password": "Show password",
+    "hide_password": "Hide password",
     "confirm_password_label": "Confirm New Password",
     "reset_submit_btn": "Update Password",
     "reset_success_toast": "Password updated successfully!",

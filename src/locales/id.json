@@ -44,6 +44,8 @@
     "reset_password_title": "Kata Sandi Baru",
     "reset_password_desc": "Silakan masukkan kata sandi baru Anda di bawah ini.",
     "new_password_label": "Kata Sandi Baru",
+    "show_password": "Tampilkan kata sandi",
+    "hide_password": "Sembunyikan kata sandi",
     "confirm_password_label": "Konfirmasi Sandi Baru",
     "reset_submit_btn": "Simpan Sandi Baru",
     "reset_success_toast": "Kata sandi Anda sukses diperbarui!",

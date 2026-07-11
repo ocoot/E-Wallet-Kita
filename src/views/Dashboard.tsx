@@ -17,6 +17,7 @@ import { DashboardBudgetSummary } from "../components/DashboardBudgetSummary";
 import { DashboardBillReminders } from "../components/DashboardBillReminders";
 import { DashboardInstallments } from "../components/DashboardInstallments";
 import { DashboardOverviewCard } from "../components/DashboardOverviewCard";
+import { ErrorState } from "../components/ErrorState";
 import { DashboardWalletCards } from "../components/DashboardWalletCards";
 import { useCategories } from "../hooks/useCategories";
 
@@ -69,6 +70,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [dashboardError, setDashboardError] = useState<unknown>(null);
+  const [reloadCounter, setReloadCounter] = useState(0);
   const [summary, setSummary] = useState({ income: 0, expense: 0, balance: 0 });
   const [sparkPoints, setSparkPoints] = useState<number[]>([]);
   const [telegramStatus, setTelegramStatus] = useState<{ linked: boolean, lastSync: string | null }>({ linked: false, lastSync: null });
@@ -92,6 +95,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       const currentMonthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`; // e.g., "2026-06"
       
       try {
+        setDashboardError(null);
         const [data, userRes] = await Promise.all([
           dbService.getTransactions(currentUser.id, currentMonthPrefix),
           supabase.from("users").select("telegram_chat_id").eq("id", currentUser.id).single()
@@ -138,13 +142,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
         setSparkPoints(historyPoints);
       } catch (err) {
         console.error('Dashboard load error:', err);
+        setDashboardError(err);
       }
     };
 
     if (currentUser.id) {
       loadData();
     }
-  }, [currentUser.id, transactionsUpdatedTrigger]);
+  }, [currentUser.id, transactionsUpdatedTrigger, reloadCounter]);
 
   // Helper currency formatter
   const formatIDR = (num: number) => {
@@ -301,28 +306,36 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* 2c. Alert card (hanya kalau urgent) */}
       <DashboardBudgetAlerts />
 
-      {/* 3. Graphic Chart Trends */}
-      <DashboardChart 
-        transactions={transactions}
-        chartData={chartData}
-        chartMode={chartMode}
-        setChartMode={setChartMode}
-        chartType={chartType}
-        setChartType={setChartType}
-        labelIncome={labelIncome}
-        labelExpense={labelExpense}
-        labelBalance={labelBalance}
-        formatIDR={formatIDR}
-      />
+      {/* 3. Graphic Chart Trends & 4. Recent Transactions -- keduanya bergantung
+          pada `transactions`/`summary` dari loadData() di atas, jadi kalau
+          fetch itu gagal, tampilkan satu ErrorState untuk keduanya sekaligus
+          alih-alih membiarkan chart/list kosong tanpa penjelasan. */}
+      {dashboardError ? (
+        <ErrorState onRetry={() => setReloadCounter((c) => c + 1)} />
+      ) : (
+        <>
+          <DashboardChart 
+            transactions={transactions}
+            chartData={chartData}
+            chartMode={chartMode}
+            setChartMode={setChartMode}
+            chartType={chartType}
+            setChartType={setChartType}
+            labelIncome={labelIncome}
+            labelExpense={labelExpense}
+            labelBalance={labelBalance}
+            formatIDR={formatIDR}
+          />
 
-      {/* 4. Recent Transactions Section (Last 5 Entries) */}
-      <DashboardRecentTransactions 
-        transactions={transactions}
-        formatIDR={formatIDR}
-        formatDateLabel={formatDateLabel}
-        onNavigateToHistory={() => navigate("/transactions")}
-        categories={categories}
-      />
+          <DashboardRecentTransactions 
+            transactions={transactions}
+            formatIDR={formatIDR}
+            formatDateLabel={formatDateLabel}
+            onNavigateToHistory={() => navigate("/transactions")}
+            categories={categories}
+          />
+        </>
+      )}
 
       {/* 5. Modern quick add transaction floating action button */}
       <div className="fixed bottom-6 right-6 z-40 hidden sm:block">

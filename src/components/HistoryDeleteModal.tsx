@@ -7,6 +7,8 @@ import { audioFeedback } from "../lib/audio";
 import { Modal } from "./Modal";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
 
 interface HistoryDeleteModalProps {
   deleteTargetId: string | null;
@@ -106,31 +108,34 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
               </p>
 
               {/* Strict Keyword input verify */}
-              <input
+              <Input
                 type="text"
                 placeholder={t("confirm.delete_all_placeholder")}
                 value={deleteAllConfirmText}
                 onChange={(e) => setDeleteAllConfirmText(e.target.value)}
-                className="w-full px-4 py-2 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-red-500 uppercase font-mono tracking-wider mb-6 light_sakura:bg-slate-100 light_sakura:border-rose-100 light_sakura:text-slate-800"
+                accent="danger"
+                className="bg-slate-950 border-slate-800 text-xs uppercase font-mono tracking-wider mb-6 light_sakura:bg-slate-100 light_sakura:border-rose-100 light_sakura:text-slate-800"
               />
 
               <div className="flex justify-end gap-3">
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => {
                     audioFeedback.playClick();
                     setIsDeleteAllOpen(false);
                   }}
-                  className="cursor-pointer text-xs font-semibold hover:bg-slate-800 px-4 py-2 rounded-xl text-slate-400 light_sakura:hover:bg-slate-100"
+                  className="rounded-xl text-xs"
                 >
                   {t("common.cancel")}
-                </button>
-                <button
+                </Button>
+                <Button
+                  variant="danger"
                   onClick={onConfirmDeleteAll}
                   disabled={deleteAllConfirmText.toUpperCase() !== "HAPUS"}
-                  className="cursor-pointer bg-red-600 hover:bg-red-500 disabled:opacity-30 disabled:pointer-events-none px-4.5 py-2.5 text-xs font-bold text-white shadow-lg shadow-red-600/10 rounded-xl"
+                  className="rounded-xl text-xs"
                 >
                   {t("history.btn_delete_all")}
-                </button>
+                </Button>
               </div>
 
             </motion.div>

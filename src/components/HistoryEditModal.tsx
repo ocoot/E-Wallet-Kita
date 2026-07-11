@@ -7,6 +7,7 @@ import { useCategories } from "../hooks/useCategories";
 import { useWallets } from "../hooks/useWallets";
 import { DropdownField } from "./DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { Button } from "./ui/Button";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 
 interface HistoryEditModalProps {
@@ -152,20 +153,23 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
             </div>
 
             <div className="flex items-center justify-end gap-3 pt-2">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={onClose}
-                className="rounded-xl px-4 py-2 font-sans text-sm font-medium hover:bg-slate-800 hover:text-white cursor-pointer light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                className="rounded-xl"
               >
                 {t("common.cancel")}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
+                variant="primary"
                 disabled={isSaving}
-                className="rounded-xl px-4.5 py-2 font-sans text-sm font-semibold text-white shadow-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                isLoading={isSaving}
+                className="rounded-xl"
               >
                 {t("common.save")}
-              </button>
+              </Button>
             </div>
           </form>
         </motion.div>

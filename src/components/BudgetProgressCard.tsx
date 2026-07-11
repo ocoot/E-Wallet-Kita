@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { AlertTriangle, CheckCircle2, TrendingUp, Flame } from "lucide-react";
 import { BudgetWithProgress } from "../hooks/useBudgets";
 import { useLanguage } from "../contexts/LanguageContext";
+import { Badge, type BadgeTone } from "./ui/Badge";
 
 interface BudgetProgressCardProps {
   budget: BudgetWithProgress;
@@ -65,6 +66,12 @@ const STATUS_CONFIG = {
   },
 };
 
+const STATUS_TONE: Record<keyof typeof STATUS_CONFIG, BadgeTone> = {
+  safe: "success",
+  warning: "warning",
+  danger: "danger",
+};
+
 const SIZE = 96;
 const STROKE = 8;
 const R = (SIZE - STROKE) / 2;
@@ -114,12 +121,13 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
               {label}
             </h3>
           </div>
-          <span
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold shrink-0 ${cfg.badgeBg} ${cfg.badgeText}`}
+          <Badge
+            tone={STATUS_TONE[budget.status]}
+            icon={cfg.icon}
+            className="shrink-0 normal-case tracking-normal"
           >
-            {cfg.icon}
             {t(`budget.status_${budget.status}`)}
-          </span>
+          </Badge>
         </div>
 
         {/* Circular gauge + bar combo */}

@@ -7,6 +7,8 @@ import { Lock, Eye, EyeOff, Save, CheckCircle2, ShieldCheck, X } from "lucide-re
 import { motion, AnimatePresence } from "motion/react";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
 
 interface ResetPasswordModalProps {
   isOpen: boolean;
@@ -139,32 +141,31 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
             <label className="font-sans text-xs font-semibold tracking-wider text-slate-400 light_sakura:text-slate-600 uppercase">
               {t("auth.new_password_label")}
             </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                <Lock size={16} />
-              </span>
-              <input
-                type={showPassword ? "text" : "password"}
-                required
-                minLength={6}
-                placeholder="••••••••"
-                disabled={isLoading}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-11 pr-11 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-sm outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-              />
-              <button
-                type="button"
-                tabIndex={-1}
-                onClick={() => {
-                  audioFeedback.playClick();
-                  setShowPassword(!showPassword);
-                }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer"
-              >
-                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
+            <Input
+              type={showPassword ? "text" : "password"}
+              required
+              minLength={6}
+              placeholder="••••••••"
+              disabled={isLoading}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              leftIcon={<Lock size={16} />}
+              className="bg-slate-950 border-slate-800 py-3 light_sakura:bg-slate-50 light_sakura:border-rose-100"
+              rightElement={
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => {
+                    audioFeedback.playClick();
+                    setShowPassword(!showPassword);
+                  }}
+                  aria-label={showPassword ? t("auth.hide_password") : t("auth.show_password")}
+                  className="text-slate-400 hover:text-slate-200 cursor-pointer"
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              }
+            />
           </div>
 
           {/* Confirm Password input */}
@@ -172,51 +173,45 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
             <label className="font-sans text-xs font-semibold tracking-wider text-slate-400 light_sakura:text-slate-600 uppercase">
               {t("auth.confirm_password_label")}
             </label>
-            <div className="relative">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
-                <Lock size={16} />
-              </span>
-              <input
-                type={showConfirmPassword ? "text" : "password"}
-                required
-                minLength={6}
-                placeholder="••••••••"
-                disabled={isLoading}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full pl-11 pr-11 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-sm outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
-              />
-              <button
-                type="button"
-                tabIndex={-1}
-                onClick={() => {
-                  audioFeedback.playClick();
-                  setShowConfirmPassword(!showConfirmPassword);
-                }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 cursor-pointer"
-              >
-                {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
+            <Input
+              type={showConfirmPassword ? "text" : "password"}
+              required
+              minLength={6}
+              placeholder="••••••••"
+              disabled={isLoading}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              leftIcon={<Lock size={16} />}
+              className="bg-slate-950 border-slate-800 py-3 light_sakura:bg-slate-50 light_sakura:border-rose-100"
+              rightElement={
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  onClick={() => {
+                    audioFeedback.playClick();
+                    setShowConfirmPassword(!showConfirmPassword);
+                  }}
+                  aria-label={showConfirmPassword ? t("auth.hide_password") : t("auth.show_password")}
+                  className="text-slate-400 hover:text-slate-200 cursor-pointer"
+                >
+                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              }
+            />
           </div>
 
           {/* Action button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <Button
             type="submit"
+            variant="primary"
+            fullWidth
             disabled={isLoading}
-            className="w-full cursor-pointer py-3.5 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-sm font-semibold shadow-lg shadow-indigo-600/10 flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:pointer-events-none mt-4 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+            isLoading={isLoading}
+            icon={<Save size={16} />}
+            className="rounded-xl py-3.5 mt-4"
           >
-            {isLoading ? (
-              <span className="w-5 h-5 border-2 border-t-transparent border-white rounded-full animate-spin" />
-            ) : (
-              <>
-                <Save size={16} />
-                <span>{t("auth.reset_submit_btn")}</span>
-              </>
-            )}
-          </motion.button>
+            {t("auth.reset_submit_btn")}
+          </Button>
         </form>
       </motion.div>
     </div>

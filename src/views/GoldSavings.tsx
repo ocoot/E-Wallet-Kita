@@ -8,6 +8,7 @@ import { useWallets } from "../hooks/useWallets";
 import { GoldPocket, GoldBrand, ACTIVE_GOLD_BRANDS } from "../types";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
+import { ErrorState } from "../components/ErrorState";
 import { InfoTooltip } from "../components/InfoTooltip";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
@@ -80,7 +81,7 @@ export const GoldSavings: React.FC = () => {
   const { t, locale } = useLanguage();
   const { user } = useAuth();
   const { showToast } = useToast();
-  const { pockets, summary, prices, loading, refresh } = useGoldSavings(user?.id);
+  const { pockets, summary, prices, loading, error: pocketsError, refresh } = useGoldSavings(user?.id);
   const { activeWallets } = useWallets();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -491,6 +492,8 @@ export const GoldSavings: React.FC = () => {
             <div className="flex items-center justify-center py-16">
               <div className="w-8 h-8 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin" />
             </div>
+          ) : pocketsError ? (
+            <ErrorState onRetry={refresh} />
           ) : pockets.length === 0 ? (
             <EmptyState icon={<Coins size={40} className="text-slate-600 light_sakura:text-slate-400" />} title={t("gold.empty_title")} description={t("gold.empty_desc")} />
           ) : (

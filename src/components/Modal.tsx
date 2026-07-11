@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { AlertCircle, HelpCircle, Trash2, CheckCircle } from "lucide-react";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { Button } from "./ui/Button";
 
 interface ModalProps {
   isOpen: boolean;
@@ -93,34 +94,24 @@ export const Modal: React.FC<ModalProps> = ({
 
             {/* Actions button group */}
             <div className="flex items-center justify-end gap-3 max-sm:gap-2">
-              <motion.button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={onCancel}
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                className="cursor-pointer rounded-xl px-4 py-2.5 min-h-[44px] max-sm:flex-1 font-sans text-sm font-medium transition-all duration-200
-                  hover:bg-slate-800 dark_obsidian:hover:bg-slate-800 hover:text-white
-                  light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                className="min-h-[44px] max-sm:flex-1 rounded-xl"
               >
                 {cancelLabel}
-              </motion.button>
+              </Button>
 
-              <motion.button
+              <Button
                 type="button"
+                variant={type === "danger" ? "danger" : "primary"}
                 disabled={confirmDisabled}
                 onClick={onConfirm}
-                whileHover={confirmDisabled ? {} : { scale: 1.04, y: -1 }}
-                whileTap={confirmDisabled ? {} : { scale: 0.96 }}
-                transition={{ type: "spring", stiffness: 400, damping: 15 }}
-                className={`cursor-pointer rounded-xl px-4.5 py-2.5 min-h-[44px] max-sm:flex-1 font-sans text-sm font-semibold tracking-tight text-white shadow-lg transition-all duration-200
-                  ${type === "danger"
-                    ? "bg-red-600 hover:bg-red-500 hover:shadow-red-500/20"
-                    : "bg-indigo-600 hover:bg-indigo-500 hover:shadow-indigo-500/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
-                  } ${confirmDisabled ? "opacity-40 cursor-not-allowed scale-100! hover:scale-100!" : ""}`}
+                className="min-h-[44px] max-sm:flex-1 rounded-xl"
               >
                 {confirmLabel}
-              </motion.button>
+              </Button>
             </div>
           </motion.div>
         </div>

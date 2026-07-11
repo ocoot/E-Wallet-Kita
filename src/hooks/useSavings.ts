@@ -17,6 +17,7 @@ export function useSavings(userId: string | undefined) {
   const [pockets, setPockets] = useState<SavingsPocketWithProgress[]>([]);
   const [summary, setSummary] = useState<SavingsSummary>({ total_saved: 0, pocket_count: 0 });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
 
   const load = useCallback(async () => {
     if (!userId) {
@@ -26,6 +27,7 @@ export function useSavings(userId: string | undefined) {
       return;
     }
     setLoading(true);
+    setError(null);
     try {
       const [raw, summaryRes] = await Promise.all([
         dbService.getSavingsPockets(userId),
@@ -43,6 +45,7 @@ export function useSavings(userId: string | undefined) {
       setSummary(summaryRes);
     } catch (err) {
       console.error("useSavings error:", err);
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -52,5 +55,5 @@ export function useSavings(userId: string | undefined) {
     load();
   }, [load]);
 
-  return { pockets, summary, loading, refresh: load };
+  return { pockets, summary, loading, error, refresh: load };
 }

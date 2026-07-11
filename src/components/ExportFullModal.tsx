@@ -7,6 +7,7 @@ import { useWallets } from "../hooks/useWallets";
 import { DropdownField } from "./DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { Button } from "./ui/Button";
 
 interface ExportFullModalProps {
   isOpen: boolean;
@@ -144,23 +145,23 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
             )}
 
             <div className="flex items-center justify-end gap-3 mt-2">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={onCancel}
-                className="cursor-pointer rounded-xl px-4 py-2 font-sans text-sm font-medium hover:bg-slate-800 hover:text-white light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                className="rounded-xl"
               >
                 {t("common.cancel")}
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
+                variant="primary"
                 disabled={!valid || isGenerating}
                 onClick={() => onGenerate(fromMonth, toMonth, walletId || null)}
-                className={`cursor-pointer rounded-xl px-4.5 py-2 font-sans text-sm font-semibold tracking-tight text-white shadow-lg transition-all duration-200
-                  bg-indigo-600 hover:bg-indigo-500 hover:shadow-indigo-500/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400
-                  ${!valid || isGenerating ? "opacity-40 cursor-not-allowed" : ""}`}
+                className="rounded-xl"
               >
                 {t("export.generate_pdf")}
-              </button>
+              </Button>
             </div>
           </motion.div>
         </div>

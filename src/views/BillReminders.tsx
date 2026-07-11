@@ -10,6 +10,7 @@ import { useWallets } from "../hooks/useWallets";
 import { Modal } from "../components/Modal";
 import { DropdownField } from "../components/DropdownField";
 import { EmptyState } from "../components/EmptyState";
+import { ErrorState } from "../components/ErrorState";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { motion, AnimatePresence } from "motion/react";
@@ -36,7 +37,7 @@ export const BillReminders: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
   const { categories } = useCategories();
-  const { reminders, loading, refresh } = useBillReminders(user?.id);
+  const { reminders, loading, error: remindersError, refresh } = useBillReminders(user?.id);
   const navigate = useNavigate();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -254,6 +255,8 @@ export const BillReminders: React.FC = () => {
             <div className="flex items-center justify-center py-16">
               <div className="w-8 h-8 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
             </div>
+          ) : remindersError ? (
+            <ErrorState onRetry={refresh} />
           ) : reminders.length === 0 ? (
             <EmptyState icon={<Bell size={40} className="text-slate-600 light_sakura:text-slate-400" />} title={t("bill_reminders.empty_title")} description={t("bill_reminders.empty_desc")} />
           ) : (

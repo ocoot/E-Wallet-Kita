@@ -12,6 +12,7 @@ export function useWallets() {
   const { user } = useAuth();
   const [wallets, setWallets] = useState<WalletWithBalance[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
 
   const refresh = useCallback(async () => {
     if (!user?.id) {
@@ -20,11 +21,14 @@ export function useWallets() {
       return;
     }
     setIsLoading(true);
+    setError(null);
     try {
       const data = await dbService.getWallets(user.id);
       setWallets(data);
-    } catch {
+    } catch (err) {
+      console.error("useWallets error:", err);
       setWallets([]);
+      setError(err);
     } finally {
       setIsLoading(false);
     }
@@ -37,5 +41,5 @@ export function useWallets() {
   const activeWallets = wallets.filter((w) => !w.is_archived);
   const generalWallet = wallets.find((w) => w.type === "general") || null;
 
-  return { wallets, activeWallets, generalWallet, isLoading, refresh };
+  return { wallets, activeWallets, generalWallet, isLoading, error, refresh };
 }

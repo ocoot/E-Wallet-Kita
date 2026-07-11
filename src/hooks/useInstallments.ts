@@ -26,6 +26,7 @@ function toYMD(d: Date): string {
 export function useInstallments(userId: string | undefined) {
   const [installments, setInstallments] = useState<InstallmentWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
 
   const load = useCallback(async () => {
     if (!userId) {
@@ -34,6 +35,7 @@ export function useInstallments(userId: string | undefined) {
       return;
     }
     setLoading(true);
+    setError(null);
     try {
       const raw = await dbService.getInstallments(userId);
 
@@ -58,6 +60,7 @@ export function useInstallments(userId: string | undefined) {
       setInstallments(enriched);
     } catch (err) {
       console.error("useInstallments error:", err);
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -67,5 +70,5 @@ export function useInstallments(userId: string | undefined) {
     load();
   }, [load]);
 
-  return { installments, loading, refresh: load };
+  return { installments, loading, error, refresh: load };
 }

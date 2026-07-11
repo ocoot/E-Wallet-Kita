@@ -66,6 +66,7 @@ function computeUrgency(daysUntilDue: number, isPaid: boolean): BillUrgency {
 export function useBillReminders(userId: string | undefined) {
   const [reminders, setReminders] = useState<BillReminderWithUrgency[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
 
   const load = useCallback(async () => {
     if (!userId) {
@@ -74,6 +75,7 @@ export function useBillReminders(userId: string | undefined) {
       return;
     }
     setLoading(true);
+    setError(null);
     try {
       const raw = await dbService.getBillReminders(userId);
       const today = new Date();
@@ -103,6 +105,7 @@ export function useBillReminders(userId: string | undefined) {
       setReminders(enriched);
     } catch (err) {
       console.error("useBillReminders error:", err);
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -112,5 +115,5 @@ export function useBillReminders(userId: string | undefined) {
     load();
   }, [load]);
 
-  return { reminders, loading, refresh: load };
+  return { reminders, loading, error, refresh: load };
 }

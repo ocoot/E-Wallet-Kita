@@ -26,6 +26,7 @@ import { PremiumModal } from "../components/PremiumModal";
 import { useCategories } from "../hooks/useCategories";
 import { useWallets } from "../hooks/useWallets";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { ErrorState } from "../components/ErrorState";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -68,6 +69,7 @@ export const History: React.FC<HistoryProps> = ({
   const { showToast } = useToast();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [historyError, setHistoryError] = useState<unknown>(null);
   const [search, setSearch] = useState("");
   const [filterMonth, setFilterMonth] = useState(() => {
     const d = new Date();
@@ -108,10 +110,12 @@ export const History: React.FC<HistoryProps> = ({
 
   const loadTransactions = async () => {
     try {
+      setHistoryError(null);
       const data = await dbService.getTransactions(currentUser.id, filterMonth);
       setTransactions(data);
     } catch (err) {
       console.error("History load error:", err);
+      setHistoryError(err);
     }
   };
 
@@ -362,16 +366,19 @@ export const History: React.FC<HistoryProps> = ({
             categories={categories}
           />
 
-          <HistoryGroupedList
-            paginatedTransactions={paginatedTransactions}
-            formatDateLabel={formatDateLabel}
-            formatIDR={formatIDR}
-            getSourceIconLabel={getSourceIconLabel}
-            onDeleteItem={handleDeleteItem}
-            onEditItem={handleEditItem}
-            categories={categories}
-          />
-
+          {historyError ? (
+            <ErrorState onRetry={loadTransactions} />
+          ) : (
+            <HistoryGroupedList
+              paginatedTransactions={paginatedTransactions}
+              formatDateLabel={formatDateLabel}
+              formatIDR={formatIDR}
+              getSourceIconLabel={getSourceIconLabel}
+              onDeleteItem={handleDeleteItem}
+              onEditItem={handleEditItem}
+              categories={categories}
+            />
+          )}
           <HistoryPagination
             totalPages={totalPages}
             currentPage={currentPage}

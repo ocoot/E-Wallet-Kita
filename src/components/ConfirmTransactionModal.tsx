@@ -6,6 +6,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { DropdownField } from "./DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { Button } from "./ui/Button";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   food_drink: "🍜", transport: "🚗", shopping: "🛒", health: "💊",
@@ -186,24 +187,25 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-5">
-            <button
+            <Button
               type="button"
+              variant="ghost"
               onClick={onCancel}
               disabled={isSaving}
-              className="rounded-xl px-4 py-2 font-sans text-sm font-medium hover:bg-slate-800 hover:text-white cursor-pointer disabled:opacity-50 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+              className="rounded-xl"
             >
               {t("common.cancel")}
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant={isExpense ? "danger" : "success"}
               onClick={onConfirm}
               disabled={isSaving || !draft.amount || draft.amount <= 0}
-              className={`rounded-xl px-4.5 py-2 font-sans text-sm font-semibold text-white shadow-lg cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-                isExpense ? "bg-red-600 hover:bg-red-500" : "bg-emerald-600 hover:bg-emerald-500"
-              }`}
+              isLoading={isSaving}
+              className="rounded-xl"
             >
               {t("common.confirm")}
-            </button>
+            </Button>
           </div>
         </motion.div>
       </div>

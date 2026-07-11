@@ -38,6 +38,7 @@ export function useGoldSavings(userId: string | undefined) {
   });
   const [prices, setPrices] = useState<GoldPriceRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
 
   const load = useCallback(async () => {
     if (!userId) {
@@ -47,6 +48,7 @@ export function useGoldSavings(userId: string | undefined) {
       return;
     }
     setLoading(true);
+    setError(null);
     try {
       const [pocketsRes, summaryRes, pricesRes] = await Promise.all([
         dbService.getGoldPockets(userId),
@@ -59,6 +61,7 @@ export function useGoldSavings(userId: string | undefined) {
       setPrices(pricesRes as GoldPriceRow[]);
     } catch (err) {
       console.error("useGoldSavings error:", err);
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -68,5 +71,5 @@ export function useGoldSavings(userId: string | undefined) {
     load();
   }, [load]);
 
-  return { pockets, summary, prices, loading, refresh: load };
+  return { pockets, summary, prices, loading, error, refresh: load };
 }

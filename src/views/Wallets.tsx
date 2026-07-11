@@ -10,6 +10,7 @@ import { WalletType, WalletWithBalance } from "../types";
 import { useNavigate } from "react-router-dom";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { EmptyState } from "../components/EmptyState";
+import { ErrorState } from "../components/ErrorState";
 
 const GROUP_META: Record<Exclude<WalletType, "general">, { icon: string; labelKey: string; addKey: string; placeholderKey: string }> = {
   ewallet: { icon: "📱", labelKey: "wallet.group_ewallet", addKey: "wallet.add_wallet", placeholderKey: "wallet.field_name_placeholder_ewallet" },
@@ -30,7 +31,7 @@ export const Wallets: React.FC = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { showToast } = useToast();
-  const { wallets, activeWallets, isLoading, refresh } = useWallets();
+  const { wallets, activeWallets, isLoading, error: walletsError, refresh } = useWallets();
   const navigate = useNavigate();
 
   const [busy, setBusy] = useState(false);
@@ -405,7 +406,8 @@ export const Wallets: React.FC = () => {
             </div>
           )}
 
-          {!isLoading && activeWallets.length === 0 && <EmptyState />}
+          {!isLoading && walletsError && <ErrorState onRetry={refresh} />}
+          {!isLoading && !walletsError && activeWallets.length === 0 && <EmptyState />}
 
         </div>
       </div>

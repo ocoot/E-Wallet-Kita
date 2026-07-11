@@ -9,6 +9,7 @@ import { SavingsPocketType } from "../types";
 import { Modal } from "../components/Modal";
 import { DropdownField } from "../components/DropdownField";
 import { EmptyState } from "../components/EmptyState";
+import { ErrorState } from "../components/ErrorState";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { motion, AnimatePresence } from "motion/react";
@@ -53,7 +54,7 @@ export const Savings: React.FC = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { showToast } = useToast();
-  const { pockets, summary, loading, refresh } = useSavings(user?.id);
+  const { pockets, summary, loading, error: pocketsError, refresh } = useSavings(user?.id);
   const { activeWallets } = useWallets();
 
   const [availableBalance, setAvailableBalance] = useState<number | null>(null);
@@ -312,6 +313,8 @@ export const Savings: React.FC = () => {
             <div className="flex items-center justify-center py-16">
               <div className="w-8 h-8 border-2 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin" />
             </div>
+          ) : pocketsError ? (
+            <ErrorState onRetry={refresh} />
           ) : pockets.length === 0 ? (
             <EmptyState icon={<PiggyBank size={40} className="text-slate-600 light_sakura:text-slate-400" />} title={t("savings.empty_title")} description={t("savings.empty_desc")} />
           ) : (

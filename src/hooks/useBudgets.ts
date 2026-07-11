@@ -29,6 +29,7 @@ function computeStatus(percent: number, alertThresholdPercent: number): BudgetSt
 export function useBudgets(userId: string | undefined) {
   const [budgets, setBudgets] = useState<BudgetWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
 
   const load = useCallback(async () => {
     if (!userId) {
@@ -37,6 +38,7 @@ export function useBudgets(userId: string | undefined) {
       return;
     }
     setLoading(true);
+    setError(null);
     try {
       const monthPrefix = getCurrentMonthPrefix();
       const rawBudgets = await dbService.getBudgets(userId);
@@ -57,6 +59,7 @@ export function useBudgets(userId: string | undefined) {
       setBudgets(withProgress);
     } catch (err) {
       console.error("useBudgets error:", err);
+      setError(err);
     } finally {
       setLoading(false);
     }
@@ -66,7 +69,7 @@ export function useBudgets(userId: string | undefined) {
     load();
   }, [load]);
 
-  return { budgets, loading, refresh: load };
+  return { budgets, loading, error, refresh: load };
 }
 
 /**
