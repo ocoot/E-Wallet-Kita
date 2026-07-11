@@ -316,7 +316,11 @@
     "edit": "Edit",
     "sending": "Sending...",
     "generating_pdf": "Preparing PDF...",
-    "clear": "Clear filter"
+    "clear": "Clear filter",
+    "offline_banner": "No internet connection. Some data may not load.",
+    "retry": "Try Again",
+    "error_generic_title": "Failed to load data",
+    "error_generic_desc": "Something went wrong while fetching data. Check your internet connection and try again."
   },
   "confirm": {
     "logout_title": "End Session",

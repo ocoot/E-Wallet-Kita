@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { UserProfile } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 import {
   X, Shield, Ban, Crown, Mail, MessageCircle, Calendar, Hash, Wallet, TrendingUp, TrendingDown
 } from "lucide-react";
@@ -27,6 +28,8 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
   const [loading, setLoading] = useState(false);
 
   useLockBodyScroll(!!user);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  useDialogA11y(!!user, panelRef, onClose);
 
   useEffect(() => {
     if (!user) return;
@@ -91,7 +94,11 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
       />
 
       {/* Modal Card */}
-      <div className="relative z-10 w-full max-w-md my-auto max-h-[85vh] flex flex-col bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden light_sakura:bg-rose-50/95 light_sakura:border-rose-100">
+      <div ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
+        className="relative z-10 w-full max-w-md my-auto max-h-[85vh] flex flex-col bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden outline-none light_sakura:bg-rose-50/95 light_sakura:border-rose-100">
 
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-800/60 bg-slate-900/50 light_sakura:border-rose-100/60 light_sakura:bg-rose-100/20">
@@ -106,6 +113,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
           </div>
           <button
             onClick={onClose}
+            aria-label="Tutup"
             className="p-2 rounded-xl hover:bg-slate-800 text-slate-400 cursor-pointer transition-colors light_sakura:hover:bg-rose-200/40 light_sakura:text-slate-500"
           >
             <X size={16} />

@@ -6,6 +6,7 @@ import { audioFeedback } from "../lib/audio";
 import { Lock, Eye, EyeOff, Save, CheckCircle2, ShieldCheck, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 
 interface ResetPasswordModalProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
   const { t } = useLanguage();
   const { showToast } = useToast();
   useLockBodyScroll(isOpen);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  useDialogA11y(isOpen, panelRef, onClose);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -98,7 +101,11 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
           x: { duration: 0.4, ease: "easeInOut" },
           default: { duration: 0.3, ease: "easeOut" }
         }}
-        className="w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl flex flex-col relative z-20 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:shadow-rose-150/10"
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        tabIndex={-1}
+        className="w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden bg-slate-900 border border-slate-800 rounded-3xl p-8 shadow-2xl outline-none flex flex-col relative z-20 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:shadow-rose-150/10"
       >
         {/* Close Button */}
         <button
@@ -106,6 +113,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
             audioFeedback.playClick();
             onClose();
           }}
+          aria-label="Tutup"
           className="absolute top-5 right-5 p-1.5 text-slate-400 hover:text-white rounded-full bg-slate-950/20 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:text-slate-500 light_sakura:hover:text-slate-800 light_sakura:hover:bg-rose-50"
         >
           <X size={16} />

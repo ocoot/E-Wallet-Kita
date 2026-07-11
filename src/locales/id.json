@@ -316,7 +316,11 @@
     "edit": "Edit",
     "sending": "Mengirim...",
     "generating_pdf": "Menyiapkan PDF...",
-    "clear": "Hapus filter"
+    "clear": "Hapus filter",
+    "offline_banner": "Tidak ada koneksi internet. Beberapa data mungkin tidak termuat.",
+    "retry": "Coba Lagi",
+    "error_generic_title": "Gagal memuat data",
+    "error_generic_desc": "Terjadi kesalahan saat mengambil data. Periksa koneksi internet Anda lalu coba lagi."
   },
   "confirm": {
     "logout_title": "Keluar Sesi",

@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Modal } from "./Modal";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 
 interface HistoryDeleteModalProps {
   deleteTargetId: string | null;
@@ -47,6 +48,8 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
   };
 
   useLockBodyScroll(deleteTargetId !== null || isDeleteAllOpen);
+  const deleteAllPanelRef = React.useRef<HTMLDivElement>(null);
+  useDialogA11y(isDeleteAllOpen, deleteAllPanelRef, () => setIsDeleteAllOpen(false));
 
   return (
     <>
@@ -87,7 +90,11 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden p-6 rounded-2xl bg-slate-900 text-white border border-red-500/30 light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-red-200"
+              ref={deleteAllPanelRef}
+              role="dialog"
+              aria-modal="true"
+              tabIndex={-1}
+              className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none p-6 rounded-2xl bg-slate-900 text-white border border-red-500/30 light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-red-200"
             >
               <div className="flex items-center gap-2.5 text-red-100 mb-3 light_sakura:text-red-600">
                 <AlertTriangle size={24} />

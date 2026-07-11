@@ -73,11 +73,20 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
       }
       setOpen(false);
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        setOpen(false);
+        containerRef.current?.querySelector("button")?.focus();
+      }
+    };
     document.addEventListener("mousedown", handleOutside);
     document.addEventListener("touchstart", handleOutside);
+    document.addEventListener("keydown", handleKeyDown, true);
     return () => {
       document.removeEventListener("mousedown", handleOutside);
       document.removeEventListener("touchstart", handleOutside);
+      document.removeEventListener("keydown", handleKeyDown, true);
     };
   }, [open]);
 
@@ -102,6 +111,8 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
       <button
         type="button"
         disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
         onClick={() => { audioFeedback.playClick(); setOpen((v) => !v); }}
         className={`w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 outline-none ${focusBorder} cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
       >
@@ -126,6 +137,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
                 maxHeight: position.maxHeight,
               }}
               className={`z-[70] overflow-y-auto rounded-xl border bg-slate-900 border-slate-800 shadow-xl light_sakura:bg-white light_sakura:border-rose-100 p-1 ${panelClassName}`}
+              role="listbox"
             >
               {options.map((opt) => {
                 const isSelected = opt.value === value;
@@ -133,6 +145,8 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
                   <button
                     key={opt.value || "__default__"}
                     type="button"
+                    role="option"
+                    aria-selected={isSelected}
                     disabled={opt.disabled}
                     onClick={() => { if (opt.disabled) return; audioFeedback.playClick(); onChange(opt.value); setOpen(false); }}
                     className={`w-full text-left px-3 py-2.5 rounded-lg font-sans text-xs transition-colors ${

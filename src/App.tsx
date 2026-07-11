@@ -16,6 +16,7 @@ import { useAdmin } from "./hooks/useAdmin";
 import { Modal } from "./components/Modal";
 import { ResetPasswordModal } from "./components/ResetPasswordModal";
 import { MaintenanceBanner } from "./components/MaintenanceBanner";
+import { OfflineBanner } from "./components/OfflineBanner";
 import { FeatureLockGate } from "./components/FeatureLockGate";
 import { SupportChatWidget } from "./components/SupportChatWidget";
 import { UpdatePrompt } from "./components/UpdatePrompt";
@@ -265,6 +266,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
       
       {/*Subtle noise/grain overlay for surface texture */}
       <div className="noise-overlay" />
+
+      {/* Banner status koneksi -- muncul di atas seluruh layout, termasuk saat modal terbuka */}
+      <OfflineBanner />
 
       {/*Collapsible responsive Navigation Menu */}
       <Sidebar

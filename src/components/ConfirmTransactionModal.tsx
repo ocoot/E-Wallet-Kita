@@ -5,6 +5,7 @@ import { Category, WalletWithBalance, WalletType } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
 import { DropdownField } from "./DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   food_drink: "🍜", transport: "🚗", shopping: "🛒", health: "💊",
@@ -55,6 +56,8 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
   const { t, locale } = useLanguage();
 
   useLockBodyScroll(isOpen && !!draft);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  useDialogA11y(isOpen && !!draft, panelRef, onCancel);
 
   if (!isOpen || !draft) return null;
 
@@ -82,7 +85,11 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 15 }}
           transition={{ type: "spring", duration: 0.3 }}
-          className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          tabIndex={-1}
+          className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl outline-none text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
         >
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -100,6 +107,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
             </div>
             <button
               onClick={onCancel}
+              aria-label="Tutup"
               className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer light_sakura:hover:bg-rose-100"
             >
               <X size={16} />

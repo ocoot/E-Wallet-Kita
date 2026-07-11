@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useId, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AlertCircle, HelpCircle, Trash2, CheckCircle } from "lucide-react";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 
 interface ModalProps {
   isOpen: boolean;
@@ -27,6 +28,10 @@ export const Modal: React.FC<ModalProps> = ({
   confirmDisabled = false
 }) => {
   useLockBodyScroll(isOpen);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useDialogA11y(isOpen, panelRef, onCancel);
+  const titleId = useId();
+  const descId = useId();
 
   return (
     <AnimatePresence>
@@ -43,11 +48,17 @@ export const Modal: React.FC<ModalProps> = ({
 
           {/* Modal core window */}
           <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            aria-describedby={descId}
+            tabIndex={-1}
             initial={{ scale: 0.95, opacity: 0, y: 15 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className={`relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl transition-colors duration-300
+            className={`relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl outline-none transition-colors duration-300
               ${type === "danger" 
                 ? "bg-slate-900 border-red-500/30 text-white dark_obsidian:bg-slate-900 light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-red-200" 
                 : "bg-slate-900 border-indigo-500/20 text-white dark_obsidian:bg-slate-900 light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
@@ -70,13 +81,13 @@ export const Modal: React.FC<ModalProps> = ({
                 {type === "info" && <HelpCircle size={22} />}
                 {type === "success" && <CheckCircle size={22} />}
               </div>
-              <h3 className="font-sans text-lg font-semibold tracking-tight">
+              <h3 className="font-sans text-lg font-semibold tracking-tight" id={titleId}>
                 {title}
               </h3>
             </div>
 
             {/* Description textual info */}
-            <p className="mb-6 font-sans text-sm block opacity-85 leading-relaxed">
+            <p className="mb-6 font-sans text-sm block opacity-85 leading-relaxed" id={descId}>
               {description}
             </p>
 

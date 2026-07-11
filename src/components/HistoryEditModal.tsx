@@ -7,6 +7,7 @@ import { useCategories } from "../hooks/useCategories";
 import { useWallets } from "../hooks/useWallets";
 import { DropdownField } from "./DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 
 interface HistoryEditModalProps {
   transaction: Transaction | null;
@@ -32,6 +33,8 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
   const [walletId, setWalletId] = useState<string | null>(null);
 
   useLockBodyScroll(!!transaction);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  useDialogA11y(!!transaction, panelRef, onClose);
 
   useEffect(() => {
     if (transaction) {
@@ -69,7 +72,11 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 15 }}
           transition={{ type: "spring", duration: 0.3 }}
-          className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          tabIndex={-1}
+          className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl outline-none text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
         >
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -82,6 +89,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
             </div>
             <button
               onClick={onClose}
+              aria-label="Tutup"
               className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer light_sakura:hover:bg-rose-100"
             >
               <X size={16} />

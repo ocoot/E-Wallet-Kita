@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import logoUrl from "../assets/images/user_logo_transparent.png";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -35,6 +35,7 @@ import { audioFeedback } from "../lib/audio";
 import { useAdmin } from "../hooks/useAdmin";
 import { useMaintenance } from "../contexts/MaintenanceContext";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 
 interface SidebarProps {
   onLogoutClick: () => void;
@@ -59,6 +60,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   // Mobile drawer overlay state
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   useLockBodyScroll(isMobileOpen);
+  const drawerRef = useRef<HTMLDivElement>(null);
+  useDialogA11y(isMobileOpen, drawerRef, () => setIsMobileOpen(false));
 
   // In Supabase, is_guest can be inferred from is_anonymous
   const isGuest = user?.is_anonymous ?? false;
@@ -168,11 +171,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
             {/* Drawer content */}
             <motion.div 
+              ref={drawerRef}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu navigasi"
+              tabIndex={-1}
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="relative flex flex-col w-72 max-w-[80vw] h-full bg-slate-900 border-r border-slate-800 text-white dark_obsidian:bg-slate-900 dark_obsidian:border-slate-800 light_sakura:bg-rose-50 light_sakura:text-slate-800 light_sakura:border-rose-100"
+              className="relative flex flex-col w-72 max-w-[80vw] h-full bg-slate-900 border-r border-slate-800 text-white dark_obsidian:bg-slate-900 dark_obsidian:border-slate-800 light_sakura:bg-rose-50 light_sakura:text-slate-800 light_sakura:border-rose-100 outline-none"
             >
               {/* Header — sticky, tidak ikut scroll */}
               <div className="flex items-center justify-between px-6 py-5 shrink-0 border-b border-slate-800/60 light_sakura:border-rose-100">

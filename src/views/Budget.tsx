@@ -13,6 +13,7 @@ import { PiggyBank, Plus, X, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { BudgetProgressCard } from "../components/BudgetProgressCard";
 import { DropdownField } from "../components/DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 
 export const Budget: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -117,6 +118,9 @@ export const Budget: React.FC = () => {
     if (isAdding) return;
     setIsAddOpen(false);
   };
+
+  const addModalPanelRef = React.useRef<HTMLDivElement>(null);
+  useDialogA11y(isAddOpen, addModalPanelRef, closeAddModal);
 
   const handleAddSave = async () => {
     if (!user) return;
@@ -335,7 +339,11 @@ export const Budget: React.FC = () => {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               transition={{ type: "spring", duration: 0.3 }}
-              className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
+              ref={addModalPanelRef}
+              role="dialog"
+              aria-modal="true"
+              tabIndex={-1}
+              className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl outline-none text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
             >
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">

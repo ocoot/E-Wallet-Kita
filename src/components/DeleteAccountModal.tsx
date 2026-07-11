@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { AlertTriangle, X } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -46,6 +47,8 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
   };
 
   useLockBodyScroll(isOpen);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  useDialogA11y(isOpen, panelRef, handleClose);
 
   return (
     <AnimatePresence>
@@ -63,11 +66,16 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-red-500/30 bg-slate-900 p-6 shadow-2xl light_sakura:bg-white light_sakura:border-red-200"
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
+            className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-red-500/30 bg-slate-900 p-6 shadow-2xl outline-none light_sakura:bg-white light_sakura:border-red-200"
           >
             <button
               onClick={handleClose}
               disabled={isDeleting}
+              aria-label="Tutup"
               className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer disabled:opacity-40"
             >
               <X size={18} />

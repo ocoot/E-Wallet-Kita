@@ -5,6 +5,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useWallets } from "../hooks/useWallets";
 import { DropdownField } from "./DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 
 interface ExportSummaryModalProps {
   isOpen: boolean;
@@ -30,6 +31,8 @@ export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
   }, [isOpen]);
 
   useLockBodyScroll(isOpen);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  useDialogA11y(isOpen, panelRef, onCancel);
 
   return (
     <AnimatePresence>
@@ -48,10 +51,15 @@ export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl bg-slate-900 border-indigo-500/20 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-rose-100"
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            tabIndex={-1}
+            className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl outline-none bg-slate-900 border-indigo-500/20 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-rose-100"
           >
             <button
               onClick={onCancel}
+              aria-label="Tutup"
               className="absolute top-4 right-4 text-slate-400 hover:text-white light_sakura:hover:text-slate-900 cursor-pointer"
             >
               <X size={18} />

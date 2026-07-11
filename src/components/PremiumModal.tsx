@@ -15,6 +15,7 @@ import { sendPremiumReceiptEmail } from "../lib/email";
 import { Modal } from "./Modal";
 import { getPremiumBasePrice } from "../lib/settings";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useDialogA11y } from "../hooks/useDialogA11y";
 
 type Step = "terms" | "qris" | "checking" | "success" | "expired" | "failed";
 
@@ -26,6 +27,8 @@ interface PremiumModalProps {
 
 export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onPremiumActivated }) => {
   useLockBodyScroll(isOpen);
+  const panelRef = React.useRef<HTMLDivElement>(null);
+  useDialogA11y(isOpen, panelRef, onClose);
   const { t } = useLanguage();
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -205,10 +208,14 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
       >
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-          className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden p-6 relative"
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          tabIndex={-1}
+          className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none p-6 relative"
         >
           {(step === "terms" || step === "expired" || step === "failed") && (
-            <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-white">
+            <button onClick={onClose} aria-label="Tutup" className="absolute top-4 right-4 text-slate-500 hover:text-white">
               <X size={18} />
             </button>
           )}

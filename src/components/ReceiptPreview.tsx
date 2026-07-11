@@ -154,6 +154,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
             onCancel();
           }}
           className="p-2 text-slate-500 hover:text-white rounded-xl hover:bg-slate-800/50 cursor-pointer transition-all light_sakura:hover:bg-slate-100"
+          aria-label="Tutup"
         >
           <X size={18} />
         </button>
