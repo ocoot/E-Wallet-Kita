@@ -7,6 +7,7 @@ import { useAdmin } from "../hooks/useAdmin";
 import { UserProfile } from "../types";
 import { audioFeedback } from "../lib/audio";
 import { EmptyState } from "../components/EmptyState";
+import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
 import { 
   Shield, 
@@ -49,6 +50,7 @@ export const AdminPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<AdminTab>("users");
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
+  const [usersError, setUsersError] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [premiumFilter, setPremiumFilter] = useState<string>("all");
@@ -121,6 +123,7 @@ export const AdminPanel: React.FC = () => {
   // Fetch users with search, filters, and pagination purely built into Supabase
   const fetchUsers = useCallback(async () => {
     setLoading(true);
+    setUsersError(false);
     try {
       let query = supabase
         .from("users")
@@ -172,6 +175,7 @@ export const AdminPanel: React.FC = () => {
       setTotalUsers(count || 0);
     } catch (err: any) {
       console.error(t("admin.fetch_error"), err);
+      setUsersError(true);
       showToast(t("admin.fetch_error"), "error");
     } finally {
       setLoading(false);
@@ -660,6 +664,8 @@ export const AdminPanel: React.FC = () => {
                   {t("admin.loading")}
                 </p>
               </div>
+            ) : usersError ? (
+              <ErrorState onRetry={() => { fetchUsers(); loadMetrics(); }} />
             ) : users.length === 0 ? (
               <EmptyState
                 icon={<User size={40} className="text-slate-600 light_sakura:text-slate-400" />}

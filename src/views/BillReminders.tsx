@@ -9,6 +9,7 @@ import { useBillReminders, BillReminderWithUrgency } from "../hooks/useBillRemin
 import { useWallets } from "../hooks/useWallets";
 import { Modal } from "../components/Modal";
 import { DropdownField } from "../components/DropdownField";
+import { Input } from "../components/ui/Input";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
@@ -342,10 +343,14 @@ export const BillReminders: React.FC = () => {
                   {editTarget ? t("bill_reminders.edit_title") : t("bill_reminders.add_title")}
                 </h2>
                 {/* Name */}
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_name")}</label>
-                  <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={t("bill_reminders.form_name_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:focus:border-rose-400 placeholder:text-slate-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("bill_reminders.form_name")}
+                  accent="indigo"
+                  type="text"
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder={t("bill_reminders.form_name_placeholder")}
+                />
                 {/* Category */}
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_category")}</label>
@@ -356,10 +361,15 @@ export const BillReminders: React.FC = () => {
                   />
                 </div>
                 {/* Amount */}
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_amount")}</label>
-                  <input type="number" value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} placeholder={t("bill_reminders.form_amount_placeholder")} min={0} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("bill_reminders.form_amount")}
+                  accent="indigo"
+                  type="number"
+                  value={form.amount}
+                  onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
+                  placeholder={t("bill_reminders.form_amount_placeholder")}
+                  min={0}
+                />
                 {/* Recurrence */}
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_recurrence")}</label>
@@ -373,15 +383,23 @@ export const BillReminders: React.FC = () => {
                 </div>
                 {/* Due day/date */}
                 {form.recurrence_type === "monthly" ? (
-                  <div>
-                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_due_day")}</label>
-                    <input type="number" value={form.due_day} onChange={e => setForm(f => ({ ...f, due_day: e.target.value }))} min={1} max={31} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
-                  </div>
+                  <Input
+                    label={t("bill_reminders.form_due_day")}
+                    accent="indigo"
+                    type="number"
+                    value={form.due_day}
+                    onChange={e => setForm(f => ({ ...f, due_day: e.target.value }))}
+                    min={1}
+                    max={31}
+                  />
                 ) : (
-                  <div>
-                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_due_date")}</label>
-                    <input type="date" value={form.due_date} onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
-                  </div>
+                  <Input
+                    label={t("bill_reminders.form_due_date")}
+                    accent="indigo"
+                    type="date"
+                    value={form.due_date}
+                    onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))}
+                  />
                 )}
                 {/* Notes */}
                 <div>
@@ -395,10 +413,14 @@ export const BillReminders: React.FC = () => {
                     ]}
                   />
                 </div>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_notes")}</label>
-                  <input type="text" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder={t("bill_reminders.form_notes_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("bill_reminders.form_notes")}
+                  accent="indigo"
+                  type="text"
+                  value={form.notes}
+                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                  placeholder={t("bill_reminders.form_notes_placeholder")}
+                />
                 {/* Actions */}
                 <div className="flex gap-3 pt-1">
                   <button onClick={() => setIsFormOpen(false)} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>

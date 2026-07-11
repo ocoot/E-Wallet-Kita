@@ -4,6 +4,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
+import { ErrorState } from "../components/ErrorState";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { DropdownField } from "../components/DropdownField";
 import { Tag, Plus, Pencil, Check, X, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
@@ -26,6 +27,7 @@ export const AdminCategoryManager: React.FC = () => {
   const { isAdmin } = useAdmin();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [editingKey, setEditingKey] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ 
     label_id: "", 
@@ -59,16 +61,18 @@ export const AdminCategoryManager: React.FC = () => {
 
   const loadCategories = useCallback(async () => {
     setLoading(true);
+    setError(false);
     const { data, error } = await supabase
       .from("categories")
       .select("*")
       .order("priority", { ascending: false })
       .order("type")
       .order("key");
-    if (error) { 
-      showToast(t("toast.error_general"), "error"); 
-    } else { 
-      setCategories(data || []); 
+    if (error) {
+      setError(true);
+      showToast(t("toast.error_general"), "error");
+    } else {
+      setCategories(data || []);
     }
     setLoading(false);
   }, [showToast, t]);
@@ -225,6 +229,8 @@ export const AdminCategoryManager: React.FC = () => {
       {/* Category List */}
       {loading ? (
         <div className="py-16 text-center text-slate-400 light_sakura:text-slate-500 text-sm">{t("admin.loading")}</div>
+      ) : error ? (
+        <ErrorState onRetry={loadCategories} />
       ) : (
         <div className="rounded-3xl border border-slate-800 light_sakura:border-slate-100 bg-slate-900 light_sakura:bg-white shadow-sm overflow-hidden">
           <ScrollableTableWrapper>

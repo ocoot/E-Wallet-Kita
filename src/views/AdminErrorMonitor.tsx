@@ -6,6 +6,7 @@ import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { EmptyState } from "../components/EmptyState";
+import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
 import {
   AlertTriangle,
@@ -83,6 +84,7 @@ export const AdminErrorMonitor: React.FC = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [statsLoading, setStatsLoading] = useState(true);
   const [logsLoading, setLogsLoading] = useState(true);
+  const [logsError, setLogsError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const [periodHours, setPeriodHours] = useState<24 | 168 | 720>(24);
@@ -100,6 +102,7 @@ export const AdminErrorMonitor: React.FC = () => {
 
   const loadLogs = useCallback(async () => {
     setLogsLoading(true);
+    setLogsError(false);
     try {
       const limitVal = pageSize === "all" ? 1000000 : pageSize;
       const offsetVal = pageSize === "all" ? 0 : page * pageSize;
@@ -117,6 +120,7 @@ export const AdminErrorMonitor: React.FC = () => {
       setLogs(logsRes.data || []);
       setTotalCount(countRes.data || 0);
     } catch (err: any) {
+      setLogsError(true);
       showToast(err.message || t("toast.error_general"), "error");
     } finally {
       setLogsLoading(false);
@@ -288,6 +292,8 @@ export const AdminErrorMonitor: React.FC = () => {
           <div className="py-16 flex items-center justify-center">
             <Activity className="animate-pulse text-red-500" size={28} />
           </div>
+        ) : logsError ? (
+          <ErrorState onRetry={loadLogs} />
         ) : logs.length === 0 ? (
           <EmptyState message={t("error_monitor.no_logs_found")} />
         ) : (

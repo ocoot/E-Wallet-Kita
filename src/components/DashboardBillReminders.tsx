@@ -5,6 +5,7 @@ import { Bell, ChevronRight, AlertCircle, Clock } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useBillReminders } from "../hooks/useBillReminders";
+import { ErrorState } from "./ErrorState";
 import { audioFeedback } from "../lib/audio";
 
 /**
@@ -16,12 +17,20 @@ export const DashboardBillReminders: React.FC = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { reminders, loading } = useBillReminders(user?.id);
+  const { reminders, loading, error, refresh } = useBillReminders(user?.id);
 
   // Tampilkan hanya yang overdue atau due_soon (≤3 hari) atau mendekati 7 hari
   const alerts = reminders.filter(
     (r) => !r.is_paid && r.daysUntilDue <= 7
   );
+
+  if (error) {
+    return (
+      <div className="rounded-3xl bg-slate-900 border border-slate-900 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-lg transition-colors duration-300">
+        <ErrorState onRetry={refresh} />
+      </div>
+    );
+  }
 
   if (loading || alerts.length === 0) return null;
 

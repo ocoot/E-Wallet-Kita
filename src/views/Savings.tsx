@@ -8,6 +8,7 @@ import { useWallets } from "../hooks/useWallets";
 import { SavingsPocketType } from "../types";
 import { Modal } from "../components/Modal";
 import { DropdownField } from "../components/DropdownField";
+import { Input } from "../components/ui/Input";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
@@ -345,10 +346,14 @@ export const Savings: React.FC = () => {
                 <h2 className="font-sans font-bold text-lg text-slate-100 light_sakura:text-slate-900">
                   {editTarget ? t("savings.edit_title") : t("savings.add_title")}
                 </h2>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_name")}</label>
-                  <input type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder={t("savings.form_name_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("savings.form_name")}
+                  accent="indigo"
+                  type="text"
+                  value={form.name}
+                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+                  placeholder={t("savings.form_name_placeholder")}
+                />
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_type")}</label>
                   <DropdownField
@@ -359,14 +364,22 @@ export const Savings: React.FC = () => {
                   <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5 leading-relaxed">{t(`savings.pocket_type_${form.pocket_type}_desc`)}</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_target_amount")}</label>
-                    <input type="number" value={form.target_amount} onChange={e => setForm(f => ({ ...f, target_amount: e.target.value }))} placeholder={t("savings.form_target_amount_placeholder")} min={0} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
-                  </div>
-                  <div>
-                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_target_date")}</label>
-                    <input type="date" value={form.target_date} onChange={e => setForm(f => ({ ...f, target_date: e.target.value }))} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
-                  </div>
+                  <Input
+                    label={t("savings.form_target_amount")}
+                    accent="indigo"
+                    type="number"
+                    value={form.target_amount}
+                    onChange={e => setForm(f => ({ ...f, target_amount: e.target.value }))}
+                    placeholder={t("savings.form_target_amount_placeholder")}
+                    min={0}
+                  />
+                  <Input
+                    label={t("savings.form_target_date")}
+                    accent="indigo"
+                    type="date"
+                    value={form.target_date}
+                    onChange={e => setForm(f => ({ ...f, target_date: e.target.value }))}
+                  />
                 </div>
                 <div>
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
@@ -379,10 +392,14 @@ export const Savings: React.FC = () => {
                     ]}
                   />
                 </div>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_notes")}</label>
-                  <input type="text" value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} placeholder={t("savings.form_notes_placeholder")} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("savings.form_notes")}
+                  accent="indigo"
+                  type="text"
+                  value={form.notes}
+                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+                  placeholder={t("savings.form_notes_placeholder")}
+                />
                 <div className="flex gap-3 pt-1">
                   <button onClick={() => setIsFormOpen(false)} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
                   <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 text-white font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/20 disabled:opacity-50 cursor-pointer">{isSaving ? t("common.loading") : t("common.save")}</button>
@@ -416,8 +433,16 @@ export const Savings: React.FC = () => {
                   </p>
                 </div>
                 <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_amount")}</label>
-                  <input type="number" value={moveAmount} onChange={e => setMoveAmount(e.target.value)} placeholder={t("savings.form_amount_placeholder")} min={0} autoFocus className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 placeholder:text-slate-500 transition-colors" />
+                  <Input
+                    label={t("savings.form_amount")}
+                    accent="indigo"
+                    type="number"
+                    value={moveAmount}
+                    onChange={e => setMoveAmount(e.target.value)}
+                    placeholder={t("savings.form_amount_placeholder")}
+                    min={0}
+                    autoFocus
+                  />
                   {moveTarget.direction === "deposit" && availableBalance != null && (
                     <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5">{t("savings.available_balance_hint", { amount: formatIDR(availableBalance) })}</p>
                   )}
@@ -425,14 +450,20 @@ export const Savings: React.FC = () => {
                     <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5">{t("savings.pocket_balance_hint", { amount: formatIDR(moveTarget.pocket.current_amount) })}</p>
                   )}
                 </div>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_entry_date")}</label>
-                  <input type="date" value={moveDate} onChange={e => setMoveDate(e.target.value)} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
-                </div>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_entry_note")}</label>
-                  <input type="text" value={moveNote} onChange={e => setMoveNote(e.target.value)} className="w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 focus:outline-none focus:border-indigo-500 transition-colors" />
-                </div>
+                <Input
+                  label={t("savings.form_entry_date")}
+                  accent="indigo"
+                  type="date"
+                  value={moveDate}
+                  onChange={e => setMoveDate(e.target.value)}
+                />
+                <Input
+                  label={t("savings.form_entry_note")}
+                  accent="indigo"
+                  type="text"
+                  value={moveNote}
+                  onChange={e => setMoveNote(e.target.value)}
+                />
                 <div className="flex gap-3 pt-1">
                   <button onClick={() => setMoveTarget(null)} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
                   <button onClick={executeMove} disabled={isMoving}

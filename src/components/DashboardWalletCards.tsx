@@ -6,6 +6,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useWallets } from "../hooks/useWallets";
 import { audioFeedback } from "../lib/audio";
 import { InfoTooltip } from "./InfoTooltip";
+import { ErrorState } from "./ErrorState";
 
 const WALLET_TYPE_ICON: Record<string, string> = { ewallet: "📱", bank: "🏦", cash: "💵", general: "💰" };
 
@@ -29,7 +30,7 @@ interface DashboardWalletCardsProps {
 export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ formatIDR }) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { activeWallets, isLoading } = useWallets();
+  const { activeWallets, isLoading, error, refresh } = useWallets();
   const [visibleContactIds, setVisibleContactIds] = useState<Set<string>>(new Set());
 
   const toggleContact = (id: string) => {
@@ -42,6 +43,14 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
 
   if (isLoading) {
     return <div className="h-28 rounded-3xl border border-slate-800/60 bg-slate-900 light_sakura:bg-white light_sakura:border-rose-100/40 animate-pulse" />;
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-3xl border border-slate-800/60 bg-slate-900 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-sm">
+        <ErrorState onRetry={refresh} />
+      </div>
+    );
   }
 
   if (activeWallets.length === 0) return null;

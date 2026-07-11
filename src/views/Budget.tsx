@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { PiggyBank, Plus, X, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { BudgetProgressCard } from "../components/BudgetProgressCard";
+import { Input } from "../components/ui/Input";
 import { DropdownField } from "../components/DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
@@ -274,33 +275,25 @@ export const Budget: React.FC = () => {
             const editSlot = (
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
-                      {t("budget.monthly_limit_label")}
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      value={draft.limit}
-                      onChange={(e) => updateDraft(catKey, "limit", e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl text-sm bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-rose-50/50 light_sakura:border-rose-200 light_sakura:text-slate-800"
-                      placeholder="500000"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
-                      {t("budget.alert_threshold_label")}
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={draft.threshold}
-                      onChange={(e) => updateDraft(catKey, "threshold", e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl text-sm bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-rose-50/50 light_sakura:border-rose-200 light_sakura:text-slate-800"
-                      placeholder="80"
-                    />
-                  </div>
+                  <Input
+                    label={t("budget.monthly_limit_label")}
+                    accent="indigo"
+                    type="number"
+                    min={1}
+                    value={draft.limit}
+                    onChange={(e) => updateDraft(catKey, "limit", e.target.value)}
+                    placeholder="500000"
+                  />
+                  <Input
+                    label={t("budget.alert_threshold_label")}
+                    accent="indigo"
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={draft.threshold}
+                    onChange={(e) => updateDraft(catKey, "threshold", e.target.value)}
+                    placeholder="80"
+                  />
                 </div>
                 <button
                   onClick={() => handleSave(catKey)}
@@ -382,33 +375,25 @@ export const Budget: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2.5">
-                  <div>
-                    <label className="block text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
-                      {t("budget.monthly_limit_label")}
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      value={addLimit}
-                      onChange={(e) => setAddLimit(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl text-sm bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-rose-50/50 light_sakura:border-rose-200 light_sakura:text-slate-800"
-                      placeholder="500000"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-medium text-slate-400 light_sakura:text-slate-500 mb-1">
-                      {t("budget.alert_threshold_label")}
-                    </label>
-                    <input
-                      type="number"
-                      min={1}
-                      max={100}
-                      value={addThreshold}
-                      onChange={(e) => setAddThreshold(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl text-sm bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-rose-50/50 light_sakura:border-rose-200 light_sakura:text-slate-800"
-                      placeholder="80"
-                    />
-                  </div>
+                  <Input
+                    label={t("budget.monthly_limit_label")}
+                    accent="indigo"
+                    type="number"
+                    min={1}
+                    value={addLimit}
+                    onChange={(e) => setAddLimit(e.target.value)}
+                    placeholder="500000"
+                  />
+                  <Input
+                    label={t("budget.alert_threshold_label")}
+                    accent="indigo"
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={addThreshold}
+                    onChange={(e) => setAddThreshold(e.target.value)}
+                    placeholder="80"
+                  />
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-2">

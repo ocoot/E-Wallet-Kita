@@ -87,7 +87,7 @@ const ToastItem: React.FC<{ toast: Toast; onDismiss: (id: string) => void }> = (
   const [isPaused, setIsPaused] = useState(false);
   const remainingRef = useRef(config.duration);
   const startedAtRef = useRef(Date.now());
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const clearTimer = () => {
     if (timerRef.current) clearTimeout(timerRef.current);
