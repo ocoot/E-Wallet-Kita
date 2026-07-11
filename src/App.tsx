@@ -286,13 +286,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
         userDisplayName={userProfile?.display_name}
       />
 
+      {/* Header khusus tampilan handphone -- SENGAJA diletakkan di sini,
+          sebagai saudara (sibling) dari <main>, BUKAN di dalamnya. <main> di
+          bawah punya class overflow-y-auto; kalau header sticky ditaruh di
+          DALAM elemen yang overflow-nya bukan "visible", browser menjadikan
+          elemen itu sebagai acuan scroll untuk posisi sticky -- padahal
+          <main> sendiri tidak pernah benar-benar men-scroll secara internal
+          (tingginya cuma min-h-screen, tidak dibatasi), jadi yang scroll
+          sesungguhnya adalah dokumen/window. Akibatnya sticky yang dihitung
+          relatif ke <main> malah ikut "terbawa" scroll dan headernya
+          hilang. Dengan diletakkan di sini (ancestor-nya tidak ada yang
+          overflow selain visible), sticky dihitung relatif ke window,
+          persis seperti header mobile versi lama sebelum navbar bawah ada. */}
+      <MobileTopBar />
+
       {/* Main active subview frame */}
       <main className={`flex-1 min-h-screen overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}>
-        {/* Header khusus tampilan handphone -- tetap menempel di atas (sticky)
-            saat konten di-scroll. Tidak tampil di layar >= md karena
-            digantikan sidebar desktop. */}
-        <MobileTopBar />
-
         {/* Running text maintenance banner, shown globally above all pages */}
         <MaintenanceBanner />
 
