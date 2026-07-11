@@ -53,7 +53,26 @@ html, body {
   min-height: 100vh;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  /*
+   * PENTING: JANGAN pakai `overflow-x: hidden` di sini.
+   *
+   * Root cause header mobile (`MobileTopBar`, position: sticky) ikut
+   * ter-scroll hilang alih-alih menempel di atas: ketika `overflow-x`
+   * diberi nilai selain `visible` pada `html` DAN `body` sekaligus, spec
+   * CSS Overflow mewajibkan `overflow-y` yang tadinya `visible` dihitung
+   * ulang jadi `auto` (aturan pasangan overflow-x/overflow-y). Ini diam-
+   * diam mengubah `html`/`body` jadi scroll container baru, yang memutus
+   * acuan "nearest scrolling ancestor" yang dipakai `position: sticky`
+   * untuk SEMUA elemen sticky di seluruh app (bukan cuma MobileTopBar) --
+   * hasilnya elemen sticky itu ikut ter-scroll keluar layar persis
+   * seperti elemen `position: static` biasa. Sudah dikonfirmasi lewat
+   * reproduksi terisolasi (Playwright): `overflow-x: hidden` di html+body
+   * -> sticky rusak; `overflow-x: clip` -> sticky normal kembali, dan
+   * efek "cegah scroll horizontal" yang diinginkan tetap didapat karena
+   * `clip` tidak memicu aturan pasangan overflow-x/overflow-y di atas
+   * (dan tidak membuat elemen jadi scrollable/scroll container baru).
+   */
+  overflow-x: clip;
   transition: background-color 300ms ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
