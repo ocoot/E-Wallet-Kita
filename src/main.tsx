@@ -45,6 +45,24 @@ window.addEventListener("error", (event) => {
   });
 });
 
+// ── Pengaman terhadap cache PWA yang basi ──────────────────────
+// Semua view di App.tsx di-lazy-load (React.lazy) sehingga tiap view
+// adalah chunk JS terpisah dengan nama file ber-hash. Kalau service worker
+// yang SUDAH ter-install di perangkat user masih precache versi LAMA
+// (skenario umum: registerType 'prompt' -- lihat main.tsx bawah -- belum
+// sempat di-approve user), lalu server sudah menimpa build lama dengan
+// yang baru, maka dynamic import() ke chunk lama itu akan gagal (404).
+// Vite men-dispatch event "vite:preloadError" untuk kasus ini. Tanpa
+// listener ini, kegagalan tsb bisa membuat layar putih kosong tanpa
+// penjelasan (persis gejala "PWA tidak bisa dibuka" meski kode sumbernya
+// sendiri sehat). Dengan listener ini, begitu terjadi, browser dipaksa
+// reload penuh (bypass chunk lama) supaya user otomatis dapat shell+chunk
+// terbaru dari network/precache baru.
+window.addEventListener('vite:preloadError', (event) => {
+  console.warn('[PWA] Gagal memuat chunk (kemungkinan cache lama) -- reload paksa.', event);
+  window.location.reload();
+});
+
 // Register Service Worker via Vite PWA plugin.
 // onNeedRefresh dipanggil saat SW mendeteksi build baru sudah tersedia
 // (file precache berubah setelah deploy ke Vercel). Kita simpan fungsi
