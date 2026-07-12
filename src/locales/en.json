@@ -829,12 +829,14 @@
   "support": {
     "fab_label": "Help",
     "title": "E-Wallet Kita Help",
+    "widget_status": "Online",
     "tabs": {
       "faq": "FAQ",
       "admin": "Chat with Admin"
     },
     "faq": {
       "intro": "Pick a topic below, or type a keyword about the app's features.",
+      "bot_greeting": "Hi! 👋 Need help with E-Wallet Kita? Try one of these topics, or type your question below.",
       "out_of_context": "Sorry, I can only help with questions about E-Wallet Kita features. For anything else, please contact admin via the Chat with Admin tab.",
       "menu_title": "Help topics",
       "ask_placeholder": "Type your question...",
@@ -868,6 +870,9 @@
     },
     "admin_chat": {
       "intro": "Couldn't find your answer? Chat directly with admin here.",
+      "handoff_message": "Alright, connecting you to our admin team — they can help further 🙌",
+      "identity_name": "E-Wallet Kita Admin",
+      "identity_status": "Ready to help",
       "start_button": "Start chat with admin",
       "placeholder": "Type a message for admin...",
       "send": "Send",

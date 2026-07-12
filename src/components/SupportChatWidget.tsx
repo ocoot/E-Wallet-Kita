@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { MessageCircle, X, Send, ShieldCheck, Loader2, XCircle } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, XCircle, Bot, UserRound } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -48,6 +48,11 @@ export const SupportChatWidget: React.FC = () => {
   // --- FAQ state ---
   const [faqBubbles, setFaqBubbles] = useState<FaqBubble[]>([]);
   const [faqInput, setFaqInput] = useState("");
+  const faqEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    faqEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [faqBubbles]);
 
   const handleFaqTopicClick = (topicKey: string) => {
     const label = t(`support.faq.topics.${topicKey}.label`);
@@ -223,7 +228,7 @@ export const SupportChatWidget: React.FC = () => {
         aria-label={t("support.fab_label")}
         onClick={() => setIsOpen((prev) => !prev)}
         whileTap={{ scale: 0.92 }}
-        className="fixed bottom-24 sm:bottom-32 right-6 z-30 flex items-center justify-center w-14 h-14 rounded-full bg-emerald-500 text-white shadow-2xl shadow-emerald-900/40 hover:bg-emerald-400 transition-colors duration-200 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-900/20"
+        className="fixed bottom-24 sm:bottom-32 right-6 z-30 flex items-center justify-center w-14 h-14 rounded-full bg-indigo-600 text-white shadow-2xl shadow-indigo-900/40 hover:bg-indigo-500 transition-colors duration-200 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-900/20"
         style={{ marginBottom: "env(safe-area-inset-bottom)" }}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -249,49 +254,79 @@ export const SupportChatWidget: React.FC = () => {
             className="fixed z-40 bottom-44 right-4 left-4 sm:left-auto sm:bottom-52 sm:right-6 sm:w-96 max-h-[70vh] flex flex-col rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
           >
             {/* Header */}
-            <div className="px-4 py-3 border-b border-slate-800 light_sakura:border-rose-100">
-              <h3 className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900">
-                {t("support.title")}
-              </h3>
-              <div className="flex gap-2 mt-2">
-                <button
-                  type="button"
-                  onClick={() => setTab("faq")}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
-                    tab === "faq"
-                      ? "bg-emerald-500 text-white light_sakura:bg-rose-500"
-                      : "bg-slate-800 text-slate-300 light_sakura:bg-rose-50 light_sakura:text-slate-600"
-                  }`}
-                >
-                  {t("support.tabs.faq")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTab("admin")}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors duration-200 ${
-                    tab === "admin"
-                      ? "bg-emerald-500 text-white light_sakura:bg-rose-500"
-                      : "bg-slate-800 text-slate-300 light_sakura:bg-rose-50 light_sakura:text-slate-600"
-                  }`}
-                >
-                  {t("support.tabs.admin")}
-                </button>
+            <div className="px-4 py-3.5 border-b border-slate-800 light_sakura:border-rose-100 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-600/20 light_sakura:shadow-rose-500/20">
+                <Bot size={18} className="text-white" />
               </div>
+              <div className="min-w-0 flex-1">
+                <h3 className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">
+                  {t("support.title")}
+                </h3>
+                <p className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-400 light_sakura:text-emerald-600">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.18)]" />
+                  {t("support.widget_status")}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-5 px-4 border-b border-slate-800 light_sakura:border-rose-100">
+              <button
+                type="button"
+                onClick={() => setTab("faq")}
+                className={`relative pb-2.5 pt-3 text-xs font-bold transition-colors duration-200 ${
+                  tab === "faq" ? "text-white light_sakura:text-slate-900" : "text-slate-500 hover:text-slate-300"
+                }`}
+              >
+                {t("support.tabs.faq")}
+                {tab === "faq" && (
+                  <motion.span
+                    layoutId="supportTabIndicator"
+                    className="absolute left-0 right-0 -bottom-px h-0.5 rounded-full bg-indigo-500 light_sakura:bg-rose-500"
+                  />
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setTab("admin")}
+                className={`relative pb-2.5 pt-3 text-xs font-bold transition-colors duration-200 ${
+                  tab === "admin" ? "text-white light_sakura:text-slate-900" : "text-slate-500 hover:text-slate-300"
+                }`}
+              >
+                {t("support.tabs.admin")}
+                {tab === "admin" && (
+                  <motion.span
+                    layoutId="supportTabIndicator"
+                    className="absolute left-0 right-0 -bottom-px h-0.5 rounded-full bg-indigo-500 light_sakura:bg-rose-500"
+                  />
+                )}
+              </button>
             </div>
 
             {/* Body */}
             <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
               {tab === "faq" && (
                 <>
-                  <p className="text-xs text-slate-400 light_sakura:text-slate-500">{t("support.faq.intro")}</p>
+                  {/* Bot greeting bubble */}
+                  <div className="flex items-start gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300 flex items-center justify-center shrink-0 mt-0.5">
+                      <Bot size={12} className="text-white" />
+                    </div>
+                    <div className="max-w-[85%] px-3 py-2 rounded-2xl rounded-tl-md text-xs leading-relaxed bg-slate-800 text-slate-100 light_sakura:bg-rose-50 light_sakura:text-slate-700">
+                      {t("support.faq.bot_greeting")}
+                    </div>
+                  </div>
 
-                  <div className="flex flex-wrap gap-2">
+                  {/* Topik -- digeser horizontal supaya tidak makan tinggi panel & terasa seperti quick-reply chat */}
+                  <div
+                    className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4"
+                    style={{ scrollbarWidth: "none" }}
+                  >
                     {SUPPORT_FAQ_TOPICS.map((topic) => (
                       <button
                         key={topic.key}
                         type="button"
                         onClick={() => handleFaqTopicClick(topic.key)}
-                        className="px-3 py-1.5 rounded-full text-xs bg-slate-800 text-slate-200 hover:bg-slate-700 transition-colors duration-200 light_sakura:bg-rose-50 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                        className="shrink-0 whitespace-nowrap px-3.5 py-2 rounded-full text-xs font-semibold bg-slate-800 border border-slate-700/60 text-slate-200 hover:bg-slate-700 hover:border-indigo-500/40 transition-colors duration-200 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50"
                       >
                         {t(`support.faq.topics.${topic.key}.label`)}
                       </button>
@@ -299,18 +334,26 @@ export const SupportChatWidget: React.FC = () => {
                   </div>
 
                   <div className="flex flex-col gap-2 mt-1">
-                    {faqBubbles.map((bubble) => (
-                      <div
-                        key={bubble.id}
-                        className={`max-w-[85%] px-3 py-2 rounded-2xl text-xs leading-relaxed ${
-                          bubble.role === "user"
-                            ? "self-end bg-emerald-500 text-white light_sakura:bg-rose-500"
-                            : "self-start bg-slate-800 text-slate-100 light_sakura:bg-rose-50 light_sakura:text-slate-700"
-                        }`}
-                      >
-                        {bubble.text}
-                      </div>
-                    ))}
+                    {faqBubbles.map((bubble) =>
+                      bubble.role === "user" ? (
+                        <div
+                          key={bubble.id}
+                          className="self-end max-w-[85%] px-3 py-2 rounded-2xl rounded-br-md text-xs leading-relaxed bg-indigo-600 text-white light_sakura:bg-rose-500"
+                        >
+                          {bubble.text}
+                        </div>
+                      ) : (
+                        <div key={bubble.id} className="flex items-start gap-2 self-start max-w-[85%]">
+                          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300 flex items-center justify-center shrink-0 mt-0.5">
+                            <Bot size={12} className="text-white" />
+                          </div>
+                          <div className="px-3 py-2 rounded-2xl rounded-tl-md text-xs leading-relaxed bg-slate-800 text-slate-100 light_sakura:bg-rose-50 light_sakura:text-slate-700">
+                            {bubble.text}
+                          </div>
+                        </div>
+                      )
+                    )}
+                    <div ref={faqEndRef} />
                   </div>
                 </>
               )}
@@ -318,14 +361,36 @@ export const SupportChatWidget: React.FC = () => {
               {tab === "admin" && (
                 <>
                   {!session && (
-                    <div className="flex flex-col items-center justify-center gap-3 py-8 text-center">
-                      <ShieldCheck size={32} className="text-emerald-400 light_sakura:text-rose-400" />
-                      <p className="text-xs text-slate-400 light_sakura:text-slate-500">{t("support.admin_chat.intro")}</p>
+                    <div className="flex flex-col gap-3 py-1">
+                      <div className="flex items-start gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300 flex items-center justify-center shrink-0 mt-0.5">
+                          <Bot size={12} className="text-white" />
+                        </div>
+                        <div className="max-w-[85%] px-3 py-2 rounded-2xl rounded-tl-md text-xs leading-relaxed bg-slate-800 text-slate-100 light_sakura:bg-rose-50 light_sakura:text-slate-700">
+                          {t("support.admin_chat.handoff_message")}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/60 border border-slate-700/60 light_sakura:bg-rose-50/60 light_sakura:border-rose-100">
+                        <div className="relative w-11 h-11 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300 flex items-center justify-center shrink-0">
+                          <UserRound size={20} className="text-white" />
+                          <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-900 light_sakura:border-white" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-900 truncate">
+                            {t("support.admin_chat.identity_name")}
+                          </p>
+                          <p className="text-[11px] font-medium text-emerald-400 light_sakura:text-emerald-600">
+                            {t("support.admin_chat.identity_status")}
+                          </p>
+                        </div>
+                      </div>
+
                       <button
                         type="button"
                         onClick={handleStartSession}
                         disabled={isStarting}
-                        className="px-4 py-2 rounded-full bg-emerald-500 text-white text-xs font-medium hover:bg-emerald-400 transition-colors duration-200 disabled:opacity-60 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                        className="w-full py-2.5 rounded-full bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 transition-colors duration-200 disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-500/20"
                       >
                         {isStarting ? <Loader2 size={14} className="animate-spin" /> : t("support.admin_chat.start_button")}
                       </button>
@@ -358,8 +423,8 @@ export const SupportChatWidget: React.FC = () => {
                             key={msg.id}
                             className={`max-w-[85%] px-3 py-2 rounded-2xl text-xs leading-relaxed ${
                               msg.sender === "user"
-                                ? "self-end bg-emerald-500 text-white light_sakura:bg-rose-500"
-                                : "self-start bg-slate-800 text-slate-100 light_sakura:bg-rose-50 light_sakura:text-slate-700"
+                                ? "self-end rounded-br-md bg-indigo-600 text-white light_sakura:bg-rose-500"
+                                : "self-start rounded-tl-md bg-slate-800 text-slate-100 light_sakura:bg-rose-50 light_sakura:text-slate-700"
                             }`}
                           >
                             {msg.content}
@@ -386,7 +451,7 @@ export const SupportChatWidget: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleFaqAsk}
-                  className="w-9 h-9 flex items-center justify-center rounded-full bg-emerald-500 text-white hover:bg-emerald-400 transition-colors duration-200 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                  className="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-600 text-white hover:bg-indigo-500 transition-colors duration-200 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
                 >
                   <Send size={16} />
                 </button>
@@ -407,7 +472,7 @@ export const SupportChatWidget: React.FC = () => {
                   type="button"
                   onClick={handleSendAdminMessage}
                   disabled={isSending}
-                  className="w-9 h-9 flex items-center justify-center rounded-full bg-emerald-500 text-white hover:bg-emerald-400 transition-colors duration-200 disabled:opacity-60 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                  className="w-9 h-9 flex items-center justify-center rounded-full bg-indigo-600 text-white hover:bg-indigo-500 transition-colors duration-200 disabled:opacity-60 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
                 >
                   {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                 </button>

@@ -829,12 +829,14 @@
   "support": {
     "fab_label": "Bantuan",
     "title": "Bantuan E-Wallet Kita",
+    "widget_status": "Online",
     "tabs": {
       "faq": "FAQ",
       "admin": "Chat Admin"
     },
     "faq": {
       "intro": "Pilih topik di bawah, atau ketik kata kunci seputar fitur aplikasi.",
+      "bot_greeting": "Halo! 👋 Ada yang bisa dibantu seputar E-Wallet Kita? Coba salah satu topik ini, atau tulis pertanyaanmu di bawah.",
       "out_of_context": "Maaf, saya hanya bisa membantu pertanyaan seputar fitur E-Wallet Kita. Untuk hal lain, silakan hubungi admin lewat tab Chat Admin.",
       "menu_title": "Topik bantuan",
       "ask_placeholder": "Tulis pertanyaanmu...",
@@ -868,6 +870,9 @@
     },
     "admin_chat": {
       "intro": "Belum ketemu jawabannya? Chat langsung dengan admin di sini.",
+      "handoff_message": "Oke, aku sambungkan ke tim admin ya — mereka bisa bantu lebih lanjut 🙌",
+      "identity_name": "Admin E-Wallet Kita",
+      "identity_status": "Siap membantu",
       "start_button": "Mulai chat dengan admin",
       "placeholder": "Tulis pesan untuk admin...",
       "send": "Kirim",
