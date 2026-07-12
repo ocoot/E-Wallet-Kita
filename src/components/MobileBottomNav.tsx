@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   ShieldAlert,
   Lock,
+  Plus,
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme } from "../contexts/ThemeContext";
@@ -93,7 +94,16 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
   return (
     <>
-      {/* Navbar bawah -- hanya tampil di layar mobile */}
+      {/* Navbar bawah -- hanya tampil di layar mobile.
+          Dua perubahan dari desain sebelumnya (mengikuti referensi):
+          1) Item "new_transaction" (tombol tambah) dirender sebagai tombol
+             bulat "mengambang" (floating action button) yang menonjol di
+             atas garis navbar -- bukan ikon flat sejajar item lain lagi.
+          2) Judul/label menu HANYA muncul otomatis di menu yang sedang
+             aktif; menu lain cuma tampil ikonnya saja, dan label itu
+             muncul/hilang dgn animasi halus (framer-motion) saat pindah
+             menu, bukan langsung tampil statis di semua item seperti
+             sebelumnya. */}
       <nav
         className="md:hidden fixed bottom-0 inset-x-0 z-40 flex items-stretch justify-around
           bg-slate-950/95 backdrop-blur-md border-t border-slate-800 text-white
@@ -105,11 +115,46 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           const IconComp = item.icon;
           const isActive = activeId === item.id;
           const locked = !!item.featureKey && isFeatureLocked(item.featureKey);
+
+          // Tombol tengah "Catat Mandiri" -- dibuat menonjol/mengambang
+          // (elevated) meniru referensi UX, bukan flat seperti item lain.
+          // Sengaja tanpa label (sama seperti pola di referensi), karena
+          // bentuk & posisinya sudah cukup jadi penanda visual sendiri.
+          if (item.id === "new_transaction") {
+            return (
+              <Link
+                key={item.id}
+                to={item.path}
+                aria-label={item.label}
+                className="flex-1 flex flex-col items-center justify-start pt-0 min-w-0 cursor-pointer"
+              >
+                <div className="relative -translate-y-5">
+                  <div
+                    className={`w-14 h-14 rounded-full flex items-center justify-center
+                      bg-gradient-to-br from-indigo-500 via-violet-500 to-indigo-600
+                      shadow-lg shadow-indigo-600/40 ring-[5px] ring-slate-950
+                      light_sakura:ring-white
+                      transition-transform duration-200 active:scale-95
+                      ${locked ? "opacity-50 grayscale" : ""}`}
+                  >
+                    <Plus size={26} strokeWidth={2.5} className="text-white" />
+                  </div>
+                  {locked && (
+                    <Lock
+                      size={11}
+                      className="absolute -right-0.5 -top-0.5 text-amber-400 bg-slate-950 light_sakura:bg-white rounded-full p-0.5"
+                    />
+                  )}
+                </div>
+              </Link>
+            );
+          }
+
           return (
             <Link
               key={item.id}
               to={item.path}
-              className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 min-w-0 cursor-pointer"
+              className="flex-1 flex flex-col items-center gap-0.5 pt-2.5 pb-1.5 min-w-0 cursor-pointer"
             >
               <div className="relative">
                 <IconComp
@@ -126,15 +171,21 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   <Lock size={9} className="absolute -right-1.5 -top-1 text-amber-400" />
                 )}
               </div>
-              <span
-                className={`font-sans text-[10px] font-medium truncate max-w-full px-0.5 ${
-                  isActive
-                    ? "text-indigo-400 light_sakura:text-rose-500"
-                    : "text-slate-400 light_sakura:text-slate-500"
-                }`}
-              >
-                {item.label}
-              </span>
+              <AnimatePresence initial={false}>
+                {isActive && (
+                  <motion.span
+                    key="label"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="font-sans text-[10px] font-medium truncate max-w-full px-0.5
+                      overflow-hidden text-indigo-400 light_sakura:text-rose-500"
+                  >
+                    {item.label}
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </Link>
           );
         })}
@@ -142,7 +193,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         {/* Tombol "Lainnya" -- membuka bottom-sheet berisi sisa menu */}
         <button
           onClick={() => setIsMoreOpen(true)}
-          className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 min-w-0 cursor-pointer"
+          className="flex-1 flex flex-col items-center gap-0.5 pt-2.5 pb-1.5 min-w-0 cursor-pointer"
         >
           <MoreHorizontal
             size={20}
@@ -152,15 +203,21 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 : "text-slate-400 light_sakura:text-slate-500"
             }
           />
-          <span
-            className={`font-sans text-[10px] font-medium truncate max-w-full px-0.5 ${
-              isMoreActive
-                ? "text-indigo-400 light_sakura:text-rose-500"
-                : "text-slate-400 light_sakura:text-slate-500"
-            }`}
-          >
-            {t("nav.more")}
-          </span>
+          <AnimatePresence initial={false}>
+            {isMoreActive && (
+              <motion.span
+                key="label"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.18, ease: "easeOut" }}
+                className="font-sans text-[10px] font-medium truncate max-w-full px-0.5
+                  overflow-hidden text-indigo-400 light_sakura:text-rose-500"
+              >
+                {t("nav.more")}
+              </motion.span>
+            )}
+          </AnimatePresence>
         </button>
       </nav>
 

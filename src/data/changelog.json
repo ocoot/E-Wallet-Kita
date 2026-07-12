@@ -1,0 +1,24 @@
+[
+  {
+    "version": "1.4.0",
+    "date": "12 Jul 2026",
+    "changes": [
+      {
+        "id": "Navbar bawah kini punya tombol tambah transaksi yang lebih mudah ditekan",
+        "en": "The bottom nav bar now has an easier-to-tap add-transaction button"
+      },
+      {
+        "id": "Layar loading saat masuk dan keluar akun kini tampil konsisten",
+        "en": "The loading screen when signing in and signing out now looks consistent"
+      },
+      {
+        "id": "Perbaikan tampilan kartu pada halaman Anggaran",
+        "en": "Fixed the card appearance on the Budget page"
+      },
+      {
+        "id": "Perbaikan header yang sempat ikut tergulir saat membuka aplikasi di HP",
+        "en": "Fixed the header that would scroll away when using the app on mobile"
+      }
+    ]
+  }
+]
