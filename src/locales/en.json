@@ -448,6 +448,7 @@
     "receipt_email_failed": "Failed to send email.",
     "skip_receipt": "No, Thank You",
     "receipt_downloaded": "Receipt downloaded successfully",
+    "receipt_download_failed": "Failed to download receipt",
     "expired_title": "Invoice Expired",
     "expired_desc": "QRIS code expired. Please try again.",
     "failed_title": "Payment Failed",
@@ -474,6 +475,8 @@
   "voucher": {
     "new_available": "🎁 New Premium Voucher Available!",
     "claim": "Claim Now",
+    "claim_error": "Failed to claim voucher",
+    "empty": "No active vouchers right now",
     "discount": "Discount {percent}%",
     "title": "Premium Voucher",
     "no_voucher": "No Voucher",

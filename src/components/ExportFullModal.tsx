@@ -149,6 +149,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
                 type="button"
                 variant="ghost"
                 onClick={onCancel}
+                disabled={isGenerating}
                 className="rounded-xl"
               >
                 {t("common.cancel")}
@@ -157,6 +158,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
                 type="button"
                 variant="primary"
                 disabled={!valid || isGenerating}
+                isLoading={isGenerating}
                 onClick={() => onGenerate(fromMonth, toMonth, walletId || null)}
                 className="rounded-xl"
               >

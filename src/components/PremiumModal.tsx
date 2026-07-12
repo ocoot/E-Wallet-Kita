@@ -168,6 +168,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
       showToast(t("premium.receipt_downloaded"), "success");
     } catch (err) {
       console.error("Error generating or saving PDF:", err);
+      showToast(t("premium.receipt_download_failed") || t("toast.error_general"), "error");
     } finally {
       setActionLoading(null);
     }

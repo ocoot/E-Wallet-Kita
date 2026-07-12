@@ -26,6 +26,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
   const { t, locale } = useLanguage();
   const [detail, setDetail] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   useLockBodyScroll(!!user);
   const panelRef = React.useRef<HTMLDivElement>(null);
@@ -34,21 +35,27 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
   useEffect(() => {
     if (!user) return;
     setLoading(true);
+    setLoadError(false);
+    setDetail(null);
 
     const load = async () => {
       try {
         // Fetch full profile info
-        const { data: profile } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from("users")
           .select("id, email, display_name, is_premium, is_banned, role, telegram_chat_id, created_at, premium_paid_at")
           .eq("id", user.id)
           .single();
 
+        if (profileError) throw profileError;
+
         // Fetch transaction statistics
-        const { data: txStats } = await supabase
+        const { data: txStats, error: txError } = await supabase
           .from("transactions")
           .select("type, amount")
           .eq("user_id", user.id);
+
+        if (txError) throw txError;
 
         const totalIncome  = txStats?.filter(t => t.type === "income").reduce((sum, t) => sum + Number(t.amount), 0) ?? 0;
         const totalExpense = txStats?.filter(t => t.type === "expense").reduce((sum, t) => sum + Number(t.amount), 0) ?? 0;
@@ -61,6 +68,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
         } as UserDetail);
       } catch (err) {
         console.error("Error loading user details:", err);
+        setLoadError(true);
       } finally {
         setLoading(false);
       }
@@ -124,6 +132,10 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
         {loading ? (
           <div className="py-16 text-center text-slate-500 text-sm light_sakura:text-rose-600/70">
             {t("admin.loading_user_detail")}
+          </div>
+        ) : loadError ? (
+          <div className="py-16 text-center text-red-400 text-sm px-6">
+            {t("toast.error_general")}
           </div>
         ) : detail ? (
           <div className="px-6 py-5 space-y-5 flex-1 overflow-y-auto">

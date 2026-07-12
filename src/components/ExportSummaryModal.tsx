@@ -110,6 +110,7 @@ export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
                 type="button"
                 variant="primary"
                 disabled={isGenerating}
+                isLoading={isGenerating}
                 onClick={() => onGenerate(walletId || null)}
                 className="rounded-xl"
               >

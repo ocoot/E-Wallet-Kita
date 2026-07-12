@@ -448,6 +448,7 @@
     "receipt_email_failed": "Gagal mengirim email.",
     "skip_receipt": "Tidak, Terima Kasih",
     "receipt_downloaded": "Struk pembelian berhasil diunduh",
+    "receipt_download_failed": "Gagal mengunduh struk pembelian",
     "expired_title": "Waktu Pembayaran Habis",
     "expired_desc": "Kode QRIS sudah kedaluwarsa. Silakan coba lagi.",
     "failed_title": "Pembayaran Gagal",
@@ -474,6 +475,8 @@
   "voucher": {
     "new_available": "🎁 Voucher Premium Baru Tersedia!",
     "claim": "Klaim Sekarang",
+    "claim_error": "Gagal klaim voucher",
+    "empty": "Tidak ada voucher aktif saat ini",
     "discount": "Diskon {percent}%",
     "title": "Voucher Premium",
     "no_voucher": "Tanpa Voucher",

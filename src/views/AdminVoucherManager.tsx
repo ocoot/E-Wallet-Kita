@@ -8,7 +8,8 @@ import { Modal } from "../components/Modal";
 import { DropdownField } from "../components/DropdownField";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { Trash2, PlusCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { LoadingOverlay } from "../components/LoadingOverlay";
+import { Trash2, PlusCircle, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 interface PremiumVoucherWithUsage extends PremiumVoucher {
   usage_count?: number;
@@ -28,6 +29,11 @@ export const AdminVoucherManager: React.FC = () => {
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [vouchersError, setVouchersError] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  const [savingAction, setSavingAction] = useState<{ isOpen: boolean; message: string }>({
+    isOpen: false,
+    message: "",
+  });
   const { session } = useAuth();
   const { showToast } = useToast();
   const { t, locale } = useLanguage();
@@ -93,74 +99,102 @@ export const AdminVoucherManager: React.FC = () => {
   }, []);
 
   const createVoucher = async () => {
-    if (!session?.user.id) return;
-    const { error } = await supabase
-      .from("premium_vouchers")
-      .insert({ code, discount_percent: Number(percent), created_by: session.user.id });
-    if (error) { showToast(error.message, "error"); return; }
-    showToast(t("voucher.success_create"), "success");
-    fetchVouchers();
-    setCode("");
-    setPercent("");
+    if (!session?.user.id || isCreating) return;
+    setIsCreating(true);
+    try {
+      const { error } = await supabase
+        .from("premium_vouchers")
+        .insert({ code, discount_percent: Number(percent), created_by: session.user.id });
+      if (error) { showToast(error.message, "error"); return; }
+      showToast(t("voucher.success_create"), "success");
+      await fetchVouchers();
+      setCode("");
+      setPercent("");
+    } catch (err: any) {
+      showToast(err?.message || t("toast.error_general"), "error");
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const revokeVoucher = async () => {
     if (!revokeTarget) return;
-    await supabase.from("premium_vouchers").update({ is_active: false, revoked_at: new Date().toISOString() }).eq("id", revokeTarget.id);
-    setRevokeTarget(null);
-    showToast(t("voucher.success_revoke") || "Voucher berhasil dinonaktifkan", "success");
-    fetchVouchers();
+    setSavingAction({ isOpen: true, message: t("admin.maintenance_saving") });
+    try {
+      const { error } = await supabase.from("premium_vouchers").update({ is_active: false, revoked_at: new Date().toISOString() }).eq("id", revokeTarget.id);
+      if (error) { showToast(error.message, "error"); return; }
+      setRevokeTarget(null);
+      showToast(t("voucher.success_revoke") || "Voucher berhasil dinonaktifkan", "success");
+      await fetchVouchers();
+    } catch (err: any) {
+      showToast(err?.message || t("toast.error_general"), "error");
+    } finally {
+      setSavingAction({ isOpen: false, message: "" });
+    }
   };
 
   const activateVoucher = async () => {
     if (!activateTarget) return;
-    const { error } = await supabase
-      .from("premium_vouchers")
-      .update({ is_active: true, revoked_at: null })
-      .eq("id", activateTarget.id);
+    setSavingAction({ isOpen: true, message: t("admin.maintenance_saving") });
+    try {
+      const { error } = await supabase
+        .from("premium_vouchers")
+        .update({ is_active: true, revoked_at: null })
+        .eq("id", activateTarget.id);
 
-    if (error) {
-      showToast(error.message, "error");
-      return;
+      if (error) {
+        showToast(error.message, "error");
+        return;
+      }
+
+      showToast(t("voucher.success_activate"), "success");
+      setActivateTarget(null);
+      await fetchVouchers();
+    } catch (err: any) {
+      showToast(err?.message || t("toast.error_general"), "error");
+    } finally {
+      setSavingAction({ isOpen: false, message: "" });
     }
-
-    showToast(t("voucher.success_activate"), "success");
-    setActivateTarget(null);
-    fetchVouchers();
   };
 
   const deleteVoucher = async () => {
     if (!deleteTarget) return;
+    setSavingAction({ isOpen: true, message: t("admin.maintenance_saving") });
+    try {
+      const { count, error: countError } = await supabase
+        .from("premium_transactions")
+        .select("*", { count: "exact", head: true })
+        .eq("voucher_id", deleteTarget.id);
 
-    const { count, error: countError } = await supabase
-      .from("premium_transactions")
-      .select("*", { count: "exact", head: true })
-      .eq("voucher_id", deleteTarget.id);
+      if (countError) {
+        showToast(countError.message, "error");
+        return;
+      }
 
-    if (countError) {
-      showToast(countError.message, "error");
-      return;
-    }
+      if (count && count > 0) {
+        showToast(t("voucher.cannot_delete_used"), "error");
+        setDeleteTarget(null);
+        return;
+      }
 
-    if (count && count > 0) {
-      showToast(t("voucher.cannot_delete_used"), "error");
+      const { error: deleteError } = await supabase
+        .from("premium_vouchers")
+        .delete()
+        .eq("id", deleteTarget.id);
+
+      if (deleteError) {
+        showToast(deleteError.message, "error");
+        return;
+      }
+
+      showToast(t("common.delete_success") || "Voucher berhasil dihapus", "success");
       setDeleteTarget(null);
-      return;
+      await fetchVouchers();
+    } catch (err: any) {
+      showToast(err?.message || t("toast.error_general"), "error");
+    } finally {
+      setSavingAction({ isOpen: false, message: "" });
     }
-
-    const { error: deleteError } = await supabase
-      .from("premium_vouchers")
-      .delete()
-      .eq("id", deleteTarget.id);
-
-    if (deleteError) {
-      showToast(deleteError.message, "error");
-      return;
-    }
-
-    showToast(t("common.delete_success") || "Voucher berhasil dihapus", "success");
-    setDeleteTarget(null);
-    fetchVouchers();
   };
 
   const savePremiumPrice = async () => {
@@ -248,8 +282,16 @@ export const AdminVoucherManager: React.FC = () => {
             <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-1.5">{t("voucher.discount_percent")}</label>
             <input placeholder="50" type="number" value={percent} onChange={e => setPercent(e.target.value)} className="w-full bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 p-3 rounded-xl text-white light_sakura:text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-indigo-500" />
           </div>
-          <button onClick={createVoucher} className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 cursor-pointer">
-            <PlusCircle size={20} /> {t("voucher.create")}
+          <button
+            onClick={createVoucher}
+            disabled={isCreating}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+            {isCreating ? (
+              <Loader2 size={20} className="animate-spin" />
+            ) : (
+              <PlusCircle size={20} />
+            )}{" "}
+            {t("voucher.create")}
           </button>
         </div>
       </div>
@@ -377,6 +419,7 @@ export const AdminVoucherManager: React.FC = () => {
         cancelLabel={t("common.cancel")}
         onConfirm={revokeVoucher}
         onCancel={() => setRevokeTarget(null)}
+        confirmDisabled={savingAction.isOpen}
       />
 
       <Modal
@@ -388,6 +431,7 @@ export const AdminVoucherManager: React.FC = () => {
         cancelLabel={t("common.cancel")}
         onConfirm={activateVoucher}
         onCancel={() => setActivateTarget(null)}
+        confirmDisabled={savingAction.isOpen}
       />
 
       <Modal
@@ -399,7 +443,10 @@ export const AdminVoucherManager: React.FC = () => {
         cancelLabel={t("common.cancel")}
         onConfirm={deleteVoucher}
         onCancel={() => setDeleteTarget(null)}
+        confirmDisabled={savingAction.isOpen}
       />
+
+      <LoadingOverlay isOpen={savingAction.isOpen} message={savingAction.message} />
     </div>
   );
 };
