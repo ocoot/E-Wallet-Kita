@@ -13,6 +13,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
@@ -48,7 +49,11 @@ export const BillReminders: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = useState<BillReminderWithUrgency | null>(null);
   useLockBodyScroll(isFormOpen);
   const formModalRef = React.useRef<HTMLDivElement>(null);
-  useDialogA11y(isFormOpen, formModalRef, () => setIsFormOpen(false));
+  // Menjebak swipe-back/tombol-back HP saat form modal ini terbuka, supaya
+  // menutup modal (tetap di halaman Pengingat Tagihan) -- bukan malah
+  // menavigasi balik ke halaman sebelumnya (lihat useBackGestureTrap.ts).
+  const { close: closeForm } = useBackGestureTrap(isFormOpen, setIsFormOpen);
+  useDialogA11y(isFormOpen, formModalRef, closeForm);
   const [isDeleting, setIsDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [toggleConfirmTarget, setToggleConfirmTarget] = useState<BillReminderWithUrgency | null>(null);
@@ -113,7 +118,7 @@ export const BillReminders: React.FC = () => {
       else await dbService.saveBillReminder(user.id, payload);
       showToast(t("bill_reminders.save_success"), "success");
       audioFeedback.playClick();
-      setIsFormOpen(false);
+      closeForm();
       await refresh();
     } catch { showToast(t("bill_reminders.save_error"), "error"); }
     finally { setIsSaving(false); }
@@ -330,7 +335,7 @@ export const BillReminders: React.FC = () => {
         {isFormOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-slate-950/70 backdrop-blur-sm"
-            onClick={e => { if (e.target === e.currentTarget) setIsFormOpen(false); }}>
+            onClick={e => { if (e.target === e.currentTarget) closeForm(); }}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
               ref={formModalRef}
               role="dialog"
@@ -419,7 +424,7 @@ export const BillReminders: React.FC = () => {
                 />
                 {/* Actions */}
                 <div className="flex gap-3 pt-1">
-                  <button onClick={() => setIsFormOpen(false)} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
+                  <button onClick={closeForm} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
                   <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 text-white font-semibold text-sm transition-colors shadow-lg shadow-emerald-500/20 disabled:opacity-50 cursor-pointer">{isSaving ? t("common.loading") : t("common.save")}</button>
                 </div>
               </div>

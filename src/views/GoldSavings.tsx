@@ -12,6 +12,7 @@ import { ErrorState } from "../components/ErrorState";
 import { InfoTooltip } from "../components/InfoTooltip";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { DropdownField } from "../components/DropdownField";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
@@ -98,10 +99,17 @@ export const GoldSavings: React.FC = () => {
   const [isMoving, setIsMoving] = useState(false);
 
   useLockBodyScroll(isFormOpen || !!moveTarget);
+  // Menjebak swipe-back/tombol-back HP saat modal ini terbuka, supaya
+  // menutup modal (tetap di halaman Tabungan Emas) -- bukan malah
+  // menavigasi balik ke halaman sebelumnya (lihat useBackGestureTrap.ts).
   const formModalRef = React.useRef<HTMLDivElement>(null);
-  useDialogA11y(isFormOpen, formModalRef, () => setIsFormOpen(false));
+  const { close: closeForm } = useBackGestureTrap(isFormOpen, setIsFormOpen);
+  useDialogA11y(isFormOpen, formModalRef, closeForm);
   const moveModalRef = React.useRef<HTMLDivElement>(null);
-  useDialogA11y(!!moveTarget, moveModalRef, () => setMoveTarget(null));
+  const isMoveOpen = !!moveTarget;
+  const setIsMoveOpen = (open: boolean) => { if (!open) setMoveTarget(null); };
+  const { close: closeMoveModal } = useBackGestureTrap(isMoveOpen, setIsMoveOpen);
+  useDialogA11y(isMoveOpen, moveModalRef, closeMoveModal);
   const [busyId, setBusyId] = useState<string | null>(null);
   // Kartu emas "fisik" (Konsep D): id pos yang sedang di-flip (nampilkan sisi
   // aksi). Set (bukan single value) supaya beberapa kartu bisa flip
@@ -169,7 +177,7 @@ export const GoldSavings: React.FC = () => {
       }
       showToast(t("gold.save_success"), "success");
       audioFeedback.playClick();
-      setIsFormOpen(false);
+      closeForm();
       await refresh();
     } catch { showToast(t("gold.save_error"), "error"); }
     finally { setIsSaving(false); }
@@ -228,7 +236,7 @@ export const GoldSavings: React.FC = () => {
         showToast(t("gold.manual_remove_success", { name: pocket.name }), "success");
       }
       audioFeedback.playClick();
-      setMoveTarget(null);
+      closeMoveModal();
       await refresh();
     } catch (err: any) {
       const msg = String(err?.message || "");
@@ -513,7 +521,7 @@ export const GoldSavings: React.FC = () => {
         {isFormOpen && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-slate-950/70 backdrop-blur-sm"
-            onClick={e => { if (e.target === e.currentTarget) setIsFormOpen(false); }}>
+            onClick={e => { if (e.target === e.currentTarget) closeForm(); }}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
               ref={formModalRef}
               role="dialog"
@@ -568,7 +576,7 @@ export const GoldSavings: React.FC = () => {
                   accent="amber"
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={() => setIsFormOpen(false)} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
+                  <button onClick={closeForm} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
                   <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm transition-colors shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer">{isSaving ? t("common.loading") : t("common.save")}</button>
                 </div>
               </div>
@@ -582,7 +590,7 @@ export const GoldSavings: React.FC = () => {
         {moveTarget && copy && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-slate-950/70 backdrop-blur-sm"
-            onClick={e => { if (e.target === e.currentTarget) setMoveTarget(null); }}>
+            onClick={e => { if (e.target === e.currentTarget) closeMoveModal(); }}>
             <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
               ref={moveModalRef}
               role="dialog"
@@ -621,7 +629,7 @@ export const GoldSavings: React.FC = () => {
                   accent="amber"
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={() => setMoveTarget(null)} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
+                  <button onClick={closeMoveModal} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
                   <button onClick={executeMove} disabled={isMoving}
                     className={`flex-1 py-3 rounded-2xl text-white font-semibold text-sm transition-colors shadow-lg disabled:opacity-50 cursor-pointer ${copy.buttonClass}`}>
                     {isMoving ? t("common.loading") : t(copy.button)}

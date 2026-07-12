@@ -15,6 +15,7 @@ import { BudgetProgressCard } from "../components/BudgetProgressCard";
 import { DropdownField } from "../components/DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { Input } from "../components/ui/Input";
 
 export const Budget: React.FC = () => {
@@ -116,9 +117,14 @@ export const Budget: React.FC = () => {
     setIsAddOpen(true);
   };
 
+  // Menjebak swipe-back/tombol-back HP saat modal ini terbuka, supaya
+  // menutup modal (tetap di halaman Anggaran) -- bukan malah menavigasi
+  // balik ke halaman sebelumnya (lihat useBackGestureTrap.ts).
+  const { close: closeAddModalHistory } = useBackGestureTrap(isAddOpen, setIsAddOpen);
+
   const closeAddModal = () => {
     if (isAdding) return;
-    setIsAddOpen(false);
+    closeAddModalHistory();
   };
 
   const addModalPanelRef = React.useRef<HTMLDivElement>(null);
@@ -152,7 +158,7 @@ export const Budget: React.FC = () => {
       audioFeedback.playClick();
       showToast(t("budget.save_success"), "success");
       await refresh();
-      setIsAddOpen(false);
+      closeAddModalHistory();
     } catch (err) {
       console.error("Error adding budget:", err);
       showToast(t("budget.save_error"), "error");
