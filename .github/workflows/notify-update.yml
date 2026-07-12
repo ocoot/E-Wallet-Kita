@@ -1,22 +1,83 @@
 name: Notify Users on Update
 
-# Jalan otomatis setiap kali ada push ke main (branch yang di-deploy Vercel
-# lewat Git integration). Bisa juga dipicu manual dari tab Actions di GitHub
-# (workflow_dispatch) untuk testing tanpa harus push commit baru.
+# PENTING -- urutan eksekusi:
+# Workflow ini SENGAJA tidak lagi jalan langsung dari `push: branches: [main]`.
+# Sebelumnya, workflow ini dan `generate-changelog.yml` sama-sama trigger dari
+# event push yang SAMA, dan jalan PARALEL. Karena notify-update.yml jauh lebih
+# cepat (cuma polling status deploy Vercel) dibanding generate-changelog.yml
+# (npm ci + panggil Gemini + commit + push ulang), notifikasi "update
+# tersedia" HAMPIR SELALU terkirim ke user SEBELUM entri changelog untuk
+# commit itu sempat ditulis -- akibatnya popup update yang dilihat user
+# menampilkan changelog dari rilis SEBELUMNYA, selalu telat satu versi.
+#
+# Fix: workflow ini sekarang trigger via `workflow_run`, menunggu
+# `generate-changelog.yml` BENAR-BENAR selesai (baik itu berhasil menulis
+# entri baru, atau memutuskan tidak ada yang perlu ditulis) sebelum mulai.
+# Begitu jalan, ia selalu mengecek HEAD TERBARU di `main` (bukan SHA commit
+# yang memicu push awal) -- supaya kalau generate-changelog.yml sempat
+# menambah commit susulan (chore(changelog)), commit itu ikut tercakup
+# sebelum notifikasi dikirim.
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    workflows: ["Generate Changelog (AI)"]
+    types: [completed]
   workflow_dispatch: {}
 
 jobs:
   notify:
     runs-on: ubuntu-latest
-    # Lewati notifikasi kalau pesan commit mengandung "[skip-notify]" —
-    # berguna untuk deploy kecil (typo, copy text, dsb) yang tidak perlu
-    # mengganggu semua user dengan push notification.
-    if: ${{ !contains(github.event.head_commit.message, '[skip-notify]') }}
+    # `generate-changelog.yml` yang gagal total (mis. checkout/npm ci error)
+    # bukan alasan buat batal notifikasi -- deployment kode aslinya tetap
+    # independen dan tetap layak diberitahukan. Hanya 'cancelled' yang
+    # dilewati (biasanya berarti run itu sendiri sengaja dibatalkan).
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'cancelled' }}
     steps:
-      # ── 1. Tunggu sampai deployment Vercel untuk commit ini READY ──────────
+      # ── 0. Tentukan apakah notifikasi harus dilewati ────────────────────────
+      # Dicek dari pesan commit yang MEMICU generate-changelog.yml (bukan HEAD
+      # main saat ini) -- supaya dua kasus beda ditangani beda:
+      #   a) Push fitur biasa (tanpa [skip-notify]) yang KEBETULAN sudah
+      #      "disusul" commit bot changelog sebelum step ini jalan -> tetap
+      #      HARUS notify (lihat step berikutnya, yang selalu pakai HEAD
+      #      terbaru supaya changelog-nya ikut ter-cover).
+      #   b) Commit bot changelog itu SENDIRI (pesannya mengandung
+      #      "[skip-notify]") yang juga men-trigger generate-changelog.yml
+      #      lagi (job-nya di-skip lewat guard di file itu, tapi workflow run
+      #      tetap "completed" -> ikut memicu workflow_run ini) -> HARUS
+      #      dilewati supaya tidak dobel notifikasi.
+      - name: Cek penanda skip-notify dari commit pemicu
+        id: skip
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          else
+            MSG="${{ github.event.workflow_run.head_commit.message }}"
+            echo "Commit pemicu generate-changelog.yml: \"$MSG\""
+            if [[ "$MSG" == *"[skip-notify]"* ]]; then
+              echo "skip=true" >> "$GITHUB_OUTPUT"
+              echo "Mengandung [skip-notify] -- notifikasi dilewati."
+            else
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+      # ── 1. Ambil HEAD TERBARU main ──────────────────────────────────────────
+      # Dicek ulang di sini (bukan pakai SHA commit yang memicu push aslinya)
+      # supaya kalau generate-changelog.yml sempat menambah commit susulan
+      # (chore(changelog)) sebelum step ini jalan, commit itu ikut tercakup
+      # sebelum kita polling status deployment-nya.
+      - name: Checkout main (HEAD terbaru)
+        if: steps.skip.outputs.skip != 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Ambil SHA HEAD
+        id: head
+        if: steps.skip.outputs.skip != 'true'
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      # ── 2. Tunggu sampai deployment Vercel untuk HEAD main READY ───────────
       # Vercel deploy production terjadi otomatis lewat Git integration
       # (bukan lewat GitHub Actions ini), jadi di sini kita cuma POLLING
       # status deployment lewat Vercel API sampai statenya READY, lalu baru
@@ -25,11 +86,12 @@ jobs:
       # "update" ke versi yang sebenarnya belum ter-deploy.
       - name: Wait for Vercel deployment to be ready
         id: wait
+        if: steps.skip.outputs.skip != 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
           VERCEL_TEAM_ID: ${{ secrets.VERCEL_TEAM_ID }}
-          COMMIT_SHA: ${{ github.sha }}
+          COMMIT_SHA: ${{ steps.head.outputs.sha }}
         run: |
           set -e
           MAX_ATTEMPTS=40       # 40 x 15 detik = maksimal 10 menit menunggu
@@ -68,7 +130,7 @@ jobs:
 
       # ── 2. Kirim push notification "update tersedia" ke semua user ─────────
       - name: Send update push notification
-        if: steps.wait.outputs.ready == 'true'
+        if: steps.skip.outputs.skip != 'true' && steps.wait.outputs.ready == 'true'
         env:
           APP_URL: ${{ secrets.APP_URL }}
           UPDATE_NOTIFY_SECRET: ${{ secrets.UPDATE_NOTIFY_SECRET }}
