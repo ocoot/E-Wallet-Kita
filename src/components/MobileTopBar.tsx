@@ -19,10 +19,10 @@ export const MobileTopBar: React.FC = () => {
 
   return (
     <header
-      className="md:hidden sticky top-0 z-40 flex items-center gap-2 px-4 py-3 border-b backdrop-blur-md
-        bg-slate-950/90 border-slate-800 text-white
-        dark_obsidian:bg-slate-950/90 dark_obsidian:border-slate-800
-        light_sakura:bg-rose-500/90 light_sakura:border-rose-400/50 light_sakura:text-white"
+      className="md:hidden sticky top-0 z-40 flex items-center gap-2 px-4 py-3 backdrop-blur-md relative
+        bg-slate-950/90 text-white
+        dark_obsidian:bg-slate-950/90
+        light_sakura:bg-rose-500/90 light_sakura:text-white"
     >
       <div className="shrink-0">
         <img src={logoUrl} alt="EWK Icon" className="w-8 h-8 object-contain" />
@@ -30,6 +30,17 @@ export const MobileTopBar: React.FC = () => {
       <h1 className="font-sans font-bold text-lg tracking-tight truncate">
         {t("app.title")}
       </h1>
+
+      {/* Aksen gradient tipis pengganti border-b polos -- selaras dengan
+          warna aksen FAB/tombol utama (indigo -> violet) supaya top bar
+          punya "signature" brand yang konsisten dengan elemen lain,
+          bukan sekadar garis abu-abu flat. */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-px
+          bg-gradient-to-r from-transparent via-indigo-400/70 to-transparent
+          light_sakura:via-rose-200"
+        aria-hidden="true"
+      />
     </header>
   );
 };

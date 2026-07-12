@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import logoUrl from "../assets/images/user_logo_transparent.png";
 import { useLanguage } from "../contexts/LanguageContext";
 import { UserSession } from "../types";
 import { Send, Info, Calendar, MapPin } from "lucide-react";
@@ -166,20 +165,10 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       )}
 
       <div className="relative z-10 flex items-center gap-4">
-        {/* Logo PNG transparan */}
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5, ease: "easeOut" }}
-          className="shrink-0"
-        >
-          <img
-            src={logoUrl}
-            alt="EWK Icon"
-            className="w-16 h-16 sm:w-20 sm:h-20 md:w-20 md:h-20 lg:w-24 lg:h-24 object-contain transition-all duration-300"
-          />
-        </motion.div>
-
+        {/* Logo brand PNG sudah dipindah khusus ke MobileTopBar/Sidebar supaya
+            tidak duplikat dengan greeting card ini (sebelumnya logo yang sama
+            tampil dua kali sekaligus di layar: kecil di top bar + besar di
+            sini). Greeting card sekarang fokus murni ke sapaan personal. */}
         <motion.div
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
