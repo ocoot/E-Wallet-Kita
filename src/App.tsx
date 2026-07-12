@@ -264,8 +264,20 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-slate-950 text-white transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:text-slate-800">
-      
+    <div className="relative min-h-screen flex flex-col md:flex-row bg-slate-950 text-white transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:text-slate-800">
+
+      {/* Ambient background orbs -- lapisan dekoratif statis (blur besar,
+          warna lembut) yang sengaja diletakkan di belakang seluruh layout
+          (-z-10) supaya efek glassmorphism pada Sidebar & MobileBottomNav
+          (bg tembus pandang + backdrop-blur) punya sesuatu yang terlihat
+          "melebur" di baliknya alih-alih menyamar dengan warna solid datar.
+          Murni dekoratif -- aria-hidden & pointer-events-none. */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+        <div className="absolute -top-32 -left-24 w-[28rem] h-[28rem] rounded-full bg-indigo-600/25 blur-[110px] light_sakura:bg-rose-300/40" />
+        <div className="absolute top-1/3 -right-32 w-[26rem] h-[26rem] rounded-full bg-violet-600/20 blur-[110px] light_sakura:bg-amber-200/35" />
+        <div className="absolute bottom-0 left-1/4 w-[24rem] h-[24rem] rounded-full bg-indigo-500/15 blur-[110px] light_sakura:bg-rose-200/30" />
+      </div>
+
       {/*Subtle noise/grain overlay for surface texture */}
       <div className="noise-overlay" />
 

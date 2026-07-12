@@ -99,8 +99,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
           memakai navbar bawah -- lihat MobileBottomNav.tsx) */}
       <aside 
         className={`hidden md:flex flex-col h-screen fixed top-0 left-0 border-r transition-all duration-300 z-30
-          bg-slate-950 border-slate-900 text-white dark_obsidian:bg-slate-950 dark_obsidian:border-slate-900
-          light_sakura:bg-rose-50 light_sakura:text-slate-800 light_sakura:border-rose-100/80
+          bg-slate-950/55 backdrop-blur-2xl backdrop-saturate-150 border-white/10 text-white shadow-[8px_0_32px_rgba(0,0,0,0.35)]
+          dark_obsidian:bg-slate-950/55 dark_obsidian:border-white/10
+          light_sakura:bg-white/40 light_sakura:text-slate-800 light_sakura:border-white/60 light_sakura:shadow-[8px_0_32px_rgba(244,63,94,0.08)]
           ${isCollapsed ? "w-20" : "w-64"}`}
       >
         {/* Sidebar Brand header */}
@@ -141,7 +142,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Profile widget summary and state */}
         <div className="px-4 mb-6">
-          <div className={`transition-all duration-300 rounded-xl border flex items-center ${isCollapsed ? "bg-transparent border-transparent p-0 justify-center" : "p-3 bg-slate-900/40 border-slate-900 light_sakura:bg-rose-100/40 light_sakura:border-rose-100/70 gap-2.5"}`}>
+          <div className={`transition-all duration-300 rounded-xl border flex items-center ${isCollapsed ? "bg-transparent border-transparent p-0 justify-center" : "p-3 bg-white/5 backdrop-blur-sm border-white/10 light_sakura:bg-white/30 light_sakura:border-white/50 gap-2.5"}`}>
             <div className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center bg-slate-900 text-indigo-400 light_sakura:bg-rose-200 light_sakura:text-rose-600 text-xs font-bold shadow-xs transition-all duration-300">
               {displayName.charAt(0).toUpperCase()}
             </div>
@@ -195,7 +196,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
 
         {/* Footer controls */}
-        <div className="p-4 border-t border-slate-900 light_sakura:border-rose-100 space-y-3">
+        <div className="p-4 border-t border-white/10 light_sakura:border-white/50 space-y-3">
           {/* Theme, Language, and Sound inline switcher controls */}
           <div className="relative min-h-[36px]">
             <div className={`transition-all duration-300 ${isCollapsed ? "opacity-0 scale-75 pointer-events-none absolute inset-x-0 top-0" : "opacity-100 scale-100 grid grid-cols-3 gap-1"}`}>

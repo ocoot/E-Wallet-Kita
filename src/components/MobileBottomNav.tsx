@@ -106,9 +106,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
              sebelumnya. */}
       <nav
         className="md:hidden fixed bottom-0 inset-x-0 z-40 flex items-stretch justify-around
-          bg-slate-950/95 backdrop-blur-md border-t border-slate-800 text-white
-          dark_obsidian:bg-slate-950/95 dark_obsidian:border-slate-800
-          light_sakura:bg-white/95 light_sakura:border-rose-100 light_sakura:text-slate-800"
+          bg-slate-950/50 backdrop-blur-2xl backdrop-saturate-150 border-t border-white/10 text-white
+          shadow-[0_-8px_32px_rgba(0,0,0,0.35)]
+          dark_obsidian:bg-slate-950/50 dark_obsidian:border-white/10
+          light_sakura:bg-white/40 light_sakura:border-white/60 light_sakura:text-slate-800 light_sakura:shadow-[0_-8px_32px_rgba(244,63,94,0.1)]"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         {primaryItems.map((item) => {
@@ -245,9 +246,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 260 }}
               className="relative flex flex-col w-full max-h-[85vh] mt-auto rounded-t-3xl
-                bg-slate-900 border-t border-slate-800 text-white
-                dark_obsidian:bg-slate-900 dark_obsidian:border-slate-800
-                light_sakura:bg-rose-50 light_sakura:text-slate-800 light_sakura:border-rose-100
+                bg-slate-900/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-white/10 text-white
+                shadow-[0_-8px_40px_rgba(0,0,0,0.4)]
+                dark_obsidian:bg-slate-900/70 dark_obsidian:border-white/10
+                light_sakura:bg-rose-50/70 light_sakura:text-slate-800 light_sakura:border-white/60
                 outline-none"
             >
               {/* Grip handle */}
