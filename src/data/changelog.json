@@ -1,5 +1,31 @@
 [
   {
+    "version": "1.5.0",
+    "date": "12 Jul 2026",
+    "changes": [
+      {
+        "id": "Tampilan navigasi dan dashboard aplikasi kini diperbarui agar lebih modern dan nyaman digunakan.",
+        "en": "The app's navigation and dashboard now have a refreshed, modern look for easier use."
+      },
+      {
+        "id": "Anda kini akan mendapatkan notifikasi otomatis ketika ada pembaruan aplikasi.",
+        "en": "You will now receive automatic notifications when app updates are available."
+      },
+      {
+        "id": "Laporan PDF kini dapat difilter berdasarkan dompet, dan dompet bisa dipilih di transaksi Telegram.",
+        "en": "PDF reports can now be filtered by wallet, and wallets can be selected in Telegram transactions."
+      },
+      {
+        "id": "Kalender di dashboard Anda kini dapat menampilkan informasi acara olahraga.",
+        "en": "Your dashboard calendar can now display sports event information."
+      },
+      {
+        "id": "Perubahan harga emas kini ditampilkan dalam Rupiah, bukan lagi dalam persentase.",
+        "en": "Gold price changes are now shown in Rupiah, instead of percentages."
+      }
+    ]
+  },
+  {
     "version": "1.4.0",
     "date": "12 Jul 2026",
     "changes": [
