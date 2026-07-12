@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.5.0",
+    "date": "12 Jul 2026",
+    "changes": [
+      {
+        "id": "Tampilan tema Sakura kini terlihat lebih indah.",
+        "en": "The Sakura theme now looks even better."
+      }
+    ]
+  },
+  {
     "version": "1.4.0",
     "date": "12 Jul 2026",
     "changes": [
