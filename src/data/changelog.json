@@ -1,15 +1,5 @@
 [
   {
-    "version": "1.5.0",
-    "date": "12 Jul 2026",
-    "changes": [
-      {
-        "id": "Lihat daftar pembaruan saat diminta update aplikasi.",
-        "en": "See what's new when prompted to update the app."
-      }
-    ]
-  },
-  {
     "version": "1.4.0",
     "date": "12 Jul 2026",
     "changes": [

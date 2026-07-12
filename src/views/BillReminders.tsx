@@ -403,10 +403,11 @@ export const BillReminders: React.FC = () => {
                   <DropdownField
                     value={form.wallet_id}
                     onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
-                    options={[
-                      { value: "", label: t("wallet.group_general") },
-                      ...activeWallets.filter(w => w.type !== "general").map(w => ({ value: w.id, label: `${w.name}${w.provider ? ` · ${w.provider}` : ""}` }))
-                    ]}
+                    options={activeWallets.map((w) => {
+                      const icon = w.type === "general" ? "💰" : w.type === "ewallet" ? "📱" : w.type === "bank" ? "🏦" : "💵";
+                      const label = w.type === "general" ? t("wallet.group_general") : `${w.name}${w.provider ? ` · ${w.provider}` : ""}`;
+                      return { value: w.type === "general" ? "" : w.id, label: `${icon} ${label} (${formatIDR(w.balance)})` };
+                    })}
                   />
                 </div>
                 <Input
