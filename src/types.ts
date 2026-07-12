@@ -6,6 +6,7 @@ export interface UserSession {
   preferred_theme: "dark_obsidian" | "light_sakura";
   telegram_chat_id?: string | null;
   email?: string | null;
+  avatar_url?: string | null;
 }
 
 export interface UserProfile {

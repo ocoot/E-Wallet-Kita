@@ -1,15 +1,5 @@
 [
   {
-    "version": "1.5.0",
-    "date": "12 Jul 2026",
-    "changes": [
-      {
-        "id": "Tampilan dan pesan kesalahan aplikasi kini lebih jelas dan mudah dimengerti.",
-        "en": "The app's appearance and error messages are now clearer and easier to understand."
-      }
-    ]
-  },
-  {
     "version": "1.4.0",
     "date": "12 Jul 2026",
     "changes": [

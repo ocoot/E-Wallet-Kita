@@ -26,12 +26,20 @@ import {
   Lock,
   Smartphone,
   Download,
-  ShieldQuestion
+  ShieldQuestion,
+  Camera,
+  Eye,
+  EyeOff,
+  Loader2,
+  ShieldCheck
 } from "lucide-react";
 import { motion } from "motion/react";
 import { UserSession } from "../types";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "../components/PremiumModal";
+import { uploadAvatar, AvatarValidationError } from "../lib/avatar";
+import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
 
 interface SettingsProps {
   onUserPrefUpdated: (user: UserSession) => void;
@@ -119,20 +127,139 @@ export const Settings: React.FC<SettingsProps> = ({
   const [displayName, setDisplayName] = useState(user?.user_metadata?.full_name || user?.email?.split('@')[0] || "");
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
+  // Profile Picture (Avatar) States
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const avatarInputRef = React.useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     if (!user) return;
     const fetchProfile = async () => {
       const { data, error } = await supabase
         .from('users')
-        .select('display_name')
+        .select('display_name, avatar_url')
         .eq('id', user.id)
         .single();
       if (!error && data) {
         if (data.display_name) setDisplayName(data.display_name);
+        if (data.avatar_url) setAvatarUrl(data.avatar_url);
       }
     };
     fetchProfile();
   }, [user]);
+
+  const handleAvatarClick = () => {
+    audioFeedback.playClick();
+    if (isUploadingAvatar) return;
+    avatarInputRef.current?.click();
+  };
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    // Reset value supaya memilih file yang sama persis lagi tetap memicu onChange.
+    e.target.value = "";
+    if (!file || !user) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      const newAvatarUrl = await uploadAvatar(user.id, file);
+      setAvatarUrl(newAvatarUrl);
+      audioFeedback.playChime();
+      showToast(t("settings.toast_avatar_success"), "success");
+
+      onUserPrefUpdated({
+        id: user.id,
+        display_name: displayName,
+        is_guest: user.is_anonymous || false,
+        preferred_language: locale,
+        preferred_theme: theme,
+        avatar_url: newAvatarUrl,
+      });
+    } catch (err: any) {
+      audioFeedback.playDullPluck();
+      if (err instanceof AvatarValidationError) {
+        showToast(
+          err.code === "INVALID_TYPE"
+            ? t("settings.toast_avatar_invalid_type")
+            : t("settings.toast_avatar_too_large"),
+          "error"
+        );
+      } else {
+        showToast(err.message || t("settings.toast_avatar_error"), "error");
+      }
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  // Change Password States
+  const canChangePassword =
+    !isGuest &&
+    !!user?.email &&
+    (user?.identities?.some((i: any) => i.provider === "email") ?? true);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    audioFeedback.playClick();
+
+    if (!currentPassword) {
+      audioFeedback.playDullPluck();
+      showToast(t("settings.toast_current_password_required"), "error");
+      return;
+    }
+    if (newPassword.length < 6) {
+      audioFeedback.playDullPluck();
+      showToast(t("auth.validation_pass"), "error");
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      audioFeedback.playDullPluck();
+      showToast(t("auth.passwords_dont_match"), "error");
+      return;
+    }
+    if (newPassword === currentPassword) {
+      audioFeedback.playDullPluck();
+      showToast(t("settings.toast_password_same_as_old"), "error");
+      return;
+    }
+
+    setIsChangingPassword(true);
+    try {
+      // Re-verifikasi identitas lewat password lama sebelum mengganti --
+      // supabase.auth.updateUser() sendiri tidak meminta password lama,
+      // jadi verifikasi manual ini penting supaya sesi yang "nyasar"
+      // (mis. device lain lupa logout) tidak bisa ganti password tanpa tahu yang lama.
+      const { error: verifyError } = await supabase.auth.signInWithPassword({
+        email: user!.email!,
+        password: currentPassword,
+      });
+      if (verifyError) {
+        showToast(t("settings.toast_current_password_wrong"), "error");
+        return;
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updateError) throw updateError;
+
+      audioFeedback.playChime();
+      showToast(t("settings.toast_password_changed"), "success");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmNewPassword("");
+    } catch (err: any) {
+      audioFeedback.playDullPluck();
+      showToast(err.message || t("toast.error_general"), "error");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
 
   // Telegram Connection States
   const [linkingCode, setLinkingCode] = useState<string | null>(null);
@@ -391,12 +518,42 @@ export const Settings: React.FC<SettingsProps> = ({
 
         {/* ── Formasi: strip profil ringkas ala kartu identitas ─────────── */}
         <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-slate-950/40 border border-slate-800/60 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50">
-          <div className="w-11 h-11 shrink-0 rounded-full bg-indigo-600 light_sakura:bg-rose-500 text-white flex items-center justify-center font-sans font-bold text-lg">
-            {(displayName || "?").charAt(0).toUpperCase()}
-          </div>
+          <button
+            type="button"
+            onClick={handleAvatarClick}
+            disabled={isGuest || isUploadingAvatar}
+            aria-label={t("settings.avatar_change_label")}
+            className={`relative group w-11 h-11 shrink-0 rounded-full overflow-hidden bg-indigo-600 light_sakura:bg-rose-500 text-white flex items-center justify-center font-sans font-bold text-lg ${!isGuest ? "cursor-pointer" : "cursor-default"}`}
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={displayName || "avatar"} className="w-full h-full object-cover" />
+            ) : (
+              <span>{(displayName || "?").charAt(0).toUpperCase()}</span>
+            )}
+            {!isGuest && (
+              <span className={`absolute inset-0 flex items-center justify-center bg-black/50 transition-opacity ${isUploadingAvatar ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}>
+                {isUploadingAvatar ? (
+                  <Loader2 size={16} className="animate-spin text-white" />
+                ) : (
+                  <Camera size={15} className="text-white" />
+                )}
+              </span>
+            )}
+          </button>
+          {!isGuest && (
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={handleAvatarFileChange}
+              className="hidden"
+            />
+          )}
           <div className="min-w-0 flex-1">
             <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{displayName || t("admin.guest_user")}</p>
-            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">{isGuest ? t("admin.guest_user") : t("settings.profile_section")}</p>
+            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">
+              {isGuest ? t("admin.guest_user") : isUploadingAvatar ? t("settings.avatar_uploading") : t("settings.avatar_change_hint")}
+            </p>
           </div>
           {!isGuest && (
             isPremium ? (
@@ -411,6 +568,7 @@ export const Settings: React.FC<SettingsProps> = ({
             )
           )}
         </div>
+
 
         {/* Grid panels */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -447,6 +605,107 @@ export const Settings: React.FC<SettingsProps> = ({
               {t("settings.btn_update_profile")}
             </motion.button>
           </div>
+
+          {/* Section 1b: Change Password (only for accounts using email/password auth) */}
+          {canChangePassword && (
+            <form
+              onSubmit={handleChangePassword}
+              className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4"
+            >
+              <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
+                <ShieldCheck size={14} className="text-indigo-400 light_sakura:text-rose-500" />
+                <span>{t("settings.security_section")}</span>
+              </h3>
+
+              <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
+                {t("settings.security_section_desc")}
+              </p>
+
+              <Input
+                type={showCurrentPassword ? "text" : "password"}
+                label={t("settings.current_password_label")}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                disabled={isChangingPassword}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                leftIcon={<Lock size={14} />}
+                className="bg-slate-950 border-slate-800 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-100"
+                rightElement={
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => { audioFeedback.playClick(); setShowCurrentPassword(!showCurrentPassword); }}
+                    aria-label={showCurrentPassword ? t("auth.hide_password") : t("auth.show_password")}
+                    className="text-slate-400 hover:text-slate-200 cursor-pointer"
+                  >
+                    {showCurrentPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                }
+              />
+
+              <Input
+                type={showNewPassword ? "text" : "password"}
+                label={t("auth.new_password_label")}
+                placeholder="••••••••"
+                autoComplete="new-password"
+                minLength={6}
+                disabled={isChangingPassword}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                leftIcon={<Key size={14} />}
+                className="bg-slate-950 border-slate-800 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-100"
+                rightElement={
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => { audioFeedback.playClick(); setShowNewPassword(!showNewPassword); }}
+                    aria-label={showNewPassword ? t("auth.hide_password") : t("auth.show_password")}
+                    className="text-slate-400 hover:text-slate-200 cursor-pointer"
+                  >
+                    {showNewPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                }
+              />
+
+              <Input
+                type={showConfirmNewPassword ? "text" : "password"}
+                label={t("auth.confirm_password_label")}
+                placeholder="••••••••"
+                autoComplete="new-password"
+                minLength={6}
+                disabled={isChangingPassword}
+                value={confirmNewPassword}
+                onChange={(e) => setConfirmNewPassword(e.target.value)}
+                leftIcon={<Key size={14} />}
+                className="bg-slate-950 border-slate-800 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-100"
+                rightElement={
+                  <button
+                    type="button"
+                    tabIndex={-1}
+                    onClick={() => { audioFeedback.playClick(); setShowConfirmNewPassword(!showConfirmNewPassword); }}
+                    aria-label={showConfirmNewPassword ? t("auth.hide_password") : t("auth.show_password")}
+                    className="text-slate-400 hover:text-slate-200 cursor-pointer"
+                  >
+                    {showConfirmNewPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                }
+              />
+
+              <Button
+                type="submit"
+                variant="primary"
+                fullWidth
+                size="sm"
+                disabled={isChangingPassword}
+                isLoading={isChangingPassword}
+                icon={<ShieldCheck size={14} />}
+                className="rounded-xl py-2.5"
+              >
+                {t("settings.btn_change_password")}
+              </Button>
+            </form>
+          )}
 
           {/* Section 2: Quick instant Switcher controls */}
           <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
