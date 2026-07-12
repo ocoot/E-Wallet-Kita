@@ -213,10 +213,10 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
           role="dialog"
           aria-modal="true"
           tabIndex={-1}
-          className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none p-6 relative"
+          className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none p-6 relative text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
         >
           {(step === "terms" || step === "expired" || step === "failed") && (
-            <button onClick={onClose} aria-label="Tutup" className="absolute top-4 right-4 text-slate-500 hover:text-white">
+            <button onClick={onClose} aria-label="Tutup" className="absolute top-4 right-4 text-slate-500 hover:text-white light_sakura:hover:text-slate-800 light_sakura:hover:bg-rose-100 rounded-lg p-0.5">
               <X size={18} />
             </button>
           )}
@@ -224,12 +224,12 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
           {step === "terms" && (
             <div className="text-center">
               <Sparkles className="mx-auto text-amber-400 mb-3" size={36} />
-              <h3 className="text-lg font-bold text-white">{t("premium.terms_title")}</h3>
-              <p className="text-sm text-slate-400 mt-2">{t("premium.terms_desc", { amount: pricing.basePrice.toLocaleString("id-ID") })}</p>
+              <h3 className="text-lg font-bold text-white light_sakura:text-slate-800">{t("premium.terms_title")}</h3>
+              <p className="text-sm text-slate-400 mt-2 light_sakura:text-slate-600">{t("premium.terms_desc", { amount: pricing.basePrice.toLocaleString("id-ID") })}</p>
               
               {activeVouchers.length > 0 && (
                 <div className="mt-4">
-                  <p className="text-xs text-slate-400 mb-2">{t("voucher.title")}</p>
+                  <p className="text-xs text-slate-400 mb-2 light_sakura:text-slate-500">{t("voucher.title")}</p>
                   <DropdownField
                     value={selectedVoucher?.id ?? ""}
                     onChange={(v) => setSelectedVoucher(activeVouchers.find(vo => vo.id === v) || null)}
@@ -241,24 +241,24 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                 </div>
               )}
 
-              <div className="mt-4 p-4 bg-slate-800/50 rounded-xl text-xs space-y-1">
-                <p className="flex justify-between text-slate-300">
+              <div className="mt-4 p-4 bg-slate-800/50 rounded-xl text-xs space-y-1 light_sakura:bg-white light_sakura:border light_sakura:border-rose-100">
+                <p className="flex justify-between text-slate-300 light_sakura:text-slate-600">
                   <span>{t("voucher.price_before")}</span> 
-                  <span className="font-semibold text-white">Rp {pricing.basePrice.toLocaleString("id-ID")}</span>
+                  <span className="font-semibold text-white light_sakura:text-slate-800">Rp {pricing.basePrice.toLocaleString("id-ID")}</span>
                 </p>
                 {pricing.discountAmount > 0 && (
-                  <p className="flex justify-between text-emerald-400">
+                  <p className="flex justify-between text-emerald-400 light_sakura:text-emerald-600">
                     <span>{t("voucher.discount", { percent: pricing.discountPercent })}</span> 
                     <span className="font-semibold">-Rp {pricing.discountAmount.toLocaleString("id-ID")}</span>
                   </p>
                 )}
-                <p className="flex justify-between font-bold text-white text-base mt-2">
+                <p className="flex justify-between font-bold text-white text-base mt-2 light_sakura:text-slate-800">
                   <span>{t("voucher.total")}</span> 
                   <span>Rp {pricing.finalPrice.toLocaleString("id-ID")}</span>
                 </p>
               </div>
 
-              <ul className="text-left text-xs text-slate-400 mt-4 space-y-1.5 bg-slate-800/50 rounded-xl p-4">
+              <ul className="text-left text-xs text-slate-400 mt-4 space-y-1.5 bg-slate-800/50 rounded-xl p-4 light_sakura:text-slate-600 light_sakura:bg-white light_sakura:border light_sakura:border-rose-100">
                 <li>• {t("premium.terms_point_1")}</li>
                 <li>• {t("premium.terms_point_2")}</li>
                 <li>• {t("premium.terms_point_3")}</li>
@@ -273,29 +273,29 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
 
           {step === "checking" && (
             <div className="text-center py-10">
-              <Loader2 className="mx-auto animate-spin text-indigo-400 mb-3" size={36} />
-              <p className="text-sm text-slate-300">{t("premium.creating_transaction")}</p>
+              <Loader2 className="mx-auto animate-spin text-indigo-400 mb-3 light_sakura:text-rose-500" size={36} />
+              <p className="text-sm text-slate-300 light_sakura:text-slate-600">{t("premium.creating_transaction")}</p>
             </div>
           )}
 
           {step === "qris" && tx && (
             <div className="text-center">
-              <h3 className="text-base font-bold text-white">{t("premium.qris_title")}</h3>
-              <div className="bg-white rounded-2xl p-4 mt-4 inline-block">
+              <h3 className="text-base font-bold text-white light_sakura:text-slate-800">{t("premium.qris_title")}</h3>
+              <div className="bg-white rounded-2xl p-4 mt-4 inline-block light_sakura:border light_sakura:border-rose-100">
                 <img src={tx.qris_url} alt="QRIS" className="w-48 h-48" />
               </div>
-              <p className="text-2xl font-bold text-white mt-4">Rp {tx.total_amount.toLocaleString("id-ID")}</p>
-              <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-amber-400 mt-1">{t("premium.unique_code_note")}</p>
-              <div className="flex items-center justify-center gap-2 mt-3 text-sm text-slate-400">
+              <p className="text-2xl font-bold text-white mt-4 light_sakura:text-slate-800">Rp {tx.total_amount.toLocaleString("id-ID")}</p>
+              <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-amber-400 mt-1 light_sakura:text-amber-600">{t("premium.unique_code_note")}</p>
+              <div className="flex items-center justify-center gap-2 mt-3 text-sm text-slate-400 light_sakura:text-slate-500">
                 <Clock size={14} />
                 <span>{t("premium.expires_in", { time: `${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, "0")}` })}</span>
               </div>
-              <div className="flex items-center justify-center gap-2 mt-4 text-xs text-indigo-300">
+              <div className="flex items-center justify-center gap-2 mt-4 text-xs text-indigo-300 light_sakura:text-rose-500">
                 <Loader2 size={13} className="animate-spin" />
                 <span>{t("premium.waiting_payment")}</span>
               </div>
-              {isSandboxMode() && <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-3">{t("premium.sandbox_notice")}</p>}
-              {!isSandboxMode() && tx.is_sandbox && <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-3">{t("premium.dummy_qris_notice")}</p>}
+              {isSandboxMode() && <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-3 light_sakura:text-slate-400">{t("premium.sandbox_notice")}</p>}
+              {!isSandboxMode() && tx.is_sandbox && <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-3 light_sakura:text-slate-400">{t("premium.dummy_qris_notice")}</p>}
               
               <Button
                 variant="danger-ghost"
@@ -322,8 +322,8 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
           {step === "success" && (
             <div className="text-center py-4">
               <CheckCircle2 className="mx-auto text-emerald-400 mb-3" size={48} />
-              <h3 className="text-lg font-bold text-white">{t("premium.success_title")}</h3>
-              <p className="text-sm text-slate-400 mt-2">{t("premium.success_desc")}</p>
+              <h3 className="text-lg font-bold text-white light_sakura:text-slate-800">{t("premium.success_title")}</h3>
+              <p className="text-sm text-slate-400 mt-2 light_sakura:text-slate-600">{t("premium.success_desc")}</p>
 
               {askDownload ? (
                 <div className="flex flex-col gap-3 mt-6">
@@ -373,8 +373,8 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
           {step === "expired" && (
             <div className="text-center py-4">
               <Clock className="mx-auto text-amber-400 mb-3" size={40} />
-              <h3 className="text-lg font-bold text-white">{t("premium.expired_title")}</h3>
-              <p className="text-sm text-slate-400 mt-2">{t("premium.expired_desc")}</p>
+              <h3 className="text-lg font-bold text-white light_sakura:text-slate-800">{t("premium.expired_title")}</h3>
+              <p className="text-sm text-slate-400 mt-2 light_sakura:text-slate-600">{t("premium.expired_desc")}</p>
               <Button variant="primary" fullWidth onClick={() => setStep("terms")} className="mt-6 rounded-xl">{t("premium.retry")}</Button>
             </div>
           )}
@@ -382,8 +382,8 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
           {step === "failed" && (
             <div className="text-center py-4">
               <XCircle className="mx-auto text-red-400 mb-3" size={40} />
-              <h3 className="text-lg font-bold text-white">{t("premium.failed_title")}</h3>
-              <p className="text-sm text-slate-400 mt-2">{t("premium.failed_desc")}</p>
+              <h3 className="text-lg font-bold text-white light_sakura:text-slate-800">{t("premium.failed_title")}</h3>
+              <p className="text-sm text-slate-400 mt-2 light_sakura:text-slate-600">{t("premium.failed_desc")}</p>
               <Button variant="primary" fullWidth onClick={() => setStep("terms")} className="mt-6 rounded-xl">{t("premium.retry")}</Button>
             </div>
           )}
