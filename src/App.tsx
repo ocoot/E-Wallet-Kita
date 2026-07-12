@@ -273,9 +273,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
           "melebur" di baliknya alih-alih menyamar dengan warna solid datar.
           Murni dekoratif -- aria-hidden & pointer-events-none. */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-32 -left-24 w-[28rem] h-[28rem] rounded-full bg-indigo-600/25 blur-[110px] light_sakura:bg-rose-300/40" />
-        <div className="absolute top-1/3 -right-32 w-[26rem] h-[26rem] rounded-full bg-violet-600/20 blur-[110px] light_sakura:bg-amber-200/35" />
-        <div className="absolute bottom-0 left-1/4 w-[24rem] h-[24rem] rounded-full bg-indigo-500/15 blur-[110px] light_sakura:bg-rose-200/30" />
+        <div className="absolute -top-32 -left-24 w-[28rem] h-[28rem] rounded-full bg-indigo-600/25 blur-[110px] light_sakura:bg-rose-300/30" />
+        <div className="absolute top-1/3 -right-32 w-[26rem] h-[26rem] rounded-full bg-violet-600/20 blur-[110px] light_sakura:bg-sky-200/25" />
+        <div className="absolute bottom-0 left-1/4 w-[24rem] h-[24rem] rounded-full bg-indigo-500/15 blur-[110px] light_sakura:bg-violet-200/20" />
       </div>
 
       {/*Subtle noise/grain overlay for surface texture */}

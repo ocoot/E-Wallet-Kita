@@ -1,15 +1,5 @@
 [
   {
-    "version": "1.5.0",
-    "date": "12 Jul 2026",
-    "changes": [
-      {
-        "id": "Tampilan aplikasi kini lebih modern dengan latar belakang dan efek kaca yang indah.",
-        "en": "The app now has a more modern look with beautiful backgrounds and glass-like effects."
-      }
-    ]
-  },
-  {
     "version": "1.4.0",
     "date": "12 Jul 2026",
     "changes": [
