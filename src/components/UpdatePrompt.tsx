@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { RefreshCw, X, Sparkles } from "lucide-react";
+import { RefreshCw, X, Sparkles, Loader2 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { CHANGELOG_URL, type ChangelogEntry } from "../data/changelog";
@@ -29,6 +29,7 @@ export const UpdatePrompt: React.FC = () => {
   const { t, locale } = useLanguage();
   const [visible, setVisible] = useState(false);
   const [latestEntry, setLatestEntry] = useState<ChangelogEntry | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const handler = () => {
@@ -49,15 +50,30 @@ export const UpdatePrompt: React.FC = () => {
   }, []);
 
   const handleUpdate = () => {
+    if (isUpdating) return; // cegah klik ganda
+    setIsUpdating(true);
+
+    // Jaring pengaman: kalau karena suatu sebab service worker tidak
+    // pernah memicu reload (mis. updateSW gagal diam-diam), paksa reload
+    // manual setelah beberapa detik supaya user tidak terjebak selamanya
+    // di layar loading.
+    const fallbackTimer = window.setTimeout(() => {
+      window.location.reload();
+    }, 8000);
+
     const updateSW = (window as any).__pwaUpdateSW;
     if (typeof updateSW === "function") {
       updateSW(true); // true = reload setelah SW aktif
     } else {
+      window.clearTimeout(fallbackTimer);
       window.location.reload();
     }
   };
 
-  const handleDismiss = () => setVisible(false);
+  const handleDismiss = () => {
+    if (isUpdating) return; // jangan biarkan modal ditutup saat sedang update
+    setVisible(false);
+  };
 
   useLockBodyScroll(visible);
 
@@ -71,7 +87,7 @@ export const UpdatePrompt: React.FC = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            onClick={handleDismiss}
+            onClick={isUpdating ? undefined : handleDismiss}
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
 
@@ -89,7 +105,8 @@ export const UpdatePrompt: React.FC = () => {
             <div className="relative flex flex-col gap-4 p-5 sm:p-6 rounded-2xl shadow-2xl border bg-slate-900 border-indigo-500/30 text-white light_sakura:bg-white light_sakura:border-rose-300/50 light_sakura:text-slate-800">
               <button
                 onClick={handleDismiss}
-                className="absolute top-3 right-3 p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors cursor-pointer light_sakura:hover:text-slate-700 light_sakura:hover:bg-black/5"
+                disabled={isUpdating}
+                className="absolute top-3 right-3 p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent light_sakura:hover:text-slate-700 light_sakura:hover:bg-black/5"
                 aria-label="Tutup"
               >
                 <X size={16} />
@@ -97,22 +114,26 @@ export const UpdatePrompt: React.FC = () => {
 
               <div className="flex flex-col items-center text-center gap-3 pt-1">
                 <div className="p-3 rounded-2xl bg-indigo-500/15 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
-                  <RefreshCw size={22} />
+                  {isUpdating ? (
+                    <Loader2 size={22} className="animate-spin" />
+                  ) : (
+                    <RefreshCw size={22} />
+                  )}
                 </div>
                 <div>
                   <p
                     id="update-prompt-title"
                     className="text-sm sm:text-base font-bold"
                   >
-                    {t("pwa.update_title")}
+                    {isUpdating ? t("pwa.updating") : t("pwa.update_title")}
                   </p>
                   <p className="mt-1 text-xs sm:text-sm text-slate-400 light_sakura:text-slate-500">
-                    {t("pwa.update_desc")}
+                    {isUpdating ? t("pwa.updating_desc") : t("pwa.update_desc")}
                   </p>
                 </div>
               </div>
 
-              {latestEntry && latestEntry.changes.length > 0 && (
+              {!isUpdating && latestEntry && latestEntry.changes.length > 0 && (
                 <div className="rounded-xl bg-white/5 p-3.5 text-left light_sakura:bg-black/[0.03]">
                   <p className="flex items-center gap-1.5 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase tracking-wider text-indigo-300 light_sakura:text-rose-500">
                     <Sparkles size={12} />
@@ -132,15 +153,19 @@ export const UpdatePrompt: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-2 mt-1">
                 <button
                   onClick={handleDismiss}
-                  className="flex-1 order-2 sm:order-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs sm:text-sm font-bold transition-colors cursor-pointer light_sakura:bg-black/5 light_sakura:hover:bg-black/10 light_sakura:text-slate-600"
+                  disabled={isUpdating}
+                  className="flex-1 order-2 sm:order-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs sm:text-sm font-bold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white/5 light_sakura:bg-black/5 light_sakura:hover:bg-black/10 light_sakura:text-slate-600"
                 >
                   {t("pwa.update_dismiss") || "Nanti"}
                 </button>
                 <button
                   onClick={handleUpdate}
-                  className="flex-1 order-1 sm:order-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold transition-colors cursor-pointer light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                  disabled={isUpdating}
+                  aria-busy={isUpdating}
+                  className="flex-1 order-1 sm:order-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-80 disabled:cursor-wait disabled:hover:bg-indigo-600 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
                 >
-                  {t("pwa.update_btn")}
+                  {isUpdating && <Loader2 size={14} className="animate-spin shrink-0" />}
+                  {isUpdating ? t("pwa.updating") : t("pwa.update_btn")}
                 </button>
               </div>
             </div>

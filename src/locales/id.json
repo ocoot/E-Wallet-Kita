@@ -1043,7 +1043,9 @@
     "update_desc": "Versi terbaru E-Wallet Kita sudah siap.",
     "whats_new": "Yang baru di versi ini:",
     "update_btn": "Perbarui Sekarang",
-    "update_dismiss": "Nanti Saja"
+    "update_dismiss": "Nanti Saja",
+    "updating": "Memperbarui...",
+    "updating_desc": "Mohon tunggu, jangan tutup aplikasi."
   },
   "installments": {
     "page_title": "Cicilan & Utang Jangka Panjang",

@@ -1043,7 +1043,9 @@
     "update_desc": "A new version of E-Wallet Kita is ready.",
     "whats_new": "What's new in this version:",
     "update_btn": "Update Now",
-    "update_dismiss": "Later"
+    "update_dismiss": "Later",
+    "updating": "Updating...",
+    "updating_desc": "Please wait, don't close the app."
   },
   "installments": {
     "page_title": "Installments & Long-Term Debt",
