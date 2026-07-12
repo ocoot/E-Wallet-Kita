@@ -1,15 +1,5 @@
 [
   {
-    "version": "1.5.0",
-    "date": "12 Jul 2026",
-    "changes": [
-      {
-        "id": "Tampilan pop-up (modal) Premium kini terlihat lebih segar.",
-        "en": "The Premium pop-up (modal) now has a refreshed look."
-      }
-    ]
-  },
-  {
     "version": "1.4.0",
     "date": "12 Jul 2026",
     "changes": [

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { RefreshCw, X } from "lucide-react";
+import { RefreshCw, X, Sparkles } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { CHANGELOG } from "../data/changelog";
 
 /**
  * Banner "Versi baru tersedia" yang muncul otomatis saat service worker
@@ -17,8 +18,9 @@ import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
  *     meminta service worker baru skip waiting lalu reload halaman
  */
 export const UpdatePrompt: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, locale } = useLanguage();
   const [visible, setVisible] = useState(false);
+  const latestEntry = CHANGELOG[0];
 
   useEffect(() => {
     const handler = () => setVisible(true);
@@ -89,6 +91,23 @@ export const UpdatePrompt: React.FC = () => {
                   </p>
                 </div>
               </div>
+
+              {latestEntry && latestEntry.changes.length > 0 && (
+                <div className="rounded-xl bg-white/5 p-3.5 text-left light_sakura:bg-black/[0.03]">
+                  <p className="flex items-center gap-1.5 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase tracking-wider text-indigo-300 light_sakura:text-rose-500">
+                    <Sparkles size={12} />
+                    {t("pwa.whats_new")}
+                  </p>
+                  <ul className="mt-2 space-y-1.5 text-xs sm:text-sm text-slate-300 light_sakura:text-slate-600">
+                    {latestEntry.changes.map((change, i) => (
+                      <li key={i} className="flex gap-2">
+                        <span className="text-indigo-400 light_sakura:text-rose-400">•</span>
+                        <span>{locale === "en" ? change.en : change.id}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               <div className="flex flex-col sm:flex-row gap-2 mt-1">
                 <button

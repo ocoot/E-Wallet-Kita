@@ -18,7 +18,7 @@
     "savings": "Tabungan",
     "gold_savings": "Tabungan Emas",
     "wallets": "Dompet",
-  "more": "Lainnya"
+    "more": "Lainnya"
   },
   "auth": {
     "login_title": "Masuk Akun",
@@ -1041,6 +1041,7 @@
   "pwa": {
     "update_title": "Pembaruan Tersedia",
     "update_desc": "Versi terbaru E-Wallet Kita sudah siap.",
+    "whats_new": "Yang baru di versi ini:",
     "update_btn": "Perbarui Sekarang",
     "update_dismiss": "Nanti Saja"
   },

@@ -1041,6 +1041,7 @@
   "pwa": {
     "update_title": "Update Available",
     "update_desc": "A new version of E-Wallet Kita is ready.",
+    "whats_new": "What's new in this version:",
     "update_btn": "Update Now",
     "update_dismiss": "Later"
   },
