@@ -22,6 +22,7 @@ import { OfflineBanner } from "./components/OfflineBanner";
 import { FeatureLockGate } from "./components/FeatureLockGate";
 import { SupportChatWidget } from "./components/SupportChatWidget";
 import { UpdatePrompt } from "./components/UpdatePrompt";
+import { UpdateCheckingIndicator } from "./components/UpdateCheckingIndicator";
 import { Breadcrumbs } from "./components/Breadcrumbs";
 import {
   DashboardSkeleton,
@@ -429,6 +430,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
 
       {/* Floating support chat widget (FAQ rule-based + live chat admin) -- tampil di semua halaman dashboard */}
       <SupportChatWidget />
+
+      {/* Indikator "memeriksa pembaruan..." -- tampil sesaat setelah user
+          tap notifikasi push soal update, sebelum UpdatePrompt siap tampil */}
+      <UpdateCheckingIndicator />
 
       {/* Banner update versi baru — muncul otomatis saat build baru terdeteksi oleh SW */}
       <UpdatePrompt />

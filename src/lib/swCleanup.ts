@@ -74,7 +74,14 @@ function isValidRegistration(reg: ServiceWorkerRegistration): boolean {
 
   return VALID_SW_ENTRIES.some(({ scriptPattern, scope }) => {
     const scriptMatch = scriptPattern.test(scriptURL);
-    const scopeMatch = scopeURL.endsWith(scope) || scopeURL === new URL(scope, location.origin).href;
+    // PENTING: gunakan exact match, BUKAN endsWith. Scope '/' akan selalu
+    // "endsWith('/')" untuk registrasi APAPUN (semua scope URL diakhiri
+    // '/'), sehingga endsWith('/') pada dasarnya selalu true dan membuat
+    // pengecekan scope untuk entry root jadi tidak berarti (yang lolos
+    // hanya bergantung pada scriptMatch). Exact match terhadap URL absolut
+    // memastikan scope benar-benar sesuai yang diharapkan.
+    const expectedScopeURL = new URL(scope, location.origin).href;
+    const scopeMatch = scopeURL === expectedScopeURL;
     return scriptMatch && scopeMatch;
   });
 }

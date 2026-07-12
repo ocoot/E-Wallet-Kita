@@ -1045,7 +1045,8 @@
     "update_btn": "Perbarui Sekarang",
     "update_dismiss": "Nanti Saja",
     "updating": "Memperbarui...",
-    "updating_desc": "Mohon tunggu, jangan tutup aplikasi."
+    "updating_desc": "Mohon tunggu, jangan tutup aplikasi.",
+    "checking_update": "Memeriksa pembaruan..."
   },
   "installments": {
     "page_title": "Cicilan & Utang Jangka Panjang",

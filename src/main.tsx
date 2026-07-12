@@ -89,6 +89,21 @@ const updateSW = registerSW({
   onOfflineReady() {
     console.log("[PWA] App siap digunakan secara offline.");
   },
+  onRegisteredSW(_swUrl, registration) {
+    // Polling berkala: browser TIDAK selalu langsung mengecek ulang
+    // sw.js begitu tab dibuka -- kadang butuh trigger navigasi atau
+    // interval waktu tertentu (bervariasi per browser). Supaya sesi yang
+    // dibiarkan terbuka lama (mis. PWA di HP yang jarang di-refresh)
+    // tetap mendeteksi versi baru tanpa user harus reload manual, kita
+    // paksa cek ulang setiap 60 menit selama tab tetap terbuka.
+    if (!registration) return;
+    const CHECK_INTERVAL_MS = 60 * 60 * 1000; // 1 jam
+    window.setInterval(() => {
+      registration.update().catch((err) => {
+        console.warn("[PWA] Gagal memeriksa pembaruan berkala:", err);
+      });
+    }, CHECK_INTERVAL_MS);
+  },
 });
 
 // ── FCM foreground notification handler ──────────────────────

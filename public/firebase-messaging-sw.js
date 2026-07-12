@@ -19,13 +19,39 @@ messaging.onBackgroundMessage(function(payload) {
     body: payload.notification?.body || '',
     icon: '/icon-192.png',
     badge: '/icon-192.png',
+    // Simpan payload.data (mis. { type: "app_update" }) di notifikasi
+    // supaya notificationclick di bawah tahu konteksnya -- dipakai untuk
+    // menandai URL saat app dibuka dari notifikasi "ada pembaruan",
+    // supaya app bisa langsung tampilkan indikator "memeriksa
+    // pembaruan..." alih-alih diam beberapa detik tanpa penjelasan.
+    data: payload.data || {},
   });
 });
 
 self.addEventListener('notificationclick', function(e) {
   e.notification.close();
+  var notifData = e.notification.data || {};
+  // Tandai kalau notifikasi ini soal update aplikasi, supaya halaman yang
+  // dibuka/difokuskan tahu harus menampilkan indikator "memeriksa
+  // pembaruan" sambil menunggu service worker baru siap.
+  var updateParam = notifData.type === 'app_update' ? 'ewk_update=1' : null;
+
+  function withUpdateParam(url) {
+    if (!updateParam) return url;
+    return url + (url.includes('?') ? '&' : '?') + updateParam;
+  }
+
   e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(function(c){
-    for(var x of c) if(x.url.includes(self.location.origin)&&'focus'in x) return x.focus();
-    if(clients.openWindow) return clients.openWindow('/');
+    for (var x of c) {
+      if (x.url.includes(self.location.origin) && 'focus' in x) {
+        // Tab sudah terbuka: kirim pesan supaya React bisa langsung
+        // menampilkan indikator tanpa perlu reload/navigate dulu.
+        if (updateParam && 'postMessage' in x) {
+          x.postMessage({ type: 'ewk-update-notification-clicked' });
+        }
+        return x.focus();
+      }
+    }
+    if (clients.openWindow) return clients.openWindow(withUpdateParam('/'));
   }));
 });

@@ -1045,7 +1045,8 @@
     "update_btn": "Update Now",
     "update_dismiss": "Later",
     "updating": "Updating...",
-    "updating_desc": "Please wait, don't close the app."
+    "updating_desc": "Please wait, don't close the app.",
+    "checking_update": "Checking for updates..."
   },
   "installments": {
     "page_title": "Installments & Long-Term Debt",

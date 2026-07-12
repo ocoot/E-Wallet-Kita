@@ -34,12 +34,67 @@ export default defineConfig(({ mode }) => {
           ],
         },
         manifest: {
+          id: '/',
           name: 'E-Wallet Kita',
           short_name: 'EWK',
+          description:
+            'Kelola keuangan pribadi Anda: catat transaksi, atur anggaran, pantau tagihan & cicilan, dan simpan tabungan — semua dalam satu aplikasi.',
+          lang: 'id',
+          dir: 'ltr',
+          start_url: '/dashboard',
+          scope: '/',
+          display: 'standalone',
+          display_override: ['window-controls-overlay', 'standalone'],
+          orientation: 'portrait-primary',
+          background_color: '#0f172a',
+          theme_color: '#4f46e5',
+          categories: ['finance', 'productivity', 'utilities'],
           icons: [
             { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
             { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
             { src: '/logo.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          ],
+          // Shortcut aksi cepat: muncul saat user long-press ikon app di
+          // homescreen (Android/desktop). Langsung lompat ke fitur yang
+          // paling sering dipakai tanpa harus buka dashboard dulu.
+          shortcuts: [
+            {
+              name: 'Tambah Transaksi',
+              short_name: 'Transaksi',
+              description: 'Catat transaksi baru secara langsung',
+              url: '/transactions/new',
+              icons: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png' }],
+            },
+            {
+              name: 'Riwayat Transaksi',
+              short_name: 'Riwayat',
+              description: 'Lihat semua riwayat transaksi',
+              url: '/transactions',
+              icons: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png' }],
+            },
+            {
+              name: 'Dompet',
+              short_name: 'Dompet',
+              description: 'Kelola saldo dan dompet Anda',
+              url: '/wallets',
+              icons: [{ src: '/icon-192.png', sizes: '192x192', type: 'image/png' }],
+            },
+          ],
+          // Screenshot untuk install prompt yang lebih meyakinkan (terutama
+          // di desktop Chrome/Edge, yang menampilkan preview UI sebelum
+          // user klik "Install"). form_factor "wide" cocok untuk rasio
+          // screenshot-home.png (1280x900, ~4:3 landscape).
+          // NOTE: belum ada screenshot form_factor "narrow" (mobile) yang
+          // representatif -- sebaiknya ditambahkan menyusul (lihat catatan
+          // di respons chat).
+          screenshots: [
+            {
+              src: '/screenshot-home.png',
+              sizes: '1280x900',
+              type: 'image/png',
+              form_factor: 'wide',
+              label: 'Dashboard E-Wallet Kita',
+            },
           ],
         },
       }),
