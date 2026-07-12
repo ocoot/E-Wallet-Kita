@@ -46,13 +46,16 @@ jobs:
       #      dilewati supaya tidak dobel notifikasi.
       - name: Cek penanda skip-notify dari commit pemicu
         id: skip
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          TRIGGER_MSG: ${{ github.event.workflow_run.head_commit.message }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             echo "skip=false" >> "$GITHUB_OUTPUT"
           else
-            MSG="${{ github.event.workflow_run.head_commit.message }}"
-            echo "Commit pemicu generate-changelog.yml: \"$MSG\""
-            if [[ "$MSG" == *"[skip-notify]"* ]]; then
+            echo "Commit pemicu generate-changelog.yml:"
+            echo "$TRIGGER_MSG"
+            if [[ "$TRIGGER_MSG" == *"[skip-notify]"* ]]; then
               echo "skip=true" >> "$GITHUB_OUTPUT"
               echo "Mengandung [skip-notify] -- notifikasi dilewati."
             else
