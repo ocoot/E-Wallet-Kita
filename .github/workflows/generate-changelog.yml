@@ -63,13 +63,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add src/data/changelog.json
+          git add public/changelog.json
           # "[skip-notify]" sengaja disertakan supaya notify-update.yml TIDAK
           # mengirim push notification KEDUA untuk commit bot ini -- push
           # notification "update tersedia" cukup dikirim SEKALI untuk commit
-          # asli developer. Isi popup update tetap otomatis segar karena
-          # dibaca langsung dari build yang sedang live saat user membuka
-          # app (lihat penjelasan lengkap di komentar generate-changelog.mjs).
+          # asli developer. Isi popup update tetap segar karena
+          # `UpdatePrompt.tsx` mem-fetch `public/changelog.json` langsung
+          # lewat network saat dialog akan tampil (bukan baca dari bundle JS
+          # versi lama yang sedang berjalan di browser user) -- lihat
+          # penjelasan lengkap di komentar `src/data/changelog.ts`.
           git commit -m "chore(changelog): rangkum pembaruan otomatis via AI [skip-notify]"
 
           # Pindahkan tag penanda sinkronisasi ke commit changelog yang baru

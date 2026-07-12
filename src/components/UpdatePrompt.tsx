@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { RefreshCw, X, Sparkles } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { CHANGELOG } from "../data/changelog";
+import { CHANGELOG_URL, type ChangelogEntry } from "../data/changelog";
 
 /**
  * Banner "Versi baru tersedia" yang muncul otomatis saat service worker
@@ -16,14 +16,34 @@ import { CHANGELOG } from "../data/changelog";
  *  3. Komponen ini mendengarkan event tersebut dan tampil sebagai banner
  *  4. Saat user klik "Perbarui", panggil window.__pwaUpdateSW(true) yang
  *     meminta service worker baru skip waiting lalu reload halaman
+ *
+ * CATATAN PENTING soal isi "Yang Baru": saat event ini terjadi, halaman
+ * MASIH menjalankan kode bundle LAMA (belum reload) -- jadi changelog TIDAK
+ * boleh diambil dari import statis (itu akan selalu menampilkan changelog
+ * versi yang SEDANG berjalan, bukan versi baru yang baru di-deploy).
+ * Makanya di sini di-fetch langsung dari `/changelog.json` (file statis di
+ * `public/`, bukan lewat bundler) supaya selalu dapat isi yang benar-benar
+ * live di server saat itu. Lihat komentar lengkap di `src/data/changelog.ts`.
  */
 export const UpdatePrompt: React.FC = () => {
   const { t, locale } = useLanguage();
   const [visible, setVisible] = useState(false);
-  const latestEntry = CHANGELOG[0];
+  const [latestEntry, setLatestEntry] = useState<ChangelogEntry | null>(null);
 
   useEffect(() => {
-    const handler = () => setVisible(true);
+    const handler = () => {
+      setVisible(true);
+      fetch(`${CHANGELOG_URL}?t=${Date.now()}`, { cache: "no-store" })
+        .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+        .then((data: ChangelogEntry[]) => {
+          if (Array.isArray(data) && data.length > 0) setLatestEntry(data[0]);
+        })
+        .catch((err) => {
+          // Best-effort saja -- kalau gagal, dialog tetap tampil normal
+          // dengan teks generik (tanpa daftar "Yang Baru").
+          console.warn("[UpdatePrompt] Gagal memuat changelog:", err);
+        });
+    };
     window.addEventListener("pwa-update-available", handler);
     return () => window.removeEventListener("pwa-update-available", handler);
   }, []);

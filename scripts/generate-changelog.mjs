@@ -15,7 +15,7 @@
  *      benar-benar terasa dampaknya oleh pengguna. Kalau menurut Gemini
  *      tidak ada satupun commit yang relevan buat pengguna (semuanya
  *      refactor/chore/dependency/dst), keluar tanpa mengubah apapun.
- *   4. Tulis entri baru itu ke PALING ATAS array di `src/data/changelog.json`.
+ *   4. Tulis entri baru itu ke PALING ATAS array di `public/changelog.json`.
  *   5. Repo TIDAK di-commit/push oleh script ini -- itu dilakukan oleh
  *      workflow (lihat generate-changelog.yml) supaya kredensial git tetap
  *      dikelola di level workflow, bukan di script.
@@ -37,7 +37,7 @@ import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { GoogleGenAI } from "@google/genai";
 
-const CHANGELOG_JSON_PATH = new URL("../src/data/changelog.json", import.meta.url);
+const CHANGELOG_JSON_PATH = new URL("../public/changelog.json", import.meta.url);
 const SYNC_TAG = "changelog-sync";
 
 // Model dipilih dari daftar yang SUDAH dipakai & terbukti jalan di project
@@ -193,7 +193,7 @@ async function main() {
   const updated = [newEntry, ...currentChangelog];
   writeFileSync(CHANGELOG_JSON_PATH, JSON.stringify(updated, null, 2) + "\n", "utf8");
 
-  console.log(`[changelog] Entri baru "${newEntry.version}" ditulis ke src/data/changelog.json:`);
+  console.log(`[changelog] Entri baru "${newEntry.version}" ditulis ke public/changelog.json:`);
   newEntry.changes.forEach((c) => console.log(`  - ${c.id}`));
 
   // Beritahu step berikutnya di workflow bahwa ada perubahan untuk di-commit.

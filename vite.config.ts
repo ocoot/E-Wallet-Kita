@@ -17,6 +17,21 @@ export default defineConfig(({ mode }) => {
         strategies: 'generateSW',
         workbox: {
           globPatterns: ['**/*.{js,css,png,svg,ico,json,html}'],
+          // `changelog.json` SENGAJA dikecualikan dari precache: file ini
+          // di-fetch runtime oleh UpdatePrompt.tsx justru untuk mengecek
+          // "apa yang baru" pada versi yang BARU di-deploy, saat halaman
+          // MASIH menjalankan service worker versi LAMA. Kalau ikut
+          // di-precache, request ke /changelog.json akan dicegat & selalu
+          // dijawab dari cache milik SW lama itu -- isinya jadi tidak
+          // pernah "segar". NetworkOnly di sini memaksa selalu ambil dari
+          // server, bukan dari cache SW manapun.
+          globIgnores: ['**/changelog.json'],
+          runtimeCaching: [
+            {
+              urlPattern: ({ url }) => url.pathname === '/changelog.json',
+              handler: 'NetworkOnly',
+            },
+          ],
         },
         manifest: {
           name: 'E-Wallet Kita',
