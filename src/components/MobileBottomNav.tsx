@@ -20,6 +20,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useMaintenance } from "../contexts/MaintenanceContext";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { useNavItems, MOBILE_PRIMARY_NAV_IDS } from "../hooks/useNavItems";
 import { audioFeedback } from "../lib/audio";
 
@@ -55,7 +56,14 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   useLockBodyScroll(isMoreOpen);
   const sheetRef = useRef<HTMLDivElement>(null);
-  useDialogA11y(isMoreOpen, sheetRef, () => setIsMoreOpen(false));
+  // Menjebak swipe-back/tombol-back HP supaya menutup sheet ini, bukan
+  // menavigasi halaman di baliknya (lihat useBackGestureTrap.ts).
+  // `closeSheet` dipakai untuk semua jalur tutup yang TIDAK diikuti
+  // navigasi lain (tombol X, klik backdrop, Escape) -- sedangkan klik
+  // item menu / logout tetap pakai `setIsMoreOpen(false)` polos karena
+  // langsung disusul navigasi/route baru.
+  const { close: closeSheet } = useBackGestureTrap(isMoreOpen, setIsMoreOpen);
+  useDialogA11y(isMoreOpen, sheetRef, closeSheet);
 
   const [isMuted, setIsMuted] = useState(audioFeedback.getIsMuted());
 
@@ -232,7 +240,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               className="fixed inset-0 bg-black/70 backdrop-blur-xs"
-              onClick={() => setIsMoreOpen(false)}
+              onClick={closeSheet}
             />
 
             <motion.div
@@ -263,7 +271,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   {t("nav.more")}
                 </span>
                 <button
-                  onClick={() => setIsMoreOpen(false)}
+                  onClick={closeSheet}
                   className="p-1 rounded-lg hover:bg-white/10 light_sakura:hover:bg-slate-200 cursor-pointer text-white dark_obsidian:text-white light_sakura:text-slate-800"
                 >
                   <X size={20} />
