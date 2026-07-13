@@ -1,5 +1,15 @@
 [
   {
+    "version": "1.5.0",
+    "date": "13 Jul 2026",
+    "changes": [
+      {
+        "id": "Perbaikan agar fitur Bantuan aplikasi berfungsi lebih baik.",
+        "en": "Fixed an issue so the in-app Support feature works better."
+      }
+    ]
+  },
+  {
     "version": "1.4.0",
     "date": "12 Jul 2026",
     "changes": [
