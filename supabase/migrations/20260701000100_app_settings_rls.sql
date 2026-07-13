@@ -1,11 +1,13 @@
 alter table app_settings enable row level security;
 
+drop policy if exists "app_settings_select" on app_settings;
 create policy "app_settings_select"
 on app_settings
 for select
 to authenticated
 using (true);
 
+drop policy if exists "app_settings_update" on app_settings;
 create policy "app_settings_update"
 on app_settings
 for update
