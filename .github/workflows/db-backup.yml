@@ -1,0 +1,128 @@
+name: Database Backup (Supabase -> Google Drive)
+
+# Pengganti "cron + backup.sh" di server tradisional. Karena stack ini
+# Vercel (serverless, ada time-limit) + Supabase free tier (tanpa VPS),
+# proses backup dijalankan di runner GitHub Actions yang gratis dan tidak
+# kena batas durasi 60 detik seperti Vercel Function.
+#
+# Alur (mirror dari workflow mysqldump -> gzip -> rclone di gambar):
+#   1. pg_dump  -> dump database Supabase (pengganti mysqldump)
+#   2. gzip     -> kompres hasil dump
+#   3. rclone   -> upload ke Google Drive (off-site, di luar Supabase)
+#   4. log hasil ke tabel public.backup_logs (Supabase)
+#   5. notifikasi Telegram sukses/gagal
+#
+# Trigger:
+#   - schedule terjadwal tiap malam (jam 02:00 WIB)
+#   - workflow_dispatch: bisa dipicu manual dari tab Actions, ATAU dari
+#     tombol "Backup Sekarang" di Admin Panel lewat GitHub REST API
+#     (lihat api/admin/backup.ts)
+#
+# Secrets yang WAJIB diset di Settings -> Secrets and variables -> Actions:
+#   SUPABASE_DB_URL            postgres://postgres:[password]@db.[project-ref].supabase.co:5432/postgres
+#                               (Project Settings -> Database -> Connection string -> URI,
+#                                pakai koneksi DIRECT bukan pooler/pgbouncer supaya pg_dump stabil)
+#   SUPABASE_URL                sudah ada (dipakai workflow lain)
+#   SUPABASE_SERVICE_ROLE_KEY   sudah ada (dipakai workflow lain)
+#   RCLONE_CONFIG_GDRIVE_TOKEN  hasil `rclone authorize "drive"` (JSON token), lihat catatan di bawah
+#   RCLONE_CONFIG_GDRIVE_CLIENT_ID       (opsional, kalau pakai OAuth app sendiri)
+#   RCLONE_CONFIG_GDRIVE_CLIENT_SECRET   (opsional, pasangan client id di atas)
+#   TELEGRAM_BOT_TOKEN           sudah ada (dipakai bot Telegram existing)
+#   TELEGRAM_ADMIN_CHAT_ID      chat_id kamu/grup admin untuk notifikasi backup
+#
+# Cara dapat RCLONE_CONFIG_GDRIVE_TOKEN (dilakukan SEKALI, di laptop sendiri):
+#   1. Install rclone: https://rclone.org/downloads/
+#   2. Jalankan: rclone config
+#      -> New remote -> nama "gdrive" -> pilih "drive" (Google Drive)
+#      -> ikuti proses login OAuth di browser
+#   3. Setelah selesai, jalankan: rclone config show gdrive
+#      -> salin nilai "token = {...}" (satu baris JSON) ke secret di atas
+
+on:
+  schedule:
+    - cron: "0 19 * * *"   # 19:00 UTC = 02:00 WIB
+  workflow_dispatch:
+    inputs:
+      triggered_by_admin:
+        description: "UUID admin yang memicu manual (diisi otomatis oleh Admin Panel)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RCLONE_CONFIG_GDRIVE_TYPE: drive
+      RCLONE_CONFIG_GDRIVE_SCOPE: drive.file
+      RCLONE_CONFIG_GDRIVE_TOKEN: ${{ secrets.RCLONE_CONFIG_GDRIVE_TOKEN }}
+      RCLONE_CONFIG_GDRIVE_CLIENT_ID: ${{ secrets.RCLONE_CONFIG_GDRIVE_CLIENT_ID }}
+      RCLONE_CONFIG_GDRIVE_CLIENT_SECRET: ${{ secrets.RCLONE_CONFIG_GDRIVE_CLIENT_SECRET }}
+      GDRIVE_FOLDER: "ewallet-kita-backups"
+      TRIGGERED_BY: ${{ github.event_name == 'workflow_dispatch' && 'manual' || 'cron' }}
+      TRIGGERED_BY_ADMIN: ${{ github.event.inputs.triggered_by_admin }}
+
+    steps:
+      - name: Catat status "running" ke Supabase
+        id: log_start
+        run: |
+          RESP=$(curl -sS -X POST "$SUPABASE_URL/rest/v1/backup_logs" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=representation" \
+            -d "{\"status\":\"running\",\"triggered_by\":\"$TRIGGERED_BY\",\"triggered_by_admin\": $( [ -n "$TRIGGERED_BY_ADMIN" ] && echo "\"$TRIGGERED_BY_ADMIN\"" || echo null )}")
+          echo "log_id=$(echo "$RESP" | jq -r '.[0].id')" >> "$GITHUB_OUTPUT"
+
+      - name: Install postgresql-client & rclone
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client
+          curl -s https://rclone.org/install.sh | sudo bash
+
+      - name: Dump database (pg_dump) + gzip
+        id: dump
+        run: |
+          set -euo pipefail
+          TS=$(date -u +"%Y%m%d-%H%M%S")
+          FILE_NAME="ewallet-kita-${TS}.sql.gz"
+          pg_dump "${{ secrets.SUPABASE_DB_URL }}" \
+            --no-owner --no-privileges --format=plain \
+            | gzip -9 > "$FILE_NAME"
+          echo "file_name=$FILE_NAME" >> "$GITHUB_OUTPUT"
+          echo "file_size=$(stat -c%s "$FILE_NAME")" >> "$GITHUB_OUTPUT"
+
+      - name: Upload ke Google Drive (rclone)
+        run: |
+          rclone copy "${{ steps.dump.outputs.file_name }}" "gdrive:${GDRIVE_FOLDER}" --progress
+
+      - name: Catat status sukses
+        if: success()
+        run: |
+          curl -sS -X PATCH "$SUPABASE_URL/rest/v1/backup_logs?id=eq.${{ steps.log_start.outputs.log_id }}" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"status\":\"success\",\"file_name\":\"${{ steps.dump.outputs.file_name }}\",\"file_size_bytes\":${{ steps.dump.outputs.file_size }},\"storage_path\":\"${GDRIVE_FOLDER}/${{ steps.dump.outputs.file_name }}\",\"finished_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
+
+          curl -sS -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}" \
+            -d text="✅ Backup database sukses%0AFile: ${{ steps.dump.outputs.file_name }}%0AUkuran: $(( ${{ steps.dump.outputs.file_size }} / 1024 )) KB"
+
+      - name: Catat status gagal
+        if: failure()
+        run: |
+          curl -sS -X PATCH "$SUPABASE_URL/rest/v1/backup_logs?id=eq.${{ steps.log_start.outputs.log_id }}" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"status\":\"failed\",\"error_message\":\"Lihat log GitHub Actions run ${{ github.run_id }}\",\"finished_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
+
+          curl -sS -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}" \
+            -d text="❌ Backup database GAGAL. Cek GitHub Actions run ${{ github.run_id }}."
