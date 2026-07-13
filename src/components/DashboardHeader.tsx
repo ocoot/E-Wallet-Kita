@@ -6,7 +6,7 @@ import { motion } from "motion/react";
 import { useWeather } from "../hooks/useWeather";
 import { useBudgets } from "../hooks/useBudgets";
 import { audioFeedback } from "../lib/audio";
-import { useBalanceVisibility, maskCurrencyInText } from "../contexts/BalanceVisibilityContext";
+import { useBalanceVisibility } from "../contexts/BalanceVisibilityContext";
 import { getWeatherTheme } from "../lib/weatherTheme";
 import { DashboardWeatherLayer } from "./DashboardWeatherLayer";
 import { WeatherDebugToggle, WeatherDebugOverride } from "./WeatherDebugToggle";
@@ -132,7 +132,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           : `Daily Budget Status: Safe daily allowance ± ${formattedAllowance} (${remainingDays} days remaining, ${overallPercent}% budget spent).`;
 
         return {
-          text: balanceVisible ? rawText : maskCurrencyInText(rawText),
+          text: rawText,
           type: "budget_ok"
         };
       }
