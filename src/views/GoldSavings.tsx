@@ -249,11 +249,22 @@ export const GoldSavings: React.FC = () => {
     } finally { setIsMoving(false); }
   };
 
-  const moveModalCopy: Record<MoveDirection, { title: string; desc: string; button: string; barClass: string; buttonClass: string }> = {
-    buy: { title: "gold.buy_title", desc: "gold.buy_desc", button: "gold.buy_button", barClass: "bg-emerald-500", buttonClass: "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20" },
-    sell: { title: "gold.sell_title", desc: "gold.sell_desc", button: "gold.sell_button", barClass: "bg-indigo-500", buttonClass: "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/20" },
-    manual_add: { title: "gold.manual_add_title", desc: "gold.manual_add_desc", button: "gold.manual_add_button", barClass: "bg-sky-500", buttonClass: "bg-sky-600 hover:bg-sky-500 shadow-sky-600/20" },
-    manual_remove: { title: "gold.manual_remove_title", desc: "gold.manual_remove_desc", button: "gold.manual_remove_button", barClass: "bg-amber-500", buttonClass: "bg-amber-600 hover:bg-amber-500 shadow-amber-600/20" },
+  // Catatan framing (Opsi A - lihat diskusi produk): "buy"/"sell" adalah
+  // SIMULASI pencatatan pribadi berbasis harga acuan (sumber + margin
+  // aplikasi), BUKAN eksekusi transaksi ke toko emas riil. `button` untuk
+  // kedua arah ini sengaja pakai key `_button_confirm` yang eksplisit
+  // menyebut "Simulasi" (beda dari label tombol pendek di kartu depan,
+  // "Beli"/"Jual", yang ruangnya terlalu sempit untuk teks itu) -- supaya
+  // titik keputusan terakhir sebelum saldo terpotong/bertambah tetap jujur
+  // soal sifat simulatifnya. `isSimulated` dipakai renderer modal untuk
+  // menampilkan disclaimer tambahan (lihat sim_disclaimer_title/text) yang
+  // TIDAK relevan untuk manual_add/manual_remove karena dua arah itu murni
+  // pencatatan kepemilikan fisik, tidak menyentuh harga acuan app sama sekali.
+  const moveModalCopy: Record<MoveDirection, { title: string; desc: string; button: string; barClass: string; buttonClass: string; isSimulated: boolean }> = {
+    buy: { title: "gold.buy_title", desc: "gold.buy_desc", button: "gold.buy_button_confirm", barClass: "bg-emerald-500", buttonClass: "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20", isSimulated: true },
+    sell: { title: "gold.sell_title", desc: "gold.sell_desc", button: "gold.sell_button_confirm", barClass: "bg-indigo-500", buttonClass: "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/20", isSimulated: true },
+    manual_add: { title: "gold.manual_add_title", desc: "gold.manual_add_desc", button: "gold.manual_add_button", barClass: "bg-sky-500", buttonClass: "bg-sky-600 hover:bg-sky-500 shadow-sky-600/20", isSimulated: false },
+    manual_remove: { title: "gold.manual_remove_title", desc: "gold.manual_remove_desc", button: "gold.manual_remove_button", barClass: "bg-amber-500", buttonClass: "bg-amber-600 hover:bg-amber-500 shadow-amber-600/20", isSimulated: false },
   };
 
   const renderPocketCard = (p: GoldPocket) => {
@@ -432,10 +443,21 @@ export const GoldSavings: React.FC = () => {
             <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-3 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_market_value")}</span>
               <p className="font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight text-indigo-400 light_sakura:text-indigo-600">{formatIDR(summary.total_market_value)}</p>
+              {/* Footnote "estimasi" -- nilai ini dihitung dari harga acuan
+                  (sumber + margin app), bukan harga jual resmi yang bisa
+                  langsung dieksekusi ke toko. Lihat sim_disclaimer_* untuk
+                  penjelasan lebih lengkap di modal beli/jual. */}
+              <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-slate-500 mt-0.5 leading-snug">{t("gold.stat_market_value_note")}</p>
             </div>
             <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-3 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_cash_locked")}</span>
               <p className="font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight text-slate-200 light_sakura:text-slate-700">{formatIDR(summary.total_cash_locked)}</p>
+              {/* Sejak migration 20260814000000_decouple_gold_simulation_from_balance.sql,
+                  angka ini TIDAK LAGI berarti "uang yang terpotong dari
+                  Saldo Tersedia" -- murni basis hitung Untung/Rugi. Footnote
+                  ini penting supaya label kartu (yang dulu "Saldo Terpotong")
+                  tidak menyesatkan lagi soal efeknya ke saldo riil. */}
+              <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-slate-500 mt-0.5 leading-snug">{t("gold.stat_cash_locked_note")}</p>
             </div>
             <div className={`rounded-2xl border px-3 py-3 ${summary.unrealized_gain_loss >= 0
               ? "bg-emerald-500/8 border-emerald-500/15 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100"
@@ -605,6 +627,21 @@ export const GoldSavings: React.FC = () => {
                   </h2>
                   <p className="text-xs text-slate-400 mt-1">{t(copy.desc)}</p>
                 </div>
+                {/* Disclaimer simulasi -- HANYA untuk buy/sell (isSimulated),
+                    karena manual_add/manual_remove tidak menyentuh harga
+                    acuan app sama sekali (murni catat kepemilikan fisik).
+                    Ditaruh di titik keputusan terakhir sebelum saldo
+                    berubah, bukan cuma di banner atas halaman, supaya user
+                    tidak bisa terlewat membacanya persis sebelum konfirmasi. */}
+                {copy.isSimulated && (
+                  <div className="flex items-start gap-2.5 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3.5 py-3">
+                    <AlertTriangle size={14} className="text-amber-400 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-amber-300 leading-relaxed">{t("gold.sim_disclaimer_title")}</p>
+                      <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] text-amber-300/80 leading-relaxed mt-0.5">{t("gold.sim_disclaimer_text")}</p>
+                    </div>
+                  </div>
+                )}
                 <div>
                   <Input
                     type="number"

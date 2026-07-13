@@ -1,15 +1,5 @@
 [
   {
-    "version": "1.5.0",
-    "date": "13 Jul 2026",
-    "changes": [
-      {
-        "id": "Anda sekarang bisa mengecek harga emas terbaru.",
-        "en": "You can now check the latest gold prices."
-      }
-    ]
-  },
-  {
     "version": "1.4.0",
     "date": "12 Jul 2026",
     "changes": [

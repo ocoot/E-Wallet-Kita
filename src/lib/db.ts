@@ -912,7 +912,12 @@ export const dbService = {
     return data as GoldPocketEntry[];
   },
 
-  /** Beli emas pakai Saldo Tersedia, di harga pasar terkini + margin aplikasi. */
+  /**
+   * Simulasi beli emas di harga acuan pasar + margin aplikasi. TIDAK
+   * memotong Saldo Tersedia (lihat migration
+   * 20260814000000_decouple_gold_simulation_from_balance.sql) -- murni
+   * mencatat gram & cash_locked_amount (basis hitung Untung/Rugi).
+   */
   async buyGold(
     pocketId: string,
     idrAmount: number,
@@ -934,7 +939,12 @@ export const dbService = {
     return data as GoldPocket;
   },
 
-  /** Jual sebagian/seluruh gram, hasil masuk balik ke Saldo Tersedia. */
+  /**
+   * Simulasi jual sebagian/seluruh gram di harga acuan buyback dikurangi
+   * margin aplikasi. TIDAK menambah Saldo Tersedia -- murni mencatat gram
+   * & cash_locked_amount (lihat migration
+   * 20260814000000_decouple_gold_simulation_from_balance.sql).
+   */
   async sellGold(
     pocketId: string,
     grams: number,
@@ -985,8 +995,11 @@ export const dbService = {
   },
 
   /**
-   * Total gram, cash_locked (pengurang Saldo Tersedia), estimasi nilai
-   * pasar sekarang & untung/rugi belum direalisasi (penambah Total Kekayaan).
+   * Total gram, cash_locked (basis hitung Untung/Rugi -- BUKAN pengurang
+   * Saldo Tersedia sejak migration
+   * 20260814000000_decouple_gold_simulation_from_balance.sql), estimasi
+   * nilai pasar sekarang & untung/rugi belum direalisasi (penambah Total
+   * Kekayaan).
    */
   async getGoldHoldingsSummary(): Promise<GoldHoldingsSummary> {
     const { data, error } = await supabase.rpc('get_gold_holdings_summary');

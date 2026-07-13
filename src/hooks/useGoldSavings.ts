@@ -21,10 +21,15 @@ export interface GoldPriceRow {
 
 /**
  * Mengambil semua pos tabungan emas milik user + ringkasan agregat + harga
- * terbaru tiap brand. "Saldo Tersedia" (spendable) dihitung di pemanggil
- * dengan: accumulatedBalance.balance - savingsSummary.total_saved -
- * goldSummary.total_cash_locked (lihat catatan akuntansi di migration
- * 20260803000000_gold_savings.sql).
+ * terbaru tiap brand.
+ *
+ * Catatan akuntansi (update: lihat migration
+ * 20260814000000_decouple_gold_simulation_from_balance.sql): Beli/Jual
+ * emas TIDAK LAGI memotong/menambah "Saldo Tersedia" -- murni simulasi.
+ * `summary.total_cash_locked` cuma basis hitung Untung/Rugi
+ * (`summary.unrealized_gain_loss`), bukan pengurang saldo dompet manapun.
+ * "Saldo Tersedia" per pos dompet sekarang HANYA dikurangi dana Tabungan
+ * riil (savings_pockets), dihitung server-side di get_wallets_with_balance().
  */
 export function useGoldSavings(userId: string | undefined) {
   const [pockets, setPockets] = useState<GoldPocket[]>([]);
