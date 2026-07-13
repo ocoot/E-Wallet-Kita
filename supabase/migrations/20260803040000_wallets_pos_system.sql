@@ -82,6 +82,8 @@ END;
 $$;
 
 -- 4. Fungsi: ambil semua wallet milik user beserta saldo terhitung ------------
+DROP FUNCTION IF EXISTS public.get_wallets_with_balance(UUID);
+
 CREATE OR REPLACE FUNCTION public.get_wallets_with_balance(p_user_id UUID)
 RETURNS TABLE (
     id UUID,

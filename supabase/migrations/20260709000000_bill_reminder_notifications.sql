@@ -277,6 +277,8 @@ GRANT EXECUTE ON FUNCTION public.log_bill_reminder_sent(UUID, UUID, DATE, INTEGE
 --    Mengikuti pola insert_telegram_transaction: cari user dari chat_id,
 --    lalu pastikan bill itu memang milik user tersebut sebelum update.
 -- ─────────────────────────────────────────────────────────────
+DROP FUNCTION IF EXISTS public.mark_bill_paid_via_bot(BIGINT, UUID);
+
 CREATE OR REPLACE FUNCTION public.mark_bill_paid_via_bot(
     p_chat_id BIGINT,
     p_bill_id UUID

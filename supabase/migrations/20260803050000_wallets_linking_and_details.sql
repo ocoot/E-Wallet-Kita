@@ -48,6 +48,8 @@ CREATE INDEX IF NOT EXISTS gold_pockets_wallet_id_idx ON public.gold_pockets (wa
 --    bukan di DB -- kolomnya tetap plain text di server), earmarked_amount
 --    (jumlah savings_pockets.current_amount + gold_pockets.cash_locked_amount
 --    yang wallet_id-nya = pos ini), dan available_balance = balance - earmarked.
+DROP FUNCTION IF EXISTS public.get_wallets_with_balance(UUID);
+
 CREATE OR REPLACE FUNCTION public.get_wallets_with_balance(p_user_id UUID)
 RETURNS TABLE (
     id UUID,
@@ -164,6 +166,8 @@ REVOKE EXECUTE ON FUNCTION public.mark_bill_paid_for_user(UUID) FROM PUBLIC, ano
 GRANT EXECUTE ON FUNCTION public.mark_bill_paid_for_user(UUID) TO authenticated;
 
 -- 6. mark_bill_paid_via_bot: sama, dipakai oleh Telegram bot -----------------
+DROP FUNCTION IF EXISTS public.mark_bill_paid_via_bot(BIGINT, UUID);
+
 CREATE OR REPLACE FUNCTION public.mark_bill_paid_via_bot(
     p_chat_id BIGINT,
     p_bill_id UUID

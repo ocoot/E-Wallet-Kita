@@ -56,6 +56,8 @@ END;
 $$;
 
 -- B. Retrieve pending Telegram transaction
+DROP FUNCTION IF EXISTS public.get_pending_telegram_tx(BIGINT);
+
 CREATE OR REPLACE FUNCTION public.get_pending_telegram_tx(
     p_chat_id BIGINT
 )
