@@ -879,6 +879,7 @@
       "send": "Send",
       "waiting_admin": "Waiting for admin to respond...",
       "waiting_first_reply": "Your message has been sent. Our admin team will reply here shortly.",
+      "prompt_first_message": "Your session is active. Type your first message below to start chatting with admin.",
       "claimed_by_admin": "An admin is handling this session.",
       "session_closed": "This session has been closed.",
       "close_session": "Close session",

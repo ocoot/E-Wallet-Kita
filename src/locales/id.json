@@ -879,6 +879,7 @@
       "send": "Kirim",
       "waiting_admin": "Menunggu admin merespons...",
       "waiting_first_reply": "Pesanmu sudah terkirim. Tim admin akan segera membalas di sini.",
+      "prompt_first_message": "Sesi kamu sudah aktif. Ketik pesan pertamamu di bawah untuk mulai chat dengan admin.",
       "claimed_by_admin": "Admin sedang menangani sesi ini.",
       "session_closed": "Sesi ini sudah ditutup.",
       "close_session": "Tutup sesi",

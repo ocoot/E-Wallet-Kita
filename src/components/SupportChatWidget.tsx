@@ -443,10 +443,38 @@ export const SupportChatWidget: React.FC = () => {
 
                       {messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
-                          <Loader2 size={20} className="text-indigo-400 light_sakura:text-rose-400 animate-spin" />
                           <p className="text-xs text-slate-500 light_sakura:text-slate-400 max-w-[220px]">
-                            {t("support.admin_chat.waiting_first_reply")}
+                            {t("support.admin_chat.prompt_first_message")}
                           </p>
+                        </div>
+                      ) : !messages.some((m) => m.sender === "admin") ? (
+                        <div className="flex flex-col gap-1 mt-1">
+                          {messages.map((msg) => (
+                            <div
+                              key={msg.id}
+                              className={`flex flex-col max-w-[85%] ${msg.sender === "user" ? "self-end items-end" : "self-start items-start"}`}
+                            >
+                              <div
+                                className={`px-3 py-2 rounded-2xl text-xs leading-relaxed ${
+                                  msg.sender === "user"
+                                    ? "rounded-br-md bg-indigo-600 text-white light_sakura:bg-rose-500"
+                                    : "rounded-tl-md bg-slate-800 text-slate-100 light_sakura:bg-rose-50 light_sakura:text-slate-700"
+                                }`}
+                              >
+                                {msg.content}
+                              </div>
+                              <span className="text-[10px] text-slate-600 light_sakura:text-slate-400 mt-0.5 px-1">
+                                {formatMsgTime(msg.created_at, locale)}
+                              </span>
+                            </div>
+                          ))}
+                          <div className="flex flex-col items-center justify-center gap-2 py-4 text-center">
+                            <Loader2 size={20} className="text-indigo-400 light_sakura:text-rose-400 animate-spin" />
+                            <p className="text-xs text-slate-500 light_sakura:text-slate-400 max-w-[220px]">
+                              {t("support.admin_chat.waiting_first_reply")}
+                            </p>
+                          </div>
+                          <div ref={messagesEndRef} />
                         </div>
                       ) : (
                         <div className="flex flex-col gap-1 mt-1">
