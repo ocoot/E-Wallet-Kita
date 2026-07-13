@@ -46,7 +46,14 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'   # WAJIB >=22: @supabase/supabase-js membuat Realtime
+                                # client secara eager di dalam createClient(), dan itu
+                                # throw synchronous kalau Node <22 tanpa native
+                                # WebSocket (lihat error "Node.js 20 detected without
+                                # native WebSocket support" -- ini bukan terkait
+                                # Realtime dipakai atau tidak, script ini sama sekali
+                                # tidak pakai fitur Realtime, tapi constructor-nya tetap
+                                # jalan lebih dulu sebelum sempat query/insert apapun).
           cache: 'npm'
 
       - name: Install dependencies
