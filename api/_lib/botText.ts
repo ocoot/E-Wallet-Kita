@@ -40,6 +40,7 @@ export const botText = {
       `*Daftar Perintah (Commands)*:\n` +
       `     • \`/saldo\` - Ringkasan saldo & perbandingan bulan ini vs bulan lalu.\n` +
       `     • \`/riwayat\` - Tampilkan 5 transaksi terakhir.\n` +
+      `     • \`/hargaemas\` - Cek harga emas terkini (Antam, Pegadaian, UBS, Galeri 24).\n` +
       `     • \`/pdf\` - Ekspor laporan PDF Bulan Ini Berjalan\n` +
       `     • \`/pdf DDMMYYYY-DDMMYYYY\` - Ekspor laporan PDF Penuh (Maks 3 Bulan)\n` +
       `     • \`/hapus\` - Batalkan & hapus transaksi terakhir.\n` +
@@ -61,6 +62,7 @@ export const botText = {
       `*Command List*:\n` +
       `     • \`/saldo\` - Balance summary & comparison vs last month.\n` +
       `     • \`/riwayat\` - Show last 5 transactions.\n` +
+      `     • \`/hargaemas\` - Check current gold prices (Antam, Pegadaian, UBS, Galeri 24).\n` +
       `     • \`/pdf\` - Export current month's PDF report\n` +
       `     • \`/pdf DDMMYYYY-DDMMYYYY\` - Export full PDF report (Maximum 3 months)\n` +
       `     • \`/hapus\` - Undo & delete the last transaction.\n` +
@@ -385,6 +387,27 @@ export const botText = {
   riwayatError: {
     id: () => "Gagal memuat riwayat transaksi. Silakan coba lagi.",
     en: () => "Failed to load transaction history. Please try again.",
+  },
+  // /hargaemas: cek harga emas terkini (4 brand aktif, sama seperti web)
+  hargaEmasHeader: {
+    id: (priceDateLabel: string) => `*Harga Emas Hari Ini* (per ${priceDateLabel})\\n\\n`,
+    en: (priceDateLabel: string) => `*Today's Gold Price* (as of ${priceDateLabel})\\n\\n`,
+  },
+  hargaEmasFooter: {
+    id: () => `\\n_Harga per gram, sumber: logam-mulia-api. Buka menu *Tabungan Emas* di web untuk beli/jual._`,
+    en: () => `\\n_Price per gram, source: logam-mulia-api. Open *Gold Savings* on the web to buy/sell._`,
+  },
+  hargaEmasStaleWarning: {
+    id: () => `\\n⚠️ _Harga di atas mungkin sudah tidak terkini (sinkronisasi terakhir cukup lama). Cek kembali sebelum bertransaksi._\\n`,
+    en: () => `\\n⚠️ _The prices above may be outdated (last sync was a while ago). Double-check before transacting._\\n`,
+  },
+  hargaEmasEmpty: {
+    id: () => "Data harga emas belum tersedia saat ini. Silakan coba lagi nanti.",
+    en: () => "Gold price data isn't available right now. Please try again later.",
+  },
+  hargaEmasError: {
+    id: () => "Gagal memuat harga emas. Silakan coba lagi.",
+    en: () => "Failed to load gold prices. Please try again.",
   },
   // FIX #12 (hapus): /hapus command - delete last transaction
   hapusNotLinked: {

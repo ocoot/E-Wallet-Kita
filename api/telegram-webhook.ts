@@ -135,6 +135,21 @@ function formatIDR(amount: number): string {
   }).format(amount);
 }
 
+// ─────────────────────────────────────────────────────────────
+// /hargaemas: brand aktif + label tampilan.
+// HARUS persis sama dengan ACTIVE_GOLD_BRANDS di src/types.ts dan
+// TARGET_BRANDS di supabase/functions/gold-price-sync/index.ts --
+// ini brand yang benar-benar disinkron gold-price-sync, jadi satu-
+// satunya yang selalu punya data terbaru di tabel gold_prices.
+// ─────────────────────────────────────────────────────────────
+const GOLD_PRICE_ACTIVE_BRANDS = ["antam", "pegadaian", "ubs", "galeri24"] as const;
+const GOLD_BRAND_LABELS: Record<string, string> = {
+  antam: "Antam",
+  pegadaian: "Pegadaian",
+  ubs: "UBS",
+  galeri24: "Galeri 24",
+};
+
 // Setelah transaksi expense berhasil disimpan via bot (chat text maupun
 // receipt OCR), cek apakah kategori tersebut sudah mendekati/melewati
 // alert_threshold_percent budget bulan ini, lalu kirim pesan terpisah kalau
@@ -1805,6 +1820,74 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         } catch (err: any) {
           console.error("/riwayat error:", err);
           await sendTelegramMessage(chatId, tr("riwayatError", lang));
+        }
+        res.status(200).json({ ok: true }); return;
+      }
+
+      // 6.5 COMMAND: /hargaemas — cek harga emas terkini (read-only, tidak
+      //     perlu akun ditautkan, sama seperti /help & /start).
+      if (text.startsWith("/hargaemas")) {
+        try {
+          const { data: rows, error } = await supabaseBackend
+            .from("gold_prices")
+            .select("brand, sell_price_per_gram, buyback_price_per_gram, price_date, fetched_at")
+            .in("brand", GOLD_PRICE_ACTIVE_BRANDS)
+            .order("price_date", { ascending: false })
+            .order("fetched_at", { ascending: false });
+
+          if (error) throw error;
+
+          if (!rows || rows.length === 0) {
+            await sendTelegramMessage(chatId, tr("hargaEmasEmpty", lang));
+            res.status(200).json({ ok: true }); return;
+          }
+
+          // Ambil baris terbaru per brand (rows sudah terurut DESC, jadi
+          // kemunculan pertama per brand = yang paling baru).
+          const latestByBrand = new Map<string, typeof rows[number]>();
+          for (const row of rows as any[]) {
+            if (!latestByBrand.has(row.brand)) latestByBrand.set(row.brand, row);
+          }
+
+          // "Harga terbaru per: ..." pakai price_date paling baru di antara
+          // semua brand yang berhasil diambil (sama seperti headline di web).
+          const newestDate = [...latestByBrand.values()]
+            .map(r => r.price_date)
+            .sort()
+            .at(-1)!;
+
+          // Staleness guard: sama seperti _get_fresh_gold_price di DB, kalau
+          // sinkronisasi terakhir sudah lebih lama dari ambang batas, kasih
+          // peringatan supaya user tidak salah kira harga ini masih akurat.
+          const { data: staleSetting } = await supabaseBackend
+            .from("app_settings")
+            .select("value")
+            .eq("key", "gold_price_staleness_hours")
+            .maybeSingle();
+          const stalenessHours = Number(staleSetting?.value ?? 60);
+          const newestFetchedAt = [...latestByBrand.values()]
+            .map(r => new Date(r.fetched_at).getTime())
+            .sort((a, b) => b - a)[0];
+          const isStale = Date.now() - newestFetchedAt > stalenessHours * 60 * 60 * 1000;
+
+          let msg = tr("hargaEmasHeader", lang, newestDate);
+          for (const brand of GOLD_PRICE_ACTIVE_BRANDS) {
+            const row = latestByBrand.get(brand);
+            if (!row) continue;
+            const label = GOLD_BRAND_LABELS[brand] || brand;
+            const buybackStr = row.buyback_price_per_gram != null
+              ? formatIDR(row.buyback_price_per_gram)
+              : "-";
+            msg += `• *${label}*\n` +
+                   `  Jual: *${formatIDR(row.sell_price_per_gram)}*/gr · Buyback: ${buybackStr}/gr\n\n`;
+          }
+          if (isStale) msg += tr("hargaEmasStaleWarning", lang);
+          msg += tr("hargaEmasFooter", lang);
+
+          await sendTelegramMessage(chatId, msg);
+        } catch (err: any) {
+          console.error("/hargaemas error:", err);
+          await sendTelegramMessage(chatId, tr("hargaEmasError", lang));
         }
         res.status(200).json({ ok: true }); return;
       }
