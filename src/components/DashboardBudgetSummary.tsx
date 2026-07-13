@@ -6,6 +6,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useCategories } from "../hooks/useCategories";
 import { useBudgets } from "../hooks/useBudgets";
+import { useBalanceVisibility, maskCurrency } from "../contexts/BalanceVisibilityContext";
 import { audioFeedback } from "../lib/audio";
 import { Card } from "./ui/Card";
 
@@ -17,6 +18,7 @@ export const DashboardBudgetSummary: React.FC = () => {
   const navigate = useNavigate();
   const { categories } = useCategories();
   const { budgets, loading } = useBudgets(user?.id);
+  const { visible: balanceVisible } = useBalanceVisibility();
 
   if (loading || budgets.length === 0) return null;
 
@@ -78,7 +80,7 @@ export const DashboardBudgetSummary: React.FC = () => {
                   <span className={`font-bold tabular-nums ${isDanger ? 'text-red-400' : isWarning ? 'text-amber-400' : 'text-emerald-400'}`}>
                     {Math.round(b.percent)}%
                   </span>
-                  <span className="text-slate-500 text-[clamp(0.5625rem,2.6vw,0.625rem)]">{formatIDR(b.spent)} / {formatIDR(b.monthly_limit)}</span>
+                  <span className="text-slate-500 text-[clamp(0.5625rem,2.6vw,0.625rem)]">{balanceVisible ? `${formatIDR(b.spent)} / ${formatIDR(b.monthly_limit)}` : `${maskCurrency(formatIDR(b.spent))} / ${maskCurrency(formatIDR(b.monthly_limit))}`}</span>
                 </div>
               </div>
               <div className="h-1.5 w-full bg-slate-800/50 rounded-full overflow-hidden light_sakura:bg-rose-100/40">

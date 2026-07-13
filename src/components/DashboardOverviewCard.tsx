@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { TrendingUp, TrendingDown, Layers, Vault, Coins, ChevronDown, Eye, EyeOff } from "lucide-react";
+import { TrendingUp, TrendingDown, Layers, Vault, Coins, ChevronDown } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { dbService } from "../lib/db";
 import { AccumulatedBalance, SavingsSummary, GoldHoldingsSummary } from "../types";
 import { InfoTooltip } from "./InfoTooltip";
 import { audioFeedback } from "../lib/audio";
-import { useBalanceVisibility, maskCurrency } from "../hooks/useBalanceVisibility";
+import { useBalanceVisibility, maskCurrency } from "../contexts/BalanceVisibilityContext";
 import { Card } from "./ui/Card";
 
 interface DashboardOverviewCardProps {
@@ -59,7 +59,8 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
   const [gold, setGold] = useState<GoldHoldingsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
-  const { visible: balanceVisible, toggle: toggleBalanceVisible } = useBalanceVisibility();
+  // Baca saja -- toggle mata TUNGGAL ada di DashboardHeader.
+  const { visible: balanceVisible } = useBalanceVisibility();
 
   useEffect(() => {
     if (!user?.id) return;
@@ -134,16 +135,8 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
               {t("dashboard.accumulated_balance_label")}
               <InfoTooltip text={t("dashboard.net_worth_tooltip")} align="left" />
             </p>
-            <p className={`font-sans font-bold text-2xl sm:text-3xl tracking-tight flex items-center gap-2 ${isPositive ? "text-white light_sakura:text-slate-900" : "text-red-400"}`}>
-              <span>{balanceVisible ? formatIDR(netWorth) : maskCurrency(formatIDR(netWorth))}</span>
-              <button
-                type="button"
-                onClick={() => { audioFeedback.playClick(); toggleBalanceVisible(); }}
-                aria-label={balanceVisible ? t("common.hide_balance") : t("common.show_balance")}
-                className="shrink-0 p-0.5 text-slate-500 hover:text-slate-300 transition-colors duration-200 light_sakura:hover:text-slate-600"
-              >
-                {balanceVisible ? <Eye size={16} /> : <EyeOff size={16} />}
-              </button>
+            <p className={`font-sans font-bold text-2xl sm:text-3xl tracking-tight ${isPositive ? "text-white light_sakura:text-slate-900" : "text-red-400"}`}>
+              {balanceVisible ? formatIDR(netWorth) : maskCurrency(formatIDR(netWorth))}
             </p>
           </div>
         </div>
@@ -158,16 +151,16 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
           <div className="flex items-center gap-4 overflow-x-auto">
             <div className="flex items-center gap-1.5">
               <TrendingUp size={12} className="text-emerald-400 shrink-0" />
-              <span className="text-xs font-bold text-emerald-400 whitespace-nowrap">{formatIDR(monthlySummary.income)}</span>
+              <span className="text-xs font-bold text-emerald-400 whitespace-nowrap">{balanceVisible ? formatIDR(monthlySummary.income) : maskCurrency(formatIDR(monthlySummary.income))}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <TrendingDown size={12} className="text-red-400 shrink-0" />
-              <span className="text-xs font-bold text-red-400 whitespace-nowrap">{formatIDR(monthlySummary.expense)}</span>
+              <span className="text-xs font-bold text-red-400 whitespace-nowrap">{balanceVisible ? formatIDR(monthlySummary.expense) : maskCurrency(formatIDR(monthlySummary.expense))}</span>
             </div>
             <div className="flex items-center gap-1.5 pl-3 border-l border-slate-800 light_sakura:border-rose-100">
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 shrink-0">{t("dashboard.balance")}</span>
               <span className={`text-xs font-bold whitespace-nowrap ${monthlySummary.balance >= 0 ? "text-emerald-400 light_sakura:text-emerald-600" : "text-red-400"}`}>
-                {formatIDR(monthlySummary.balance)}
+                {balanceVisible ? formatIDR(monthlySummary.balance) : maskCurrency(formatIDR(monthlySummary.balance))}
               </span>
             </div>
           </div>
@@ -206,7 +199,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                           {t("dashboard.total_savings_label")}
                           <InfoTooltip text={t("dashboard.earmarked_note_tooltip")} align="right" />
                         </p>
-                        <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(savedAmount)}</p>
+                        <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{balanceVisible ? formatIDR(savedAmount) : maskCurrency(formatIDR(savedAmount))}</p>
                       </div>
                     </div>
                   )}
@@ -220,9 +213,9 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                           {t("dashboard.total_gold_label")}
                           <InfoTooltip text={t("dashboard.total_gold_tooltip")} align="right" />
                         </p>
-                        <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(goldMarketValue)}</p>
+                        <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{balanceVisible ? formatIDR(goldMarketValue) : maskCurrency(formatIDR(goldMarketValue))}</p>
                         <p className={`text-[clamp(0.5344rem,2.47vw,0.5938rem)] font-semibold ${goldGainLoss >= 0 ? "text-emerald-400" : "text-red-400"}`}>
-                          {goldGainLoss >= 0 ? "▲" : "▼"} {formatIDR(Math.abs(goldGainLoss))}
+                          {goldGainLoss >= 0 ? "▲" : "▼"} {balanceVisible ? formatIDR(Math.abs(goldGainLoss)) : maskCurrency(formatIDR(Math.abs(goldGainLoss)))}
                         </p>
                       </div>
                     </div>
@@ -233,7 +226,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                     </div>
                     <div className="min-w-0">
                       <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_income_label")}</p>
-                      <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(data.income_total)}</p>
+                      <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 whitespace-nowrap tabular-nums tracking-tight">{balanceVisible ? formatIDR(data.income_total) : maskCurrency(formatIDR(data.income_total))}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2.5 rounded-2xl border border-slate-800/60 bg-slate-950/20 px-3.5 py-2.5 light_sakura:bg-slate-50 light_sakura:border-slate-200">
@@ -242,7 +235,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                     </div>
                     <div className="min-w-0">
                       <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_expense_label")}</p>
-                      <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 whitespace-nowrap tabular-nums tracking-tight">{formatIDR(data.expense_total)}</p>
+                      <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 whitespace-nowrap tabular-nums tracking-tight">{balanceVisible ? formatIDR(data.expense_total) : maskCurrency(formatIDR(data.expense_total))}</p>
                     </div>
                   </div>
                 </div>

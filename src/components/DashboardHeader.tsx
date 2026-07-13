@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { UserSession } from "../types";
-import { Send, Info, Calendar, MapPin } from "lucide-react";
+import { Send, Info, Calendar, MapPin, Eye, EyeOff } from "lucide-react";
 import { motion } from "motion/react";
 import { useWeather } from "../hooks/useWeather";
 import { useBudgets } from "../hooks/useBudgets";
+import { audioFeedback } from "../lib/audio";
+import { useBalanceVisibility, maskCurrencyInText } from "../contexts/BalanceVisibilityContext";
 import { getWeatherTheme } from "../lib/weatherTheme";
 import { DashboardWeatherLayer } from "./DashboardWeatherLayer";
 import { WeatherDebugToggle, WeatherDebugOverride } from "./WeatherDebugToggle";
@@ -26,6 +28,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const { t, locale } = useLanguage();
   const { weather, loading: weatherLoading } = useWeather();
   const { budgets, loading: budgetsLoading } = useBudgets(currentUser.id);
+  const { visible: balanceVisible, toggle: toggleBalanceVisible } = useBalanceVisibility();
 
   // TEMPORARY DEV TOOL -- lihat komentar di WeatherDebugToggle.tsx.
   // Saat override aktif, ini menggantikan data cuaca asli hanya untuk
@@ -124,10 +127,12 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           maximumFractionDigits: 0
         }).format(dailyAllowance);
 
+        const rawText = locale === "id"
+          ? `Status Anggaran Harian: Jatah aman harian ± ${formattedAllowance} (${remainingDays} hari tersisa, ${overallPercent}% anggaran terpakai).`
+          : `Daily Budget Status: Safe daily allowance ± ${formattedAllowance} (${remainingDays} days remaining, ${overallPercent}% budget spent).`;
+
         return {
-          text: locale === "id"
-            ? `Status Anggaran Harian: Jatah aman harian ± ${formattedAllowance} (${remainingDays} hari tersisa, ${overallPercent}% anggaran terpakai).`
-            : `Daily Budget Status: Safe daily allowance ± ${formattedAllowance} (${remainingDays} days remaining, ${overallPercent}% budget spent).`,
+          text: balanceVisible ? rawText : maskCurrencyInText(rawText),
           type: "budget_ok"
         };
       }
@@ -227,17 +232,38 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         </motion.div>
       </div>
 
-      {currentUser.is_guest && (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
-          className="relative z-10 self-start md:self-center bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-2 font-sans text-xs font-semibold text-amber-500 flex items-center gap-2"
+      {/* Toggle mata TUNGGAL untuk seluruh nominal di Dashboard (Pos Dompet,
+          Total Kekayaan, Bulan Ini, rincian aset, jatah anggaran harian,
+          progres budget per kategori, chart, dan riwayat transaksi
+          terbaru). Sengaja satu-satunya kontrol show/hide di seluruh
+          halaman -- lihat catatan lengkap di BalanceVisibilityContext.tsx
+          soal kenapa versi lama (satu ikon mata per kartu) membingungkan. */}
+      <div className="relative z-10 flex flex-col items-start md:items-end gap-2 shrink-0">
+        <button
+          type="button"
+          onClick={() => { audioFeedback.playClick(); toggleBalanceVisible(); }}
+          aria-pressed={!balanceVisible}
+          aria-label={balanceVisible ? t("common.hide_balance") : t("common.show_balance")}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/10 backdrop-blur-sm border border-white/10 text-slate-300 hover:bg-white/15 hover:text-white transition-colors duration-200 light_sakura:bg-rose-50 light_sakura:border-rose-100/50 light_sakura:text-rose-600 light_sakura:hover:bg-rose-100"
         >
-          <Info size={14} />
-          <span>{t("auth.guest_badge")}</span>
-        </motion.div>
-      )}
+          {balanceVisible ? <Eye size={14} className="shrink-0" /> : <EyeOff size={14} className="shrink-0" />}
+          <span className="whitespace-nowrap">
+            {balanceVisible ? t("common.hide_balance") : t("common.show_balance")}
+          </span>
+        </button>
+
+        {currentUser.is_guest && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            className="bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-2 font-sans text-xs font-semibold text-amber-500 flex items-center gap-2"
+          >
+            <Info size={14} />
+            <span>{t("auth.guest_badge")}</span>
+          </motion.div>
+        )}
+      </div>
     </Card>
   );
 };

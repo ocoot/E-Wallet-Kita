@@ -5,6 +5,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { ToastProvider, useToast } from "./contexts/ToastContext";
 import { MaintenanceProvider } from "./contexts/MaintenanceContext";
 import { CategoriesProvider } from "./contexts/CategoriesContext";
+import { BalanceVisibilityProvider } from "./contexts/BalanceVisibilityContext";
 import { AdminProvider } from "./contexts/AdminContext";
 import { useAuth } from "./contexts/AuthContext";
 import { usePremium } from "./hooks/usePremium";
@@ -452,6 +453,7 @@ export default function App() {
           <AdminProvider>
           <MaintenanceProvider>
             <CategoriesProvider>
+            <BalanceVisibilityProvider>
               <Routes>
                  <Route path="/login" element={<Login />} />
                  <Route path="/auth/callback" element={<AuthCallback />} />
@@ -461,6 +463,7 @@ export default function App() {
                 isOpen={isRecoveringPassword} 
                 onClose={() => setIsRecoveringPassword(false)} 
               />
+            </BalanceVisibilityProvider>
             </CategoriesProvider>
           </MaintenanceProvider>
           </AdminProvider>

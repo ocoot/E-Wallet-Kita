@@ -3,6 +3,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { Transaction } from "../types";
 import { Activity } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
+import { useBalanceVisibility, maskCurrency } from "../contexts/BalanceVisibilityContext";
 import { EmptyState } from "./EmptyState";
 import { Card } from "./ui/Card";
 import {
@@ -44,6 +45,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
   formatIDR,
 }) => {
   const { t } = useLanguage();
+  const { visible: balanceVisible } = useBalanceVisibility();
 
   // Custom tooltips renderer to perfectly match Obsidian and Sakura modes
   const CustomTooltip = ({ active, payload, label }: any) => {
@@ -62,7 +64,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
               return (
                 <div key={p.name} className="flex items-center justify-between gap-6">
                   <span className="text-slate-400 light_sakura:text-slate-500">{p.name}:</span>
-                  <span className={`font-bold ${colorCls}`}>{formatIDR(p.value)}</span>
+                  <span className={`font-bold ${colorCls}`}>{balanceVisible ? formatIDR(p.value) : maskCurrency(formatIDR(p.value))}</span>
                 </div>
               );
             })}

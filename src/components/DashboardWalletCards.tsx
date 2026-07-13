@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Wallet as WalletIcon, Eye, EyeOff, Plus } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useWallets } from "../hooks/useWallets";
-import { useBalanceVisibility, maskCurrency } from "../hooks/useBalanceVisibility";
+import { useBalanceVisibility, maskCurrency } from "../contexts/BalanceVisibilityContext";
 import { audioFeedback } from "../lib/audio";
 import { InfoTooltip } from "./InfoTooltip";
 import { Card } from "./ui/Card";
@@ -33,7 +33,9 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
   const navigate = useNavigate();
   const { activeWallets, isLoading } = useWallets();
   const [visibleContactIds, setVisibleContactIds] = useState<Set<string>>(new Set());
-  const { visible: balanceVisible, toggle: toggleBalanceVisible } = useBalanceVisibility();
+  // Baca saja -- toggle mata TUNGGAL untuk semua nominal ada di DashboardHeader,
+  // supaya tidak ada ikon mata berulang di tiap kartu (lihat catatan di file itu).
+  const { visible: balanceVisible } = useBalanceVisibility();
 
   const toggleContact = (id: string) => {
     setVisibleContactIds((prev) => {
@@ -92,16 +94,8 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
                   <InfoTooltip text={t("wallet.general_desc")} align="left" className="shrink-0" />
                 )}
               </div>
-              <p className="font-sans font-black text-lg tabular-nums text-white leading-tight light_sakura:text-slate-900 flex items-center gap-1.5">
-                <span>{balanceVisible ? formatIDR(w.balance) : maskCurrency(formatIDR(w.balance))}</span>
-                <button
-                  type="button"
-                  onClick={(e) => { e.stopPropagation(); audioFeedback.playClick(); toggleBalanceVisible(); }}
-                  aria-label={balanceVisible ? t("common.hide_balance") : t("common.show_balance")}
-                  className="shrink-0 p-0.5 -m-0.5 text-slate-500 hover:text-slate-300 transition-colors duration-200 light_sakura:hover:text-slate-600"
-                >
-                  {balanceVisible ? <Eye size={13} /> : <EyeOff size={13} />}
-                </button>
+              <p className="font-sans font-black text-lg tabular-nums text-white leading-tight light_sakura:text-slate-900">
+                {balanceVisible ? formatIDR(w.balance) : maskCurrency(formatIDR(w.balance))}
               </p>
               {contactValue ? (
                 <div
