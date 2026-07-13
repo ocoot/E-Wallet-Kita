@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { MessageCircle, X, Send, Loader2, XCircle, Bot, UserRound } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, XCircle, Bot, UserRound, LayoutDashboard, PlusCircle, History, Tags, Link2, Crown } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -37,6 +37,16 @@ function formatMsgTime(iso: string, locale: string): string {
   });
 }
 
+// Ikon per topik FAQ -- murni kosmetik (scanability), tidak mengubah data/keyword matching di supportFaq.ts.
+const FAQ_TOPIC_ICONS: Record<string, React.ElementType> = {
+  dashboard: LayoutDashboard,
+  new_transaction: PlusCircle,
+  history: History,
+  categories: Tags,
+  telegram: Link2,
+  premium: Crown,
+};
+
 /**
  * Floating Action Button + panel bantuan di dashboard.
  * Tab 1 (FAQ): rule-based, jawaban dari locale lewat t(), keyword matching
@@ -58,6 +68,22 @@ export const SupportChatWidget: React.FC = () => {
   const [faqBubbles, setFaqBubbles] = useState<FaqBubble[]>([]);
   const [faqInput, setFaqInput] = useState("");
   const faqEndRef = useRef<HTMLDivElement>(null);
+  const chipsRef = useRef<HTMLDivElement>(null);
+  const [chipScrollProgress, setChipScrollProgress] = useState(0);
+  const [chipCanScroll, setChipCanScroll] = useState(false);
+
+  const handleChipsScroll = useCallback(() => {
+    const el = chipsRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setChipScrollProgress(max > 0 ? el.scrollLeft / max : 0);
+  }, []);
+
+  useEffect(() => {
+    const el = chipsRef.current;
+    if (!el) return;
+    setChipCanScroll(el.scrollWidth - el.clientWidth > 4);
+  }, [isOpen, tab]);
 
   useEffect(() => {
     faqEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -280,12 +306,13 @@ export const SupportChatWidget: React.FC = () => {
             initial={{ opacity: 0, y: 16, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
-            className="fixed z-40 bottom-44 right-4 left-4 sm:left-auto sm:bottom-52 sm:right-6 sm:w-96 max-h-[70vh] flex flex-col rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
+            className="fixed z-40 top-20 bottom-24 left-4 right-4 sm:top-auto sm:bottom-52 sm:left-auto sm:right-6 sm:w-96 sm:max-h-[70vh] flex flex-col rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
           >
             {/* Header */}
             <div className="px-4 py-3.5 border-b border-slate-800 light_sakura:border-rose-100 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-600/20 light_sakura:shadow-rose-500/20">
+              <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-600/20 light_sakura:shadow-rose-500/20">
                 <Bot size={18} className="text-white" />
+                <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-900 light_sakura:border-white" />
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">
@@ -298,36 +325,38 @@ export const SupportChatWidget: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex gap-5 px-4 border-b border-slate-800 light_sakura:border-rose-100">
+            <div className="flex gap-1.5 px-4 pt-3 pb-3 border-b border-slate-800 light_sakura:border-rose-100">
               <button
                 type="button"
                 onClick={() => setTab("faq")}
-                className={`relative pb-2.5 pt-3 text-xs font-bold transition-colors duration-200 ${
-                  tab === "faq" ? "text-white light_sakura:text-slate-900" : "text-slate-500 hover:text-slate-300"
-                }`}
+                className="relative px-3.5 py-2 rounded-lg text-xs font-bold transition-colors duration-200"
               >
-                {t("support.tabs.faq")}
                 {tab === "faq" && (
                   <motion.span
-                    layoutId="supportTabIndicator"
-                    className="absolute left-0 right-0 -bottom-px h-0.5 rounded-full bg-indigo-500 light_sakura:bg-rose-500"
+                    layoutId="supportTabPill"
+                    className="absolute inset-0 rounded-lg bg-slate-800 ring-1 ring-inset ring-indigo-500/40 light_sakura:bg-rose-50 light_sakura:ring-rose-300/60"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                   />
                 )}
+                <span className={`relative z-10 ${tab === "faq" ? "text-white light_sakura:text-slate-900" : "text-slate-500 hover:text-slate-300"}`}>
+                  {t("support.tabs.faq")}
+                </span>
               </button>
               <button
                 type="button"
                 onClick={() => setTab("admin")}
-                className={`relative pb-2.5 pt-3 text-xs font-bold transition-colors duration-200 ${
-                  tab === "admin" ? "text-white light_sakura:text-slate-900" : "text-slate-500 hover:text-slate-300"
-                }`}
+                className="relative px-3.5 py-2 rounded-lg text-xs font-bold transition-colors duration-200"
               >
-                {t("support.tabs.admin")}
                 {tab === "admin" && (
                   <motion.span
-                    layoutId="supportTabIndicator"
-                    className="absolute left-0 right-0 -bottom-px h-0.5 rounded-full bg-indigo-500 light_sakura:bg-rose-500"
+                    layoutId="supportTabPill"
+                    className="absolute inset-0 rounded-lg bg-slate-800 ring-1 ring-inset ring-indigo-500/40 light_sakura:bg-rose-50 light_sakura:ring-rose-300/60"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                   />
                 )}
+                <span className={`relative z-10 ${tab === "admin" ? "text-white light_sakura:text-slate-900" : "text-slate-500 hover:text-slate-300"}`}>
+                  {t("support.tabs.admin")}
+                </span>
               </button>
             </div>
 
@@ -346,21 +375,49 @@ export const SupportChatWidget: React.FC = () => {
                   </div>
 
                   {/* Topik -- digeser horizontal supaya tidak makan tinggi panel & terasa seperti quick-reply chat */}
-                  <div
-                    className="flex gap-2 overflow-x-auto pb-1 -mx-4 px-4"
-                    style={{ scrollbarWidth: "none" }}
-                  >
-                    {SUPPORT_FAQ_TOPICS.map((topic) => (
-                      <button
-                        key={topic.key}
-                        type="button"
-                        onClick={() => handleFaqTopicClick(topic.key)}
-                        className="shrink-0 whitespace-nowrap px-3.5 py-2 rounded-full text-xs font-semibold bg-slate-800 border border-slate-700/60 text-slate-200 hover:bg-slate-700 hover:border-indigo-500/40 transition-colors duration-200 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50"
-                      >
-                        {t(`support.faq.topics.${topic.key}.label`)}
-                      </button>
-                    ))}
+                  <div className="relative -mx-4">
+                    <div
+                      ref={chipsRef}
+                      onScroll={handleChipsScroll}
+                      className="flex gap-2 overflow-x-auto pb-1 px-4"
+                      style={{ scrollbarWidth: "none" }}
+                    >
+                      {SUPPORT_FAQ_TOPICS.map((topic) => {
+                        const Icon = FAQ_TOPIC_ICONS[topic.key] ?? MessageCircle;
+                        return (
+                          <button
+                            key={topic.key}
+                            type="button"
+                            onClick={() => handleFaqTopicClick(topic.key)}
+                            className="shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold bg-slate-800 border border-slate-700/60 text-slate-200 hover:bg-slate-700 hover:border-indigo-500/40 transition-colors duration-200 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50"
+                          >
+                            <Icon size={13} className="text-indigo-400 light_sakura:text-rose-400 shrink-0" />
+                            {t(`support.faq.topics.${topic.key}.label`)}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {/* Fade di tepi kanan -- sinyal visual bahwa masih ada chip lain untuk di-scroll */}
+                    {chipCanScroll && (
+                      <div className="pointer-events-none absolute right-0 top-0 bottom-1 w-8 bg-gradient-to-l from-slate-900 to-transparent light_sakura:from-white" />
+                    )}
                   </div>
+
+                  {chipCanScroll && (
+                    <div className="flex gap-1 justify-center -mt-0.5">
+                      {[0, 1, 2].map((i) => {
+                        const active = Math.round(chipScrollProgress * 2) === i;
+                        return (
+                          <span
+                            key={i}
+                            className={`h-1 rounded-full transition-all duration-200 ${
+                              active ? "w-3.5 bg-emerald-500" : "w-1 bg-slate-700 light_sakura:bg-rose-200"
+                            }`}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
 
                   <div className="flex flex-col gap-2 mt-1">
                     {faqBubbles.map((bubble) =>
@@ -390,7 +447,7 @@ export const SupportChatWidget: React.FC = () => {
               {tab === "admin" && (
                 <>
                   {!session && (
-                    <div className="flex flex-col gap-3 py-1">
+                    <div className="flex flex-col gap-2 py-1">
                       <div className="flex items-start gap-2">
                         <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300 flex items-center justify-center shrink-0 mt-0.5">
                           <Bot size={12} className="text-white" />
@@ -400,29 +457,42 @@ export const SupportChatWidget: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/60 border border-slate-700/60 light_sakura:bg-rose-50/60 light_sakura:border-rose-100">
-                        <div className="relative w-11 h-11 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300 flex items-center justify-center shrink-0">
-                          <UserRound size={20} className="text-white" />
-                          <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-900 light_sakura:border-white" />
+                      {/* Kartu handoff -- pesan, identitas admin, dan CTA digabung jadi satu unit visual
+                          (bukan 3 blok terpisah) supaya jelas ini satu alur yang sama. */}
+                      <div className="ml-8 rounded-2xl border border-slate-700/60 bg-slate-800/60 overflow-hidden light_sakura:bg-rose-50/60 light_sakura:border-rose-100">
+                        <div className="flex items-center gap-3 px-3.5 py-3">
+                          <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300 flex items-center justify-center shrink-0">
+                            <UserRound size={18} className="text-white" />
+                            <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-800 light_sakura:border-rose-50" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-900 truncate">
+                              {t("support.admin_chat.identity_name")}
+                            </p>
+                            <p className="text-[11px] font-medium text-emerald-400 light_sakura:text-emerald-600">
+                              {t("support.admin_chat.identity_status")}
+                            </p>
+                          </div>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-900 truncate">
-                            {t("support.admin_chat.identity_name")}
-                          </p>
-                          <p className="text-[11px] font-medium text-emerald-400 light_sakura:text-emerald-600">
-                            {t("support.admin_chat.identity_status")}
-                          </p>
-                        </div>
-                      </div>
 
-                      <button
-                        type="button"
-                        onClick={handleStartSession}
-                        disabled={isStarting}
-                        className="w-full py-2.5 rounded-full bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 transition-colors duration-200 disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-500/20"
-                      >
-                        {isStarting ? <Loader2 size={14} className="animate-spin" /> : t("support.admin_chat.start_button")}
-                      </button>
+                        <div className="h-px bg-slate-700/50 light_sakura:bg-rose-100" />
+
+                        <button
+                          type="button"
+                          onClick={handleStartSession}
+                          disabled={isStarting}
+                          className="w-full py-3 bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-500 transition-colors duration-200 disabled:opacity-60 flex items-center justify-center gap-2 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                        >
+                          {isStarting ? (
+                            <Loader2 size={14} className="animate-spin" />
+                          ) : (
+                            <>
+                              <MessageCircle size={14} />
+                              {t("support.admin_chat.start_button")}
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   )}
 

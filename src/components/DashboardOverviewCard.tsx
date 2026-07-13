@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { TrendingUp, TrendingDown, Layers, Vault, Coins, ChevronDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Layers, Vault, Coins, ChevronDown, Eye, EyeOff } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { dbService } from "../lib/db";
 import { AccumulatedBalance, SavingsSummary, GoldHoldingsSummary } from "../types";
 import { InfoTooltip } from "./InfoTooltip";
 import { audioFeedback } from "../lib/audio";
+import { useBalanceVisibility, maskCurrency } from "../hooks/useBalanceVisibility";
 import { Card } from "./ui/Card";
 
 interface DashboardOverviewCardProps {
@@ -58,6 +59,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
   const [gold, setGold] = useState<GoldHoldingsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
+  const { visible: balanceVisible, toggle: toggleBalanceVisible } = useBalanceVisibility();
 
   useEffect(() => {
     if (!user?.id) return;
@@ -132,8 +134,16 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
               {t("dashboard.accumulated_balance_label")}
               <InfoTooltip text={t("dashboard.net_worth_tooltip")} align="left" />
             </p>
-            <p className={`font-sans font-bold text-2xl sm:text-3xl tracking-tight ${isPositive ? "text-white light_sakura:text-slate-900" : "text-red-400"}`}>
-              {formatIDR(netWorth)}
+            <p className={`font-sans font-bold text-2xl sm:text-3xl tracking-tight flex items-center gap-2 ${isPositive ? "text-white light_sakura:text-slate-900" : "text-red-400"}`}>
+              <span>{balanceVisible ? formatIDR(netWorth) : maskCurrency(formatIDR(netWorth))}</span>
+              <button
+                type="button"
+                onClick={() => { audioFeedback.playClick(); toggleBalanceVisible(); }}
+                aria-label={balanceVisible ? t("common.hide_balance") : t("common.show_balance")}
+                className="shrink-0 p-0.5 text-slate-500 hover:text-slate-300 transition-colors duration-200 light_sakura:hover:text-slate-600"
+              >
+                {balanceVisible ? <Eye size={16} /> : <EyeOff size={16} />}
+              </button>
             </p>
           </div>
         </div>

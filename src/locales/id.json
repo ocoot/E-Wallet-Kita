@@ -339,7 +339,9 @@
     "offline_banner": "Tidak ada koneksi internet. Beberapa data mungkin tidak termuat.",
     "retry": "Coba Lagi",
     "error_generic_title": "Gagal memuat data",
-    "error_generic_desc": "Terjadi kesalahan saat mengambil data. Periksa koneksi internet Anda lalu coba lagi."
+    "error_generic_desc": "Terjadi kesalahan saat mengambil data. Periksa koneksi internet Anda lalu coba lagi.",
+    "hide_balance": "Sembunyikan nominal",
+    "show_balance": "Tampilkan nominal"
   },
   "confirm": {
     "logout_title": "Keluar Sesi",
