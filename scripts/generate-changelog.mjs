@@ -69,6 +69,19 @@ function sh(cmd) {
   return execSync(cmd, { encoding: "utf8" }).trim();
 }
 
+// Delimiter aman (karakter kontrol non-printable) untuk memisahkan field &
+// record git log -- dipilih supaya tidak mungkin bentrok dengan isi commit
+// message manusia biasa (beda dengan pemisah seperti "|" atau "---" yang
+// bisa saja muncul di teks commit).
+const FIELD_SEP = "\x1f";
+const RECORD_SEP = "\x1e";
+
+// Batas panjang body per commit yang dikirim ke Gemini -- cukup untuk
+// menangkap penjelasan "kenapa" yang biasa ditulis di body commit project
+// ini, tapi tidak sampai memboroskan token untuk body yang sangat panjang
+// (mis. commit yang menempel seluruh isi migration SQL di body-nya).
+const MAX_BODY_CHARS = 600;
+
 function getCommitsSinceLastSync() {
   // Cek apakah tag sinkronisasi terakhir ada. Kalau belum pernah ada
   // (pertama kali workflow ini jalan di repo), pakai maksimal 50 commit
@@ -76,17 +89,25 @@ function getCommitsSinceLastSync() {
   // riwayat repo. `--max-count` dipakai (bukan range `HEAD~50..HEAD`)
   // supaya tetap aman walau repo punya commit kurang dari 50 (range
   // `HEAD~50` akan error kalau history-nya lebih pendek dari itu).
+  const format = `%s${FIELD_SEP}%b${RECORD_SEP}`;
   let cmd;
   try {
     sh(`git rev-parse ${SYNC_TAG}`);
-    cmd = `git log ${SYNC_TAG}..HEAD --no-merges --pretty=format:%s`;
+    cmd = `git log ${SYNC_TAG}..HEAD --no-merges --pretty=format:"${format}"`;
   } catch {
     console.log(`[changelog] Tag "${SYNC_TAG}" belum ada -- pakai maksimal 50 commit terakhir sebagai titik awal.`);
-    cmd = `git log --no-merges --max-count=50 --pretty=format:%s`;
+    cmd = `git log --no-merges --max-count=50 --pretty=format:"${format}"`;
   }
 
-  // %s = subject saja (tanpa body, supaya token ke Gemini tidak boros dan
-  // tidak ikut menyeret detail teknis panjang di body commit).
+  // %s%b = subject + body. Sebelumnya di sini HANYA subject (%s) dikirim ke
+  // Gemini supaya hemat token -- tapi itu bikin Gemini SATU-SATUNYA sinyal
+  // yang dia punya adalah prefix/label commit message (mis. "refactor:"),
+  // sehingga commit yang LABEL-nya teknis tapi ISI perubahannya sebenarnya
+  // terasa oleh user (contoh nyata: "refactor: decouple gold savings from
+  // wallet balance" yang sebenarnya mengubah cara Saldo Tersedia dihitung)
+  // ikut terlewat padahal seharusnya masuk changelog. Body commit biasanya
+  // berisi penjelasan dampak yang lebih lengkap -- itu sinyal yang jauh
+  // lebih relevan daripada sekadar prefix.
   // --no-merges supaya commit "Merge branch ..." tidak ikut dihitung.
   let log;
   try {
@@ -97,18 +118,40 @@ function getCommitsSinceLastSync() {
   }
 
   if (!log) return [];
-  return log.split("\n").map((line) => line.trim()).filter(Boolean);
+  return log
+    .split(RECORD_SEP)
+    .map((record) => record.trim())
+    .filter(Boolean)
+    .map((record) => {
+      const [subject, body = ""] = record.split(FIELD_SEP);
+      const trimmedBody = body.trim();
+      return {
+        subject: subject.trim(),
+        body: trimmedBody.length > MAX_BODY_CHARS
+          ? trimmedBody.slice(0, MAX_BODY_CHARS) + "…"
+          : trimmedBody,
+      };
+    })
+    .filter((c) => c.subject);
 }
 
-function buildPrompt(commitSubjects) {
-  const list = commitSubjects.map((s, i) => `${i + 1}. ${s}`).join("\n");
-  return `Berikut daftar commit message dari sebuah aplikasi dompet digital (e-wallet) React/PWA bernama "E-Wallet Kita":
+function buildPrompt(commits) {
+  const list = commits
+    .map((c, i) => {
+      const bodyPart = c.body ? `\n   Detail: ${c.body.replace(/\n/g, " ")}` : "";
+      return `${i + 1}. ${c.subject}${bodyPart}`;
+    })
+    .join("\n");
+
+  return `Berikut daftar commit (subject + detail/body kalau ada) dari sebuah aplikasi dompet digital (e-wallet) React/PWA bernama "E-Wallet Kita":
 
 ${list}
 
-Tugasmu: rangkum HANYA perubahan yang benar-benar akan DIRASAKAN/DISADARI oleh pengguna awam aplikasi ini -- misalnya fitur baru, perbaikan bug yang mereka alami, atau perubahan tampilan/alur pemakaian.
+Tugasmu: rangkum HANYA perubahan yang benar-benar akan DIRASAKAN/DISADARI oleh pengguna awam aplikasi ini -- misalnya fitur baru, perbaikan bug yang mereka alami, atau perubahan tampilan/alur/perhitungan yang terlihat di aplikasi (termasuk kalau itu mengubah ANGKA yang ditampilkan ke user, misalnya cara saldo/total dihitung).
 
-ABAIKAN sepenuhnya commit yang sifatnya teknis/internal, contoh: refactor, rename variabel/file, update dependency/library, perubahan config build/CI, penambahan/perbaikan test, optimisasi kode yang tidak terlihat pengguna, perubahan dokumentasi internal, perbaikan typo di komentar kode.
+PENTING -- nilai dari ISI perubahan (terutama bagian "Detail"), BUKAN dari prefix/label commit message. Commit berlabel "refactor:", "fix:", atau apapun BISA SAJA tetap berdampak ke user kalau isinya menyebutkan perubahan pada apa yang dilihat/dialami user -- jangan diabaikan hanya karena labelnya terdengar teknis. Sebaliknya, ABAIKAN commit yang isinya (bukan cuma labelnya) memang murni internal: rename variabel/file tanpa efek terlihat, update versi dependency/library, perubahan config build/CI, penambahan/perbaikan test, optimisasi performa yang tidak mengubah apapun yang terlihat user, perubahan dokumentasi internal, perbaikan typo di komentar kode.
+
+Kalau ragu apakah suatu perubahan cukup terasa oleh user atau tidak, dan "Detail"-nya menyebutkan sesuatu yang berubah dari sudut pandang user (termasuk perhitungan/angka), LEBIH BAIK dimasukkan daripada dilewatkan.
 
 Kalau SEMUA commit di atas ternyata teknis/internal (tidak ada satupun yang layak diberitahukan ke pengguna), kembalikan array "changes" KOSONG -- jangan dipaksakan mengarang perubahan yang tidak ada.
 
@@ -182,14 +225,14 @@ async function main() {
   }
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-  const commitSubjects = getCommitsSinceLastSync();
-  if (commitSubjects.length === 0) {
+  const commits = getCommitsSinceLastSync();
+  if (commits.length === 0) {
     console.log("[changelog] Tidak ada commit baru sejak sinkronisasi terakhir. Selesai.");
     process.exit(0);
   }
 
-  console.log(`[changelog] Ditemukan ${commitSubjects.length} commit baru:`);
-  commitSubjects.forEach((s) => console.log(`  - ${s}`));
+  console.log(`[changelog] Ditemukan ${commits.length} commit baru:`);
+  commits.forEach((c) => console.log(`  - ${c.subject}`));
 
   const { data: lastRow, error: lastRowError } = await supabase
     .from("changelog_entries")
@@ -206,7 +249,7 @@ async function main() {
 
   let changes;
   try {
-    changes = await callGemini(apiKey, buildPrompt(commitSubjects));
+    changes = await callGemini(apiKey, buildPrompt(commits));
   } catch (err) {
     console.error(`[changelog] Gagal memanggil Gemini: ${err.message || err}`);
     console.error("[changelog] Melewati generate changelog kali ini (bukan error fatal untuk workflow).");
