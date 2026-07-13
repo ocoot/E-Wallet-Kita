@@ -116,6 +116,7 @@ SECURITY DEFINER
 SET search_path = public
 LANGUAGE plpgsql
 AS $$
+#variable_conflict use_column
 DECLARE
   v_caller_role text;
 BEGIN
