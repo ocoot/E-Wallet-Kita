@@ -38,6 +38,15 @@
   ],
   "headers": [
     {
+      "source": "/(sw\\.js|workbox-(.*)\\.js|firebase-messaging-sw\\.js|registerSW\\.js|manifest\\.json)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
       "source": "/api/(.*)",
       "headers": [
         {

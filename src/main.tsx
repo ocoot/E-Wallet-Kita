@@ -90,19 +90,39 @@ const updateSW = registerSW({
     console.log("[PWA] App siap digunakan secara offline.");
   },
   onRegisteredSW(_swUrl, registration) {
-    // Polling berkala: browser TIDAK selalu langsung mengecek ulang
-    // sw.js begitu tab dibuka -- kadang butuh trigger navigasi atau
-    // interval waktu tertentu (bervariasi per browser). Supaya sesi yang
-    // dibiarkan terbuka lama (mis. PWA di HP yang jarang di-refresh)
-    // tetap mendeteksi versi baru tanpa user harus reload manual, kita
-    // paksa cek ulang setiap 60 menit selama tab tetap terbuka.
+    // Browser TIDAK selalu langsung mengecek ulang sw.js begitu tab
+    // dibuka -- kadang butuh trigger navigasi atau interval waktu
+    // tertentu (bervariasi per browser), dan pengecekan implisit itu
+    // bisa saja dijawab dari cache HTTP kalau /sw.js tidak dikirim
+    // dengan header Cache-Control: no-cache (lihat vercel.json). Supaya
+    // user TIDAK perlu refresh manual untuk mentrigger dialog update,
+    // kita paksa cek secara eksplisit di titik-titik berikut:
     if (!registration) return;
-    const CHECK_INTERVAL_MS = 60 * 60 * 1000; // 1 jam
-    window.setInterval(() => {
+
+    const checkForUpdate = () => {
       registration.update().catch((err) => {
-        console.warn("[PWA] Gagal memeriksa pembaruan berkala:", err);
+        console.warn("[PWA] Gagal memeriksa pembaruan:", err);
       });
-    }, CHECK_INTERVAL_MS);
+    };
+
+    // 1) Segera setelah SW terdaftar (mis. app baru dibuka dari ikon
+    //    homescreen atau dari notifikasi push) -- ini menutup celah
+    //    utama kasus "buka app dari notif update, dialog tidak muncul
+    //    sampai di-refresh manual".
+    checkForUpdate();
+
+    // 2) Setiap kali tab/PWA kembali terlihat (mis. user switch balik
+    //    dari app lain, atau membuka kembali app yang tadinya di
+    //    background) -- menutup celah sesi yang lama dibiarkan idle.
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") checkForUpdate();
+    });
+
+    // 3) Polling berkala sebagai jaring pengaman untuk sesi yang
+    //    dibiarkan terbuka & fokus terus-menerus tanpa pernah pindah
+    //    tab (mis. PWA di HP yang jarang di-switch).
+    const CHECK_INTERVAL_MS = 60 * 60 * 1000; // 1 jam
+    window.setInterval(checkForUpdate, CHECK_INTERVAL_MS);
   },
 });
 
