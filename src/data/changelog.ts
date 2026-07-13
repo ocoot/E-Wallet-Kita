@@ -2,39 +2,38 @@
  * Tipe data & util untuk changelog dialog "Pembaruan Tersedia"
  * (`UpdatePrompt.tsx`).
  *
- * PENTING -- data sesungguhnya ADA DI `public/changelog.json`, BUKAN di
- * `src/data/`. Ini sengaja: file di `src/` ikut di-bundle ke dalam kode JS
- * (di-import secara statis), sehingga isinya "beku" mengikuti versi build
- * yang sedang berjalan di browser user -- termasuk saat itu JUSTRU sedang
- * menampilkan dialog "ada versi baru", di mana browser MASIH menjalankan
- * kode versi LAMA (halaman belum reload). Akibatnya popup update akan
- * selalu menampilkan changelog versi SEBELUMNYA, bukan versi yang baru
- * saja di-deploy.
+ * PENTING -- data sesungguhnya ADA DI tabel Supabase `changelog_entries`
+ * (lihat migration `20260815000000_changelog_entries.sql`), BUKAN di
+ * `src/data/` atau file statis di `public/`.
  *
- * `public/changelog.json` adalah file statis biasa yang di-fetch lewat
- * network saat dialog update akan ditampilkan (lihat `UpdatePrompt.tsx`),
- * jadi isinya selalu sesuai dengan apa yang benar-benar live di server
- * saat itu -- independen dari bundle JS mana yang sedang aktif di
- * halaman.
+ * Riwayat: sebelumnya data ini disimpan di `public/changelog.json` dan
+ * di-fetch lewat network (bukan di-import statis) supaya isinya selalu
+ * "segar" mengikuti versi yang benar-benar live di server, independen dari
+ * bundle JS lama yang mungkin masih berjalan di browser user saat dialog
+ * update tampil. File itu dipindah ke Supabase pada 2026-08-15 karena
+ * setiap kali source di-sync dari Google AI Studio ke GitHub, file yang
+ * di-commit otomatis oleh bot CI (`scripts/generate-changelog.mjs`) itu
+ * selalu tertimpa balik ke versi lama oleh AI Studio's sync (AI Studio
+ * tidak mengenali file yang lahir dari commit pihak lain, dan tidak ada
+ * mekanisme ignore resmi untuk sync tersebut).
  *
- * Data ditulis/di-update secara PROGRAMATIK oleh script CI
+ * Sifat "selalu segar, independen dari bundle JS lama" itu TETAP terjaga
+ * dengan Supabase: `UpdatePrompt.tsx` melakukan query langsung ke Supabase
+ * (`supabase.from('changelog_entries')...`) saat dialog akan ditampilkan,
+ * bukan membaca dari data yang di-bundle ke kode JS.
+ *
+ * Data ditulis secara PROGRAMATIK oleh script CI
  * (`scripts/generate-changelog.mjs`, dijalankan via
- * `.github/workflows/generate-changelog.yml`).
+ * `.github/workflows/generate-changelog.yml`) memakai service_role
+ * (bypass RLS -- lihat migration untuk detail policy).
  *
  * CARA PAKAI MANUAL (kalau tidak lewat CI):
- * Tambahkan SATU entri baru di URUTAN PALING ATAS array di
- * `public/changelog.json` (paling baru = index 0). Isi `changes` dengan
- * bahasa yang mudah dipahami PENGGUNA AWAM -- bukan bahasa teknis/istilah
- * kode.
+ * INSERT satu baris baru ke tabel `changelog_entries` lewat Supabase
+ * Dashboard SQL editor. Isi `changes` dengan bahasa yang mudah dipahami
+ * PENGGUNA AWAM -- bukan bahasa teknis/istilah kode.
  *
  *   BENAR:  "Notifikasi tagihan sekarang bisa diatur per-kategori"
  *   SALAH:  "Refactor BillReminderContext untuk mendukung filter kategori"
- *
- * `UpdatePrompt.tsx` mem-fetch `/changelog.json` saat event
- * "pwa-update-available" terjadi, lalu mengambil entri PALING ATAS
- * (data[0]) dan menampilkannya sebagai daftar poin di dialog update,
- * sesuai bahasa aktif user (id/en). Kalau array kosong atau fetch gagal,
- * dialog tetap tampil normal dengan teks generik (tanpa daftar poin).
  */
 
 export interface ChangelogEntry {
@@ -49,5 +48,5 @@ export interface ChangelogEntry {
   }[];
 }
 
-/** Path fetch runtime -- lihat penjelasan lengkap di komentar atas file ini. */
-export const CHANGELOG_URL = "/changelog.json";
+/** Nama tabel Supabase tempat entri changelog disimpan. */
+export const CHANGELOG_TABLE = "changelog_entries";

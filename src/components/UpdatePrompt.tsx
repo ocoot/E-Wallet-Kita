@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "motion/react";
 import { RefreshCw, X, Sparkles, Loader2 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { CHANGELOG_URL, type ChangelogEntry } from "../data/changelog";
+import { supabase } from "../lib/supabase";
+import { CHANGELOG_TABLE, type ChangelogEntry } from "../data/changelog";
 
 /**
  * Banner "Versi baru tersedia" yang muncul otomatis saat service worker
@@ -21,9 +22,10 @@ import { CHANGELOG_URL, type ChangelogEntry } from "../data/changelog";
  * MASIH menjalankan kode bundle LAMA (belum reload) -- jadi changelog TIDAK
  * boleh diambil dari import statis (itu akan selalu menampilkan changelog
  * versi yang SEDANG berjalan, bukan versi baru yang baru di-deploy).
- * Makanya di sini di-fetch langsung dari `/changelog.json` (file statis di
- * `public/`, bukan lewat bundler) supaya selalu dapat isi yang benar-benar
- * live di server saat itu. Lihat komentar lengkap di `src/data/changelog.ts`.
+ * Makanya di sini di-query langsung ke tabel Supabase `changelog_entries`
+ * (bukan lewat bundler / bukan file statis di public/) supaya selalu dapat
+ * isi yang benar-benar terbaru di database saat itu. Lihat komentar
+ * lengkap di `src/data/changelog.ts`.
  */
 export const UpdatePrompt: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -34,10 +36,21 @@ export const UpdatePrompt: React.FC = () => {
   useEffect(() => {
     const handler = () => {
       setVisible(true);
-      fetch(`${CHANGELOG_URL}?t=${Date.now()}`, { cache: "no-store" })
-        .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
-        .then((data: ChangelogEntry[]) => {
-          if (Array.isArray(data) && data.length > 0) setLatestEntry(data[0]);
+      supabase
+        .from(CHANGELOG_TABLE)
+        .select("version, release_date, changes")
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then(({ data, error }) => {
+          if (error) throw error;
+          if (data) {
+            setLatestEntry({
+              version: data.version,
+              date: data.release_date,
+              changes: data.changes,
+            });
+          }
         })
         .catch((err) => {
           // Best-effort saja -- kalau gagal, dialog tetap tampil normal

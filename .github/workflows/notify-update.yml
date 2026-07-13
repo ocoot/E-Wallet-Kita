@@ -5,18 +5,23 @@ name: Notify Users on Update
 # Sebelumnya, workflow ini dan `generate-changelog.yml` sama-sama trigger dari
 # event push yang SAMA, dan jalan PARALEL. Karena notify-update.yml jauh lebih
 # cepat (cuma polling status deploy Vercel) dibanding generate-changelog.yml
-# (npm ci + panggil Gemini + commit + push ulang), notifikasi "update
+# (npm ci + panggil Gemini + tulis ke Supabase), notifikasi "update
 # tersedia" HAMPIR SELALU terkirim ke user SEBELUM entri changelog untuk
 # commit itu sempat ditulis -- akibatnya popup update yang dilihat user
 # menampilkan changelog dari rilis SEBELUMNYA, selalu telat satu versi.
 #
 # Fix: workflow ini sekarang trigger via `workflow_run`, menunggu
 # `generate-changelog.yml` BENAR-BENAR selesai (baik itu berhasil menulis
-# entri baru, atau memutuskan tidak ada yang perlu ditulis) sebelum mulai.
-# Begitu jalan, ia selalu mengecek HEAD TERBARU di `main` (bukan SHA commit
-# yang memicu push awal) -- supaya kalau generate-changelog.yml sempat
-# menambah commit susulan (chore(changelog)), commit itu ikut tercakup
-# sebelum notifikasi dikirim.
+# entri baru ke Supabase, atau memutuskan tidak ada yang perlu ditulis)
+# sebelum mulai.
+#
+# CATATAN (2026-08-15): sejak `generate-changelog.yml` berhenti commit balik
+# ke `main` (changelog sekarang disimpan di tabel Supabase, bukan file git
+# -- lihat migration 20260815000000_changelog_entries.sql), tidak ada lagi
+# "commit susulan" yang perlu ditunggu di sini. Checkout HEAD terbaru di
+# bawah tetap dipertahankan sekadar untuk mengambil SHA commit developer
+# yang sebenarnya (untuk polling status deploy Vercel-nya), bukan lagi
+# untuk mengejar commit bot.
 on:
   workflow_run:
     workflows: ["Generate Changelog (AI)"]
@@ -33,17 +38,12 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion != 'cancelled' }}
     steps:
       # ── 0. Tentukan apakah notifikasi harus dilewati ────────────────────────
-      # Dicek dari pesan commit yang MEMICU generate-changelog.yml (bukan HEAD
-      # main saat ini) -- supaya dua kasus beda ditangani beda:
-      #   a) Push fitur biasa (tanpa [skip-notify]) yang KEBETULAN sudah
-      #      "disusul" commit bot changelog sebelum step ini jalan -> tetap
-      #      HARUS notify (lihat step berikutnya, yang selalu pakai HEAD
-      #      terbaru supaya changelog-nya ikut ter-cover).
-      #   b) Commit bot changelog itu SENDIRI (pesannya mengandung
-      #      "[skip-notify]") yang juga men-trigger generate-changelog.yml
-      #      lagi (job-nya di-skip lewat guard di file itu, tapi workflow run
-      #      tetap "completed" -> ikut memicu workflow_run ini) -> HARUS
-      #      dilewati supaya tidak dobel notifikasi.
+      # Dicek dari pesan commit yang MEMICU generate-changelog.yml. Sejak
+      # bot changelog tidak lagi membuat commit balik (lihat catatan di atas
+      # file ini), penanda "[skip-notify]" sekarang murni opt-out MANUAL:
+      # developer bisa sengaja menambahkan "[skip-notify]" di pesan commit
+      # sendiri (mis. untuk perubahan backend-only yang tidak ingin memicu
+      # popup "update tersedia" ke user) dan notifikasi akan dilewati.
       - name: Cek penanda skip-notify dari commit pemicu
         id: skip
         env:
@@ -63,11 +63,7 @@ jobs:
             fi
           fi
 
-      # ── 1. Ambil HEAD TERBARU main ──────────────────────────────────────────
-      # Dicek ulang di sini (bukan pakai SHA commit yang memicu push aslinya)
-      # supaya kalau generate-changelog.yml sempat menambah commit susulan
-      # (chore(changelog)) sebelum step ini jalan, commit itu ikut tercakup
-      # sebelum kita polling status deployment-nya.
+      # ── 1. Ambil SHA HEAD main ───────────────────────────────────────────
       - name: Checkout main (HEAD terbaru)
         if: steps.skip.outputs.skip != 'true'
         uses: actions/checkout@v4

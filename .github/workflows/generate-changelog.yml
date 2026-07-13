@@ -2,44 +2,46 @@ name: Generate Changelog (AI)
 
 # Jalan otomatis tiap ada push ke main -- MENDAHULUI notifikasi push
 # "update tersedia" (lihat notify-update.yml), supaya sebisa mungkin entri
-# changelog baru sudah ikut ter-deploy sebelum/bersamaan dengan notifikasi
-# itu dikirim.
+# changelog baru sudah tersimpan di Supabase sebelum/bersamaan dengan
+# notifikasi itu dikirim.
 #
-# GUARD PENTING supaya tidak infinite loop: workflow ini men-commit balik
-# ke `main` (lihat step terakhir). Commit balik itu SENDIRI juga men-trigger
-# event "push ke main" lagi. Makanya job ini dilewati kalau commit yang
-# memicunya mengandung penanda "chore(changelog)" (ciri commit bot dari
-# workflow ini sendiri) atau "[skip-notify]" (penanda commit yang memang
-# sengaja tidak mau diberitahukan ke user, dipakai bersama notify-update.yml).
+# PERUBAHAN (2026-08-15): workflow ini TIDAK LAGI commit balik ke `main`.
+# Sebelumnya `scripts/generate-changelog.mjs` menulis ke
+# `public/changelog.json` lalu step terakhir di sini meng-commit &
+# push file itu -- yang perlu guard anti-infinite-loop ("chore(changelog)"
+# / "[skip-notify]") karena commit balik itu sendiri men-trigger event
+# push lagi. Sekarang script menulis LANGSUNG ke tabel `changelog_entries`
+# di Supabase (lihat migration 20260815000000_changelog_entries.sql),
+# jadi TIDAK ADA lagi commit balik, TIDAK ADA lagi risiko infinite loop,
+# dan guard tersebut sudah tidak relevan lagi -- dihapus.
+#
+# Alasan pemindahan dari file ke Supabase: `public/changelog.json` yang
+# di-commit bot ini ternyata selalu tertimpa balik ke versi lama setiap
+# kali source di-sync dari Google AI Studio ke GitHub, karena AI Studio's
+# sync tidak mengenali file yang lahir dari commit pihak lain (bot ini)
+# dan tidak ada mekanisme ignore resmi untuk sync tersebut.
 on:
   push:
     branches: [main]
   workflow_dispatch: {}
 
 permissions:
-  contents: write
+  contents: write   # tetap dibutuhkan: script memindah git tag `changelog-sync` (push tag, bukan push commit ke main)
 
 jobs:
   generate-changelog:
     runs-on: ubuntu-latest
-    if: ${{ !contains(github.event.head_commit.message, 'chore(changelog)') && !contains(github.event.head_commit.message, '[skip-notify]') }}
     steps:
       - name: Checkout (riwayat & tag lengkap)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0     # perlu riwayat penuh supaya `git log <tag>..HEAD` bisa jalan
           fetch-tags: true
-          # Token khusus (bukan GITHUB_TOKEN bawaan) supaya commit balik di
-          # bawah bisa men-trigger workflow lain (notify-update.yml) dengan
-          # normal. GITHUB_TOKEN bawaan sengaja TIDAK memicu workflow lain
-          # oleh GitHub (demi mencegah rekursi tak sengaja) -- jadi kalau
-          # ingin notify-update.yml tetap jalan seperti biasa untuk push
-          # commit lain (bukan dari bot ini), pola umum yang dipakai adalah
-          # personal access token terpisah bernama `CHANGELOG_BOT_TOKEN`.
-          # Kalau secret ini tidak di-set, langkah checkout tetap jalan
-          # pakai GITHUB_TOKEN bawaan (fallback) -- hanya saja commit balik
-          # dari bot tidak akan ikut men-trigger workflow lain.
-          token: ${{ secrets.CHANGELOG_BOT_TOKEN || github.token }}
+          # GITHUB_TOKEN bawaan sudah cukup di sini -- tidak ada lagi commit
+          # balik ke main yang perlu men-trigger workflow lain lewat push;
+          # notify-update.yml di-trigger lewat `workflow_run` (menunggu
+          # workflow INI selesai), bukan lewat event push, jadi token
+          # khusus (CHANGELOG_BOT_TOKEN) untuk itu sudah tidak diperlukan.
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -50,33 +52,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate entri changelog dari commit git (via Gemini)
-        id: generate
+      - name: Generate & simpan entri changelog dari commit git (via Gemini) ke Supabase
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: node scripts/generate-changelog.mjs
-
-      - name: Commit & push perubahan changelog
-        if: steps.generate.outputs.changed == 'true'
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
         run: |
-          set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add public/changelog.json
-          # "[skip-notify]" sengaja disertakan supaya notify-update.yml TIDAK
-          # mengirim push notification KEDUA untuk commit bot ini -- push
-          # notification "update tersedia" cukup dikirim SEKALI untuk commit
-          # asli developer. Isi popup update tetap segar karena
-          # `UpdatePrompt.tsx` mem-fetch `public/changelog.json` langsung
-          # lewat network saat dialog akan tampil (bukan baca dari bundle JS
-          # versi lama yang sedang berjalan di browser user) -- lihat
-          # penjelasan lengkap di komentar `src/data/changelog.ts`.
-          git commit -m "chore(changelog): rangkum pembaruan otomatis via AI [skip-notify]"
-
-          # Pindahkan tag penanda sinkronisasi ke commit changelog yang baru
-          # ini, supaya run berikutnya tahu dari mana harus mulai membaca
-          # commit baru lagi.
-          git tag -f changelog-sync
-          git push origin main
-          git push origin changelog-sync --force
+          node scripts/generate-changelog.mjs

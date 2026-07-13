@@ -7,7 +7,9 @@
  *
  *   1. Ambil semua commit git sejak sinkronisasi changelog TERAKHIR
  *      (ditandai lewat git tag ringan `changelog-sync`, bukan disimpan di
- *      database, supaya tidak perlu koneksi ke Supabase dari sini).
+ *      database, supaya query "commit mana yang sudah dirangkum" tidak
+ *      perlu tabel/state tambahan -- tag ini murni penanda posisi baca
+ *      commit, terpisah dari tabel data changelog di Supabase).
  *   2. Kalau tidak ada commit baru sejak tag itu -> keluar tanpa melakukan
  *      apa-apa (exit 0, aman untuk workflow).
  *   3. Kirim daftar pesan commit itu ke Gemini, minta dirangkum jadi
@@ -15,29 +17,45 @@
  *      benar-benar terasa dampaknya oleh pengguna. Kalau menurut Gemini
  *      tidak ada satupun commit yang relevan buat pengguna (semuanya
  *      refactor/chore/dependency/dst), keluar tanpa mengubah apapun.
- *   4. Tulis entri baru itu ke PALING ATAS array di `public/changelog.json`.
- *   5. Repo TIDAK di-commit/push oleh script ini -- itu dilakukan oleh
- *      workflow (lihat generate-changelog.yml) supaya kredensial git tetap
- *      dikelola di level workflow, bukan di script.
+ *   4. INSERT entri baru itu ke tabel `changelog_entries` di Supabase
+ *      (pakai service_role, bypass RLS -- lihat migration
+ *      20260815000000_changelog_entries.sql).
+ *
+ * PERUBAHAN PENTING (2026-08-15): sebelumnya langkah 4 menulis ke file
+ * `public/changelog.json` lalu di-commit/push balik ke git oleh workflow.
+ * Itu dihentikan karena setiap kali source di-sync dari Google AI Studio ke
+ * GitHub, AI Studio menimpa balik file itu ke versi lama (AI Studio's sync
+ * tidak mengenali file yang lahir dari commit bot, dan tidak ada mekanisme
+ * ignore resmi untuk sync tersebut). Dengan menulis langsung ke Supabase,
+ * tidak ada lagi artefak file di repo yang bisa direbut oleh sync manapun.
+ * Script ini sekarang menulis LANGSUNG ke database sendiri (tidak lagi
+ * lewat step commit terpisah di workflow) karena kredensialnya
+ * (SUPABASE_SERVICE_ROLE_KEY) sudah harus ada sebagai secret di sini,
+ * bukan kredensial git.
  *
  * ENV YANG DIBUTUHKAN:
- *   GEMINI_API_KEY   -- key Gemini yang sama yang sudah dipakai di
- *                       api/_lib/receipt-parser.ts dkk (lihat proses.env
- *                       fallback di sana: GEMINI_API_KEY || GEMINI_API_KEY_1).
- *                       Di sini kita pakai GEMINI_API_KEY saja karena
- *                       script ini jalan sekali per push, bukan per
- *                       request pengguna, jadi tidak perlu rotasi banyak
- *                       key seperti di serverless function.
+ *   GEMINI_API_KEY             -- key Gemini yang sama yang sudah dipakai di
+ *                                 api/_lib/receipt-parser.ts dkk (lihat
+ *                                 proses.env fallback di sana:
+ *                                 GEMINI_API_KEY || GEMINI_API_KEY_1). Di
+ *                                 sini cukup GEMINI_API_KEY saja karena
+ *                                 script ini jalan sekali per push, bukan
+ *                                 per request pengguna.
+ *   SUPABASE_URL                -- sama seperti yang dipakai api/*.ts
+ *                                 (process.env.SUPABASE_URL || VITE_SUPABASE_URL)
+ *   SUPABASE_SERVICE_ROLE_KEY   -- sama seperti pola di api/admin/broadcast.ts,
+ *                                 dipakai supaya insert bisa bypass RLS
+ *                                 (satu-satunya jalur tulis ke changelog_entries)
  *
  * Jalan manual untuk testing lokal:
- *   GEMINI_API_KEY=xxxx node scripts/generate-changelog.mjs
+ *   GEMINI_API_KEY=xxxx SUPABASE_URL=xxxx SUPABASE_SERVICE_ROLE_KEY=xxxx \
+ *     node scripts/generate-changelog.mjs
  */
 
 import { execSync } from "node:child_process";
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { createClient } from "@supabase/supabase-js";
 import { GoogleGenAI } from "@google/genai";
 
-const CHANGELOG_JSON_PATH = new URL("../public/changelog.json", import.meta.url);
 const SYNC_TAG = "changelog-sync";
 
 // Model dipilih dari daftar yang SUDAH dipakai & terbukti jalan di project
@@ -138,13 +156,12 @@ function todayHumanReadable() {
   });
 }
 
-function bumpVersion(currentChangelog) {
+function bumpVersion(lastVersion) {
   // Versi di sini murni penanda dokumentasi (lihat komentar di changelog.ts),
   // BUKAN sumber kebenaran versi aplikasi -- jadi cukup naikkan angka minor
   // dari entri terakhir. Kalau belum ada entri sama sekali, mulai dari 1.0.0.
-  const last = currentChangelog[0]?.version;
-  if (!last) return "1.0.0";
-  const parts = last.split(".").map((n) => parseInt(n, 10) || 0);
+  if (!lastVersion) return "1.0.0";
+  const parts = lastVersion.split(".").map((n) => parseInt(n, 10) || 0);
   parts[1] = (parts[1] ?? 0) + 1;
   parts[2] = 0;
   return parts.join(".");
@@ -157,6 +174,14 @@ async function main() {
     process.exit(0); // sengaja exit 0 -- jangan gagalkan seluruh workflow gara-gara changelog opsional
   }
 
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "";
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  if (!supabaseUrl || !supabaseServiceKey) {
+    console.error("[changelog] SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY tidak di-set. Lewati generate changelog (bukan error fatal).");
+    process.exit(0);
+  }
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
   const commitSubjects = getCommitsSinceLastSync();
   if (commitSubjects.length === 0) {
     console.log("[changelog] Tidak ada commit baru sejak sinkronisasi terakhir. Selesai.");
@@ -166,9 +191,18 @@ async function main() {
   console.log(`[changelog] Ditemukan ${commitSubjects.length} commit baru:`);
   commitSubjects.forEach((s) => console.log(`  - ${s}`));
 
-  const currentChangelog = existsSync(CHANGELOG_JSON_PATH)
-    ? JSON.parse(readFileSync(CHANGELOG_JSON_PATH, "utf8"))
-    : [];
+  const { data: lastRow, error: lastRowError } = await supabase
+    .from("changelog_entries")
+    .select("version")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (lastRowError) {
+    console.error(`[changelog] Gagal membaca entri terakhir dari Supabase: ${lastRowError.message}`);
+    console.error("[changelog] Melewati generate changelog kali ini (bukan error fatal untuk workflow).");
+    process.exit(0);
+  }
 
   let changes;
   try {
@@ -185,21 +219,32 @@ async function main() {
   }
 
   const newEntry = {
-    version: bumpVersion(currentChangelog),
-    date: todayHumanReadable(),
+    version: bumpVersion(lastRow?.version),
+    release_date: todayHumanReadable(),
     changes: changes.slice(0, 5), // jaga-jaga kalau model tetap balas lebih dari 5
   };
 
-  const updated = [newEntry, ...currentChangelog];
-  writeFileSync(CHANGELOG_JSON_PATH, JSON.stringify(updated, null, 2) + "\n", "utf8");
+  const { error: insertError } = await supabase.from("changelog_entries").insert(newEntry);
+  if (insertError) {
+    console.error(`[changelog] Gagal menulis entri baru ke Supabase: ${insertError.message}`);
+    console.error("[changelog] Melewati generate changelog kali ini (bukan error fatal untuk workflow).");
+    process.exit(0);
+  }
 
-  console.log(`[changelog] Entri baru "${newEntry.version}" ditulis ke public/changelog.json:`);
+  console.log(`[changelog] Entri baru "${newEntry.version}" ditulis ke tabel changelog_entries:`);
   newEntry.changes.forEach((c) => console.log(`  - ${c.id}`));
 
-  // Beritahu step berikutnya di workflow bahwa ada perubahan untuk di-commit.
-  const githubOutput = process.env.GITHUB_OUTPUT;
-  if (githubOutput) {
-    writeFileSync(githubOutput, "changed=true\n", { flag: "a" });
+  // Pindahkan tag penanda sinkronisasi commit ke HEAD saat ini, supaya run
+  // berikutnya tahu dari mana harus mulai membaca commit baru lagi. Ini
+  // menggantikan langkah "git tag -f changelog-sync && git push" yang dulu
+  // dilakukan workflow SETELAH commit balik -- sekarang dilakukan di sini
+  // karena tidak ada lagi commit balik yang perlu ditunggu.
+  try {
+    sh(`git tag -f ${SYNC_TAG}`);
+    sh(`git push origin ${SYNC_TAG} --force`);
+    console.log(`[changelog] Tag "${SYNC_TAG}" dipindah ke HEAD saat ini.`);
+  } catch (err) {
+    console.warn(`[changelog] Gagal memindah tag "${SYNC_TAG}" (bukan error fatal, entri changelog tetap tersimpan): ${err.message || err}`);
   }
 }
 
