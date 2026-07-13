@@ -722,6 +722,7 @@
     "revenue_paid_at": "Waktu Bayar",
     "revenue_created_at": "Dibuat",
     "tab_maintenance": "🛠️ Maintenance",
+    "tab_support_chat": "💬 Live Chat",
     "maintenance_title": "Mode Maintenance",
     "maintenance_desc": "Aktifkan mode maintenance, atur pesan running text, dan kunci fitur tertentu agar tidak dapat diakses pengguna.",
     "maintenance_load_error": "Gagal memuat status maintenance.",
@@ -877,6 +878,7 @@
       "placeholder": "Tulis pesan untuk admin...",
       "send": "Kirim",
       "waiting_admin": "Menunggu admin merespons...",
+      "waiting_first_reply": "Pesanmu sudah terkirim. Tim admin akan segera membalas di sini.",
       "claimed_by_admin": "Admin sedang menangani sesi ini.",
       "session_closed": "Sesi ini sudah ditutup.",
       "close_session": "Tutup sesi",
@@ -886,6 +888,22 @@
       "error_send_failed": "Gagal mengirim pesan, coba lagi.",
       "error_session_closed": "Sesi sudah ditutup, tidak bisa mengirim pesan."
     }
+  },
+  "admin_support_chat": {
+    "title": "Live Chat Support",
+    "desc": "Pantau dan balas semua sesi chat admin yang sedang aktif dari sini — satu layar untuk semua sesi, supaya tidak ada yang tumpang tindih atau kelewat.",
+    "list_empty_title": "Belum ada sesi aktif",
+    "list_empty_desc": "Sesi chat baru dari pengguna akan muncul di sini secara realtime.",
+    "select_prompt": "Pilih salah satu sesi di daftar untuk mulai membalas.",
+    "status_open": "Menunggu",
+    "status_claimed": "Ditangani",
+    "no_messages_yet": "Belum ada pesan di sesi ini.",
+    "reply_placeholder": "Balas sebagai admin...",
+    "toast_reply_sent": "Balasan terkirim.",
+    "toast_session_closed": "Sesi berhasil ditutup.",
+    "toast_error": "Terjadi kesalahan, coba lagi.",
+    "unknown_user": "Pengguna",
+    "refresh": "Muat ulang"
   },
   "onboarding": {
     "title": "Panduan Pengguna Baru",

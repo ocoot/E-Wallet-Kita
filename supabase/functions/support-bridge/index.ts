@@ -38,16 +38,27 @@ serve(async (req) => {
 
       if (msgError) throw msgError;
 
-      // Get session's short_code
+      // Get session's short_code + telegram_thread_id + siapa pemiliknya
       const { data: sessData, error: sessError } = await supabase
         .from("support_sessions")
-        .select("short_code")
+        .select("short_code, user_id, telegram_thread_id")
         .eq("id", session_id)
         .single();
 
       if (sessError) throw sessError;
 
-      // Get admin chat ID from app_settings
+      let userLabel = "";
+      if (sessData.user_id) {
+        const { data: userData } = await supabase
+          .from("users")
+          .select("display_name")
+          .eq("id", sessData.user_id)
+          .maybeSingle();
+        if (userData?.display_name) userLabel = userData.display_name;
+      }
+
+      // Get admin chat ID from app_settings (sekarang harus ID supergroup
+      // yang Forum Topics-nya sudah aktif)
       const { data: adminSetting } = await supabase
         .from("app_settings")
         .select("value")
@@ -55,19 +66,83 @@ serve(async (req) => {
         .maybeSingle();
 
       if (adminSetting?.value && token) {
-        // Format the message with the unique session identifier code so the admin can reply easily
-        const messageText = `🔔 *Pesan Baru dari Sesi #${sessData.short_code}*\n` +
-          `💬 ${content}`;
-          
+        let threadId: number | null = sessData.telegram_thread_id ?? null;
+
+        // Sesi ini belum punya topic Telegram-nya -- buat sekali di pesan
+        // pertama (lazy create, bukan saat sesi dibuat, supaya sesi yang
+        // dibuat lalu tidak jadi dipakai tidak meninggalkan topic kosong).
+        if (!threadId) {
+          try {
+            const topicName = `${userLabel || "User"} • #${sessData.short_code}`.slice(0, 128);
+            const topicRes = await fetch(`https://api.telegram.org/bot${token}/createForumTopic`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ chat_id: adminSetting.value, name: topicName }),
+            });
+            const topicJson = await topicRes.json();
+
+            if (topicJson.ok && topicJson.result?.message_thread_id) {
+              threadId = topicJson.result.message_thread_id;
+              await supabase
+                .from("support_sessions")
+                .update({ telegram_thread_id: threadId })
+                .eq("id", session_id);
+            } else {
+              // Gagal bikin topic (mis. grup belum benar-benar supergroup /
+              // topics belum aktif / bot bukan admin) -- catat, lalu tetap
+              // lanjut kirim ke chat utama sebagai fallback di bawah.
+              try {
+                await supabase.from("error_logs").insert({
+                  source: "support-bridge",
+                  level: "warning",
+                  message: "Gagal membuat Telegram Forum Topic, fallback ke chat utama.",
+                  context: { session_id, short_code: sessData.short_code, telegram_response: topicJson },
+                });
+              } catch (logErr) {
+                console.error("[support-bridge] Gagal mencatat error_logs (soft-fail):", logErr);
+              }
+            }
+          } catch (topicErr) {
+            console.error("[support-bridge] createForumTopic error:", topicErr);
+          }
+        }
+
+        // Kalau ada topic (baru dibuat atau sudah ada sebelumnya), pesan
+        // di dalam topic itu tidak perlu lagi header kode sesi -- nama
+        // topic-nya sendiri sudah menandakan ini sesi siapa. Kalau topic
+        // gagal dibuat, tetap sertakan header supaya admin masih bisa
+        // reply manual seperti alur lama.
+        const messageText = threadId
+          ? `${userLabel ? `👤 *${userLabel}*\n` : ""}💬 ${content}`
+          : `🔔 *Pesan Baru${userLabel ? ` dari ${userLabel}` : ""}*\nSesi #${sessData.short_code}\n💬 ${content}`;
+
+        const sendPayload: Record<string, unknown> = {
+          chat_id: adminSetting.value,
+          text: messageText,
+          parse_mode: "Markdown",
+        };
+        if (threadId) sendPayload.message_thread_id = threadId;
+
         await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: adminSetting.value,
-            text: messageText,
-            parse_mode: "Markdown",
-          }),
+          body: JSON.stringify(sendPayload),
         });
+      } else {
+        // Admin belum /register chat-nya, atau bot token belum di-set --
+        // pesan user sudah tersimpan di DB tapi TIDAK ADA yang akan
+        // memberitahu admin. Sebelumnya ini gagal diam-diam; sekarang
+        // dicatat supaya kelihatan di Admin Panel > Error Monitor.
+        try {
+          await supabase.from("error_logs").insert({
+            source: "support-bridge",
+            level: "warning",
+            message: "Notifikasi admin tidak terkirim: support_admin_chat_id atau SUPPORT_TELEGRAM_BOT_TOKEN belum dikonfigurasi.",
+            context: { session_id, short_code: sessData.short_code },
+          });
+        } catch (logErr) {
+          console.error("[support-bridge] Gagal mencatat error_logs (soft-fail):", logErr);
+        }
       }
 
       return new Response(JSON.stringify({ success: true, data: msgData }), {
@@ -81,8 +156,9 @@ serve(async (req) => {
       const message = body.message;
       const chatId = message.chat.id;
       const text = message.text ? message.text.trim() : "";
+      const threadId: number | undefined = message.message_thread_id;
 
-      // Commands: /register to link this Telegram chat as the Admin Support channel
+      // Commands: /register to link this Telegram (super)group as the Admin Support channel
       if (text.startsWith("/register")) {
         const { error: upsertError } = await supabase
           .from("app_settings")
@@ -93,35 +169,72 @@ serve(async (req) => {
           });
 
         if (upsertError) {
-          await sendTelegram(token, chatId, `❌ Gagal mendaftarkan chat: ${upsertError.message}`);
+          await sendTelegram(token, chatId, `❌ Gagal mendaftarkan chat: ${upsertError.message}`, threadId);
         } else {
-          await sendTelegram(token, chatId, `✅ *Sukses!*\nChat ini telah didaftarkan sebagai Admin Support Chat.`);
+          await sendTelegram(token, chatId, `✅ *Sukses!*\nChat ini telah didaftarkan sebagai Admin Support Chat.`, threadId);
         }
         return new Response("ok", { status: 200 });
       }
 
-      // Live Chat Reply: admin replies to a forwarded message
-      if (message.reply_to_message && text) {
-        console.log("ADMIN TEXT:", text);
+      if (!text) {
+        return new Response("ok", { status: 200 });
+      }
+
+      // Live Chat Reply -- jalur utama (Forum Topics): setiap sesi punya
+      // topic sendiri, jadi cukup cocokkan message_thread_id dari Telegram
+      // ke telegram_thread_id di database. TIDAK ADA lagi regex/reply-to
+      // yang rawan salah sasaran kalau admin lupa reply ke pesan yang benar.
+      if (threadId) {
+        const { data: session, error: sessError } = await supabase
+          .from("support_sessions")
+          .select("id, status")
+          .eq("telegram_thread_id", threadId)
+          .in("status", ["open", "claimed"])
+          .maybeSingle();
+
+        if (sessError) {
+          await sendTelegram(token, chatId, `❌ Database error: ${sessError.message}`, threadId);
+          return new Response("ok", { status: 200 });
+        }
+
+        if (session) {
+          const { error: insertError } = await supabase
+            .from("support_messages")
+            .insert({ session_id: session.id, sender: "admin", content: text });
+
+          if (insertError) {
+            await sendTelegram(token, chatId, `❌ Gagal menyimpan pesan: ${insertError.message}`, threadId);
+            return new Response("ok", { status: 200 });
+          }
+
+          if (session.status === "open") {
+            await supabase.from("support_sessions").update({ status: "claimed" }).eq("id", session.id);
+          }
+          return new Response("ok", { status: 200 });
+        }
+
+        // Topic ada tapi sesinya sudah tidak aktif (ditutup/dibersihkan) --
+        // beri tahu di topic yang sama, jangan diam-diam gagal.
+        await sendTelegram(token, chatId, `⚠️ Sesi untuk topic ini sudah ditutup atau tidak ditemukan.`, threadId);
+        return new Response("ok", { status: 200 });
+      }
+
+      // Fallback untuk pesan di luar topic (mis. General topic, atau kalau
+      // Forum Topics belum sempat kepakai untuk sesi tertentu) -- pakai
+      // cara lama: admin reply ke pesan yang berisi kode sesi.
+      if (message.reply_to_message) {
         const repliedText = message.reply_to_message.text || "";
-        console.log("REPLIED TEXT:", repliedText);
         const match = repliedText.match(/#([A-Z0-9]+)/);
-        console.log("MATCH RESULT:", match);
 
         if (match) {
           const shortCode = match[1];
-          console.log("SHORT CODE:", shortCode);
 
-          // Fetch active support session
           const { data: session, error: sessError } = await supabase
             .from("support_sessions")
             .select("id, status")
             .eq("short_code", shortCode)
             .in("status", ["open", "claimed"])
             .maybeSingle();
-
-          console.log("SESSION:", session);
-          console.log("SESSION ERROR:", sessError);
 
           if (sessError) {
             await sendTelegram(token, chatId, `❌ Database error: ${sessError.message}`);
@@ -133,29 +246,17 @@ serve(async (req) => {
             return new Response("ok", { status: 200 });
           }
 
-          // Insert message as 'admin'
           const { error: insertError } = await supabase
             .from("support_messages")
-            .insert({
-              session_id: session.id,
-              sender: "admin",
-              content: text,
-            });
-
-          console.log("SESSION ID:", session.id);
-          console.log("INSERT ERROR:", insertError);
+            .insert({ session_id: session.id, sender: "admin", content: text });
 
           if (insertError) {
             await sendTelegram(token, chatId, `❌ Gagal menyimpan pesan: ${insertError.message}`);
             return new Response("ok", { status: 200 });
           }
 
-          // If the session status is still open, automatically set it to claimed since the admin replied
           if (session.status === "open") {
-            await supabase
-              .from("support_sessions")
-              .update({ status: "claimed" })
-              .eq("id", session.id);
+            await supabase.from("support_sessions").update({ status: "claimed" }).eq("id", session.id);
           }
         } else {
           await sendTelegram(token, chatId, `⚠️ Mohon balas (reply) ke pesan berisi kode sesi (contoh: #A1B2C3).`);
@@ -188,15 +289,17 @@ serve(async (req) => {
   }
 });
 
-async function sendTelegram(token: string, chatId: number, text: string) {
+async function sendTelegram(token: string, chatId: number, text: string, messageThreadId?: number) {
   if (!token) return;
+  const payload: Record<string, unknown> = {
+    chat_id: chatId,
+    text,
+    parse_mode: "Markdown",
+  };
+  if (messageThreadId) payload.message_thread_id = messageThreadId;
   await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text,
-      parse_mode: "Markdown",
-    }),
+    body: JSON.stringify(payload),
   });
 }

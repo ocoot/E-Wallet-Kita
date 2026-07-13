@@ -1,15 +1,5 @@
 [
   {
-    "version": "1.5.0",
-    "date": "13 Jul 2026",
-    "changes": [
-      {
-        "id": "Tampilan chat bantuan kini lebih rapi dengan latar belakang gelap.",
-        "en": "Support chat now looks cleaner with a dark backdrop."
-      }
-    ]
-  },
-  {
     "version": "1.4.0",
     "date": "12 Jul 2026",
     "changes": [

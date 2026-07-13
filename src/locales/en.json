@@ -722,6 +722,7 @@
     "revenue_paid_at": "Paid At",
     "revenue_created_at": "Created At",
     "tab_maintenance": "🛠️ Maintenance",
+    "tab_support_chat": "💬 Live Chat",
     "maintenance_title": "Maintenance Mode Settings",
     "maintenance_desc": "Turn on global maintenance, configure running text, and toggle specific feature gates.",
     "maintenance_load_error": "Failed to load maintenance status.",
@@ -877,6 +878,7 @@
       "placeholder": "Type a message for admin...",
       "send": "Send",
       "waiting_admin": "Waiting for admin to respond...",
+      "waiting_first_reply": "Your message has been sent. Our admin team will reply here shortly.",
       "claimed_by_admin": "An admin is handling this session.",
       "session_closed": "This session has been closed.",
       "close_session": "Close session",
@@ -886,6 +888,22 @@
       "error_send_failed": "Failed to send message, please try again.",
       "error_session_closed": "Session is already closed, cannot send messages."
     }
+  },
+  "admin_support_chat": {
+    "title": "Live Chat Support",
+    "desc": "Monitor and reply to every active admin chat session from here — one screen for all sessions, so nothing overlaps or gets missed.",
+    "list_empty_title": "No active sessions",
+    "list_empty_desc": "New chat sessions from users will appear here in realtime.",
+    "select_prompt": "Pick a session from the list to start replying.",
+    "status_open": "Waiting",
+    "status_claimed": "Handled",
+    "no_messages_yet": "No messages in this session yet.",
+    "reply_placeholder": "Reply as admin...",
+    "toast_reply_sent": "Reply sent.",
+    "toast_session_closed": "Session closed successfully.",
+    "toast_error": "Something went wrong, please try again.",
+    "unknown_user": "User",
+    "refresh": "Refresh"
   },
   "onboarding": {
     "title": "New User Guide",
