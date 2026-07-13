@@ -53,6 +53,8 @@ async function startServer() {
   // Dynamic imports — these modules create Supabase clients at import time,
   // so env vars must already be loaded before they're required.
   const parseTransactionHandler = (await import("./api/parse-transaction")).default;
+  const parseReceiptHandler = (await import("./api/parse-receipt")).default;
+  const parseVoiceHandler = (await import("./api/parse-voice")).default;
   const telegramWebhookHandler = (await import("./api/telegram-webhook")).default;
   const sendReceiptHandler = (await import("./api/send-receipt")).default;
   const premiumPaymentHandler = (await import("./api/premium/payment")).default;
@@ -64,6 +66,19 @@ async function startServer() {
   // limiting, 500-char query limit, the 7-model Gemini fallback chain, and
   // DB-driven categories all now apply in dev too, not just in production)
   app.post("/api/parse-transaction", parseTransactionHandler as any);
+
+  // Web OCR receipt upload (Delegated to serverless module — same
+  // api/_lib/receipt-parser.ts the Telegram bot's handleReceiptPhoto uses
+  // internally, which is why the bot never showed this issue: it calls the
+  // parser function directly instead of going through this HTTP route).
+  // This route existed as a file but was never mounted here, so any web
+  // upload hit Express's/Vite's catch-all and came back as a 404.
+  app.post("/api/parse-receipt", parseReceiptHandler as any);
+
+  // Web voice-note transcription (same gap/fix as parse-receipt above —
+  // was defined in api/parse-voice.ts but never mounted, so VoiceRecorder.tsx's
+  // POST to /api/parse-voice would 404 in this dev/preview server too).
+  app.post("/api/parse-voice", parseVoiceHandler as any);
 
   // Admin Broadcast — unified push + telegram (Delegated to serverless module)
   app.post("/api/admin/broadcast", broadcastHandler as any);

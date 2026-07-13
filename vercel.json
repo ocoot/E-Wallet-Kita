@@ -38,7 +38,34 @@
   ],
   "headers": [
     {
-      "source": "/(sw\\.js|workbox-(.*)\\.js|firebase-messaging-sw\\.js|registerSW\\.js|manifest\\.json)",
+      "source": "/sw\\.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/workbox-(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/firebase-messaging-sw\\.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/manifest\\.json",
       "headers": [
         {
           "key": "Cache-Control",
