@@ -29,20 +29,20 @@ async function main() {
   // di-set, script berhenti supaya tidak bisa dijalankan tanpa otorisasi.
   const validToken = process.env.TELEGRAM_SETUP_TOKEN;
   if (!validToken) {
-    console.error('❌ TELEGRAM_SETUP_TOKEN not configured in environment variables');
+    console.error('TELEGRAM_SETUP_TOKEN not configured in environment variables');
     process.exit(1);
   }
 
   // ── Validasi env wajib lainnya ────────────────────────────────────────────
   const token = process.env.TELEGRAM_BOT_TOKEN;
   if (!token) {
-    console.error('❌ Missing TELEGRAM_BOT_TOKEN in environment variables');
+    console.error('Missing TELEGRAM_BOT_TOKEN in environment variables');
     process.exit(1);
   }
 
   const appUrl = process.env.APP_URL;
   if (!appUrl) {
-    console.error('❌ Missing APP_URL in environment variables');
+    console.error('Missing APP_URL in environment variables');
     process.exit(1);
   }
 
@@ -50,7 +50,7 @@ async function main() {
 
   const webhookUrl = `${appUrl.replace(/\/$/, '')}/api/telegram-webhook`;
 
-  console.log('🔄 Setting up Telegram webhook...');
+  console.log('Setting up Telegram webhook...');
   console.log(`  Bot Token   : ${token.substring(0, 10)}...`);
   console.log(`  Webhook URL : ${webhookUrl}`);
   console.log(`  Secret Token: ${secretToken ? 'SET' : 'NOT SET'}`);
@@ -68,7 +68,7 @@ async function main() {
       }),
     });
   } catch (err: any) {
-    console.error('🔴 Setup Telegram Webhook error:', err);
+    console.error('Setup Telegram Webhook error:', err);
     console.error('   message:', err.message);
     process.exit(1);
   }
@@ -76,13 +76,13 @@ async function main() {
   const result = await response.json();
 
   if (!response.ok) {
-    console.error('❌ Telegram API returned an error:');
+    console.error('Telegram API returned an error:');
     console.error('   details:', JSON.stringify(result, null, 2));
     process.exit(1);
   }
 
   if (result.ok && result.result === true) {
-    console.log('✅ Webhook registered successfully to Telegram API');
+    console.log('Webhook registered successfully to Telegram API');
     console.log('');
     console.log('   webhook_url      :', webhookUrl);
     console.log('   telegram_response:', JSON.stringify(result, null, 2));
@@ -92,14 +92,14 @@ async function main() {
     console.log('   - Try the /link command with a valid code');
     console.log('   - Check Vercel logs for incoming webhook updates');
   } else {
-    console.warn('⚠️  Telegram API returned an unexpected response:');
+    console.warn(' Telegram API returned an unexpected response:');
     console.warn('   webhook_url      :', webhookUrl);
     console.warn('   telegram_response:', JSON.stringify(result, null, 2));
   }
 }
 
 main().catch((err: any) => {
-  console.error('🔴 Setup Telegram Webhook error:', err);
+  console.error('Setup Telegram Webhook error:', err);
   console.error('   message:', err.message);
   process.exit(1);
 });

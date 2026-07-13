@@ -59,7 +59,7 @@ Repo → Settings → Secrets and variables → Actions → New repository secre
 - **Trigger manual tanpa push commit**: buka tab *Actions* di GitHub →
   pilih workflow "Notify Users on Update" → *Run workflow*.
 - **Kirim manual dengan pesan custom** (tetap tersedia): Admin Panel →
-  Broadcast → tombol "🔄 Beritahu Update Tersedia" (bisa edit judul/isi).
+  Broadcast → tombol "Beritahu Update Tersedia" (bisa edit judul/isi).
 
 ## Keamanan
 

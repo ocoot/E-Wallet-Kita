@@ -133,7 +133,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // per-attempt di dalam transcribeVoiceNote (lihat Runtime Logs Vercel).
     const traceId = `vt_web_${user.id}_${Date.now()}`;
     console.log(
-      `🎙️ [${traceId}] Voice note diterima dari web — userId=${user.id} ` +
+      `[${traceId}] Voice note diterima dari web — userId=${user.id} ` +
       `clientMimeType=${typeof mimeType === "string" ? mimeType : "unknown"} ` +
       `resolvedMimeType="${resolvedMimeType}" durationSeconds=${durationSeconds ?? "unknown"} ` +
       `base64Len=${cleanBase64.length}`
@@ -142,7 +142,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const transcript = await transcribeVoiceNote(cleanBase64, resolvedMimeType, traceId);
 
     if (!transcript) {
-      console.error(`❌ [${traceId}] transcribeVoiceNote returned null — lihat log "${traceId}" di atas untuk detail kegagalan tiap model.`);
+      console.error(`[${traceId}] transcribeVoiceNote returned null — lihat log "${traceId}" di atas untuk detail kegagalan tiap model.`);
       await logError(supabase, {
         source: "parse-voice",
         level: "error",
@@ -156,7 +156,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.json({ transcript });
   } catch (err: any) {
-    console.error("❌ parse-voice endpoint error:", err);
+    console.error("parse-voice endpoint error:", err);
     await logError(supabase, {
       source: "parse-voice",
       level: "error",

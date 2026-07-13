@@ -96,7 +96,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .single();
 
     if (dbError) {
-      console.error("❌ SQL Error saving receipt draft:", dbError);
+      console.error("SQL Error saving receipt draft:", dbError);
       // Fallback to returning parsed JSON directly if DB insertion fails
       res.json({
         id: null,
@@ -115,7 +115,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.json(draft);
 
   } catch (err: any) {
-    console.error("❌ parse-receipt endpoint error:", err);
+    console.error("parse-receipt endpoint error:", err);
     await logError(supabase, {
       source: "parse-receipt",
       level: "error",

@@ -305,7 +305,7 @@ export const AdminBroadcast: React.FC = () => {
           <div className="rounded-2xl border border-slate-700 light_sakura:border-slate-100 bg-slate-800 light_sakura:bg-slate-50 p-6">
             <p className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 mb-3 uppercase tracking-wider">{t("admin.preview_label")}</p>
             <div className="text-sm text-slate-200 light_sakura:text-slate-700 whitespace-pre-wrap leading-relaxed font-mono">
-              📢 <strong>Pesan dari Admin E-Wallet Kita</strong>{"\n\n"}
+             <strong>Pesan dari Admin E-Wallet Kita</strong>{"\n\n"}
               {message.trim()}{"\n\n"}
               <em>— Tim E-Wallet Kita</em>
             </div>
@@ -336,7 +336,7 @@ export const AdminBroadcast: React.FC = () => {
                 ${lastResult.telegram.failCount === 0
                   ? "bg-emerald-900/20 light_sakura:bg-emerald-50 border-emerald-800/50 light_sakura:border-emerald-100 text-emerald-300 light_sakura:text-emerald-700"
                   : "bg-amber-900/20 light_sakura:bg-amber-50 border-amber-800/50 light_sakura:border-amber-100 text-amber-300 light_sakura:text-amber-700"}`}>
-                📨 Telegram → {t("admin.broadcast_success_report", { success: lastResult.telegram.successCount, failed: lastResult.telegram.failCount })}
+               Telegram → {t("admin.broadcast_success_report", { success: lastResult.telegram.successCount, failed: lastResult.telegram.failCount })}
               </div>
             )}
             {lastResult.push && (
@@ -344,7 +344,7 @@ export const AdminBroadcast: React.FC = () => {
                 ${lastResult.push.failCount === 0
                   ? "bg-emerald-900/20 light_sakura:bg-emerald-50 border-emerald-800/50 light_sakura:border-emerald-100 text-emerald-300 light_sakura:text-emerald-700"
                   : "bg-amber-900/20 light_sakura:bg-amber-50 border-amber-800/50 light_sakura:border-amber-100 text-amber-300 light_sakura:text-amber-700"}`}>
-                🔔 Push → {t("admin.push_broadcast_result", { success: lastResult.push.successCount, failed: lastResult.push.failCount })}
+               Push → {t("admin.push_broadcast_result", { success: lastResult.push.successCount, failed: lastResult.push.failCount })}
               </div>
             )}
           </div>

@@ -19,31 +19,31 @@ import { useWallets } from "../hooks/useWallets";
 import { checkSingleCategoryBudget } from "../hooks/useBudgets";
 import { ConfirmTransactionModal, ConfirmTransactionDraft } from "../components/ConfirmTransactionModal";
 
-// Emoji map for category keys — fallback to 💰 if key not found
+// Emoji map for category keys — fallback to if key not found
 const CATEGORY_EMOJI: Record<string, string> = {
-  food_drink: "🍜",
-  transport: "🚗",
-  shopping: "🛒",
-  health: "💊",
-  entertainment: "🎮",
-  education: "📚",
-  bills: "🧾",
-  household: "🏠",
-  beauty: "💄",
-  electronics: "📱",
-  travel: "✈️",
-  sport: "🏋️",
-  charity: "🤝",
-  other_expense: "📦",
-  salary: "💼",
-  freelance: "💻",
-  investment: "📈",
-  bonus: "🎁",
-  other_income: "💰",
+  food_drink: "",
+  transport: "",
+  shopping: "",
+  health: "",
+  entertainment: "",
+  education: "",
+  bills: "",
+  household: "",
+  beauty: "",
+  electronics: "",
+  travel: "",
+  sport: "",
+  charity: "",
+  other_expense: "",
+  salary: "",
+  freelance: "",
+  investment: "",
+  bonus: "",
+  other_income: "",
 };
 
 function getCategoryEmoji(key: string): string {
-  return CATEGORY_EMOJI[key] ?? "💰";
+  return CATEGORY_EMOJI[key] ?? "";
 }
 
 interface NewTransactionProps {
@@ -321,9 +321,9 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
             {/* ── Formasi tab: pilih satu metode input ──────────────────── */}
             <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-slate-950/60 border border-slate-800/50 light_sakura:bg-rose-50/30 light_sakura:border-rose-100">
               {([
-                { key: "receipt", label: "Struk", icon: "📎" },
-                { key: "voice", label: "Suara", icon: "🎙" },
-                { key: "manual", label: "Manual", icon: "✎" },
+                { key: "receipt", label: "Struk", icon: "" },
+                { key: "voice", label: "Suara", icon: "" },
+                { key: "manual", label: "Manual", icon: "" },
               ] as const).map(tab => (
                 <button
                   key={tab.key}
@@ -371,7 +371,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                           : "text-slate-500 hover:text-slate-300 light_sakura:text-slate-400 light_sakura:hover:text-slate-600"
                         }`}
                     >
-                      <span className="text-base leading-none">📤</span>
+                      <span className="text-base leading-none"> </span>
                       {t("transaction.expense")}
                     </button>
                     <button
@@ -383,7 +383,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                           : "text-slate-500 hover:text-slate-300 light_sakura:text-slate-400 light_sakura:hover:text-slate-600"
                         }`}
                     >
-                      <span className="text-base leading-none">📥</span>
+                      <span className="text-base leading-none"> </span>
                       {t("transaction.income")}
                     </button>
                   </div>
@@ -482,7 +482,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                     disabled={isLoading}
                     placeholder={t("wallet.label_pos")}
                     options={activeWallets.map((w) => {
-                      const icon = w.type === "general" ? "💰" : w.type === "ewallet" ? "📱" : w.type === "bank" ? "🏦" : "💵";
+                      const icon = w.type === "general" ? "" : w.type === "ewallet" ? "" : w.type === "bank" ? "" : "";
                       return { value: w.id, label: `${icon} ${w.name}${w.provider ? ` · ${w.provider}` : ""} (${formatIDR(w.balance)})` };
                     })}
                   />
@@ -540,7 +540,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                         : "bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-900/20"
                     }`}
                   >
-                    <span className="text-sm leading-none">✓</span>
+                    <span className="text-sm leading-none"> </span>
                     <span>{t("transaction.btn_submit")}</span>
                   </button>
                 </div>

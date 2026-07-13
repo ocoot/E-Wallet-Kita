@@ -13,9 +13,9 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 
 const GROUP_META: Record<Exclude<WalletType, "general">, { icon: string; labelKey: string; addKey: string; placeholderKey: string }> = {
-  ewallet: { icon: "📱", labelKey: "wallet.group_ewallet", addKey: "wallet.add_wallet", placeholderKey: "wallet.field_name_placeholder_ewallet" },
-  bank: { icon: "🏦", labelKey: "wallet.group_bank", addKey: "wallet.add_bank", placeholderKey: "wallet.field_name_placeholder_bank" },
-  cash: { icon: "💵", labelKey: "wallet.group_cash", addKey: "wallet.add_cash", placeholderKey: "wallet.field_name_placeholder_cash" },
+  ewallet: { icon: "", labelKey: "wallet.group_ewallet", addKey: "wallet.add_wallet", placeholderKey: "wallet.field_name_placeholder_ewallet" },
+  bank: { icon: "", labelKey: "wallet.group_bank", addKey: "wallet.add_bank", placeholderKey: "wallet.field_name_placeholder_bank" },
+  cash: { icon: "", labelKey: "wallet.group_cash", addKey: "wallet.add_cash", placeholderKey: "wallet.field_name_placeholder_cash" },
 };
 
 const formatIDR = (n: number) => "Rp" + Math.round(n || 0).toLocaleString("id-ID");

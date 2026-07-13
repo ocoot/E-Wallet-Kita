@@ -47,13 +47,13 @@ function resolveCategoryLabel(key: string, categories: Category[], locale: "id" 
   return locale === "id" ? (cat.label_id || key) : (cat.label_en || key);
 }
 
-const WALLET_TYPE_ICON: Record<string, string> = { ewallet: "📱", bank: "🏦", cash: "💵", general: "💰" };
+const WALLET_TYPE_ICON: Record<string, string> = { ewallet: "", bank: "", cash: "", general: "" };
 
 /** Resolve wallet label (ikon + nama) dari wallet_id, fallback ke "Saldo Total" kalau tidak ketemu. */
 function resolveWalletLabel(walletId: string | null, wallets: PdfWalletInfo[] | undefined, t: TFunc): string {
   const w = wallets?.find(w => w.id === walletId);
   if (!w) return `${WALLET_TYPE_ICON.general} ${t("wallet.group_general")}`;
-  return `${WALLET_TYPE_ICON[w.type] || "💰"} ${w.name}${w.provider ? ` · ${w.provider}` : ""}`;
+  return `${WALLET_TYPE_ICON[w.type] || ""} ${w.name}${w.provider ? ` · ${w.provider}` : ""}`;
 }
 
 const formatIDR = (num: number) => "Rp" + Math.round(num).toLocaleString("id-ID");
@@ -390,7 +390,7 @@ export const exportSummaryPdf = (params: {
   const walletFilterLabel = walletId ? resolveWalletLabel(walletId, wallets, t) : null;
   const scopedTransactions = walletId ? transactions.filter(tx => tx.wallet_id === walletId) : transactions;
   const periodLabel = walletFilterLabel
-    ? `${toISODate(start)} - ${toISODate(end)} · 👛 ${walletFilterLabel}`
+    ? `${toISODate(start)} - ${toISODate(end)} · ${walletFilterLabel}`
     : `${toISODate(start)} - ${toISODate(end)}`;
   const docNumber = generateDocNumber();
 
@@ -437,7 +437,7 @@ export const exportFullPdf = (params: {
   const walletFilterLabel = walletId ? resolveWalletLabel(walletId, wallets, t) : null;
   const scopedTransactions = walletId ? transactions.filter(tx => tx.wallet_id === walletId) : transactions;
   const periodLabel = walletFilterLabel
-    ? `${toISODate(start)} - ${toISODate(end)} · 👛 ${walletFilterLabel}`
+    ? `${toISODate(start)} - ${toISODate(end)} · ${walletFilterLabel}`
     : `${toISODate(start)} - ${toISODate(end)}`;
   const docNumber = generateDocNumber();
 

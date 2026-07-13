@@ -243,13 +243,13 @@ Setiap aksi yang mengubah data (create/update/delete, link/unlink telegram, gant
 ### 8.2 Flow Telegram Linking
 1. Web → Setting → "Hubungkan Telegram" → tampil kode `12345` + instruksi kirim `/link 12345` ke `@AppFinMgr_bot`.
 2. User buka Telegram, kirim `/link 12345`.
-3. Bot proses via webhook → validasi → balas "Akun berhasil terhubung ✅".
+3. Bot proses via webhook → validasi → balas "Akun berhasil terhubung".
 4. Web (polling status singkat atau realtime Supabase subscription) update status "Terhubung".
 
 ### 8.3 Flow Pencatatan via Telegram
 1. User (sudah linked) kirim: "Tagihan listrik 350rb".
 2. Bot parsing via Gemini → balas ringkasan: "Pengeluaran - Tagihan - Rp350.000. Konfirmasi?" dengan inline button Ya/Batal.
-3. User tekan "Ya" → bot simpan ke Supabase → balas "Tersimpan ✅".
+3. User tekan "Ya" → bot simpan ke Supabase → balas "Tersimpan".
 
 ### 8.4 Flow Hapus Semua Transaksi
 1. User di Riwayat Transaksi klik "Hapus Semua".

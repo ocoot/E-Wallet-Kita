@@ -17,7 +17,7 @@ interface HistoryEditModalProps {
   isSaving: boolean;
 }
 
-const WALLET_TYPE_ICON: Record<string, string> = { ewallet: "📱", bank: "🏦", cash: "💵", general: "💰" };
+const WALLET_TYPE_ICON: Record<string, string> = { ewallet: "", bank: "", cash: "", general: "" };
 
 export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
   transaction,

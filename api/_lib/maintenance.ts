@@ -46,7 +46,7 @@ export async function getMaintenanceStatus(
   try {
     const { data, error } = await supabase.rpc('get_maintenance_status');
     if (error || !data) {
-      console.error('⚠️ Gagal memuat status maintenance:', error?.message);
+      console.error('Gagal memuat status maintenance:', error?.message);
       return FALLBACK_STATUS;
     }
     return {
@@ -56,7 +56,7 @@ export async function getMaintenanceStatus(
       locked_features: Array.isArray(data.locked_features) ? data.locked_features : [],
     };
   } catch (err) {
-    console.error('⚠️ Exception saat memuat status maintenance:', err);
+    console.error('Exception saat memuat status maintenance:', err);
     return FALLBACK_STATUS;
   }
 }

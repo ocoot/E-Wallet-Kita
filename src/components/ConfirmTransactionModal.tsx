@@ -9,19 +9,19 @@ import { useDialogA11y } from "../hooks/useDialogA11y";
 import { Button } from "./ui/Button";
 
 const CATEGORY_EMOJI: Record<string, string> = {
-  food_drink: "🍜", transport: "🚗", shopping: "🛒", health: "💊",
-  entertainment: "🎮", education: "📚", bills: "🧾", household: "🏠",
-  beauty: "💄", electronics: "📱", travel: "✈️", sport: "🏋️",
-  charity: "🤝", other_expense: "📦", salary: "💼", freelance: "💻",
-  investment: "📈", bonus: "🎁", other_income: "💰",
+  food_drink: "", transport: "", shopping: "", health: "",
+  entertainment: "", education: "", bills: "", household: "",
+  beauty: "", electronics: "", travel: "", sport: "",
+  charity: "", other_expense: "", salary: "", freelance: "",
+  investment: "", bonus: "", other_income: "",
 };
-const getCategoryEmoji = (key: string) => CATEGORY_EMOJI[key] ?? "💰";
+const getCategoryEmoji = (key: string) => CATEGORY_EMOJI[key] ?? "";
 
 const WALLET_TYPE_ICON: Record<WalletType, string> = {
-  ewallet: "📱",
-  bank: "🏦",
-  cash: "💵",
-  general: "💰",
+  ewallet: "",
+  bank: "",
+  cash: "",
+  general: "",
 };
 
 export interface ConfirmTransactionDraft {

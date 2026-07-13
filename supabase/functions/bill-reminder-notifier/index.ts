@@ -86,7 +86,7 @@ function reminderText(lang: "id" | "en", row: DueBillRow, catLabel: string): str
       : (lang === "id" ? `*${row.days_until_due} hari lagi*` : `*in ${row.days_until_due} day(s)*`);
 
   const amountLine = row.amount != null
-    ? (lang === "id" ? `💰 Estimasi: *${formatIDR(row.amount)}*\n` : `💰 Estimated: *${formatIDR(row.amount)}*\n`)
+    ? (lang === "id" ? `Estimasi: *${formatIDR(row.amount)}*\n` : `Estimated: *${formatIDR(row.amount)}*\n`)
     : "";
 
   // row.name & catLabel adalah teks bebas (nama tagihan custom dari user,
@@ -96,24 +96,24 @@ function reminderText(lang: "id" | "en", row: DueBillRow, catLabel: string): str
 
   if (lang === "id") {
     return (
-      `🔔 *Pengingat Tagihan*\n\n` +
-      `📌 ${safeName} (${safeCatLabel})\n` +
-      `📅 Jatuh tempo: ${dueLabel} (${row.next_due_date})\n` +
+      `*Pengingat Tagihan*\n\n` +
+      `${safeName} (${safeCatLabel})\n` +
+      `Jatuh tempo: ${dueLabel} (${row.next_due_date})\n` +
       amountLine +
-      `\nSudah dibayar? Tandai lunas langsung di sini 👇`
+      `\nSudah dibayar? Tandai lunas langsung di sini`
     );
   }
   return (
-    `🔔 *Bill Reminder*\n\n` +
-    `📌 ${safeName} (${safeCatLabel})\n` +
-    `📅 Due: ${dueLabel} (${row.next_due_date})\n` +
+    `*Bill Reminder*\n\n` +
+    `${safeName} (${safeCatLabel})\n` +
+    `Due: ${dueLabel} (${row.next_due_date})\n` +
     amountLine +
-    `\nAlready paid? Mark it as paid right here 👇`
+    `\nAlready paid? Mark it as paid right here`
   );
 }
 
 function markPaidButtonLabel(lang: "id" | "en"): string {
-  return lang === "id" ? "✅ Tandai Lunas" : "✅ Mark as Paid";
+  return lang === "id" ? "Tandai Lunas" : "Mark as Paid";
 }
 
 async function sendTelegramReminder(
@@ -279,7 +279,7 @@ Deno.serve(async (req: Request) => {
         // FCM secondary channel — fire-and-forget, never blocks dedup
         // logging or affects the Telegram-based `sent`/`skipped` counts.
         if (fcmChannelEnabled) {
-          const pushTitle = row.lang === "id" ? "🔔 Pengingat Tagihan" : "🔔 Bill Reminder";
+          const pushTitle = row.lang === "id" ? "Pengingat Tagihan" : "Bill Reminder";
           const pushBody = row.lang === "id"
             ? `${row.name} jatuh tempo ${row.days_until_due === 0 ? "hari ini" : `${row.days_until_due} hari lagi`}`
             : `${row.name} due ${row.days_until_due === 0 ? "today" : `in ${row.days_until_due} day(s)`}`;

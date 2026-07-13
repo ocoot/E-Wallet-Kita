@@ -61,7 +61,7 @@ if (apiKey) {
     }
   });
 }
-console.log(`🔑 [voice-transcriber] Gemini API key source: ${apiKeySource}`);
+console.log(`[voice-transcriber] Gemini API key source: ${apiKeySource}`);
 
 // ─────────────────────────────────────────────────────────────
 // DEBUG LOGGING (added 2026-07-04)
@@ -97,10 +97,10 @@ export async function transcribeVoiceNote(
   mimeType: string,
   traceId: string = `vt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
 ): Promise<string | null> {
-  console.log(`🎙️ [${traceId}] transcribeVoiceNote start — ${describeAudioForLog(base64Audio, mimeType)}`);
+  console.log(`[${traceId}] transcribeVoiceNote start — ${describeAudioForLog(base64Audio, mimeType)}`);
 
   if (!ai) {
-    console.error(`❌ [${traceId}] transcribeVoiceNote aborted — tidak ada Gemini API key yang tersedia (GEMINI_API_KEY maupun GEMINI_API_KEY_1 sama-sama kosong). No model was attempted.`);
+    console.error(`[${traceId}] transcribeVoiceNote aborted — tidak ada Gemini API key yang tersedia (GEMINI_API_KEY maupun GEMINI_API_KEY_1 sama-sama kosong). No model was attempted.`);
     return null;
   }
 
@@ -141,7 +141,7 @@ export async function transcribeVoiceNote(
 
       const transcript = response.text?.trim();
       if (transcript) {
-        console.log(`✅ [${traceId}] transcribeVoiceNote succeeded on "${model}" in ${elapsedMs}ms — transcriptLen=${transcript.length}`);
+        console.log(`[${traceId}] transcribeVoiceNote succeeded on "${model}" in ${elapsedMs}ms — transcriptLen=${transcript.length}`);
         return transcript;
       }
 
@@ -153,7 +153,7 @@ export async function transcribeVoiceNote(
       const safetyRatings = candidate?.safetyRatings ? JSON.stringify(candidate.safetyRatings) : "none";
       const promptFeedback = (response as any)?.promptFeedback ? JSON.stringify((response as any).promptFeedback) : "none";
       console.warn(
-        `⚠️ [${traceId}] transcribeVoiceNote got EMPTY transcript from "${model}" in ${elapsedMs}ms — ` +
+        `[${traceId}] transcribeVoiceNote got EMPTY transcript from "${model}" in ${elapsedMs}ms — ` +
         `finishReason=${finishReason} safetyRatings=${safetyRatings} promptFeedback=${promptFeedback}`
       );
       attempts.push({ model, outcome: `empty (finishReason=${finishReason})` });
@@ -163,13 +163,13 @@ export async function transcribeVoiceNote(
       const elapsedMs = Date.now() - attemptStart;
       lastError = err;
       attempts.push({ model, outcome: `error (${describeGeminiError(err)})` });
-      console.error(`❌ [${traceId}] transcribeVoiceNote failed on "${model}" after ${elapsedMs}ms — ${describeGeminiError(err)}`);
+      console.error(`[${traceId}] transcribeVoiceNote failed on "${model}" after ${elapsedMs}ms — ${describeGeminiError(err)}`);
       continue;
     }
   }
 
   console.error(
-    `❌ [${traceId}] All ${GEMINI_MODEL_CHAIN.length} Gemini models failed to transcribe voice note. ` +
+    `[${traceId}] All ${GEMINI_MODEL_CHAIN.length} Gemini models failed to transcribe voice note. ` +
     `Attempt summary: ${attempts.map(a => `${a.model}=${a.outcome}`).join(" | ")}. ` +
     `Input: ${describeAudioForLog(base64Audio, mimeType)}. ` +
     `Last thrown error: ${lastError ? describeGeminiError(lastError) : "none (all attempts returned empty, no exceptions)"}`

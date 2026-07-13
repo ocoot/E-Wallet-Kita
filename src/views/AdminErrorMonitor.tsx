@@ -281,7 +281,7 @@ export const AdminErrorMonitor: React.FC = () => {
             onClick={() => setSourceFilter("all")}
             className="px-4 py-2 rounded-xl text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 cursor-pointer"
           >
-            {sourceFilter} ✕
+            {sourceFilter}
           </button>
         )}
       </div>

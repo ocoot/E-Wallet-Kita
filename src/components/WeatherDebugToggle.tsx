@@ -26,7 +26,7 @@ const PRESETS: { label: string; override: WeatherDebugOverride }[] = [
 ];
 
 /**
- * ⚠️ TEMPORARY DEV TOOL — bukan bagian dari fitur akhir.
+ * TEMPORARY DEV TOOL — bukan bagian dari fitur akhir.
  *
  * Tujuannya cuma supaya QA/preview bisa lihat semua kondisi cuaca di welcome
  * banner tanpa harus nunggu cuaca asli berubah. Hanya dirender saat
@@ -82,7 +82,7 @@ export const WeatherDebugToggle: React.FC<WeatherDebugToggleProps> = ({ value, o
               !value ? "bg-emerald-500/20 text-emerald-300" : "text-slate-300 hover:bg-white/5"
             }`}
           >
-            🔴 Live (data asli)
+           Live (data asli)
           </button>
 
           <div className="h-px bg-white/10 my-1" />

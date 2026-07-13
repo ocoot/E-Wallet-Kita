@@ -154,7 +154,7 @@ const HeartParticle: React.FC<{
       position: "absolute",
     } as ParticleStyle}
   >
-    ❤️
+   
   </span>
 );
 

@@ -49,49 +49,49 @@ const MANUAL_EVENTS: CalendarEvent[] = [
     id: "valentine",
     name: { id: "Hari Kasih Sayang", en: "Valentine's Day" },
     date: { month: 2, day: 14 },
-    overlay: { type: "hearts", emoji: "💕" },
+    overlay: { type: "hearts", emoji: "" },
     countryCode: "*",
   },
   {
     id: "new-year",
     name: { id: "Tahun Baru", en: "New Year's Day" },
     date: { month: 1, day: 1 },
-    overlay: { type: "fireworks", emoji: "🎆" },
+    overlay: { type: "fireworks", emoji: "" },
     countryCode: "*",
   },
   {
     id: "christmas",
     name: { id: "Natal", en: "Christmas" },
     date: { month: 12, day: 25 },
-    overlay: { type: "sparkles", emoji: "🎄" },
+    overlay: { type: "sparkles", emoji: "" },
     countryCode: "*",
   },
   {
     id: "halloween",
     name: { id: "Halloween", en: "Halloween" },
     date: { month: 10, day: 31 },
-    overlay: { type: "sparkles", emoji: "🎃" },
+    overlay: { type: "sparkles", emoji: "" },
     countryCode: "*",
   },
   {
     id: "st-patrick",
     name: { id: "St. Patrick's Day", en: "St. Patrick's Day" },
     date: { month: 3, day: 17 },
-    overlay: { type: "confetti", emoji: "☘️" },
+    overlay: { type: "confetti", emoji: "" },
     countryCode: "*",
   },
   {
     id: "april-fools",
     name: { id: "April Mop", en: "April Fools' Day" },
     date: { month: 4, day: 1 },
-    overlay: { type: "confetti", emoji: "🎭" },
+    overlay: { type: "confetti", emoji: "" },
     countryCode: "*",
   },
   {
     id: "earth-day",
     name: { id: "Hari Bumi", en: "Earth Day" },
     date: { month: 4, day: 22 },
-    overlay: { type: "sparkles", emoji: "🌍" },
+    overlay: { type: "sparkles", emoji: "" },
     countryCode: "*",
   },
   {
@@ -99,7 +99,7 @@ const MANUAL_EVENTS: CalendarEvent[] = [
     name: { id: "Hari Ibu", en: "Mother's Day" },
     // Indonesia: 22 Des, Internasional: Minggu ke-2 Mei (pakai 12/22 aja)
     date: { month: 12, day: 22 },
-    overlay: { type: "hearts", emoji: "💐" },
+    overlay: { type: "hearts", emoji: "" },
     countryCode: "ID",
   },
 ];
@@ -113,7 +113,7 @@ const SPORTS_EVENTS: CalendarEvent[] = [
     name: { id: "Piala Dunia FIFA", en: "FIFA World Cup" },
     // Piala Dunia 2026: 11 Juni – 19 Juli (host USA/Kanada/Meksiko)
     range: { start: { month: 6, day: 11 }, end: { month: 7, day: 19 } },
-    overlay: { type: "confetti", emoji: "⚽" },
+    overlay: { type: "confetti", emoji: "" },
     countryCode: "*",
   },
   {
@@ -121,7 +121,7 @@ const SPORTS_EVENTS: CalendarEvent[] = [
     name: { id: "Liga Champions UEFA", en: "UEFA Champions League" },
     // Final UCL biasanya akhir Mei/awal Juni
     range: { start: { month: 5, day: 25 }, end: { month: 6, day: 3 } },
-    overlay: { type: "sparkles", emoji: "🏆" },
+    overlay: { type: "sparkles", emoji: "" },
     countryCode: "*",
   },
   {
@@ -129,7 +129,7 @@ const SPORTS_EVENTS: CalendarEvent[] = [
     name: { id: "Piala Eropa UEFA", en: "UEFA Euro" },
     // Euro 2028: tbd, tapi kita pakai range perkiraan Juni-Juli tahun genap
     range: { start: { month: 6, day: 14 }, end: { month: 7, day: 14 } },
-    overlay: { type: "confetti", emoji: "🇪🇺" },
+    overlay: { type: "confetti", emoji: "" },
     countryCode: "*",
   },
   {
@@ -137,7 +137,7 @@ const SPORTS_EVENTS: CalendarEvent[] = [
     name: { id: "Sepakbola Olimpiade", en: "Olympic Football" },
     // Olimpiade 2028 Los Angeles: Juli-Agustus
     range: { start: { month: 7, day: 20 }, end: { month: 8, day: 10 } },
-    overlay: { type: "confetti", emoji: "🥇" },
+    overlay: { type: "confetti", emoji: "" },
     countryCode: "*",
   },
 ];
@@ -151,35 +151,35 @@ interface HolidayMapEntry {
 }
 
 const HOLIDAY_OVERLAY_MAP: Record<string, HolidayMapEntry> = {
-  "new year": { overlay: "fireworks", emoji: "🎆" },
-  "christmas": { overlay: "sparkles", emoji: "🎄" },
-  "easter": { overlay: "confetti", emoji: "🐣" },
-  "good friday": { overlay: "sparkles", emoji: "✝️" },
-  "easter monday": { overlay: "confetti", emoji: "🐣" },
-  "independence": { overlay: "confetti", emoji: "🇮🇩" },
-  "thanksgiving": { overlay: "confetti", emoji: "🦃" },
-  "halloween": { overlay: "sparkles", emoji: "🎃" },
-  "valentine": { overlay: "hearts", emoji: "💕" },
-  "labour": { overlay: "confetti", emoji: "💪" },
-  "pancasila": { overlay: "confetti", emoji: "🇮🇩" },
-  "ascension": { overlay: "sparkles", emoji: "✝️" },
-  "assumption": { overlay: "sparkles", emoji: "✝️" },
-  "nyepi": { overlay: "sparkles", emoji: "🕉️" },
-  "waisak": { overlay: "sparkles", emoji: "☸️" },
-  "idul fitri": { overlay: "confetti", emoji: "🌙" },
-  "idul adha": { overlay: "confetti", emoji: "🌙" },
-  "islamic new year": { overlay: "sparkles", emoji: "🌙" },
-  "prophet muhammad": { overlay: "sparkles", emoji: "🌙" },
-  "imlek": { overlay: "fireworks", emoji: "🧧" },
-  "vesak": { overlay: "sparkles", emoji: "☸️" },
-  "inauguration": { overlay: "confetti", emoji: "🇺🇸" },
-  "president": { overlay: "confetti", emoji: "🇺🇸" },
-  "veterans": { overlay: "sparkles", emoji: "🇺🇸" },
-  "memorial": { overlay: "sparkles", emoji: "🇺🇸" },
-  "juneteenth": { overlay: "confetti", emoji: "🇺🇸" },
-  "martin luther": { overlay: "sparkles", emoji: "✊" },
-  "columbus": { overlay: "confetti", emoji: "🇺🇸" },
-  "presidents": { overlay: "confetti", emoji: "🇺🇸" },
+  "new year": { overlay: "fireworks", emoji: "" },
+  "christmas": { overlay: "sparkles", emoji: "" },
+  "easter": { overlay: "confetti", emoji: "" },
+  "good friday": { overlay: "sparkles", emoji: "" },
+  "easter monday": { overlay: "confetti", emoji: "" },
+  "independence": { overlay: "confetti", emoji: "" },
+  "thanksgiving": { overlay: "confetti", emoji: "" },
+  "halloween": { overlay: "sparkles", emoji: "" },
+  "valentine": { overlay: "hearts", emoji: "" },
+  "labour": { overlay: "confetti", emoji: "" },
+  "pancasila": { overlay: "confetti", emoji: "" },
+  "ascension": { overlay: "sparkles", emoji: "" },
+  "assumption": { overlay: "sparkles", emoji: "" },
+  "nyepi": { overlay: "sparkles", emoji: "" },
+  "waisak": { overlay: "sparkles", emoji: "" },
+  "idul fitri": { overlay: "confetti", emoji: "" },
+  "idul adha": { overlay: "confetti", emoji: "" },
+  "islamic new year": { overlay: "sparkles", emoji: "" },
+  "prophet muhammad": { overlay: "sparkles", emoji: "" },
+  "imlek": { overlay: "fireworks", emoji: "" },
+  "vesak": { overlay: "sparkles", emoji: "" },
+  "inauguration": { overlay: "confetti", emoji: "" },
+  "president": { overlay: "confetti", emoji: "" },
+  "veterans": { overlay: "sparkles", emoji: "" },
+  "memorial": { overlay: "sparkles", emoji: "" },
+  "juneteenth": { overlay: "confetti", emoji: "" },
+  "martin luther": { overlay: "sparkles", emoji: "" },
+  "columbus": { overlay: "confetti", emoji: "" },
+  "presidents": { overlay: "confetti", emoji: "" },
 };
 
 /* ──────────────────────────────────────────────────────
@@ -405,7 +405,7 @@ export async function fetchFootballMatches(dateStr: string): Promise<SportsDbEve
 
 /**
  * Cek apakah ada pertandingan dari liga top pada hari ini.
- * Kalau ada, trigger overlay confetti ringan dengan emoji ⚽.
+ * Kalau ada, trigger overlay confetti ringan dengan emoji .
  */
 function matchFootballMatchday(today: Date, matches: SportsDbEvent[]): CalendarEvent | null {
   if (!matches || matches.length === 0) return null;
@@ -424,7 +424,7 @@ function matchFootballMatchday(today: Date, matches: SportsDbEvent[]): CalendarE
   return {
     id: `football-matchday-${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`,
     name: { id: "Matchday Sepakbola", en: "Football Matchday" },
-    overlay: { type: "confetti", emoji: "⚽" },
+    overlay: { type: "confetti", emoji: "" },
     countryCode: "*",
   };
 }
@@ -516,7 +516,7 @@ function matchHoliday(
     return {
       id: `holiday-${h.countryCode}-${h.date}`,
       name: { id: h.localName, en: h.name },
-      overlay: { type: "confetti", emoji: "🎉" },
+      overlay: { type: "confetti", emoji: "" },
       countryCode: h.countryCode as "ID" | "US" | "*",
     };
   }

@@ -23,7 +23,7 @@ export async function createReceiptDraft(
     const { data: walletId, error: walletErr } = await supabaseBackend.rpc('ensure_general_wallet', { p_user_id: userId });
     if (!walletErr) defaultWalletId = walletId as string;
   } catch (err) {
-    console.error("⚠️ Gagal resolve wallet default untuk receipt draft:", err);
+    console.error("Gagal resolve wallet default untuk receipt draft:", err);
   }
 
   const { data, error } = await supabaseBackend
@@ -47,7 +47,7 @@ export async function createReceiptDraft(
     .single();
 
   if (error) {
-    console.error("❌ Error in createReceiptDraft:", error);
+    console.error("Error in createReceiptDraft:", error);
     throw error;
   }
   return data;
@@ -61,7 +61,7 @@ export async function getReceiptDraft(id: string) {
     .single();
 
   if (error) {
-    console.error("❌ Error in getReceiptDraft:", error);
+    console.error("Error in getReceiptDraft:", error);
     return null;
   }
   return data;
@@ -91,7 +91,7 @@ export async function approveReceiptDraft(id: string) {
       const { data: fallbackWalletId } = await supabaseBackend.rpc('ensure_general_wallet', { p_user_id: draft.user_id });
       walletId = fallbackWalletId as string;
     } catch (err) {
-      console.error("⚠️ Gagal resolve wallet fallback saat approve receipt draft:", err);
+      console.error("Gagal resolve wallet fallback saat approve receipt draft:", err);
     }
   }
 
@@ -111,7 +111,7 @@ export async function approveReceiptDraft(id: string) {
     .single();
 
   if (txErr) {
-    console.error("❌ Error inserting transaction from receipt:", txErr);
+    console.error("Error inserting transaction from receipt:", txErr);
     throw txErr;
   }
 
@@ -122,7 +122,7 @@ export async function approveReceiptDraft(id: string) {
     .eq('id', id);
 
   if (updErr) {
-    console.error("❌ Error updating receipt draft to approved:", updErr);
+    console.error("Error updating receipt draft to approved:", updErr);
   }
 
   return { draft: { ...draft, approved: true }, transaction: tx };
@@ -137,7 +137,7 @@ export async function cancelReceiptDraft(id: string) {
     .single();
 
   if (error) {
-    console.error("❌ Error deleting receipt draft:", error);
+    console.error("Error deleting receipt draft:", error);
     throw error;
   }
   return data;
@@ -154,7 +154,7 @@ export async function updateReceiptCategory(id: string, category: string) {
     .single();
 
   if (error) {
-    console.error("❌ Error in updateReceiptCategory:", error);
+    console.error("Error in updateReceiptCategory:", error);
     throw error;
   }
   return data;
@@ -169,7 +169,7 @@ export async function updateReceiptWallet(id: string, walletId: string) {
     .single();
 
   if (error) {
-    console.error("❌ Error in updateReceiptWallet:", error);
+    console.error("Error in updateReceiptWallet:", error);
     throw error;
   }
   return data;

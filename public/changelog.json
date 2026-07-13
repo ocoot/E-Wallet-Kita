@@ -1,15 +1,5 @@
 [
   {
-    "version": "1.5.0",
-    "date": "13 Jul 2026",
-    "changes": [
-      {
-        "id": "Sekarang ada tombol untuk menyembunyikan atau menampilkan saldo Anda di seluruh aplikasi.",
-        "en": "Added a toggle to show or hide your balance across the app."
-      }
-    ]
-  },
-  {
     "version": "1.4.0",
     "date": "12 Jul 2026",
     "changes": [

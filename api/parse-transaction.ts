@@ -94,7 +94,7 @@ const GEMINI_MODEL_CHAIN: GeminiModelConfig[] = [
 // (GEMINI_API_KEY_1, dipakai receipt-parser.ts) supaya AI parsing beneran
 // aktif lagi. GEMINI_API_KEY tetap diprioritaskan kalau di-set nanti.
 const apiKey = process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY_1;
-console.log(`🔑 [parse-transaction] Gemini API key source: ${
+console.log(`[parse-transaction] Gemini API key source: ${
   process.env.GEMINI_API_KEY ? "GEMINI_API_KEY" : apiKey ? "GEMINI_API_KEY_1 (fallback dari pool receipt-parser)" : "none"
 }`);
 let ai: GoogleGenAI | null = null;
@@ -174,7 +174,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (!ai) {
-      console.error(`⚠️ [parse-transaction] Jatuh ke fallback_server_regex — TIDAK ADA Gemini API key (GEMINI_API_KEY & GEMINI_API_KEY_1 kosong). Parsing kali ini TIDAK memakai AI. query="${query}"`);
+      console.error(`[parse-transaction] Jatuh ke fallback_server_regex — TIDAK ADA Gemini API key (GEMINI_API_KEY & GEMINI_API_KEY_1 kosong). Parsing kali ini TIDAK memakai AI. query="${query}"`);
       const inferredAmount = parseAmountFromString(query);
       const inferredCategory = inferCategoryKey(query);
       const inferredType = ["gaji", "bonus", "salary", "upah"].some(k => query.toLowerCase().includes(k)) ? "income" : "expense";
@@ -246,7 +246,7 @@ ALWAYS return the 'category_key' from the list above.`;
         break;
       } catch (err: any) {
         lastError = err;
-        console.error(`❌ parse-transaction Gemini failed on model "${model}":`, err?.message ?? err);
+        console.error(`parse-transaction Gemini failed on model "${model}":`, err?.message ?? err);
         
         const errCode = JSON.stringify(err).includes('429') || JSON.stringify(err).includes('RESOURCE_EXHAUSTED') ? '429'
           : JSON.stringify(err).includes('503') ? '503' : undefined;

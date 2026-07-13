@@ -271,7 +271,7 @@ async function handleTelegramBroadcast(
     return;
   }
 
-  const broadcastText = `📢 *Pesan dari Admin E-Wallet Kita*\n\n${message.trim()}\n\n_— Tim E-Wallet Kita_`;
+  const broadcastText = `*Pesan dari Admin E-Wallet Kita*\n\n${message.trim()}\n\n_— Tim E-Wallet Kita_`;
 
   let successCount = 0;
   let failCount = 0;

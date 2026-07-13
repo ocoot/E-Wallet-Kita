@@ -371,9 +371,9 @@ export const Login: React.FC = () => {
           <div className="relative z-10 mt-auto flex flex-col gap-5">
             {/* Floating stat chips */}
             <div className="flex flex-col gap-2">
-              <StatChip value="🔒" label="End-to-end encrypted" delay={0.55} />
-              <StatChip value="☁️" label="Cloud sync across devices" delay={0.65} />
-              <StatChip value="⚡" label="Real-time transaction tracking" delay={0.75} />
+              <StatChip value="" label="End-to-end encrypted" delay={0.55} />
+              <StatChip value="" label="Cloud sync across devices" delay={0.65} />
+              <StatChip value="" label="Real-time transaction tracking" delay={0.75} />
             </div>
 
             {/* Divider to visually separate chips from the tab switcher */}

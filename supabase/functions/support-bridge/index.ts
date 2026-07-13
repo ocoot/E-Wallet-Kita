@@ -52,8 +52,8 @@ serve(async (req) => {
         const threadId = await ensureForumTopic(supabase, token, adminChatId, sessData as SessionForTopic, userLabel);
 
         const messageText = threadId
-          ? `${userLabel ? `👤 *${userLabel}*\n` : ""}💬 ${content}`
-          : `🔔 *Pesan Baru${userLabel ? ` dari ${userLabel}` : ""}*\nSesi #${sessData.short_code}\n💬 ${content}`;
+          ? `${userLabel ? `*${userLabel}*\n` : ""} ${content}`
+          : `*Pesan Baru${userLabel ? ` dari ${userLabel}` : ""}*\nSesi #${sessData.short_code}\n ${content}`;
 
         await sendTelegram(token, adminChatId, messageText, threadId ?? undefined);
       } else {
@@ -97,7 +97,7 @@ serve(async (req) => {
 
       if (adminChatId && token) {
         const threadId = await ensureForumTopic(supabase, token, adminChatId, sessData as SessionForTopic, userLabel);
-        const messageText = `🖥️ *Admin (Web)*\n${content}`;
+        const messageText = `*Admin (Web)*\n${content}`;
         await sendTelegram(token, adminChatId, messageText, threadId ?? undefined);
       } else {
         await logWarning(supabase, "Balasan admin dari web tidak ter-mirror ke Telegram: support_admin_chat_id atau SUPPORT_TELEGRAM_BOT_TOKEN belum dikonfigurasi.", { session_id, short_code: sessData.short_code });
@@ -121,11 +121,11 @@ serve(async (req) => {
       const expectedSecret = Deno.env.get("SUPPORT_TELEGRAM_WEBHOOK_SECRET") ?? "";
 
       if (!expectedSecret) {
-        console.error("🔴 SUPPORT_TELEGRAM_WEBHOOK_SECRET is not configured — rejecting all Telegram webhook updates.");
+        console.error("SUPPORT_TELEGRAM_WEBHOOK_SECRET is not configured — rejecting all Telegram webhook updates.");
         return jsonResponse({ error: "Webhook is not configured correctly" }, 500);
       }
       if (secretHeader !== expectedSecret) {
-        console.warn("⚠️ Unauthorized support-bridge webhook request blocked");
+        console.warn("Unauthorized support-bridge webhook request blocked");
         return jsonResponse({ error: "Unauthorized update request" }, 403);
       }
 
@@ -141,9 +141,9 @@ serve(async (req) => {
           .upsert({ key: "support_admin_chat_id", value: String(chatId), updated_at: new Date().toISOString() });
 
         if (upsertError) {
-          await sendTelegram(token, chatId, `❌ Gagal mendaftarkan chat: ${upsertError.message}`, threadId);
+          await sendTelegram(token, chatId, `Gagal mendaftarkan chat: ${upsertError.message}`, threadId);
         } else {
-          await sendTelegram(token, chatId, `✅ *Sukses!*\nChat ini telah didaftarkan sebagai Admin Support Chat.`, threadId);
+          await sendTelegram(token, chatId, `*Sukses!*\nChat ini telah didaftarkan sebagai Admin Support Chat.`, threadId);
         }
         return new Response("ok", { status: 200 });
       }
@@ -164,7 +164,7 @@ serve(async (req) => {
           .maybeSingle();
 
         if (sessError) {
-          await sendTelegram(token, chatId, `❌ Database error: ${sessError.message}`, threadId);
+          await sendTelegram(token, chatId, `Database error: ${sessError.message}`, threadId);
           return new Response("ok", { status: 200 });
         }
 
@@ -174,7 +174,7 @@ serve(async (req) => {
             .insert({ session_id: session.id, sender: "admin", content: text });
 
           if (insertError) {
-            await sendTelegram(token, chatId, `❌ Gagal menyimpan pesan: ${insertError.message}`, threadId);
+            await sendTelegram(token, chatId, `Gagal menyimpan pesan: ${insertError.message}`, threadId);
             return new Response("ok", { status: 200 });
           }
 
@@ -184,7 +184,7 @@ serve(async (req) => {
           return new Response("ok", { status: 200 });
         }
 
-        await sendTelegram(token, chatId, `⚠️ Sesi untuk topic ini sudah ditutup atau tidak ditemukan.`, threadId);
+        await sendTelegram(token, chatId, `Sesi untuk topic ini sudah ditutup atau tidak ditemukan.`, threadId);
         return new Response("ok", { status: 200 });
       }
 
@@ -205,12 +205,12 @@ serve(async (req) => {
             .maybeSingle();
 
           if (sessError) {
-            await sendTelegram(token, chatId, `❌ Database error: ${sessError.message}`);
+            await sendTelegram(token, chatId, `Database error: ${sessError.message}`);
             return new Response("ok", { status: 200 });
           }
 
           if (!session) {
-            await sendTelegram(token, chatId, `⚠️ Sesi dengan kode #${shortCode} tidak ditemukan atau sudah ditutup.`);
+            await sendTelegram(token, chatId, `Sesi dengan kode #${shortCode} tidak ditemukan atau sudah ditutup.`);
             return new Response("ok", { status: 200 });
           }
 
@@ -219,7 +219,7 @@ serve(async (req) => {
             .insert({ session_id: session.id, sender: "admin", content: text });
 
           if (insertError) {
-            await sendTelegram(token, chatId, `❌ Gagal menyimpan pesan: ${insertError.message}`);
+            await sendTelegram(token, chatId, `Gagal menyimpan pesan: ${insertError.message}`);
             return new Response("ok", { status: 200 });
           }
 
@@ -227,7 +227,7 @@ serve(async (req) => {
             await supabase.from("support_sessions").update({ status: "claimed" }).eq("id", session.id);
           }
         } else {
-          await sendTelegram(token, chatId, `⚠️ Mohon balas (reply) ke pesan berisi kode sesi (contoh: #A1B2C3).`);
+          await sendTelegram(token, chatId, `Mohon balas (reply) ke pesan berisi kode sesi (contoh: #A1B2C3).`);
         }
       }
     }

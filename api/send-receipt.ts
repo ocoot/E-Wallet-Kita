@@ -104,7 +104,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       <p>Status :</p>
 
       <h3 style="color:green">
-      ✅ LUNAS
+     LUNAS
       </h3>
 
       <br>
@@ -120,7 +120,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     res.status(200).json({ success: true, messageId: info.messageId });
   } catch (err: any) {
-    console.error("❌ Send receipt error:", err);
+    console.error("Send receipt error:", err);
     await logError(supabase, {
       source: "send-receipt",
       level: "error",

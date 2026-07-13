@@ -751,7 +751,7 @@ export const AdminPanel: React.FC = () => {
                             >
                               {user.is_premium ? (
                                 <span className="px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-lg flex items-center gap-1 inline-flex hover:bg-amber-500/25 light_sakura:bg-amber-100 light_sakura:text-amber-700 light_sakura:border-amber-200">
-                                  👑 {t("admin.premium_active")}
+                                 {t("admin.premium_active")}
                                 </span>
                               ) : (
                                 <span className="px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-slate-800 text-slate-400 border border-slate-700 rounded-lg hover:bg-slate-700/50 inline-flex light_sakura:bg-slate-100 light_sakura:text-slate-600 light_sakura:border-slate-200">

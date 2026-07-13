@@ -95,7 +95,7 @@ if (apiKey) {
     httpOptions: { headers: { 'User-Agent': 'aistudio-build' } }
   });
 }
-console.log(`🔑 [telegram-webhook] Gemini API key source: ${apiKeySource}`);
+console.log(`[telegram-webhook] Gemini API key source: ${apiKeySource}`);
 
 
 // ─────────────────────────────────────────────────────────────
@@ -201,10 +201,10 @@ function buildDraftKeyboard(lang: Lang) {
 // Ikon per tipe pos dompet -- dipakai konsisten dengan web (Wallets.tsx /
 // ConfirmTransactionModal.tsx) supaya terasa satu produk yang sama.
 function walletTypeIcon(type: string): string {
-  if (type === "ewallet") return "📱";
-  if (type === "bank") return "🏦";
-  if (type === "cash") return "💵";
-  return "💰"; // general / Saldo Total
+  if (type === "ewallet") return "";
+  if (type === "bank") return "";
+  if (type === "cash") return "";
+  return ""; // general / Saldo Total
 }
 
 function walletDisplayLabel(w: { name: string; type: string; provider?: string | null }): string {
@@ -221,7 +221,7 @@ function walletDisplayLabel(w: { name: string; type: string; provider?: string |
 async function getTelegramWalletList(chatId: number): Promise<{ id: string; name: string; type: string; provider: string | null }[]> {
   const { data, error } = await supabaseBackend.rpc("get_telegram_wallets", { p_chat_id: chatId });
   if (error || !data) {
-    console.error("❌ RPC get_telegram_wallets error:", error);
+    console.error("RPC get_telegram_wallets error:", error);
     return [];
   }
   return data;
@@ -283,7 +283,7 @@ async function renderReceiptPreview(
     : "-";
 
   const text = lang === "id"
-    ? `🧾 *Hasil Pembacaan Struk (OCR-Gemini)* 🌸\n\n` +
+    ? `*Hasil Pembacaan Struk (OCR-Gemini)* \n\n` +
       `*Toko*: ${receipt.merchant_name}\n` +
       `*Tanggal*: ${receiptDateFormatted}\n` +
       `*Kategori*: ${catLabel}\n` +
@@ -292,7 +292,7 @@ async function renderReceiptPreview(
       `━━━━━━━━━━━━━━━━━━━━\n\n` +
       `*Total Belanja*: *${formatIDR(receipt.total_amount)}*\n\n` +
       `_Konfirmasi pencatatan pengeluaran di bawah ini:_`
-    : `🧾 *Receipt Reading Result (OCR-Gemini)* 🌸\n\n` +
+    : `*Receipt Reading Result (OCR-Gemini)* \n\n` +
       `*Store*: ${receipt.merchant_name}\n` +
       `*Date*: ${receiptDateFormatted}\n` +
       `*Category*: ${catLabel}\n` +
@@ -305,12 +305,12 @@ async function renderReceiptPreview(
   const keyboard = {
     inline_keyboard: [
       [
-        { text: lang === "id" ? "✏️ Edit Kategori" : "✏️ Edit Category", callback_data: `rcpt_editcat:${draftId}` },
+        { text: lang === "id" ? "Edit Kategori" : "Edit Category", callback_data: `rcpt_editcat:${draftId}` },
         { text: tr("btnEditWallet", lang), callback_data: `rcpt_editwallet:${draftId}` }
       ],
       [
-        { text: lang === "id" ? "✅ Simpan Transaksi" : "✅ Save Transaction", callback_data: `rcpt_approve:${draftId}` },
-        { text: lang === "id" ? "❌ Batal" : "❌ Cancel", callback_data: `rcpt_cancel:${draftId}` }
+        { text: lang === "id" ? "Simpan Transaksi" : "Save Transaction", callback_data: `rcpt_approve:${draftId}` },
+        { text: lang === "id" ? "Batal" : "Cancel", callback_data: `rcpt_cancel:${draftId}` }
       ]
     ]
   };
@@ -365,7 +365,7 @@ function buildPdfPeriodLabel(startDate: Date, endDate: Date, lang: Lang): string
 /**
  * Ambil transaksi + kategori + (semua) wallet, generate PDF, kirim ke chat.
  * walletId null/undefined = "Semua Pos" (tanpa filter). Dipakai baik dari
- * tombol "📄 Semua Pos" maupun setelah user memilih 1 pos di keyboard.
+ * tombol "Semua Pos" maupun setelah user memilih 1 pos di keyboard.
  */
 async function generateAndSendPdf(
   chatId: number,
@@ -420,7 +420,7 @@ async function generateAndSendPdf(
   }));
 
   const periodLabel = buildPdfPeriodLabel(startDate, endDate, lang);
-  const fullPeriodLabel = walletFilterLabel ? `${periodLabel} · 👛 ${walletFilterLabel}` : periodLabel;
+  const fullPeriodLabel = walletFilterLabel ? `${periodLabel} · ${walletFilterLabel}` : periodLabel;
   const reportTitle = summaryOnly ? pdfT("export.summary_report_title") : pdfT("export.full_report_title");
 
   const pdfBytes = generatePdf({
@@ -586,14 +586,14 @@ PENTING: Nilai 'category_key' HARUS berupa key dari daftar di atas.`;
       };
     } catch (err: any) {
       lastError = err;
-      console.error(`❌ Gemini parseFinancialQuery failed on model "${model}":`, err?.message ?? err);
+      console.error(`Gemini parseFinancialQuery failed on model "${model}":`, err?.message ?? err);
       // try the next model in the chain
       continue;
     }
   }
 
   // Every model in the chain failed — graceful fallback to local inference
-  console.error("❌ All Gemini models in fallback chain failed. Last error:", lastError?.message ?? lastError);
+  console.error("All Gemini models in fallback chain failed. Last error:", lastError?.message ?? lastError);
   return {
     source: "fallback_gemini_error",
     type: /gaji|bonus|salary|upah|thr|sampingan|freelance|komisi/.test(query.toLowerCase()) ? "income" : "expense",
@@ -663,10 +663,10 @@ async function transcribeVoiceNote(
   mimeType: string,
   traceId: string = `vt_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`
 ): Promise<string | null> {
-  console.log(`🎙️ [${traceId}] transcribeVoiceNote start — ${describeAudioForLog(base64Audio, mimeType)}`);
+  console.log(`[${traceId}] transcribeVoiceNote start — ${describeAudioForLog(base64Audio, mimeType)}`);
 
   if (!ai) {
-    console.error(`❌ [${traceId}] transcribeVoiceNote aborted — tidak ada Gemini API key yang tersedia (GEMINI_API_KEY maupun GEMINI_API_KEY_1 sama-sama kosong). No model was attempted.`);
+    console.error(`[${traceId}] transcribeVoiceNote aborted — tidak ada Gemini API key yang tersedia (GEMINI_API_KEY maupun GEMINI_API_KEY_1 sama-sama kosong). No model was attempted.`);
     return null;
   }
 
@@ -710,7 +710,7 @@ async function transcribeVoiceNote(
 
       const transcript = response.text?.trim();
       if (transcript) {
-        console.log(`✅ [${traceId}] transcribeVoiceNote succeeded on "${model}" in ${elapsedMs}ms — transcriptLen=${transcript.length}`);
+        console.log(`[${traceId}] transcribeVoiceNote succeeded on "${model}" in ${elapsedMs}ms — transcriptLen=${transcript.length}`);
         return transcript;
       }
 
@@ -723,7 +723,7 @@ async function transcribeVoiceNote(
       const safetyRatings = candidate?.safetyRatings ? JSON.stringify(candidate.safetyRatings) : "none";
       const promptFeedback = (response as any)?.promptFeedback ? JSON.stringify((response as any).promptFeedback) : "none";
       console.warn(
-        `⚠️ [${traceId}] transcribeVoiceNote got EMPTY transcript from "${model}" in ${elapsedMs}ms — ` +
+        `[${traceId}] transcribeVoiceNote got EMPTY transcript from "${model}" in ${elapsedMs}ms — ` +
         `finishReason=${finishReason} safetyRatings=${safetyRatings} promptFeedback=${promptFeedback}`
       );
       attempts.push({ model, outcome: `empty (finishReason=${finishReason})` });
@@ -733,13 +733,13 @@ async function transcribeVoiceNote(
       const elapsedMs = Date.now() - attemptStart;
       lastError = err;
       attempts.push({ model, outcome: `error (${describeGeminiError(err)})` });
-      console.error(`❌ [${traceId}] transcribeVoiceNote failed on "${model}" after ${elapsedMs}ms — ${describeGeminiError(err)}`);
+      console.error(`[${traceId}] transcribeVoiceNote failed on "${model}" after ${elapsedMs}ms — ${describeGeminiError(err)}`);
       continue;
     }
   }
 
   console.error(
-    `❌ [${traceId}] All ${GEMINI_MODEL_CHAIN.length} Gemini models failed to transcribe voice note. ` +
+    `[${traceId}] All ${GEMINI_MODEL_CHAIN.length} Gemini models failed to transcribe voice note. ` +
     `Attempt summary: ${attempts.map(a => `${a.model}=${a.outcome}`).join(" | ")}. ` +
     `Input: ${describeAudioForLog(base64Audio, mimeType)}. ` +
     `Last thrown error: ${lastError ? describeGeminiError(lastError) : "none (all attempts returned empty, no exceptions)"}`
@@ -767,8 +767,8 @@ async function handleReceiptPhoto(message: any, maintenanceStatus: MaintenanceSt
   
   // Send initial informational status message
   const statusMsg = lang === "id" 
-    ? "🔄 _Sedang mengunduh foto struk belanja Anda..._" 
-    : "🔄 _Downloading receipt photo..._";
+    ? "_Sedang mengunduh foto struk belanja Anda..._" 
+    : "_Downloading receipt photo..._";
   await sendTelegramMessage(chatId, statusMsg);
 
   try {
@@ -799,8 +799,8 @@ async function handleReceiptPhoto(message: any, maintenanceStatus: MaintenanceSt
 
     // Send updated processing text
     await sendTelegramMessage(chatId, lang === "id" 
-      ? "🤖 _Gemini sedang mengekstrak detail struk Anda..._" 
-      : "🤖 _Gemini is extracting receipt details..._");
+      ? "_Gemini sedang mengekstrak detail struk Anda..._" 
+      : "_Gemini is extracting receipt details..._");
 
     // Step 4: Parse with receipt parser
     const receipt = await parseReceipt(base64);
@@ -823,10 +823,10 @@ async function handleReceiptPhoto(message: any, maintenanceStatus: MaintenanceSt
     await sendTelegramMessage(chatId, textPreview, inlineKeyboard);
 
   } catch (err: any) {
-    console.error("❌ handleReceiptPhoto error:", err);
+    console.error("handleReceiptPhoto error:", err);
     await sendTelegramMessage(chatId, lang === "id" 
-      ? `❌ *Gagal Membaca Foto Struk*\n_Penyebab: ${err.message || 'Error internal parser struk'}_`
-      : `❌ *Failed to Process Receipt Photo*\n_Reason: ${err.message || 'Internal parser error'}_`);
+      ? `*Gagal Membaca Foto Struk*\n_Penyebab: ${err.message || 'Error internal parser struk'}_`
+      : `*Failed to Process Receipt Photo*\n_Reason: ${err.message || 'Internal parser error'}_`);
   }
 }
 
@@ -873,7 +873,7 @@ async function handleVoiceNote(message: any, maintenanceStatus: MaintenanceStatu
   // supaya di Vercel Runtime Logs tinggal filter satu string ini.
   const traceId = `vt_${chatId}_${Date.now()}`;
   console.log(
-    `🎙️ [${traceId}] Voice note diterima dari chatId=${chatId} — ` +
+    `[${traceId}] Voice note diterima dari chatId=${chatId} — ` +
     `file_id=${voice.file_id} duration=${voice.duration ?? "unknown"}s ` +
     `telegram_mime_type=${voice.mime_type ?? "unknown"} file_size=${voice.file_size ?? "unknown"}`
   );
@@ -884,36 +884,36 @@ async function handleVoiceNote(message: any, maintenanceStatus: MaintenanceStatu
     // Step 1: getFile
     const getFileResp = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${voice.file_id}`);
     if (!getFileResp.ok) {
-      console.error(`❌ [${traceId}] getFile API failed: status=${getFileResp.status} statusText=${getFileResp.statusText}`);
+      console.error(`[${traceId}] getFile API failed: status=${getFileResp.status} statusText=${getFileResp.statusText}`);
       throw new Error(`getFile API failed: ${getFileResp.statusText}`);
     }
     const getFileData = await getFileResp.json();
     const filePath = getFileData.result?.file_path;
     if (!filePath) {
-      console.error(`❌ [${traceId}] getFile response missing file_path. Raw response:`, JSON.stringify(getFileData));
+      console.error(`[${traceId}] getFile response missing file_path. Raw response:`, JSON.stringify(getFileData));
       throw new Error("Could not retrieve file path from Telegram.");
     }
-    console.log(`📁 [${traceId}] getFile OK — file_path=${filePath} reported_file_size=${getFileData.result?.file_size ?? "unknown"}`);
+    console.log(`[${traceId}] getFile OK — file_path=${filePath} reported_file_size=${getFileData.result?.file_size ?? "unknown"}`);
 
     // Step 2: Download & base64-encode the audio (ogg/opus)
     const audioUrl = `https://api.telegram.org/file/bot${token}/${filePath}`;
     const audioResp = await fetch(audioUrl);
     if (!audioResp.ok) {
-      console.error(`❌ [${traceId}] Download voice note failed: status=${audioResp.status} statusText=${audioResp.statusText} url=${audioUrl}`);
+      console.error(`[${traceId}] Download voice note failed: status=${audioResp.status} statusText=${audioResp.statusText} url=${audioUrl}`);
       throw new Error(`Failed to download voice note from Telegram: ${audioResp.statusText}`);
     }
     const arrayBuffer = await audioResp.arrayBuffer();
     const base64Audio = Buffer.from(arrayBuffer).toString("base64");
     const mimeType = voice.mime_type || "audio/ogg";
     console.log(
-      `📥 [${traceId}] Audio downloaded — bytesDownloaded=${arrayBuffer.byteLength} ` +
+      `[${traceId}] Audio downloaded — bytesDownloaded=${arrayBuffer.byteLength} ` +
       `resolvedMimeType="${mimeType}" filePath="${filePath}" (extension menunjukkan container asli dari Telegram)`
     );
 
     // Step 3: Transcribe with Gemini
     const transcript = await transcribeVoiceNote(base64Audio, mimeType, traceId);
     if (!transcript) {
-      console.error(`❌ [${traceId}] transcribeVoiceNote returned null — mengirim pesan error ke user. Lihat log "${traceId}" di atas untuk detail kegagalan tiap model.`);
+      console.error(`[${traceId}] transcribeVoiceNote returned null — mengirim pesan error ke user. Lihat log "${traceId}" di atas untuk detail kegagalan tiap model.`);
       await logError(supabaseBackend, {
         source: "telegram-webhook:voice-transcribe",
         level: "error",
@@ -924,7 +924,7 @@ async function handleVoiceNote(message: any, maintenanceStatus: MaintenanceStatu
       await sendTelegramMessage(chatId, tr("voiceTranscribeError", lang));
       return;
     }
-    console.log(`✅ [${traceId}] Transcript diterima, lanjut ke parseFinancialQuery — transcriptLen=${transcript.length}`);
+    console.log(`[${traceId}] Transcript diterima, lanjut ke parseFinancialQuery — transcriptLen=${transcript.length}`);
 
     // Show the user what we heard, so they can immediately tell if the
     // transcription is wrong before we even try to parse an amount.
@@ -949,7 +949,7 @@ async function handleVoiceNote(message: any, maintenanceStatus: MaintenanceStatu
     });
 
     if (upsertErr) {
-      console.error("❌ RPC upsert_pending_telegram_tx error (voice):", upsertErr);
+      console.error("RPC upsert_pending_telegram_tx error (voice):", upsertErr);
       await sendTelegramMessage(chatId, tr("draftSaveError", lang));
       return;
     }
@@ -970,7 +970,7 @@ async function handleVoiceNote(message: any, maintenanceStatus: MaintenanceStatu
       draftMarkup
     );
   } catch (err: any) {
-    console.error(`❌ [${traceId}] handleVoiceNote error (di luar transcribeVoiceNote — kemungkinan getFile/download Telegram gagal, lihat log di atas):`, err?.message ?? err);
+    console.error(`[${traceId}] handleVoiceNote error (di luar transcribeVoiceNote — kemungkinan getFile/download Telegram gagal, lihat log di atas):`, err?.message ?? err);
     await sendTelegramMessage(chatId, tr("voiceTranscribeError", lang));
   }
 }
@@ -993,13 +993,13 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     const secretToken = process.env.TELEGRAM_WEBHOOK_SECRET;
 
     if (!secretToken) {
-      console.error("🔴 TELEGRAM_WEBHOOK_SECRET is not configured — rejecting all webhook requests.");
+      console.error("TELEGRAM_WEBHOOK_SECRET is not configured — rejecting all webhook requests.");
       res.status(500).json({ error: "Webhook is not configured correctly" });
       return;
     }
 
     if (secretHeader !== secretToken) {
-      console.warn("⚠️ Unauthorized Telegram Webhook request blocked");
+      console.warn("Unauthorized Telegram Webhook request blocked");
       res.status(403).json({ error: "Unauthorized update request" });
       return;
     }
@@ -1030,9 +1030,9 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         // Fail-open: a dedup-table hiccup shouldn't take the whole bot down.
         // Worst case on failure is an occasional double-processed retry,
         // which is far better than the bot going silent.
-        console.error("⚠️ Telegram dedup check failed, proceeding anyway:", dedupError);
+        console.error("Telegram dedup check failed, proceeding anyway:", dedupError);
       } else if (isNewUpdate === false) {
-        console.warn(`⚠️ Ignored duplicate Telegram retry update_id: ${update.update_id}`);
+        console.warn(`Ignored duplicate Telegram retry update_id: ${update.update_id}`);
         res.status(200).json({ ok: true });
         return;
       }
@@ -1041,9 +1041,9 @@ export default async (req: VercelRequest, res: VercelResponse) => {
     // Safe logging (only log update type, not full payload)
     if (update.message?.text) {
       const textPreview = update.message.text.substring(0, 20);
-      console.log(`📨 Telegram message: "${textPreview}..."`);
+      console.log(`Telegram message: "${textPreview}..."`);
     } else if (update.callback_query) {
-      console.log(`📨 Telegram callback: ${update.callback_query.data}`);
+      console.log(`Telegram callback: ${update.callback_query.data}`);
     }
 
     // ──────────────────────────────────────────────────────────
@@ -1170,7 +1170,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         });
 
         if (saveErr) {
-          console.error("❌ confirm_pending_telegram_tx error:", saveErr);
+          console.error("confirm_pending_telegram_tx error:", saveErr);
           await answerTelegramCallback(queryId, tr("cbSaveFailed", lang));
           await editTelegramMessage(chatId, msgId, tr("msgSaveFailed", lang, saveErr.message));
         } else {
@@ -1464,7 +1464,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             summaryFlag === "1", null, null
           );
         } catch (err: any) {
-          console.error("❌ pdf_all error:", err);
+          console.error("pdf_all error:", err);
           await sendTelegramMessage(chatId, tr("riwayatError", lang));
         }
       }
@@ -1499,7 +1499,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             summaryFlag === "1", selectedWallet.id, walletDisplayLabel(selectedWallet)
           );
         } catch (err: any) {
-          console.error("❌ pdf_setwallet error:", err);
+          console.error("pdf_setwallet error:", err);
           await sendTelegramMessage(chatId, tr("riwayatError", lang));
         }
       }
@@ -1628,8 +1628,8 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         const langKeyboard = {
           inline_keyboard: [
             [
-              { text: "🇮🇩 Bahasa Indonesia", callback_data: "set_lang_id" },
-              { text: "🇺🇸 English", callback_data: "set_lang_en" }
+              { text: "Bahasa Indonesia", callback_data: "set_lang_id" },
+              { text: "English", callback_data: "set_lang_en" }
             ]
           ]
         };
@@ -1689,7 +1689,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             p_lockout_seconds: LINK_LOCKOUT_SECONDS
           });
           if (recordError) {
-            console.error("⚠️ Failed to record /link attempt outcome:", recordError);
+            console.error("Failed to record /link attempt outcome:", recordError);
           }
 
           if (error) {
@@ -1742,7 +1742,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           const prevIncStr = formatIDR(stats.prev_income_total || 0);
           const prevExpStr = formatIDR(stats.prev_expense_total || 0);
 
-          let diffIcon = "✅";
+          let diffIcon = "";
           let diffPct = "0%";
 
           if (stats.prev_expense_total > 0) {
@@ -1750,9 +1750,9 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             const pct = Math.abs(Math.round((ratio - 1) * 100));
             diffPct = `${pct}%`;
             if (ratio > 1.1) {
-              diffIcon = "⚠️"; // Spending significantly more (>10% increase)
+              diffIcon = ""; // Spending significantly more (>10% increase)
             } else if (ratio < 0.9) {
-              diffIcon = "✨"; // Spending significantly less (>10% decrease)
+              diffIcon = ""; // Spending significantly less (>10% decrease)
             }
           }
 
@@ -1762,7 +1762,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           );
 
         } catch (err: any) {
-          console.error("❌ /saldo error:", err);
+          console.error("/saldo error:", err);
           await sendTelegramMessage(chatId, tr("saldoError", lang));
         }
         res.status(200).json({ ok: true }); return;
@@ -1793,7 +1793,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           } else {
             let msg = tr("riwayatHeader", lang);
             for (const tx of data as any[]) {
-              const icon = tx.type === "income" ? "📥" : "📤";
+              const icon = tx.type === "income" ? "" : "";
               const catLabel = await getCategoryLabel(tx.category, lang);
               const walletTag = tx.wallets ? ` (${walletDisplayLabel(tx.wallets)})` : "";
               msg += `${icon} *${formatIDR(tx.amount)}*\n` +
@@ -1803,7 +1803,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             await sendTelegramMessage(chatId, msg);
           }
         } catch (err: any) {
-          console.error("❌ /riwayat error:", err);
+          console.error("/riwayat error:", err);
           await sendTelegramMessage(chatId, tr("riwayatError", lang));
         }
         res.status(200).json({ ok: true }); return;
@@ -1931,7 +1931,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           });
 
         } catch (err: any) {
-          console.error("❌ /pdf error:", err);
+          console.error("/pdf error:", err);
           await sendTelegramMessage(chatId, tr("riwayatError", lang));
         }
         res.status(200).json({ ok: true }); return;
@@ -1974,7 +1974,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           await sendTelegramMessage(chatId, tr("hapusSuccess", lang, typeLabel, catLabel, formatIDR(lastTx.amount), lastTx.note || "-"));
 
         } catch (err: any) {
-          console.error("❌ /hapus error:", err);
+          console.error("/hapus error:", err);
           await sendTelegramMessage(chatId, tr("hapusError", lang, err.message));
         }
         res.status(200).json({ ok: true }); return;
@@ -2012,7 +2012,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
         });
 
         if (upsertErr) {
-          console.error("❌ RPC upsert_pending_telegram_tx error:", upsertErr);
+          console.error("RPC upsert_pending_telegram_tx error:", upsertErr);
           await sendTelegramMessage(chatId, tr("draftSaveError", lang));
           res.status(200).json({ ok: true }); return;
         }
@@ -2034,7 +2034,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
       } catch (parseError: any) {
         const errType = parseError?.name ?? "UnknownError";
-        console.error(`❌ parseFinancialQuery failed [${errType}]:`, parseError?.message ?? parseError);
+        console.error(`parseFinancialQuery failed [${errType}]:`, parseError?.message ?? parseError);
         await sendTelegramMessage(chatId, tr("parseError", lang));
       }
 
@@ -2043,7 +2043,7 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
     res.status(200).json({ ok: true });
   } catch (err: any) {
-    console.error("🔴 Telegram Webhook Error:", err);
+    console.error("Telegram Webhook Error:", err);
     await logError(supabaseBackend, {
       source: "telegram-webhook",
       level: "error",

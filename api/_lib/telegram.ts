@@ -30,7 +30,7 @@ export async function sendTelegramMessage(chatId: number, text: string, replyMar
       }
     });
   } catch (err) {
-    console.error(`❌ sendTelegramMessage to ${chatId} failed after retries:`, err);
+    console.error(`sendTelegramMessage to ${chatId} failed after retries:`, err);
   }
 }
 
@@ -68,7 +68,7 @@ export async function editTelegramMessage(chatId: number, messageId: number, tex
       }
     });
   } catch (err) {
-    console.error(`❌ editTelegramMessage for ${chatId}/${messageId} failed after retries:`, err);
+    console.error(`editTelegramMessage for ${chatId}/${messageId} failed after retries:`, err);
   }
 }
 
@@ -84,7 +84,7 @@ export async function answerTelegramCallback(callbackQueryId: string, text?: str
       });
     });
   } catch (err) {
-    console.error(`❌ answerTelegramCallback ${callbackQueryId} failed after retries:`, err);
+    console.error(`answerTelegramCallback ${callbackQueryId} failed after retries:`, err);
   }
 }
 

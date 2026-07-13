@@ -30,9 +30,9 @@ const usedFallback = [
 ].filter(([, missing]) => missing).map(([name]) => name);
 
 if (usedFallback.length > 0) {
-  console.warn(`[inject] ⚠️  Env var(s) not set, using hardcoded fallback for: ${usedFallback.join(', ')}`);
+  console.warn(`[inject] Env var(s) not set, using hardcoded fallback for: ${usedFallback.join(', ')}`);
 } else {
-  console.log('[inject] ✅ All Firebase config read from VITE_FIREBASE_* env vars');
+  console.log('[inject] All Firebase config read from VITE_FIREBASE_* env vars');
 }
 
 // ── sw.js (Workbox) intentionally does NOT get a push handler ──
@@ -52,7 +52,7 @@ if (usedFallback.length > 0) {
 // `push` listener here.
 const swPath = path.resolve(distDir, 'sw.js');
 if (fs.existsSync(swPath)) {
-  console.log('[inject] ℹ️  Skipped push handler injection into sw.js (handled solely by firebase-messaging-sw.js to avoid duplicate notifications)');
+  console.log('[inject] ℹ Skipped push handler injection into sw.js (handled solely by firebase-messaging-sw.js to avoid duplicate notifications)');
 }
 
 // ── Create firebase-messaging-sw.js with proper Firebase init ──
@@ -97,4 +97,4 @@ self.addEventListener('notificationclick',function(e){
 });
 `;
 fs.writeFileSync(fcmPath, fcmCode);
-console.log('[inject] ✅ Created firebase-messaging-sw.js with Firebase config');
+console.log('[inject] Created firebase-messaging-sw.js with Firebase config');

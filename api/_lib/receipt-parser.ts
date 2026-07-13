@@ -60,7 +60,7 @@ function logRawProviderError(keyAlias: string, err: any): void {
   }
 
   console.error(
-    `🔍 [raw-error] ${keyAlias} | status=${status ?? "?"} | message=${message ?? "?"} | body=${body ?? "?"}`
+    `[raw-error] ${keyAlias} | status=${status ?? "?"} | message=${message ?? "?"} | body=${body ?? "?"}`
   );
 }
 
@@ -321,10 +321,10 @@ export async function parseReceipt(imageBase64: string, source = "receipt_parser
         return await parseWithGemini(cleanBase64, mimeType, GEMINI_KEYS[i], keyAlias, source, model, categories);
       } catch (err: any) {
         if (!shouldFallback(err)) {
-          console.log(`⚠️ ${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
+          console.log(`${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
           continue;
         }
-        console.log(`⚠️ ${keyAlias} (${model}) unavailable, trying next model...`);
+        console.log(`${keyAlias} (${model}) unavailable, trying next model...`);
       }
     }
   }
@@ -337,10 +337,10 @@ export async function parseReceipt(imageBase64: string, source = "receipt_parser
         return await parseWithOpenAI(cleanBase64, OPENAI_KEYS[i], keyAlias, source, model, categories);
       } catch (err: any) {
         if (!shouldFallback(err)) {
-          console.log(`⚠️ ${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
+          console.log(`${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
           continue;
         }
-        console.log(`⚠️ ${keyAlias} (${model}) unavailable, trying next model...`);
+        console.log(`${keyAlias} (${model}) unavailable, trying next model...`);
       }
     }
   }
@@ -353,10 +353,10 @@ export async function parseReceipt(imageBase64: string, source = "receipt_parser
         return await parseWithClaude(cleanBase64, CLAUDE_KEYS[i], keyAlias, source, model, categories);
       } catch (err: any) {
         if (!shouldFallback(err)) {
-          console.log(`⚠️ ${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
+          console.log(`${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
           continue;
         }
-        console.log(`⚠️ ${keyAlias} (${model}) unavailable, trying next model...`);
+        console.log(`${keyAlias} (${model}) unavailable, trying next model...`);
       }
     }
   }

@@ -27,7 +27,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const { weather, loading: weatherLoading } = useWeather();
   const { budgets, loading: budgetsLoading } = useBudgets(currentUser.id);
 
-  // ⚠️ TEMPORARY DEV TOOL -- lihat komentar di WeatherDebugToggle.tsx.
+  // TEMPORARY DEV TOOL -- lihat komentar di WeatherDebugToggle.tsx.
   // Saat override aktif, ini menggantikan data cuaca asli hanya untuk
   // preview visual (tidak mengubah/menyimpan apa pun).
   const [debugOverride, setDebugOverride] = useState<WeatherDebugOverride | null>(null);

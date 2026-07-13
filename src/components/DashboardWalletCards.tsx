@@ -9,7 +9,7 @@ import { audioFeedback } from "../lib/audio";
 import { InfoTooltip } from "./InfoTooltip";
 import { Card } from "./ui/Card";
 
-const WALLET_TYPE_ICON: Record<string, string> = { ewallet: "📱", bank: "🏦", cash: "💵", general: "💰" };
+const WALLET_TYPE_ICON: Record<string, string> = { ewallet: "", bank: "", cash: "", general: "" };
 
 const maskContact = (value: string) => {
   const v = value.trim();
