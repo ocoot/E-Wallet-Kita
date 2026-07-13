@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.5.0",
+    "date": "13 Jul 2026",
+    "changes": [
+      {
+        "id": "Kini bisa bertransaksi dengan opsi cicilan.",
+        "en": "You can now make transactions in installments."
+      },
+      {
+        "id": "Aplikasi E-Wallet Kita kini lebih cerdas dalam memahami detail transaksi Anda.",
+        "en": "E-Wallet Kita is now smarter at understanding your transaction details."
+      }
+    ]
+  },
+  {
     "version": "1.4.0",
     "date": "12 Jul 2026",
     "changes": [
