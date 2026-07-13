@@ -1,5 +1,19 @@
 [
   {
+    "version": "1.5.0",
+    "date": "13 Jul 2026",
+    "changes": [
+      {
+        "id": "Mengobrol dengan bantuan kini lebih mudah dan cepat.",
+        "en": "Chatting with support is now easier and faster."
+      },
+      {
+        "id": "Fitur pembuatan kode pendek kini berfungsi dengan baik.",
+        "en": "Short code generation feature is now working correctly."
+      }
+    ]
+  },
+  {
     "version": "1.4.0",
     "date": "12 Jul 2026",
     "changes": [
