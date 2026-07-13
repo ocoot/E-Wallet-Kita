@@ -69,6 +69,13 @@ ON CONFLICT (feature_key) DO NOTHING;
 
 -- Tambahkan 'installment' ke source transaksi yang valid, sama seperti
 -- 'bill_reminder' ditambahkan sebelumnya di 20260710000000.
+-- Jaring pengaman yang sama: normalisasi dulu baris lama yang source-nya
+-- di luar daftar valid, supaya ADD CONSTRAINT tidak gagal dengan 23514.
+UPDATE public.transactions
+SET source = 'manual'
+WHERE source IS NOT NULL
+  AND source NOT IN ('manual', 'ai_web', 'telegram', 'bill_reminder', 'installment');
+
 ALTER TABLE public.transactions
     DROP CONSTRAINT IF EXISTS transactions_source_check;
 

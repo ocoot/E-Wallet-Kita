@@ -37,12 +37,21 @@ ALTER TABLE public.bill_reminders
 -- ─────────────────────────────────────────────────────────────
 -- 2. CHECK constraint transactions.source: tambah 'bill_reminder'
 -- ─────────────────────────────────────────────────────────────
+-- Catatan: constraint di bawah sengaja langsung mengizinkan 'installment'
+-- juga (bukan cuma 'bill_reminder'), walau secara kronologis 'installment'
+-- baru resmi diperkenalkan di migration 20260731000000. Ini karena branch
+-- preview Supabase kadang sudah berisi data transaksi 'installment' yang
+-- SAH (bukan sampah) saat migration ini dijalankan ulang -- kalau
+-- constraint di sini dibuat lebih ketat dari itu, ADD CONSTRAINT akan
+-- gagal (23514) menabrak data valid milik user, bukan karena datanya
+-- rusak. Menyamakan daftar dengan constraint final di 20260731 membuat
+-- migration ini aman dijalankan di urutan/state apa pun.
 ALTER TABLE public.transactions
     DROP CONSTRAINT IF EXISTS transactions_source_check;
 
 ALTER TABLE public.transactions
     ADD CONSTRAINT transactions_source_check
-    CHECK (source IN ('manual', 'ai_web', 'telegram', 'bill_reminder'));
+    CHECK (source IN ('manual', 'ai_web', 'telegram', 'bill_reminder', 'installment'));
 
 -- ─────────────────────────────────────────────────────────────
 -- 3. mark_bill_paid_for_user(p_bill_id)
