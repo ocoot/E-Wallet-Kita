@@ -230,7 +230,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       </div>
 
       {/* Badge tamu saja di sini sekarang -- toggle mata nominal sudah
-          dipindah keluar dari kartu ini, lihat BalanceVisibilityToggle.tsx */}
+          dipindah ke header kartu Pos Dompet, lihat DashboardWalletCards.tsx */}
       <div className="relative z-10 flex flex-col items-start md:items-end gap-2 shrink-0">
         {currentUser.is_guest && (
           <motion.div 

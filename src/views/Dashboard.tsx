@@ -10,7 +10,6 @@ import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
 import { DashboardHeader } from "../components/DashboardHeader";
-import { BalanceVisibilityToggle } from "../components/BalanceVisibilityToggle";
 import { DashboardChart } from "../components/DashboardChart";
 import { DashboardRecentTransactions } from "../components/DashboardRecentTransactions";
 import { DashboardBudgetAlerts } from "../components/DashboardBudgetAlerts";
@@ -228,11 +227,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="space-y-6 pb-24 relative">
-      {/* 1a. Toggle mata nominal -- sticky supaya tetap terjangkau saat user
-          scroll ke Pos Dompet / Ringkasan / Riwayat di bawah, tanpa perlu
-          balik ke atas. Lihat catatan lengkap di BalanceVisibilityToggle.tsx */}
-      <BalanceVisibilityToggle />
-
       {/* 1. Welcome Message Banner */}
       <DashboardHeader 
         currentUser={currentUser} 

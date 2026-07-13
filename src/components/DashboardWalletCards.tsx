@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
-import { Wallet as WalletIcon, Eye, EyeOff, Plus, Layers, Banknote } from "lucide-react";
+import { Wallet as WalletIcon, Eye, EyeOff, Layers, Banknote } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useWallets } from "../hooks/useWallets";
 import { useBalanceVisibility, maskCurrency } from "../contexts/BalanceVisibilityContext";
@@ -33,10 +33,13 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
   const navigate = useNavigate();
   const { activeWallets, isLoading } = useWallets();
   const [visibleContactIds, setVisibleContactIds] = useState<Set<string>>(new Set());
-  // Baca saja -- toggle mata TUNGGAL untuk semua nominal ada di
-  // BalanceVisibilityToggle.tsx (bar sticky di puncak Dashboard), supaya
-  // tidak ada ikon mata berulang di tiap kartu (lihat catatan di file itu).
-  const { visible: balanceVisible } = useBalanceVisibility();
+  // Toggle mata TUNGGAL untuk semua nominal di Dashboard kini ditaruh di sini,
+  // menggantikan tombol "+ Pos Dompet" yang sebelumnya ada di header ini --
+  // tombol itu cuma navigate("/wallets"), fungsinya identik dengan tap kartu
+  // Pos Dompet apa pun di bawah, jadi murni duplikat & memakan slot header.
+  // Slot itu sekarang dipakai untuk kontrol show/hide nominal, supaya ada di
+  // dekat angka yang dikontrolnya (lihat juga BalanceVisibilityContext.tsx).
+  const { visible: balanceVisible, toggle: toggleBalanceVisible } = useBalanceVisibility();
 
   const toggleContact = (id: string) => {
     setVisibleContactIds((prev) => {
@@ -60,10 +63,16 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
           {t("wallet.title")}
         </h3>
         <button
-          onClick={() => { audioFeedback.playClick(); navigate("/wallets"); }}
-          className="ml-auto flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 cursor-pointer light_sakura:text-rose-500"
+          type="button"
+          onClick={() => { audioFeedback.playClick(); toggleBalanceVisible(); }}
+          aria-pressed={!balanceVisible}
+          aria-label={balanceVisible ? t("common.hide_balance") : t("common.show_balance")}
+          className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-950/40 border border-slate-800/60 text-slate-300 hover:bg-slate-800/60 hover:text-white transition-colors cursor-pointer light_sakura:bg-rose-50/30 light_sakura:border-rose-100/50 light_sakura:text-rose-600 light_sakura:hover:bg-rose-50"
         >
-          <Plus size={12} /> {t("wallet.title")}
+          {balanceVisible ? <Eye size={12} className="shrink-0" /> : <EyeOff size={12} className="shrink-0" />}
+          <span className="whitespace-nowrap">
+            {balanceVisible ? t("common.hide_balance") : t("common.show_balance")}
+          </span>
         </button>
       </div>
 
