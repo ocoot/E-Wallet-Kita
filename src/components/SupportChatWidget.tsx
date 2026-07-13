@@ -7,6 +7,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import { matchSupportFaqTopic, SUPPORT_FAQ_TOPICS } from "../lib/supportFaq";
 import { Modal } from "./Modal";
+import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 
 type WidgetTab = "faq" | "admin";
 
@@ -44,6 +45,7 @@ export const SupportChatWidget: React.FC = () => {
 
   const [isOpen, setIsOpen] = useState(false);
   const [tab, setTab] = useState<WidgetTab>("faq");
+  useLockBodyScroll(isOpen);
 
   // --- FAQ state ---
   const [faqBubbles, setFaqBubbles] = useState<FaqBubble[]>([]);
@@ -243,6 +245,20 @@ export const SupportChatWidget: React.FC = () => {
           )}
         </AnimatePresence>
       </motion.button>
+
+      {/* Backdrop -- blur & redupkan konten di belakang panel supaya panel tidak terasa "menimpa" begitu saja */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsOpen(false)}
+            className="fixed inset-0 z-[35] bg-slate-950/70 backdrop-blur-sm"
+            aria-hidden="true"
+          />
+        )}
+      </AnimatePresence>
 
       {/* Panel */}
       <AnimatePresence>

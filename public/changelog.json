@@ -1,15 +1,5 @@
 [
   {
-    "version": "1.5.0",
-    "date": "12 Jul 2026",
-    "changes": [
-      {
-        "id": "Tampilan dan pengalaman chat bantuan kini lebih baik.",
-        "en": "Improved the look and feel of our support chat."
-      }
-    ]
-  },
-  {
     "version": "1.4.0",
     "date": "12 Jul 2026",
     "changes": [
