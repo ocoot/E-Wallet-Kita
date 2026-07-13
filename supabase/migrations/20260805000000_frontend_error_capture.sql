@@ -17,11 +17,21 @@
 
 -- ─── Batasi panjang message di level tabel (defense-in-depth, karena
 -- frontend insert langsung tidak lewat helper Node yang sudah slice(2000)) ──
-ALTER TABLE public.error_logs
-  ADD CONSTRAINT chk_error_logs_message_length CHECK (length(message) <= 2000);
+-- Postgres tidak punya ADD CONSTRAINT IF NOT EXISTS, jadi dicek manual
+-- supaya migration ini aman di-rerun (branch preview, rebase, dll).
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'chk_error_logs_message_length'
+  ) THEN
+    ALTER TABLE public.error_logs
+      ADD CONSTRAINT chk_error_logs_message_length CHECK (length(message) <= 2000);
+  END IF;
+END $$;
 
 -- ─── RLS: authenticated user boleh insert, TAPI cuma untuk baris miliknya
 -- sendiri dan source diawali "frontend:" ────────────────────────────────
+DROP POLICY IF EXISTS "authenticated_users_can_log_own_frontend_errors" ON public.error_logs;
 CREATE POLICY "authenticated_users_can_log_own_frontend_errors"
 ON public.error_logs
 FOR INSERT

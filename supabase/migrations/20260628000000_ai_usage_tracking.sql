@@ -25,6 +25,7 @@ CREATE INDEX IF NOT EXISTS idx_ai_usage_key_alias_created
 ALTER TABLE public.ai_usage_logs ENABLE ROW LEVEL SECURITY;
 
 -- Policy: tidak ada akses dari anon/authenticated — semua lewat RPC SECURITY DEFINER
+DROP POLICY IF EXISTS "ai_usage_logs_no_direct_access" ON public.ai_usage_logs;
 CREATE POLICY "ai_usage_logs_no_direct_access"
   ON public.ai_usage_logs FOR ALL
   USING (FALSE);

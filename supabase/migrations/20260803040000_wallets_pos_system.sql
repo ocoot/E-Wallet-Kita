@@ -31,18 +31,22 @@ CREATE INDEX IF NOT EXISTS wallets_user_id_idx ON public.wallets (user_id);
 
 ALTER TABLE public.wallets ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can select their own wallets" ON public.wallets;
 CREATE POLICY "Users can select their own wallets"
     ON public.wallets FOR SELECT
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert their own wallets" ON public.wallets;
 CREATE POLICY "Users can insert their own wallets"
     ON public.wallets FOR INSERT
     WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update their own wallets" ON public.wallets;
 CREATE POLICY "Users can update their own wallets"
     ON public.wallets FOR UPDATE
     USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can delete their own wallets" ON public.wallets;
 CREATE POLICY "Users can delete their own wallets"
     ON public.wallets FOR DELETE
     USING (auth.uid() = user_id);

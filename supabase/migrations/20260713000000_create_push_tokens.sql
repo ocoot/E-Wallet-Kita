@@ -24,6 +24,7 @@ CREATE INDEX IF NOT EXISTS idx_push_tokens_token
 ALTER TABLE public.user_push_tokens ENABLE ROW LEVEL SECURITY;
 
 -- Users can only see their own push tokens
+DROP POLICY IF EXISTS "Users can manage their own push tokens" ON public.user_push_tokens;
 CREATE POLICY "Users can manage their own push tokens"
   ON public.user_push_tokens
   FOR ALL
