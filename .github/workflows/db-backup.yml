@@ -102,9 +102,24 @@ jobs:
         id: dump
         run: |
           set -euo pipefail
+          # PENTING: JANGAN panggil `pg_dump` polos di sini. Image runner
+          # GitHub (ubuntu-latest) sudah punya postgresql-client-16
+          # BAWAAN di /usr/bin/pg_dump, dan meski postgresql-client-17
+          # baru saja diinstall di step sebelumnya, PATH/update-alternatives
+          # masih bisa resolve ke binary v16 yang lebih lama itu -- lihat
+          # error "server version: 17.6; pg_dump version: 16.14".
+          # Solusinya: panggil binary v17 lewat PATH LENGKAPNYA supaya tidak
+          # ambigu, tidak peduli binary mana yang menang di /usr/bin.
+          PG_DUMP=/usr/lib/postgresql/17/bin/pg_dump
+          if [ ! -x "$PG_DUMP" ]; then
+            echo "::error::pg_dump v17 tidak ditemukan di $PG_DUMP -- cek step instalasi PGDG"
+            exit 1
+          fi
+          "$PG_DUMP" --version
+
           TS=$(date -u +"%Y%m%d-%H%M%S")
           FILE_NAME="ewallet-kita-${TS}.sql.gz"
-          pg_dump "${{ secrets.SUPABASE_DB_URL }}" \
+          "$PG_DUMP" "${{ secrets.SUPABASE_DB_URL }}" \
             --no-owner --no-privileges --format=plain \
             | gzip -9 > "$FILE_NAME"
           echo "file_name=$FILE_NAME" >> "$GITHUB_OUTPUT"

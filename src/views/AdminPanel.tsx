@@ -38,9 +38,10 @@ import { AdminErrorMonitor } from "./AdminErrorMonitor";
 import { AdminMaintenance } from "./AdminMaintenance";
 import { AdminVoucherManager } from "./AdminVoucherManager";
 import { AdminSupportChat } from "./AdminSupportChat";
+import { AdminBackup } from "./AdminBackup";
 import { AdminUserDetailModal } from "../components/AdminUserDetailModal";
 
-type AdminTab = "users" | "premium" | "voucher" | "categories" | "broadcast" | "ai_monitor" | "error_monitor" | "maintenance" | "support_chat";
+type AdminTab = "users" | "premium" | "voucher" | "categories" | "broadcast" | "ai_monitor" | "error_monitor" | "maintenance" | "support_chat" | "backup";
 
 export const AdminPanel: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -492,6 +493,7 @@ export const AdminPanel: React.FC = () => {
             { key: "error_monitor", label: t("admin.tab_error_monitor") },
             { key: "support_chat", label: t("admin.tab_support_chat") },
             { key: "maintenance", label: t("admin.tab_maintenance") },
+            { key: "backup",      label: t("admin.tab_backup") },
           ] as { key: AdminTab; label: string }[]).map(tab => (
             <button
               key={tab.key}
@@ -920,6 +922,7 @@ export const AdminPanel: React.FC = () => {
       {activeTab === "support_chat" && <AdminSupportChat />}
 
       {activeTab === "maintenance" && <AdminMaintenance />}
+      {activeTab === "backup" && <AdminBackup />}
 
       {/* Global detail user modal */}
       <AdminUserDetailModal
