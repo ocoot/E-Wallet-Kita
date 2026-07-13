@@ -1339,6 +1339,8 @@
     "group_cash": "Cash",
     "group_general": "General Balance",
     "general_desc": "General wallet — used automatically when you don't pick a specific wallet while logging a transaction.",
+    "card_caption_general": "Default transaction wallet",
+    "card_caption_cash": "Physical cash",
     "add_wallet": "Add Wallet",
     "add_bank": "Add Bank Account",
     "add_cash": "Add Cash",

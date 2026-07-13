@@ -1339,6 +1339,8 @@
     "group_cash": "Cash / Tunai",
     "group_general": "Saldo Umum",
     "general_desc": "Pos umum — dipakai otomatis kalau kamu tidak memilih pos tertentu saat mencatat transaksi.",
+    "card_caption_general": "Pos default transaksi",
+    "card_caption_cash": "Uang tunai fisik",
     "add_wallet": "Tambah Dompet",
     "add_bank": "Tambah Rekening",
     "add_cash": "Tambah Tunai",

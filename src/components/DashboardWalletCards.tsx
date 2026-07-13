@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { useNavigate } from "react-router-dom";
-import { Wallet as WalletIcon, Eye, EyeOff, Plus } from "lucide-react";
+import { Wallet as WalletIcon, Eye, EyeOff, Plus, Layers, Banknote } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useWallets } from "../hooks/useWallets";
 import { useBalanceVisibility, maskCurrency } from "../contexts/BalanceVisibilityContext";
@@ -33,8 +33,9 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
   const navigate = useNavigate();
   const { activeWallets, isLoading } = useWallets();
   const [visibleContactIds, setVisibleContactIds] = useState<Set<string>>(new Set());
-  // Baca saja -- toggle mata TUNGGAL untuk semua nominal ada di DashboardHeader,
-  // supaya tidak ada ikon mata berulang di tiap kartu (lihat catatan di file itu).
+  // Baca saja -- toggle mata TUNGGAL untuk semua nominal ada di
+  // BalanceVisibilityToggle.tsx (bar sticky di puncak Dashboard), supaya
+  // tidak ada ikon mata berulang di tiap kartu (lihat catatan di file itu).
   const { visible: balanceVisible } = useBalanceVisibility();
 
   const toggleContact = (id: string) => {
@@ -106,7 +107,21 @@ export const DashboardWalletCards: React.FC<DashboardWalletCardsProps> = ({ form
                   {isVisible ? <EyeOff size={10} className="shrink-0" /> : <Eye size={10} className="shrink-0" />}
                 </div>
               ) : (
-                <p className="text-[10px] text-slate-600">&nbsp;</p>
+                // REVISI: dulu baris ini kosong (&nbsp;), membuat kartu tanpa
+                // nomor kontak (general/cash) terasa "kosong" dan tidak
+                // sepadan secara visual dengan kartu bank yang punya baris
+                // nomor rekening. Sekarang diisi caption singkat sesuai tipe
+                // pos, supaya kepadatan visual antar kartu konsisten.
+                <div className="flex items-center gap-1 text-[10px] text-slate-500 light_sakura:text-slate-400">
+                  {w.type === "cash" ? (
+                    <Banknote size={10} className="shrink-0" />
+                  ) : (
+                    <Layers size={10} className="shrink-0" />
+                  )}
+                  <span className="truncate">
+                    {w.type === "cash" ? t("wallet.card_caption_cash") : t("wallet.card_caption_general")}
+                  </span>
+                </div>
               )}
             </motion.div>
           );
