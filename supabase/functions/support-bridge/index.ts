@@ -6,152 +6,107 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+interface SessionForTopic {
+  id: string;
+  short_code: string;
+  user_id: string | null;
+  telegram_thread_id: number | null;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const token = Deno.env.get("SUPPORT_TELEGRAM_BOT_TOKEN") ?? "";
+
   try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    const token = Deno.env.get("SUPPORT_TELEGRAM_BOT_TOKEN") ?? "";
-
     const body = await req.json();
 
     // 1. Handle message from our React applet (user sends a message)
     if (body.mode === "user_message") {
       const { session_id, content } = body;
 
-      // Insert message into public.support_messages table as 'user'
       const { data: msgData, error: msgError } = await supabase
         .from("support_messages")
-        .insert({
-          session_id,
-          sender: "user",
-          content,
-        })
+        .insert({ session_id, sender: "user", content })
         .select()
         .single();
-
       if (msgError) throw msgError;
 
-      // Get session's short_code + telegram_thread_id + siapa pemiliknya
       const { data: sessData, error: sessError } = await supabase
         .from("support_sessions")
-        .select("short_code, user_id, telegram_thread_id")
+        .select("id, short_code, user_id, telegram_thread_id")
         .eq("id", session_id)
         .single();
-
       if (sessError) throw sessError;
 
-      let userLabel = "";
-      if (sessData.user_id) {
-        const { data: userData } = await supabase
-          .from("users")
-          .select("display_name")
-          .eq("id", sessData.user_id)
-          .maybeSingle();
-        if (userData?.display_name) userLabel = userData.display_name;
-      }
+      const userLabel = await getUserLabel(supabase, sessData.user_id);
+      const adminChatId = await getAdminChatId(supabase);
 
-      // Get admin chat ID from app_settings (sekarang harus ID supergroup
-      // yang Forum Topics-nya sudah aktif)
-      const { data: adminSetting } = await supabase
-        .from("app_settings")
-        .select("value")
-        .eq("key", "support_admin_chat_id")
-        .maybeSingle();
+      if (adminChatId && token) {
+        const threadId = await ensureForumTopic(supabase, token, adminChatId, sessData as SessionForTopic, userLabel);
 
-      if (adminSetting?.value && token) {
-        let threadId: number | null = sessData.telegram_thread_id ?? null;
-
-        // Sesi ini belum punya topic Telegram-nya -- buat sekali di pesan
-        // pertama (lazy create, bukan saat sesi dibuat, supaya sesi yang
-        // dibuat lalu tidak jadi dipakai tidak meninggalkan topic kosong).
-        if (!threadId) {
-          try {
-            const topicName = `${userLabel || "User"} • #${sessData.short_code}`.slice(0, 128);
-            const topicRes = await fetch(`https://api.telegram.org/bot${token}/createForumTopic`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ chat_id: adminSetting.value, name: topicName }),
-            });
-            const topicJson = await topicRes.json();
-
-            if (topicJson.ok && topicJson.result?.message_thread_id) {
-              threadId = topicJson.result.message_thread_id;
-              await supabase
-                .from("support_sessions")
-                .update({ telegram_thread_id: threadId })
-                .eq("id", session_id);
-            } else {
-              // Gagal bikin topic (mis. grup belum benar-benar supergroup /
-              // topics belum aktif / bot bukan admin) -- catat, lalu tetap
-              // lanjut kirim ke chat utama sebagai fallback di bawah.
-              try {
-                await supabase.from("error_logs").insert({
-                  source: "support-bridge",
-                  level: "warning",
-                  message: "Gagal membuat Telegram Forum Topic, fallback ke chat utama.",
-                  context: { session_id, short_code: sessData.short_code, telegram_response: topicJson },
-                });
-              } catch (logErr) {
-                console.error("[support-bridge] Gagal mencatat error_logs (soft-fail):", logErr);
-              }
-            }
-          } catch (topicErr) {
-            console.error("[support-bridge] createForumTopic error:", topicErr);
-          }
-        }
-
-        // Kalau ada topic (baru dibuat atau sudah ada sebelumnya), pesan
-        // di dalam topic itu tidak perlu lagi header kode sesi -- nama
-        // topic-nya sendiri sudah menandakan ini sesi siapa. Kalau topic
-        // gagal dibuat, tetap sertakan header supaya admin masih bisa
-        // reply manual seperti alur lama.
         const messageText = threadId
           ? `${userLabel ? `👤 *${userLabel}*\n` : ""}💬 ${content}`
           : `🔔 *Pesan Baru${userLabel ? ` dari ${userLabel}` : ""}*\nSesi #${sessData.short_code}\n💬 ${content}`;
 
-        const sendPayload: Record<string, unknown> = {
-          chat_id: adminSetting.value,
-          text: messageText,
-          parse_mode: "Markdown",
-        };
-        if (threadId) sendPayload.message_thread_id = threadId;
-
-        await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(sendPayload),
-        });
+        await sendTelegram(token, adminChatId, messageText, threadId ?? undefined);
       } else {
-        // Admin belum /register chat-nya, atau bot token belum di-set --
-        // pesan user sudah tersimpan di DB tapi TIDAK ADA yang akan
-        // memberitahu admin. Sebelumnya ini gagal diam-diam; sekarang
-        // dicatat supaya kelihatan di Admin Panel > Error Monitor.
-        try {
-          await supabase.from("error_logs").insert({
-            source: "support-bridge",
-            level: "warning",
-            message: "Notifikasi admin tidak terkirim: support_admin_chat_id atau SUPPORT_TELEGRAM_BOT_TOKEN belum dikonfigurasi.",
-            context: { session_id, short_code: sessData.short_code },
-          });
-        } catch (logErr) {
-          console.error("[support-bridge] Gagal mencatat error_logs (soft-fail):", logErr);
-        }
+        await logWarning(supabase, "Notifikasi admin tidak terkirim: support_admin_chat_id atau SUPPORT_TELEGRAM_BOT_TOKEN belum dikonfigurasi.", { session_id, short_code: sessData.short_code });
       }
 
-      return new Response(JSON.stringify({ success: true, data: msgData }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      return jsonResponse({ success: true, data: msgData });
     }
 
-    // 2. Handle incoming updates from the Telegram Support Bot webhook (admin replies or commands)
+    // 2. Mirror balasan admin dari web dashboard (AdminSupportChat.tsx) ke
+    //    topic Telegram sesi yang bersangkutan, supaya riwayat di kedua
+    //    sisi (web & Telegram) selalu sinkron, apapun channel yang dipakai
+    //    admin. Pesan ke `support_messages` SUDAH diinsert lewat RPC
+    //    `admin_reply_support_session` sebelum edge function ini dipanggil
+    //    -- tugas di sini murni mengirim salinannya ke Telegram.
+    if (body.mode === "admin_web_reply") {
+      const { session_id, content } = body;
+
+      // Edge function pakai service_role (bypass RLS), jadi identitas &
+      // role admin/owner HARUS diverifikasi manual di sini -- kalau tidak,
+      // siapa saja yang tahu endpoint ini bisa mengirim pesan mengatasnamakan
+      // admin ke topic Telegram manapun.
+      const caller = await getAuthorizedAdmin(req, supabaseUrl);
+      if (!caller) {
+        return jsonResponse({ error: "Unauthorized" }, 401);
+      }
+
+      const { data: sessData, error: sessError } = await supabase
+        .from("support_sessions")
+        .select("id, short_code, user_id, telegram_thread_id, status")
+        .eq("id", session_id)
+        .single();
+      if (sessError) throw sessError;
+
+      if (!["open", "claimed"].includes(sessData.status)) {
+        return jsonResponse({ error: "Sesi sudah ditutup." }, 400);
+      }
+
+      const userLabel = await getUserLabel(supabase, sessData.user_id);
+      const adminChatId = await getAdminChatId(supabase);
+
+      if (adminChatId && token) {
+        const threadId = await ensureForumTopic(supabase, token, adminChatId, sessData as SessionForTopic, userLabel);
+        const messageText = `🖥️ *Admin (Web)*\n${content}`;
+        await sendTelegram(token, adminChatId, messageText, threadId ?? undefined);
+      } else {
+        await logWarning(supabase, "Balasan admin dari web tidak ter-mirror ke Telegram: support_admin_chat_id atau SUPPORT_TELEGRAM_BOT_TOKEN belum dikonfigurasi.", { session_id, short_code: sessData.short_code });
+      }
+
+      return jsonResponse({ success: true });
+    }
+
+    // 3. Handle incoming updates from the Telegram Support Bot webhook (admin replies or commands)
     if (body.message) {
       const message = body.message;
       const chatId = message.chat.id;
@@ -162,11 +117,7 @@ serve(async (req) => {
       if (text.startsWith("/register")) {
         const { error: upsertError } = await supabase
           .from("app_settings")
-          .upsert({
-            key: "support_admin_chat_id",
-            value: String(chatId),
-            updated_at: new Date().toISOString(),
-          });
+          .upsert({ key: "support_admin_chat_id", value: String(chatId), updated_at: new Date().toISOString() });
 
         if (upsertError) {
           await sendTelegram(token, chatId, `❌ Gagal mendaftarkan chat: ${upsertError.message}`, threadId);
@@ -182,8 +133,7 @@ serve(async (req) => {
 
       // Live Chat Reply -- jalur utama (Forum Topics): setiap sesi punya
       // topic sendiri, jadi cukup cocokkan message_thread_id dari Telegram
-      // ke telegram_thread_id di database. TIDAK ADA lagi regex/reply-to
-      // yang rawan salah sasaran kalau admin lupa reply ke pesan yang benar.
+      // ke telegram_thread_id di database.
       if (threadId) {
         const { data: session, error: sessError } = await supabase
           .from("support_sessions")
@@ -213,15 +163,12 @@ serve(async (req) => {
           return new Response("ok", { status: 200 });
         }
 
-        // Topic ada tapi sesinya sudah tidak aktif (ditutup/dibersihkan) --
-        // beri tahu di topic yang sama, jangan diam-diam gagal.
         await sendTelegram(token, chatId, `⚠️ Sesi untuk topic ini sudah ditutup atau tidak ditemukan.`, threadId);
         return new Response("ok", { status: 200 });
       }
 
-      // Fallback untuk pesan di luar topic (mis. General topic, atau kalau
-      // Forum Topics belum sempat kepakai untuk sesi tertentu) -- pakai
-      // cara lama: admin reply ke pesan yang berisi kode sesi.
+      // Fallback untuk pesan di luar topic manapun (mis. General topic) --
+      // pakai cara lama: admin reply ke pesan yang berisi kode sesi.
       if (message.reply_to_message) {
         const repliedText = message.reply_to_message.text || "";
         const match = repliedText.match(/#([A-Z0-9]+)/);
@@ -269,27 +216,120 @@ serve(async (req) => {
   } catch (err: any) {
     console.error("support-bridge error:", err);
     try {
-      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-      if (supabaseUrl && supabaseServiceKey) {
-        const supabaseLog = createClient(supabaseUrl, supabaseServiceKey);
-        await supabaseLog.from("error_logs").insert({
-          source: "support-bridge",
-          level: "error",
-          message: err?.message ? String(err.message) : "Unhandled error di support-bridge",
-        });
-      }
+      const supabaseLog = createClient(supabaseUrl, supabaseServiceKey);
+      await supabaseLog.from("error_logs").insert({
+        source: "support-bridge",
+        level: "error",
+        message: err?.message ? String(err.message) : "Unhandled error di support-bridge",
+      });
     } catch (logErr) {
       console.error("[support-bridge] Gagal mencatat error_logs (soft-fail):", logErr);
     }
-    return new Response(JSON.stringify({ error: err.message }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
-    });
+    return jsonResponse({ error: err.message }, 400);
   }
 });
 
-async function sendTelegram(token: string, chatId: number, text: string, messageThreadId?: number) {
+// ─── Helpers ─────────────────────────────────────────────────────────────
+
+function jsonResponse(payload: unknown, status = 200) {
+  return new Response(JSON.stringify(payload), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status,
+  });
+}
+
+async function getUserLabel(supabase: any, userId: string | null): Promise<string> {
+  if (!userId) return "";
+  const { data } = await supabase.from("users").select("display_name").eq("id", userId).maybeSingle();
+  return data?.display_name || "";
+}
+
+async function getAdminChatId(supabase: any): Promise<string | null> {
+  const { data } = await supabase.from("app_settings").select("value").eq("key", "support_admin_chat_id").maybeSingle();
+  return data?.value ?? null;
+}
+
+async function logWarning(supabase: any, message: string, context: Record<string, unknown>) {
+  try {
+    await supabase.from("error_logs").insert({ source: "support-bridge", level: "warning", message, context });
+  } catch (logErr) {
+    console.error("[support-bridge] Gagal mencatat error_logs (soft-fail):", logErr);
+  }
+}
+
+/**
+ * Pastikan sesi punya Telegram Forum Topic. Kalau belum ada, buat sekarang
+ * (lazy create) dan simpan `telegram_thread_id`-nya. Dipakai baik dari
+ * pesan pertama user maupun balasan pertama admin dari web (jaga-jaga
+ * kalau admin sempat balas dari web sebelum user kirim pesan apapun).
+ */
+async function ensureForumTopic(
+  supabase: any,
+  token: string,
+  adminChatId: string,
+  session: SessionForTopic,
+  userLabel: string
+): Promise<number | null> {
+  if (session.telegram_thread_id) return session.telegram_thread_id;
+
+  try {
+    const topicName = `${userLabel || "User"} • #${session.short_code}`.slice(0, 128);
+    const topicRes = await fetch(`https://api.telegram.org/bot${token}/createForumTopic`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ chat_id: adminChatId, name: topicName }),
+    });
+    const topicJson = await topicRes.json();
+
+    if (topicJson.ok && topicJson.result?.message_thread_id) {
+      const threadId = topicJson.result.message_thread_id;
+      await supabase.from("support_sessions").update({ telegram_thread_id: threadId }).eq("id", session.id);
+      return threadId;
+    }
+
+    await logWarning(supabase, "Gagal membuat Telegram Forum Topic, fallback ke chat utama.", {
+      session_id: session.id,
+      short_code: session.short_code,
+      telegram_response: topicJson,
+    });
+  } catch (topicErr) {
+    console.error("[support-bridge] createForumTopic error:", topicErr);
+  }
+
+  return null;
+}
+
+/**
+ * Verifikasi caller (dari Authorization header yang dikirim
+ * supabase.functions.invoke) benar-benar user login DAN rolenya admin/owner.
+ * WAJIB dipanggil sebelum mengizinkan mode yang bertindak atas nama admin
+ * (`admin_web_reply`), karena edge function ini pakai service_role client
+ * yang bypass RLS -- tanpa cek ini, siapapun yang punya URL function bisa
+ * kirim pesan mengatasnamakan admin.
+ */
+async function getAuthorizedAdmin(req: Request, supabaseUrl: string): Promise<{ id: string } | null> {
+  const authHeader = req.headers.get("Authorization") ?? "";
+  const jwt = authHeader.replace(/^Bearer\s+/i, "");
+  if (!jwt) return null;
+
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+
+  const { data: userRes, error: userErr } = await authClient.auth.getUser(jwt);
+  if (userErr || !userRes?.user) return null;
+
+  const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const adminClient = createClient(supabaseUrl, supabaseServiceKey);
+  const { data: profile } = await adminClient.from("users").select("role").eq("id", userRes.user.id).maybeSingle();
+
+  if (!profile || !["admin", "owner"].includes(profile.role)) return null;
+
+  return { id: userRes.user.id };
+}
+
+async function sendTelegram(token: string, chatId: string | number, text: string, messageThreadId?: number) {
   if (!token) return;
   const payload: Record<string, unknown> = {
     chat_id: chatId,

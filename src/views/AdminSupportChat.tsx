@@ -197,6 +197,20 @@ export const AdminSupportChat: React.FC = () => {
       }
       audioFeedback.playChime();
       loadSessions();
+
+      // Mirror balasan ini ke topic Telegram sesi yang bersangkutan, supaya
+      // riwayat di web & Telegram tetap sinkron kalau admin pakai keduanya
+      // bergantian. Best-effort: kalau ini gagal, pesan TETAP tersimpan
+      // (sudah masuk lewat RPC di atas) -- cuma tidak muncul di Telegram,
+      // jadi tidak perlu memblokir UI atau menampilkan error yang sama
+      // besarnya dengan kegagalan kirim pesan itu sendiri.
+      try {
+        await supabase.functions.invoke("support-bridge", {
+          body: { mode: "admin_web_reply", session_id: selectedId, content },
+        });
+      } catch (mirrorErr) {
+        console.error("[AdminSupportChat] Gagal mirror balasan ke Telegram:", mirrorErr);
+      }
     } catch (err: any) {
       audioFeedback.playDullPluck();
       showToast(err.message || t("admin_support_chat.toast_error"), "error");
