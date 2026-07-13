@@ -108,6 +108,27 @@ serve(async (req) => {
 
     // 3. Handle incoming updates from the Telegram Support Bot webhook (admin replies or commands)
     if (body.message) {
+      // Validasi ini WAJIB sebelum memproses apapun dari body.message --
+      // tanpa ini, siapapun yang tahu URL function ini bisa mengirim
+      // "update Telegram" palsu (mis. menyamar jadi admin membalas sesi
+      // orang lain). Header ini HANYA dikirim oleh Telegram sendiri kalau
+      // secret_token di-set lewat setWebhook (lihat
+      // scripts/setup-support-telegram-webhook.ts). Mode lain
+      // (`user_message`, `admin_web_reply`) berasal dari frontend kita
+      // sendiri via supabase.functions.invoke, bukan dari Telegram, jadi
+      // TIDAK divalidasi dengan header ini.
+      const secretHeader = req.headers.get("x-telegram-bot-api-secret-token");
+      const expectedSecret = Deno.env.get("SUPPORT_TELEGRAM_WEBHOOK_SECRET") ?? "";
+
+      if (!expectedSecret) {
+        console.error("🔴 SUPPORT_TELEGRAM_WEBHOOK_SECRET is not configured — rejecting all Telegram webhook updates.");
+        return jsonResponse({ error: "Webhook is not configured correctly" }, 500);
+      }
+      if (secretHeader !== expectedSecret) {
+        console.warn("⚠️ Unauthorized support-bridge webhook request blocked");
+        return jsonResponse({ error: "Unauthorized update request" }, 403);
+      }
+
       const message = body.message;
       const chatId = message.chat.id;
       const text = message.text ? message.text.trim() : "";
