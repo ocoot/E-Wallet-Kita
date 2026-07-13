@@ -180,7 +180,13 @@ export const SupportChatWidget: React.FC = () => {
     try {
       const { data, error } = await supabase.rpc("create_support_session");
       if (error) throw error;
-      setSession(data as SupportSessionRow);
+      // RPC dideklarasikan `RETURNS SETOF public.support_sessions`, jadi
+      // supabase-js SELALU mengembalikan array (walau isinya 1 baris) --
+      // bukan object tunggal. Tanpa unwrap ini, session.id/short_code jadi
+      // undefined dan pesan pertama gagal terkirim (session_id null).
+      const newSession = Array.isArray(data) ? data[0] : data;
+      if (!newSession) throw new Error("Sesi tidak ditemukan setelah dibuat.");
+      setSession(newSession as SupportSessionRow);
     } catch (err: any) {
       showToast(err.message || t("support.admin_chat.error_send_failed"), "error");
     } finally {
