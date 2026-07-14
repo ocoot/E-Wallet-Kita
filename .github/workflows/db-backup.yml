@@ -101,13 +101,32 @@ jobs:
       - name: Catat status "running" ke Supabase
         id: log_start
         run: |
-          RESP=$(curl -sS -X POST "$SUPABASE_URL/rest/v1/backup_logs" \
+          set -euo pipefail
+          # PENTING: pakai -sSf supaya curl EXIT NON-ZERO kalau Supabase
+          # balas HTTP error (4xx/5xx). Sebelumnya tanpa -f, curl selalu
+          # exit 0 walau response-nya error -- akibatnya row backup_logs
+          # bisa gagal dibuat/diupdate TANPA membuat step ini (atau step
+          # PATCH di bawah) gagal, dan run tetap kelihatan hijau di GitHub
+          # Actions padahal status di DB tidak pernah berubah dari
+          # "running" (lihat insiden 14/7/2026).
+          RESP=$(curl -sSf -X POST "$SUPABASE_URL/rest/v1/backup_logs" \
             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Content-Type: application/json" \
             -H "Prefer: return=representation" \
             -d "{\"status\":\"running\",\"triggered_by\":\"$TRIGGERED_BY\",\"triggered_by_admin\": $( [ -n "$TRIGGERED_BY_ADMIN" ] && echo "\"$TRIGGERED_BY_ADMIN\"" || echo null )}")
-          echo "log_id=$(echo "$RESP" | jq -r '.[0].id')" >> "$GITHUB_OUTPUT"
+
+          LOG_ID=$(echo "$RESP" | jq -r '.[0].id // empty')
+
+          # Validasi eksplisit: kalau log_id kosong atau bukan UUID yang
+          # valid, GAGALKAN step ini sekarang juga daripada meneruskan id
+          # rusak ke step PATCH nanti (yang tadinya gagal secara silent).
+          if [[ ! "$LOG_ID" =~ ^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$ ]]; then
+            echo "::error::Gagal mendapatkan id log dari Supabase. Response: $RESP"
+            exit 1
+          fi
+
+          echo "log_id=$LOG_ID" >> "$GITHUB_OUTPUT"
 
       - name: Install postgresql-client 17 (PGDG repo) & rclone
         run: |
@@ -201,7 +220,9 @@ jobs:
       - name: Catat status sukses
         if: success()
         run: |
-          curl -sS -X PATCH "$SUPABASE_URL/rest/v1/backup_logs?id=eq.${{ steps.log_start.outputs.log_id }}" \
+          set -euo pipefail
+          curl -sSf --retry 3 --retry-delay 5 -X PATCH \
+            "$SUPABASE_URL/rest/v1/backup_logs?id=eq.${{ steps.log_start.outputs.log_id }}" \
             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Content-Type: application/json" \
@@ -214,11 +235,13 @@ jobs:
       - name: Catat status gagal
         if: failure()
         run: |
-          curl -sS -X PATCH "$SUPABASE_URL/rest/v1/backup_logs?id=eq.${{ steps.log_start.outputs.log_id }}" \
+          curl -sSf --retry 3 --retry-delay 5 -X PATCH \
+            "$SUPABASE_URL/rest/v1/backup_logs?id=eq.${{ steps.log_start.outputs.log_id }}" \
             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Content-Type: application/json" \
-            -d "{\"status\":\"failed\",\"error_message\":\"Lihat log GitHub Actions run ${{ github.run_id }}\",\"finished_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
+            -d "{\"status\":\"failed\",\"error_message\":\"Lihat log GitHub Actions run ${{ github.run_id }}\",\"finished_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}" \
+            || echo "::error::Gagal update status ke 'failed' di Supabase juga -- watchdog stale-running di DB akan menandainya nanti."
 
           curl -sS -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}" \
