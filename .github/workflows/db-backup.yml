@@ -161,8 +161,35 @@ jobs:
           FILE_NAME="ewallet-kita-${TS}.dump"
           # --format=custom (-Fc): terkompresi otomatis + mendukung restore
           # parsial per tabel lewat `pg_restore -t` (lihat db-restore.yml).
+          #
+          # --schema=public: WAJIB. Tanpa ini, pg_dump ikut men-dump SEMUA
+          # schema internal yang dikelola Supabase (auth, storage,
+          # extensions, realtime, cron, net, graphql, vault, dst) beserta
+          # event trigger, RLS toggle, dan publication milik schema
+          # tersebut. Schema-schema itu dimiliki role internal Supabase
+          # (supabase_admin, supabase_auth_admin, supabase_storage_admin,
+          # dst) -- role "postgres" yang dipakai di sini BUKAN pemiliknya
+          # dan bukan superuser sungguhan, jadi saat FULL RESTORE mencoba
+          # DROP/CREATE/ALTER objek-objek itu, muncul banjir error
+          # "must be owner of table/event trigger ..." (ratusan error,
+          # exit code 1) meski data tabel public tetap berhasil ter-restore
+          # karena pg_restore melanjutkan proses dan cuma meng-ignore error
+          # per statement, bukan berhenti total.
+          #
+          # Schema internal Supabase TIDAK PERLU di-backup lewat jalur ini:
+          # strukturnya sudah dikelola & direplikasi oleh platform Supabase
+          # sendiri (migration lewat supabase/migrations, termasuk
+          # cron.schedule(...) di dalamnya), bukan bagian dari "data
+          # aplikasi" yang perlu disaster-recovery manual. Backup/restore
+          # di workflow ini cukup fokus ke schema public (data aplikasi:
+          # transactions, budgets, bill_reminders, dst).
+          #
+          # Kalau di masa depan project ini menambah custom schema selain
+          # public, tambahkan flag --schema=<nama> lagi di sini (bisa
+          # diulang, pg_dump mendukung multiple --schema).
           "$PG_DUMP" "${{ secrets.SUPABASE_DB_URL }}" \
             --no-owner --no-privileges --format=custom --compress=9 \
+            --schema=public \
             --file="$FILE_NAME"
           echo "file_name=$FILE_NAME" >> "$GITHUB_OUTPUT"
           echo "file_size=$(stat -c%s "$FILE_NAME")" >> "$GITHUB_OUTPUT"
