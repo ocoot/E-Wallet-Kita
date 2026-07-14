@@ -78,6 +78,15 @@ jobs:
       - name: Install postgresql-client 17 (PGDG repo) & rclone
         run: |
           set -euo pipefail
+          # PENTING: versi package DIPIN (bukan hanya "postgresql-client-17"
+          # tanpa versi) supaya pg_restore yang dipakai untuk restore selalu
+          # >= versi pg_dump yang dipakai untuk backup (lihat db-backup.yml).
+          # Kalau PGDG merilis versi minor baru dan kita tidak pin, restore
+          # bisa jalan dengan pg_restore versi lebih lama dari pg_dump yang
+          # membuat file dump-nya -> berisiko "unsupported version in file
+          # header". Update PG_CLIENT_VERSION ini bersamaan dengan db-backup.yml
+          # setiap kali sengaja upgrade versi client.
+          PG_CLIENT_VERSION="17.10-1.pgdg24.04+1"
           sudo apt-get update -qq
           sudo apt-get install -y -qq curl ca-certificates gnupg jq
           sudo install -d /usr/share/postgresql-common/pgdg
@@ -87,7 +96,7 @@ jobs:
           echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" \
             | sudo tee /etc/apt/sources.list.d/pgdg.list
           sudo apt-get update -qq
-          sudo apt-get install -y -qq postgresql-client-17
+          sudo apt-get install -y -qq "postgresql-client-17=${PG_CLIENT_VERSION}"
           curl -s https://rclone.org/install.sh | sudo bash
 
       - name: Download file backup dari Google Drive
@@ -139,8 +148,18 @@ jobs:
             done
 
             echo "::notice::Memuat data dari dump untuk tabel terpilih..."
-            "$PG_RESTORE" --no-owner --no-privileges --data-only --disable-triggers \
-              "${TABLE_ARGS[@]}" --dbname="$DB_URL" "$FILE_NAME"
+            # PENTING: JANGAN pakai flag --disable-triggers milik pg_restore.
+            # Flag itu menjalankan `ALTER TABLE ... DISABLE/ENABLE TRIGGER ALL`,
+            # yang hanya boleh dieksekusi oleh role SUPERUSER sungguhan untuk
+            # trigger FK internal (RI_ConstraintTrigger_*). Role postgres di
+            # Supabase BUKAN superuser sungguhan -> "permission denied: ...
+            # is a system trigger". Sebagai gantinya, matikan semua trigger
+            # untuk SESI INI SAJA lewat GUC session_replication_role=replica
+            # (role Supabase diizinkan set ini), konsisten dengan teknik yang
+            # dipakai pada step DELETE di atas.
+            PGOPTIONS="-c session_replication_role=replica" \
+              "$PG_RESTORE" --no-owner --no-privileges --data-only \
+                "${TABLE_ARGS[@]}" --dbname="$DB_URL" "$FILE_NAME"
           fi
 
       - name: Catat status sukses & matikan maintenance mode

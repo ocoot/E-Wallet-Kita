@@ -94,6 +94,16 @@ jobs:
           # project Supabase jalan di Postgres 17 -- pg_dump versi client HARUS
           # >= versi server, jadi kita tambah repo resmi PostgreSQL (PGDG) dulu
           # supaya bisa install postgresql-client-17 (bukan yang bawaan Ubuntu).
+          #
+          # PENTING: versi package DIPIN ke angka yang SAMA PERSIS dengan
+          # PG_CLIENT_VERSION di db-restore.yml. Kalau tidak dipin, PGDG bisa
+          # merilis versi minor baru kapan saja sehingga pg_dump (di sini) dan
+          # pg_restore (di db-restore.yml) berjalan di runner yang beda waktu
+          # dengan versi client yang berbeda -- berisiko file dump dari versi
+          # lebih baru tidak bisa dibaca oleh pg_restore versi lebih lama.
+          # Kalau sengaja mau upgrade, ubah versi ini BERSAMAAN dengan
+          # db-restore.yml.
+          PG_CLIENT_VERSION="17.10-1.pgdg24.04+1"
           sudo apt-get update -qq
           sudo apt-get install -y -qq curl ca-certificates gnupg
           sudo install -d /usr/share/postgresql-common/pgdg
@@ -103,7 +113,7 @@ jobs:
           echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" \
             | sudo tee /etc/apt/sources.list.d/pgdg.list
           sudo apt-get update -qq
-          sudo apt-get install -y -qq postgresql-client-17
+          sudo apt-get install -y -qq "postgresql-client-17=${PG_CLIENT_VERSION}"
           curl -s https://rclone.org/install.sh | sudo bash
 
       - name: Dump database (pg_dump --format=custom)
