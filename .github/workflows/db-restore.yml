@@ -157,8 +157,32 @@ jobs:
             # untuk SESI INI SAJA lewat GUC session_replication_role=replica
             # (role Supabase diizinkan set ini), konsisten dengan teknik yang
             # dipakai pada step DELETE di atas.
+            #
+            # PENTING JUGA: --single-transaction WAJIB dipakai di sini.
+            # Tanpa ini, pg_restore --data-only membuka transaksi terpisah
+            # per tabel/COPY. Kalau DB_URL yang dipakai adalah connection
+            # string lewat pooler (Supavisor/PgBouncer transaction mode),
+            # pooler bisa memindahkan koneksi client ke backend fisik yang
+            # BERBEDA di setiap transaksi baru -> GUC session_replication_role
+            # yang di-set lewat PGOPTIONS di awal koneksi tidak lagi aktif di
+            # backend yang baru, sehingga trigger FK tetap menyala saat COPY
+            # tabel berikutnya jalan (inilah penyebab error
+            # "violates foreign key constraint" yang sebelumnya terjadi pada
+            # restore bill_reminders -> transactions). Dengan
+            # --single-transaction, SELURUH COPY untuk semua tabel terpilih
+            # berjalan dalam SATU transaksi = SATU koneksi backend yang sama,
+            # jadi GUC-nya konsisten aktif sepanjang restore. Efek samping
+            # yang diinginkan: restore table-scope jadi atomik (all-or-nothing),
+            # tidak ada lagi kondisi tabel A ke-restore tapi tabel B gagal.
+            #
+            # Urutan argumen -t (TABLE_ARGS) TIDAK menjamin urutan COPY --
+            # pg_restore memuat sesuai urutan TOC di file dump, bukan urutan
+            # -t yang diberikan. session_replication_role=replica sudah cukup
+            # untuk mencegah FK violation walau urutan child-before-parent,
+            # tapi --single-transaction di atas adalah syarat supaya GUC itu
+            # betul-betul konsisten menyala di semua COPY.
             PGOPTIONS="-c session_replication_role=replica" \
-              "$PG_RESTORE" --no-owner --no-privileges --data-only \
+              "$PG_RESTORE" --no-owner --no-privileges --data-only --single-transaction \
                 "${TABLE_ARGS[@]}" --dbname="$DB_URL" "$FILE_NAME"
           fi
 

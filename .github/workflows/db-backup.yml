@@ -27,9 +27,31 @@ name: Database Backup (Supabase -> Google Drive)
 #     (lihat api/admin/backup.ts)
 #
 # Secrets yang WAJIB diset di Settings -> Secrets and variables -> Actions:
-#   SUPABASE_DB_URL            postgres://postgres:[password]@db.[project-ref].supabase.co:5432/postgres
-#                               (Project Settings -> Database -> Connection string -> URI,
-#                                pakai koneksi DIRECT bukan pooler/pgbouncer supaya pg_dump stabil)
+#   SUPABASE_DB_URL            postgres://postgres.[project-ref]:[password]@aws-0-[region].pooler.supabase.com:5432/postgres
+#                               (Project Settings -> Database -> Connection string ->
+#                                pilih "Session mode", BUKAN "Transaction mode" dan BUKAN
+#                                direct connection "db.[project-ref].supabase.co").
+#
+#                               KENAPA bukan direct connection: direct connection Supabase
+#                               cuma resolve ke alamat IPv6, sedangkan runner GitHub Actions
+#                               (ubuntu-latest) IPv4-only -> gagal dengan error
+#                               "Network is unreachable". Kecuali IPv4 add-on Supabase
+#                               diaktifkan di project ini, JANGAN pakai direct connection.
+#
+#                               KENAPA bukan Transaction mode (port 6543): transaction mode
+#                               bisa memindahkan koneksi client ke backend Postgres fisik
+#                               yang berbeda di setiap transaksi baru, sehingga GUC session
+#                               (mis. `session_replication_role`) yang di-set di satu
+#                               transaksi bisa hilang di transaksi berikutnya -- ini pernah
+#                               menyebabkan restore table-scope gagal dengan FK violation
+#                               padahal trigger FK harusnya sudah dimatikan (lihat komentar
+#                               di db-restore.yml step "Jalankan restore").
+#
+#                               Session mode (port 5432 lewat pooler) memberi 1 backend
+#                               tetap per koneksi sepanjang sesi (sama seperti direct
+#                               connection dari sisi konsistensi state), TAPI tetap
+#                               IPv4-compatible karena lewat Supavisor -- jadi aman dipakai
+#                               dari GitHub Actions maupun untuk pg_restore multi-transaksi.
 #   SUPABASE_URL                sudah ada (dipakai workflow lain)
 #   SUPABASE_SERVICE_ROLE_KEY   sudah ada (dipakai workflow lain)
 #   RCLONE_CONFIG_GDRIVE_TOKEN  hasil `rclone authorize "drive"` (JSON token), lihat catatan di bawah
