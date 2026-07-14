@@ -1,0 +1,191 @@
+name: Database Restore (Google Drive -> Supabase)
+
+# Dipicu HANYA lewat tombol "Restore" di Admin Panel > Backup, lewat
+# api/admin/backup.ts (action: "restore") -- lihat file itu untuk validasi
+# admin/owner, pengecekan backup berstatus 'success', dan penguncian
+# maintenance mode SEBELUM workflow ini dipicu.
+#
+# Dua mode restore:
+#   scope=full  -> pg_restore --clean --if-exists seluruh dump. SELURUH
+#                  data (semua tabel, semua pengguna) akan ditimpa ke
+#                  kondisi saat backup diambil. Untuk disaster recovery.
+#   scope=table -> pg_restore -t <tabel> per tabel yang dipilih SAJA.
+#                  Hanya data di tabel tsb yang ditimpa (tetap berlaku
+#                  untuk SEMUA pengguna yang punya baris di tabel itu,
+#                  bukan cuma satu pengguna), tabel lain tidak tersentuh.
+#                  Daftar tabel yang boleh dipilih dibatasi ke
+#                  public.backup_restorable_tables (lihat migration
+#                  20260817000000_backup_restore_delete.sql).
+#
+# PENTING (table-scope): DELETE dijalankan dengan
+# `session_replication_role = replica` supaya foreign-key trigger tidak
+# ikut menghapus/mengubah baris di tabel LAIN yang mereferensikan tabel
+# ini (mencegah efek cascade yang tidak diinginkan), BUKAN pakai
+# `TRUNCATE ... CASCADE` yang bisa melebar ke tabel lain.
+#
+# Secrets: sama dengan db-backup.yml (SUPABASE_DB_URL, SUPABASE_URL,
+# SUPABASE_SERVICE_ROLE_KEY, RCLONE_CONFIG_GDRIVE_*, TELEGRAM_*).
+
+on:
+  workflow_dispatch:
+    inputs:
+      restore_log_id:
+        description: "ID baris backup_restore_logs (dibuat oleh api/admin/backup.ts sebelum dispatch)"
+        required: true
+      storage_path:
+        description: "Path file di Google Drive, contoh: ewallet-kita-backups/ewallet-kita-20260817-020000.dump"
+        required: true
+      scope:
+        description: "full atau table"
+        required: true
+      table_names:
+        description: "Nama tabel dipisah koma, hanya dipakai jika scope=table"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RCLONE_CONFIG_GDRIVE_TYPE: drive
+      RCLONE_CONFIG_GDRIVE_SCOPE: drive.file
+      RCLONE_CONFIG_GDRIVE_TOKEN: ${{ secrets.RCLONE_CONFIG_GDRIVE_TOKEN }}
+      RCLONE_CONFIG_GDRIVE_CLIENT_ID: ${{ secrets.RCLONE_CONFIG_GDRIVE_CLIENT_ID }}
+      RCLONE_CONFIG_GDRIVE_CLIENT_SECRET: ${{ secrets.RCLONE_CONFIG_GDRIVE_CLIENT_SECRET }}
+      RESTORE_LOG_ID: ${{ github.event.inputs.restore_log_id }}
+      STORAGE_PATH: ${{ github.event.inputs.storage_path }}
+      SCOPE: ${{ github.event.inputs.scope }}
+      TABLE_NAMES: ${{ github.event.inputs.table_names }}
+
+    steps:
+      - name: Validasi input scope
+        run: |
+          if [ "$SCOPE" != "full" ] && [ "$SCOPE" != "table" ]; then
+            echo "::error::scope harus 'full' atau 'table', dapat: $SCOPE"
+            exit 1
+          fi
+          if [ "$SCOPE" = "table" ] && [ -z "$TABLE_NAMES" ]; then
+            echo "::error::scope=table tapi table_names kosong"
+            exit 1
+          fi
+
+      - name: Install postgresql-client 17 (PGDG repo) & rclone
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq curl ca-certificates gnupg jq
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -o /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc \
+            https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          . /etc/os-release
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" \
+            | sudo tee /etc/apt/sources.list.d/pgdg.list
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+          curl -s https://rclone.org/install.sh | sudo bash
+
+      - name: Download file backup dari Google Drive
+        id: dl
+        run: |
+          set -euo pipefail
+          rclone copy "gdrive:${STORAGE_PATH}" . --progress
+          FILE_NAME=$(basename "${STORAGE_PATH}")
+          if [ ! -f "$FILE_NAME" ]; then
+            echo "::error::File $FILE_NAME tidak ditemukan setelah rclone copy"
+            exit 1
+          fi
+          echo "file_name=$FILE_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Jalankan restore
+        id: restore
+        run: |
+          set -euo pipefail
+          PG_RESTORE=/usr/lib/postgresql/17/bin/pg_restore
+          PSQL=/usr/lib/postgresql/17/bin/psql
+          DB_URL="${{ secrets.SUPABASE_DB_URL }}"
+          FILE_NAME="${{ steps.dl.outputs.file_name }}"
+
+          if [ "$SCOPE" = "full" ]; then
+            echo "::notice::Restore FULL -- seluruh database akan ditimpa ke kondisi backup."
+            # --clean --if-exists: drop objek lama dulu (aman dipanggil walau
+            # objeknya belum ada) baru dibuat ulang + data dimuat.
+            "$PG_RESTORE" --no-owner --no-privileges --clean --if-exists \
+              --dbname="$DB_URL" "$FILE_NAME"
+          else
+            echo "::notice::Restore TABLE-SCOPE -- hanya tabel: $TABLE_NAMES"
+            IFS=',' read -ra TABLES <<< "$TABLE_NAMES"
+
+            # Bangun daftar argumen -t per tabel untuk pg_restore
+            TABLE_ARGS=()
+            for T in "${TABLES[@]}"; do
+              T_TRIMMED=$(echo "$T" | xargs)
+              TABLE_ARGS+=("-t" "$T_TRIMMED")
+            done
+
+            for T in "${TABLES[@]}"; do
+              T_TRIMMED=$(echo "$T" | xargs)
+              echo "::notice::Mengosongkan tabel public.$T_TRIMMED (tanpa cascade ke tabel lain)..."
+              # session_replication_role=replica menonaktifkan trigger FK
+              # untuk sesi ini SAJA, supaya DELETE di tabel ini tidak ikut
+              # menghapus baris di tabel lain yang mereferensikannya.
+              "$PSQL" "$DB_URL" -v ON_ERROR_STOP=1 -c \
+                "SET session_replication_role = 'replica'; DELETE FROM public.${T_TRIMMED};"
+            done
+
+            echo "::notice::Memuat data dari dump untuk tabel terpilih..."
+            "$PG_RESTORE" --no-owner --no-privileges --data-only --disable-triggers \
+              "${TABLE_ARGS[@]}" --dbname="$DB_URL" "$FILE_NAME"
+          fi
+
+      - name: Catat status sukses & matikan maintenance mode
+        if: success()
+        run: |
+          curl -sS -X PATCH "$SUPABASE_URL/rest/v1/backup_restore_logs?id=eq.${RESTORE_LOG_ID}" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"status\":\"success\",\"finished_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
+
+          # Service role bypass RLS -> update langsung ke maintenance_settings,
+          # tidak lewat RPC admin_set_maintenance_mode (RPC itu butuh auth.uid()
+          # dari sesi user, tidak tersedia untuk service role).
+          curl -sS -X PATCH "$SUPABASE_URL/rest/v1/maintenance_settings?id=eq.1" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"is_active\":false}"
+
+          curl -sS -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}" \
+            -d text="✅ Restore database sukses (scope: ${SCOPE}). Maintenance mode dimatikan otomatis."
+
+      - name: Catat status gagal (tetap matikan maintenance mode)
+        if: failure()
+        run: |
+          curl -sS -X PATCH "$SUPABASE_URL/rest/v1/backup_restore_logs?id=eq.${RESTORE_LOG_ID}" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"status\":\"failed\",\"error_message\":\"Lihat log GitHub Actions run ${{ github.run_id }}\",\"finished_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
+
+          # Tetap matikan maintenance mode supaya app tidak terkunci selamanya --
+          # TAPI kalau restore FULL gagal di tengah jalan, database bisa dalam
+          # kondisi tidak konsisten (sebagian tabel sudah ke-drop/ke-restore,
+          # sebagian belum). Notifikasi Telegram di bawah SENGAJA dibuat
+          # mencolok supaya admin langsung cek manual, bukan asumsi app aman
+          # dipakai lagi hanya karena maintenance mode sudah mati.
+          curl -sS -X PATCH "$SUPABASE_URL/rest/v1/maintenance_settings?id=eq.1" \
+            -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d "{\"is_active\":false}"
+
+          curl -sS -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}" \
+            -d text="🚨 RESTORE GAGAL (scope: ${SCOPE})! Cek GitHub Actions run ${{ github.run_id }} SEGERA -- database mungkin dalam kondisi tidak konsisten. Maintenance mode dimatikan otomatis, TAPI sebaiknya nyalakan ulang manual sampai kondisi DB diverifikasi."

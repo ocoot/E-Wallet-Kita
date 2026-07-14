@@ -1,0 +1,93 @@
+name: Database Backup Delete (Google Drive cleanup)
+
+# Dipicu lewat tombol "Hapus" / bulk-delete di Admin Panel > Backup, lewat
+# api/admin/backup.ts (action: "delete"). Menghapus file fisik di Google
+# Drive supaya tidak membebani storage, lalu menandai baris backup_logs
+# terkait sebagai deleted_at (SOFT delete di DB -- baris tetap ada untuk
+# jejak audit, hanya file fisiknya yang hilang).
+#
+# items: JSON array string, contoh:
+#   [{"id":"uuid-1","storage_path":"ewallet-kita-backups/a.dump"},
+#    {"id":"uuid-2","storage_path":"ewallet-kita-backups/b.dump"}]
+#
+# Per-item soft-fail: kalau rclone delete GAGAL untuk satu file, baris itu
+# TIDAK ditandai deleted_at (supaya admin tahu filenya masih ada di Drive
+# dan bisa coba hapus lagi), tapi item lain di batch tetap lanjut diproses.
+
+on:
+  workflow_dispatch:
+    inputs:
+      items:
+        description: 'JSON array [{"id":"...","storage_path":"..."}]'
+        required: true
+      triggered_by_admin:
+        description: "UUID admin yang memicu delete"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RCLONE_CONFIG_GDRIVE_TYPE: drive
+      RCLONE_CONFIG_GDRIVE_SCOPE: drive.file
+      RCLONE_CONFIG_GDRIVE_TOKEN: ${{ secrets.RCLONE_CONFIG_GDRIVE_TOKEN }}
+      RCLONE_CONFIG_GDRIVE_CLIENT_ID: ${{ secrets.RCLONE_CONFIG_GDRIVE_CLIENT_ID }}
+      RCLONE_CONFIG_GDRIVE_CLIENT_SECRET: ${{ secrets.RCLONE_CONFIG_GDRIVE_CLIENT_SECRET }}
+      ITEMS: ${{ github.event.inputs.items }}
+      TRIGGERED_BY_ADMIN: ${{ github.event.inputs.triggered_by_admin }}
+
+    steps:
+      - name: Install rclone & jq
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq jq
+          curl -s https://rclone.org/install.sh | sudo bash
+
+      - name: Hapus file satu per satu (soft-fail per item)
+        run: |
+          set -euo pipefail
+          SUCCESS_COUNT=0
+          FAIL_COUNT=0
+
+          echo "$ITEMS" | jq -c '.[]' | while read -r ITEM; do
+            ID=$(echo "$ITEM" | jq -r '.id')
+            PATH_=$(echo "$ITEM" | jq -r '.storage_path')
+
+            echo "::notice::Menghapus $PATH_ (backup_logs.id=$ID)..."
+
+            if rclone deletefile "gdrive:${PATH_}"; then
+              curl -sS -X PATCH "$SUPABASE_URL/rest/v1/backup_logs?id=eq.${ID}" \
+                -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+                -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+                -H "Content-Type: application/json" \
+                -d "{\"deleted_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"deleted_by\":$( [ -n "$TRIGGERED_BY_ADMIN" ] && echo "\"$TRIGGERED_BY_ADMIN\"" || echo null )}"
+              echo "::notice::Sukses hapus $PATH_"
+            else
+              # SENGAJA tidak exit 1 di sini -- satu file gagal dihapus tidak
+              # boleh menggagalkan seluruh batch. Baris backup_logs TIDAK
+              # diupdate (deleted_at tetap NULL) supaya masih terlihat di
+              # Admin Panel dan admin tahu perlu retry.
+              echo "::warning::Gagal hapus $PATH_ di Google Drive -- baris backup_logs TIDAK ditandai terhapus."
+              curl -sS -X POST "$SUPABASE_URL/rest/v1/error_logs" \
+                -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
+                -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
+                -H "Content-Type: application/json" \
+                -d "{\"source\":\"db-backup-delete-workflow\",\"level\":\"error\",\"message\":\"Gagal rclone deletefile untuk ${PATH_} (backup_logs.id=${ID})\"}" || true
+            fi
+          done
+
+      - name: Notifikasi Telegram ringkasan
+        if: always()
+        run: |
+          TOTAL=$(echo "$ITEMS" | jq 'length')
+          curl -sS -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}" \
+            -d text="🗑️ Proses hapus backup selesai. Total item diproses: ${TOTAL}. Cek Admin Panel > Backup untuk detail hasil per file, dan GitHub Actions run ${{ github.run_id }} kalau ada yang gagal."

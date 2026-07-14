@@ -6,11 +6,19 @@ name: Database Backup (Supabase -> Google Drive)
 # kena batas durasi 60 detik seperti Vercel Function.
 #
 # Alur (mirror dari workflow mysqldump -> gzip -> rclone di gambar):
-#   1. pg_dump  -> dump database Supabase (pengganti mysqldump)
-#   2. gzip     -> kompres hasil dump
+#   1. pg_dump  -> dump database Supabase, format CUSTOM (-Fc), pengganti mysqldump
+#   2. (format custom sudah terkompresi bawaan -- tidak perlu gzip terpisah)
 #   3. rclone   -> upload ke Google Drive (off-site, di luar Supabase)
 #   4. log hasil ke tabel public.backup_logs (Supabase)
 #   5. notifikasi Telegram sukses/gagal
+#
+# KENAPA format custom (-Fc), bukan plain+gzip seperti sebelumnya:
+#   Format custom adalah satu-satunya format pg_dump yang mendukung restore
+#   PARSIAL per tabel (`pg_restore -t nama_tabel`) dari FILE YANG SAMA,
+#   tanpa perlu bikin dump terpisah per tabel. Ini yang memungkinkan fitur
+#   "restore 1 tabel saja" di db-restore.yml tanpa menimpa data seluruh
+#   pengguna di tabel lain. Format ini juga sudah terkompresi secara
+#   internal, jadi step gzip manual dihapus.
 #
 # Trigger:
 #   - schedule terjadwal tiap malam (jam 02:00 WIB)
@@ -98,7 +106,7 @@ jobs:
           sudo apt-get install -y -qq postgresql-client-17
           curl -s https://rclone.org/install.sh | sudo bash
 
-      - name: Dump database (pg_dump) + gzip
+      - name: Dump database (pg_dump --format=custom)
         id: dump
         run: |
           set -euo pipefail
@@ -118,10 +126,12 @@ jobs:
           "$PG_DUMP" --version
 
           TS=$(date -u +"%Y%m%d-%H%M%S")
-          FILE_NAME="ewallet-kita-${TS}.sql.gz"
+          FILE_NAME="ewallet-kita-${TS}.dump"
+          # --format=custom (-Fc): terkompresi otomatis + mendukung restore
+          # parsial per tabel lewat `pg_restore -t` (lihat db-restore.yml).
           "$PG_DUMP" "${{ secrets.SUPABASE_DB_URL }}" \
-            --no-owner --no-privileges --format=plain \
-            | gzip -9 > "$FILE_NAME"
+            --no-owner --no-privileges --format=custom --compress=9 \
+            --file="$FILE_NAME"
           echo "file_name=$FILE_NAME" >> "$GITHUB_OUTPUT"
           echo "file_size=$(stat -c%s "$FILE_NAME")" >> "$GITHUB_OUTPUT"
 
