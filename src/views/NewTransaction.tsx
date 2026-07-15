@@ -5,6 +5,7 @@ import { supabase } from "../lib/supabase";
 import { UserSession } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { motion, useAnimation, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 
@@ -56,6 +57,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   userDisplayName,
 }) => {
   const navigate = useNavigate();
+  const { tokens, cx } = useThemeTokens();
   const location = useLocation();
   const prefill = (location.state as {
     prefillCategoryKey?: string;
@@ -318,7 +320,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden"
+          className={cx("rounded-3xl border border-slate-800/60 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}
         >
           {/* ── Colour stripe header ─────────────────────────────────── */}
           <div
@@ -333,10 +335,10 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
             {/* ── Page header ──────────────────────────────────────────── */}
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+                <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
                   {t("transaction.add_title")}
                 </h1>
-                <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500">
+                <p className={cx("font-sans text-sm mt-1", tokens.text.muted)}>
                   {t("transaction.add_desc")}
                 </p>
               </div>
@@ -392,7 +394,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
                 {/* 1 ── Type toggle ─────────────────────────────────────── */}
                 <div className="space-y-2">
-                  <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                  <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                     {t("transaction.label_type")}
                   </label>
                   <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-slate-950/60 border border-slate-800/50 light_sakura:bg-rose-50/30 light_sakura:border-rose-100">
@@ -425,7 +427,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
                 {/* 2 ── Nominal big display ─────────────────────────────── */}
                 <div className="space-y-2">
-                  <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                  <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                     {t("transaction.label_amount")}
                   </label>
                   <div className={`rounded-2xl border transition-colors duration-200 px-5 py-4 space-y-2 ${
@@ -467,14 +469,14 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                       disabled={isLoading}
                       value={amount}
                       onChange={(e) => setAmount(e.target.value !== "" ? parseInt(e.target.value) || 0 : "")}
-                      className="w-full bg-transparent border-none outline-none font-sans text-sm text-slate-300 placeholder:text-slate-600 light_sakura:text-slate-600 light_sakura:placeholder:text-slate-400"
+                      className={cx("w-full bg-transparent border-none outline-none font-sans text-sm placeholder:text-slate-600 light_sakura:placeholder:text-slate-400", tokens.text.label)}
                     />
                   </div>
                 </div>
 
                 {/* 3 ── Category pills ──────────────────────────────────── */}
                 <div className="space-y-2">
-                  <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                  <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                     {t("transaction.label_category")}
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -507,7 +509,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
                 {/* 3b ── Pos Dompet ──────────────────────────────────────── */}
                 <div className="space-y-2">
-                  <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                  <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                     {t("wallet.label_pos")}
                   </label>
                   <DropdownField
@@ -526,7 +528,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                 {/* 4 ── Date + Note ─────────────────────────────────────── */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                    <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                       {t("transaction.label_date")}
                     </label>
                     <input
@@ -536,11 +538,11 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                       value={date}
                       max={new Date().toISOString().split("T")[0]}
                       onChange={(e) => setDate(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+                      className={cx("w-full px-4 py-3 bg-slate-950 border rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50", tokens.text.onSurface, tokens.border.accent)}
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest">
+                    <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                       {t("transaction.label_note")}
                     </label>
                     <input
@@ -549,7 +551,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                       disabled={isLoading}
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-950 border border-slate-800 text-white rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors placeholder:text-slate-600 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+                      className={cx("w-full px-4 py-3 bg-slate-950 border rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors placeholder:text-slate-600 light_sakura:bg-slate-50", tokens.text.onSurface, tokens.border.accent)}
                     />
                   </div>
                 </div>
@@ -558,7 +560,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                 <div className="flex items-center justify-between gap-4 pt-1">
                   {/* Confirmation preview */}
                   {amountDisplay && (
-                    <div className="flex items-center gap-2 text-xs text-slate-400 light_sakura:text-slate-500 min-w-0">
+                    <div className={cx("flex items-center gap-2 text-xs min-w-0", tokens.text.muted)}>
                       <span className="text-base leading-none">{getCategoryEmoji(category)}</span>
                       <span className="truncate">
                         {getCategoryLabel(category)} · {date}

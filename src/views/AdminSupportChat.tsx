@@ -7,6 +7,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { Modal } from "../components/Modal";
 import { audioFeedback } from "../lib/audio";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import {
   MessagesSquare,
   Send,
@@ -78,6 +79,7 @@ export const AdminSupportChat: React.FC = () => {
   const { t, locale } = useLanguage();
   const { showToast } = useToast();
   const { isAdmin } = useAdmin();
+  const { tokens, cx } = useThemeTokens();
 
   const [sessions, setSessions] = useState<SessionListRow[]>([]);
   const [listLoading, setListLoading] = useState(true);
@@ -238,14 +240,14 @@ export const AdminSupportChat: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+      <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
-              <MessagesSquare size={22} className="text-indigo-400 light_sakura:text-rose-500" />
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
+              <MessagesSquare size={22} className={cx(tokens.icon.accent)} />
               {t("admin_support_chat.title")}
             </h1>
-            <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1 max-w-xl">
+            <p className={cx("text-sm mt-1 max-w-xl", tokens.text.muted)}>
               {t("admin_support_chat.desc")}
             </p>
           </div>
@@ -255,7 +257,7 @@ export const AdminSupportChat: React.FC = () => {
               audioFeedback.playClick();
               loadSessions();
             }}
-            className="shrink-0 flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+            className={cx("shrink-0 flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.secondary)}
           >
             <RefreshCw size={13} />
             {t("admin_support_chat.refresh")}
@@ -266,7 +268,7 @@ export const AdminSupportChat: React.FC = () => {
       {/* List + Detail */}
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4 min-h-[520px]">
         {/* Session list */}
-        <div className="rounded-3xl border border-slate-800 light_sakura:border-slate-100 bg-slate-900 light_sakura:bg-white shadow-sm overflow-hidden flex flex-col">
+        <div className={cx("rounded-3xl border shadow-sm overflow-hidden flex flex-col", tokens.surface.card, tokens.border.default)}>
           {listLoading ? (
             <div className="py-16 flex items-center justify-center">
               <Loader2 className="animate-spin text-indigo-400 light_sakura:text-rose-400" size={26} />
@@ -303,12 +305,12 @@ export const AdminSupportChat: React.FC = () => {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-900 truncate">{label}</p>
+                        <p className={cx("text-xs font-bold truncate", tokens.text.heading)}>{label}</p>
                         <span className="text-[10px] text-slate-500 shrink-0">
                           {formatRelativeTime(s.last_message_at || s.created_at, t)}
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 light_sakura:text-slate-400 truncate mt-0.5">
+                      <p className={cx("text-[11px] truncate mt-0.5", tokens.text.faint)}>
                         {s.last_message_preview
                           ? `${s.last_message_sender === "admin" ? "↩ " : ""}${s.last_message_preview}`
                           : `#${s.short_code}`}
@@ -331,22 +333,22 @@ export const AdminSupportChat: React.FC = () => {
         </div>
 
         {/* Detail / thread */}
-        <div className="rounded-3xl border border-slate-800 light_sakura:border-slate-100 bg-slate-900 light_sakura:bg-white shadow-sm overflow-hidden flex flex-col">
+        <div className={cx("rounded-3xl border shadow-sm overflow-hidden flex flex-col", tokens.surface.card, tokens.border.default)}>
           {!selectedSession ? (
             <div className="flex-1 flex items-center justify-center p-10">
-              <p className="text-xs text-slate-500 light_sakura:text-slate-400 text-center max-w-[220px]">
+              <p className={cx("text-xs text-center max-w-[220px]", tokens.text.faint)}>
                 {t("admin_support_chat.select_prompt")}
               </p>
             </div>
           ) : (
             <>
               {/* Thread header */}
-              <div className="px-5 py-4 border-b border-slate-800 light_sakura:border-slate-100 flex items-center justify-between gap-3">
+              <div className={cx("px-5 py-4 border-b flex items-center justify-between gap-3", tokens.border.default)}>
                 <div className="min-w-0">
-                  <p className="text-sm font-bold text-slate-100 light_sakura:text-slate-900 truncate">
+                  <p className={cx("text-sm font-bold truncate", tokens.text.heading)}>
                     {selectedSession.user_display_name || t("admin_support_chat.unknown_user")}
                   </p>
-                  <p className="text-[11px] text-slate-500 light_sakura:text-slate-400">
+                  <p className={cx("text-[11px]", tokens.text.faint)}>
                     #{selectedSession.short_code}
                     {selectedSession.user_email ? ` · ${selectedSession.user_email}` : ""}
                   </p>
@@ -396,14 +398,14 @@ export const AdminSupportChat: React.FC = () => {
               </div>
 
               {/* Reply input */}
-              <div className="p-3 border-t border-slate-800 light_sakura:border-slate-100 flex gap-2">
+              <div className={cx("p-3 border-t flex gap-2", tokens.border.default)}>
                 <input
                   value={replyInput}
                   onChange={(e) => setReplyInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && handleSendReply()}
                   placeholder={t("admin_support_chat.reply_placeholder")}
                   disabled={isSending}
-                  className="flex-1 px-3.5 py-2.5 rounded-full bg-slate-800 text-xs text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 light_sakura:bg-slate-50 light_sakura:text-slate-800 light_sakura:focus:ring-rose-400"
+                  className={cx("flex-1 px-3.5 py-2.5 rounded-full text-xs text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 light_sakura:text-slate-800 light_sakura:focus:ring-rose-400", tokens.surface.subtle)}
                 />
                 <button
                   type="button"

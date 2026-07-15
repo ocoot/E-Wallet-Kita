@@ -7,6 +7,7 @@ import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import {
   Brain,
   RefreshCw,
@@ -92,6 +93,7 @@ function formatRelativeTime(iso: string | null, t: (k: string) => string): strin
 export const AdminAiMonitor: React.FC = () => {
   const { t, locale } = useLanguage();
   const { isAdmin } = useAdmin();
+  const { tokens, cx } = useThemeTokens();
 
   const [summary, setSummary]     = useState<AiUsageSummary | null>(null);
   const [loading, setLoading]     = useState(true);
@@ -140,21 +142,21 @@ export const AdminAiMonitor: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Wrapped in One Card Container */}
-      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+      <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
               <Brain size={24} className="text-indigo-500" />
               {t("ai_monitor.title")}
             </h1>
-            <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1">
+            <p className={cx("text-sm mt-1", tokens.text.muted)}>
               {t("ai_monitor.desc")}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             {/* Period selector */}
-            <div className="flex rounded-xl border border-slate-800 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-slate-50 p-1">
+            <div className={cx("flex rounded-xl border border-slate-800 light_sakura:border-slate-200 p-1", tokens.surface.subtle)}>
               {PERIOD_OPTIONS.map((d) => (
                 <button
                   key={d}
@@ -173,7 +175,7 @@ export const AdminAiMonitor: React.FC = () => {
             <button
               onClick={() => load(true)}
               disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-slate-800 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-white hover:bg-slate-700 light_sakura:hover:bg-slate-50 text-slate-300 light_sakura:text-slate-600 cursor-pointer transition-colors disabled:opacity-50"
+              className={cx("flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-slate-800 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-white hover:bg-slate-700 light_sakura:hover:bg-slate-50 cursor-pointer transition-colors disabled:opacity-50", tokens.text.label)}
             >
               <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
               {t("ai_monitor.refresh")}
@@ -205,30 +207,30 @@ export const AdminAiMonitor: React.FC = () => {
                 return (
                   <div
                     key={p.provider}
-                    className="rounded-3xl border border-slate-700 light_sakura:border-slate-100 bg-slate-900 light_sakura:bg-white p-6 shadow-sm space-y-4"
+                    className={cx("rounded-3xl border border-slate-700 light_sakura:border-slate-100 p-6 shadow-sm space-y-4", tokens.surface.card)}
                   >
                     <div className="flex items-center justify-between">
                       <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-900/50 light_sakura:bg-indigo-50 text-indigo-300 light_sakura:text-indigo-600 uppercase">
                         {p.provider}
                       </span>
-                      <span className="text-xs text-slate-400 light_sakura:text-slate-500">{sharePercent}% {t("ai_monitor.share_of_total")}</span>
+                      <span className={cx("text-xs", tokens.text.muted)}>{sharePercent}% {t("ai_monitor.share_of_total")}</span>
                     </div>
 
                     <div>
-                      <p className="text-3xl font-bold text-white light_sakura:text-slate-900">
+                      <p className={cx("text-3xl font-bold", tokens.text.primary)}>
                         {p.total_calls.toLocaleString()}
                       </p>
-                      <p className="text-sm text-slate-400 light_sakura:text-slate-500">{t("ai_monitor.total_calls")}</p>
+                      <p className={cx("text-sm", tokens.text.muted)}>{t("ai_monitor.total_calls")}</p>
                     </div>
 
                     {/* Success rate bar */}
                     <div className="space-y-1">
-                      <div className="flex justify-between text-xs text-slate-300 light_sakura:text-slate-600">
+                      <div className={cx("flex justify-between text-xs", tokens.text.label)}>
                         <span className="flex items-center gap-1">
                           <CheckCircle size={12} className="text-emerald-500" />
                           {t("ai_monitor.success_rate")}
                         </span>
-                        <span className="font-semibold text-emerald-400 light_sakura:text-emerald-600">{sRate}%</span>
+                        <span className={cx("font-semibold", tokens.text.success)}>{sRate}%</span>
                       </div>
                       <div className="h-2 rounded-full bg-slate-700 light_sakura:bg-slate-100 overflow-hidden">
                         <div
@@ -247,13 +249,13 @@ export const AdminAiMonitor: React.FC = () => {
                     )}
 
                     <div className="grid grid-cols-2 gap-3 pt-2">
-                      <div className="bg-slate-800 light_sakura:bg-slate-50 rounded-xl p-3">
-                        <p className="text-sm font-bold text-emerald-400 light_sakura:text-emerald-600">{p.success_calls.toLocaleString()}</p>
-                        <p className="text-xs text-slate-400 light_sakura:text-slate-500">{t("ai_monitor.success")}</p>
+                      <div className={cx("rounded-xl p-3", tokens.surface.subtle)}>
+                        <p className={cx("text-sm font-bold", tokens.text.success)}>{p.success_calls.toLocaleString()}</p>
+                        <p className={cx("text-xs", tokens.text.muted)}>{t("ai_monitor.success")}</p>
                       </div>
-                      <div className="bg-slate-800 light_sakura:bg-slate-50 rounded-xl p-3">
-                        <p className="text-sm font-bold text-red-400 light_sakura:text-red-600">{p.failed_calls.toLocaleString()}</p>
-                        <p className="text-xs text-slate-400 light_sakura:text-slate-500">{t("ai_monitor.failed")}</p>
+                      <div className={cx("rounded-xl p-3", tokens.surface.subtle)}>
+                        <p className={cx("text-sm font-bold", tokens.text.danger)}>{p.failed_calls.toLocaleString()}</p>
+                        <p className={cx("text-xs", tokens.text.muted)}>{t("ai_monitor.failed")}</p>
                       </div>
                     </div>
                   </div>
@@ -264,17 +266,17 @@ export const AdminAiMonitor: React.FC = () => {
 
           {/* Per-Key Detail Table */}
           {byKey.length > 0 && (
-            <div className="rounded-3xl border border-slate-800 light_sakura:border-slate-100 bg-slate-900 light_sakura:bg-white shadow-sm overflow-hidden">
-              <div className="px-6 py-5 border-b border-slate-800 light_sakura:border-slate-100">
-                <h3 className="text-base font-semibold text-white light_sakura:text-slate-900">
+            <div className={cx("rounded-3xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
+              <div className={cx("px-6 py-5 border-b", tokens.border.default)}>
+                <h3 className={cx("text-base font-semibold", tokens.text.primary)}>
                   {t("ai_monitor.per_key_title")}
                 </h3>
-                <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-0.5">{t("ai_monitor.per_key_desc")}</p>
+                <p className={cx("text-sm mt-0.5", tokens.text.muted)}>{t("ai_monitor.per_key_desc")}</p>
               </div>
 
               <ScrollableTableWrapper>
-                <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[900px]">
-                  <thead className="bg-slate-800 light_sakura:bg-slate-50 uppercase text-xs font-semibold text-slate-400 light_sakura:text-slate-500">
+                <table className={cx("w-full text-left text-sm min-w-[900px]", tokens.text.label)}>
+                  <thead className={cx("uppercase text-xs font-semibold", tokens.text.muted, tokens.surface.subtle)}>
                     <tr>
                       <th className="px-6 py-4">{t("ai_monitor.col_key")}</th>
                       <th className="px-6 py-4">{t("ai_monitor.col_model")}</th>
@@ -303,10 +305,10 @@ export const AdminAiMonitor: React.FC = () => {
                               {k.key_alias}
                             </span>
                           </td>
-                          <td className="px-6 py-4 font-mono text-xs text-slate-400 light_sakura:text-slate-500">
+                          <td className={cx("px-6 py-4 font-mono text-xs", tokens.text.muted)}>
                             {k.model}
                           </td>
-                          <td className="px-6 py-4 text-right text-sm font-semibold text-white light_sakura:text-slate-900">
+                          <td className={cx("px-6 py-4 text-right text-sm font-semibold", tokens.text.primary)}>
                             {k.total_calls.toLocaleString()}
                           </td>
                           <td className="px-6 py-4">
@@ -324,26 +326,26 @@ export const AdminAiMonitor: React.FC = () => {
                           </td>
                           <td className="px-6 py-4 text-right">
                             {hasQuotaIssue ? (
-                              <span className="inline-flex items-center gap-1 text-xs font-semibold text-amber-400 light_sakura:text-amber-600">
+                              <span className={cx("inline-flex items-center gap-1 text-xs font-semibold", tokens.text.warning)}>
                                 <AlertTriangle size={14} />
                                 {qRate}%
                               </span>
                             ) : (
-                              <span className="text-xs text-slate-400 light_sakura:text-slate-500">{qRate}%</span>
+                              <span className={cx("text-xs", tokens.text.muted)}>{qRate}%</span>
                             )}
                           </td>
-                          <td className="px-6 py-4 text-xs text-slate-400 light_sakura:text-slate-600">
+                          <td className={cx("px-6 py-4 text-xs", tokens.text.mutedAlt)}>
                             {k.last_used_at ? (
                               <div>
-                                <p className="text-white light_sakura:text-slate-900">
+                                <p className={cx(tokens.text.primary)}>
                                   {formatRelativeTime(k.last_used_at, t)}
                                 </p>
-                                <p className="text-slate-400 light_sakura:text-slate-500">
+                                <p className={cx(tokens.text.muted)}>
                                   {new Date(k.last_used_at).toLocaleDateString()}
                                 </p>
                               </div>
                             ) : (
-                              <span className="text-slate-400 light_sakura:text-slate-500">{t("ai_monitor.never")}</span>
+                              <span className={cx(tokens.text.muted)}>{t("ai_monitor.never")}</span>
                             )}
                           </td>
                         </tr>
@@ -354,7 +356,7 @@ export const AdminAiMonitor: React.FC = () => {
               </ScrollableTableWrapper>
 
               {/* Pagination Controls */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t border-slate-800 light_sakura:border-slate-100 font-sans text-xs text-slate-400 bg-slate-900/50 light_sakura:bg-slate-50/50">
+              <div className={cx("flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t font-sans text-xs text-slate-400 bg-slate-900/50 light_sakura:bg-slate-50/50", tokens.border.default)}>
                 {/* Page Size Selector */}
                 <div className="flex items-center gap-2">
                   <span>{t("admin.rows_per_page")}</span>
@@ -385,15 +387,15 @@ export const AdminAiMonitor: React.FC = () => {
                       <button
                         disabled={page === 0}
                         onClick={() => setPage(p => p - 1)}
-                        className="p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                        className={cx("p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.border.strong)}
                       >
                         <ChevronLeft size={14} />
                       </button>
-                      <span className="font-medium text-white light_sakura:text-slate-800">{page + 1} / {Math.ceil(byKey.length / pageSize)}</span>
+                      <span className={cx("font-medium", tokens.text.onSurface)}>{page + 1} / {Math.ceil(byKey.length / pageSize)}</span>
                       <button
                         disabled={(page + 1) * pageSize >= byKey.length}
                         onClick={() => setPage(p => p + 1)}
-                        className="p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                        className={cx("p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.border.strong)}
                       >
                         <ChevronRight size={14} />
                       </button>
@@ -421,7 +423,7 @@ export const AdminAiMonitor: React.FC = () => {
 
           {/* Footer info */}
           {summary && (
-            <p className="text-xs text-slate-400 light_sakura:text-slate-500 text-center">
+            <p className={cx("text-xs text-center", tokens.text.muted)}>
               {t("ai_monitor.footer_since")} {new Date(summary.since).toLocaleDateString()} — {summary.period_days} {t("ai_monitor.footer_days")}
             </p>
           )}

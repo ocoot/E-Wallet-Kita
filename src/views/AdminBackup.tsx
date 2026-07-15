@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from "react"
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ErrorState } from "../components/ErrorState";
@@ -73,6 +74,7 @@ export const AdminBackup: React.FC = () => {
   const { t, locale } = useLanguage();
   const { showToast } = useToast();
   const { isAdmin } = useAdmin();
+  const { tokens, cx } = useThemeTokens();
 
   const [latest, setLatest] = useState<BackupLogRow | null>(null);
   const [history, setHistory] = useState<BackupLogRow[]>([]);
@@ -333,7 +335,7 @@ export const AdminBackup: React.FC = () => {
       <LoadingOverlay isOpen={triggering} message={t("admin.backup_triggering")} />
 
       {/* Card status terakhir */}
-      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+      <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center shrink-0">
@@ -343,7 +345,7 @@ export const AdminBackup: React.FC = () => {
               <h3 className="font-black text-sm text-slate-100 light_sakura:text-slate-800">
                 {t("admin.backup_title")}
               </h3>
-              <p className="text-xs text-slate-400 light_sakura:text-slate-500 mt-1 max-w-md">
+              <p className={cx("text-xs mt-1 max-w-md", tokens.text.muted)}>
                 {t("admin.backup_description")}
               </p>
             </div>
@@ -352,7 +354,7 @@ export const AdminBackup: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={loadStatus}
-              className="px-3 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100 flex items-center gap-1.5"
+              className={cx("px-3 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100 flex items-center gap-1.5", tokens.text.secondary)}
             >
               <RefreshCw className="w-3.5 h-3.5" />
               {t("admin.refresh")}
@@ -371,13 +373,13 @@ export const AdminBackup: React.FC = () => {
         {latest ? (
           <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 space-y-1.5 light_sakura:bg-rose-100/10 light_sakura:border-rose-200">
-              <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600">
+              <p className={cx("text-[10px] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
                 {t("admin.backup_last_status")}
               </p>
               {statusBadge(latest.status)}
             </div>
             <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 space-y-1.5 light_sakura:bg-rose-100/10 light_sakura:border-rose-200">
-              <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600 flex items-center gap-1">
+              <p className={cx("text-[10px] uppercase font-black tracking-wider flex items-center gap-1", tokens.text.mutedAlt)}>
                 <Clock className="w-3 h-3" /> {t("admin.backup_last_time")}
               </p>
               <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700">
@@ -385,7 +387,7 @@ export const AdminBackup: React.FC = () => {
               </p>
             </div>
             <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 space-y-1.5 light_sakura:bg-rose-100/10 light_sakura:border-rose-200">
-              <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600 flex items-center gap-1">
+              <p className={cx("text-[10px] uppercase font-black tracking-wider flex items-center gap-1", tokens.text.mutedAlt)}>
                 <HardDrive className="w-3 h-3" /> {t("admin.backup_size")}
               </p>
               <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700">
@@ -393,7 +395,7 @@ export const AdminBackup: React.FC = () => {
               </p>
             </div>
             <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 space-y-1.5 light_sakura:bg-rose-100/10 light_sakura:border-rose-200">
-              <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600">
+              <p className={cx("text-[10px] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
                 {t("admin.backup_destination")}
               </p>
               <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 capitalize">
@@ -418,7 +420,7 @@ export const AdminBackup: React.FC = () => {
       </div>
 
       {/* Riwayat backup */}
-      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+      <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
           <h3 className="font-black text-sm text-slate-100 light_sakura:text-slate-800">
             {t("admin.backup_history")}
@@ -443,7 +445,7 @@ export const AdminBackup: React.FC = () => {
           <ScrollableTableWrapper>
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-left text-[10px] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600 border-b border-slate-800 light_sakura:border-slate-200">
+                <tr className={cx("text-left text-[10px] uppercase font-black tracking-wider border-b border-slate-800 light_sakura:border-slate-200", tokens.text.mutedAlt)}>
                   <th className="py-2 pr-3 w-8">
                     <input
                       type="checkbox"
@@ -481,7 +483,7 @@ export const AdminBackup: React.FC = () => {
                           className="w-3.5 h-3.5 rounded accent-indigo-500 cursor-pointer disabled:cursor-not-allowed"
                         />
                       </td>
-                      <td className="py-2.5 pr-4 whitespace-nowrap text-slate-300 light_sakura:text-slate-700">
+                      <td className={cx("py-2.5 pr-4 whitespace-nowrap", tokens.text.secondary)}>
                         {new Date(row.started_at).toLocaleString(locale === "id" ? "id-ID" : "en-US")}
                       </td>
                       <td className="py-2.5 pr-4">
@@ -493,17 +495,17 @@ export const AdminBackup: React.FC = () => {
                           statusBadge(row.status)
                         )}
                       </td>
-                      <td className="py-2.5 pr-4 capitalize text-slate-400 light_sakura:text-slate-500">
+                      <td className={cx("py-2.5 pr-4 capitalize", tokens.text.muted)}>
                         {row.triggered_by === "manual"
                           ? t("admin.backup_manual")
                           : row.triggered_by === "pre_restore"
                             ? t("admin.backup_pre_restore")
                             : t("admin.backup_scheduled")}
                       </td>
-                      <td className="py-2.5 pr-4 text-slate-400 light_sakura:text-slate-500 font-mono">
+                      <td className={cx("py-2.5 pr-4 font-mono", tokens.text.muted)}>
                         {row.file_name || "-"}
                       </td>
-                      <td className="py-2.5 pr-4 text-slate-400 light_sakura:text-slate-500">
+                      <td className={cx("py-2.5 pr-4", tokens.text.muted)}>
                         {formatBytes(row.file_size_bytes)}
                       </td>
                       <td className="py-2.5 pr-4 text-right">
@@ -527,7 +529,7 @@ export const AdminBackup: React.FC = () => {
       </div>
 
       {/* Riwayat restore */}
-      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+      <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <h3 className="font-black text-sm text-slate-100 light_sakura:text-slate-800 mb-4">
           {t("admin.backup_restore_history")}
         </h3>
@@ -541,7 +543,7 @@ export const AdminBackup: React.FC = () => {
           <ScrollableTableWrapper>
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-left text-[10px] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600 border-b border-slate-800 light_sakura:border-slate-200">
+                <tr className={cx("text-left text-[10px] uppercase font-black tracking-wider border-b border-slate-800 light_sakura:border-slate-200", tokens.text.mutedAlt)}>
                   <th className="py-2 pr-4">{t("admin.backup_col_time")}</th>
                   <th className="py-2 pr-4">{t("admin.backup_col_status")}</th>
                   <th className="py-2 pr-4">{t("admin.backup_restore_col_scope")}</th>
@@ -554,16 +556,16 @@ export const AdminBackup: React.FC = () => {
                     key={row.id}
                     className="border-b border-slate-800/50 light_sakura:border-slate-100 last:border-0"
                   >
-                    <td className="py-2.5 pr-4 whitespace-nowrap text-slate-300 light_sakura:text-slate-700">
+                    <td className={cx("py-2.5 pr-4 whitespace-nowrap", tokens.text.secondary)}>
                       {new Date(row.started_at).toLocaleString(locale === "id" ? "id-ID" : "en-US")}
                     </td>
                     <td className="py-2.5 pr-4">{statusBadge(row.status)}</td>
-                    <td className="py-2.5 pr-4 text-slate-400 light_sakura:text-slate-500">
+                    <td className={cx("py-2.5 pr-4", tokens.text.muted)}>
                       {row.scope === "full"
                         ? t("admin.backup_restore_scope_full")
                         : t("admin.backup_restore_scope_table")}
                     </td>
-                    <td className="py-2.5 pr-4 text-slate-400 light_sakura:text-slate-500 font-mono">
+                    <td className={cx("py-2.5 pr-4 font-mono", tokens.text.muted)}>
                       {row.table_names?.join(", ") || "-"}
                     </td>
                   </tr>
@@ -586,7 +588,7 @@ export const AdminBackup: React.FC = () => {
             role="dialog"
             aria-modal="true"
             tabIndex={-1}
-            className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto rounded-2xl border border-amber-500/30 bg-slate-900 light_sakura:bg-white p-6 shadow-2xl outline-none"
+            className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto rounded-2xl border border-amber-500/30 p-6 shadow-2xl outline-none", tokens.surface.card)}
           >
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
@@ -605,7 +607,7 @@ export const AdminBackup: React.FC = () => {
               </button>
             </div>
 
-            <p className="text-xs text-slate-400 light_sakura:text-slate-600 mb-3 font-mono break-all">
+            <p className={cx("text-xs mb-3 font-mono break-all", tokens.text.mutedAlt)}>
               {restoreTarget.file_name}
             </p>
 
@@ -662,7 +664,7 @@ export const AdminBackup: React.FC = () => {
                     {restorableTables.map(tbl => (
                       <label
                         key={tbl.table_name}
-                        className="flex items-center gap-2 text-xs text-slate-300 light_sakura:text-slate-700 cursor-pointer"
+                        className={cx("flex items-center gap-2 text-xs cursor-pointer", tokens.text.secondary)}
                       >
                         <input
                           type="checkbox"
@@ -723,7 +725,7 @@ export const AdminBackup: React.FC = () => {
             role="dialog"
             aria-modal="true"
             tabIndex={-1}
-            className="relative z-10 w-full max-w-sm my-auto rounded-2xl border border-red-500/30 bg-slate-900 light_sakura:bg-white p-6 shadow-2xl outline-none"
+            className={cx("relative z-10 w-full max-w-sm my-auto rounded-2xl border border-red-500/30 p-6 shadow-2xl outline-none", tokens.surface.card)}
           >
             <div className="flex items-center gap-3 mb-4">
               <div className="rounded-full p-2.5 bg-red-500/15 text-red-400 shrink-0">
@@ -734,7 +736,7 @@ export const AdminBackup: React.FC = () => {
               </h3>
             </div>
 
-            <p className="text-xs text-slate-400 light_sakura:text-slate-600 mb-4">
+            <p className={cx("text-xs mb-4", tokens.text.mutedAlt)}>
               {t("admin.backup_delete_confirm_desc", { count: selectedIds.size })}
             </p>
 

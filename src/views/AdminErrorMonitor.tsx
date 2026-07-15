@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
@@ -78,6 +79,7 @@ export const AdminErrorMonitor: React.FC = () => {
   const { t, locale } = useLanguage();
   const { showToast } = useToast();
   const { isAdmin } = useAdmin();
+  const { tokens, cx } = useThemeTokens();
 
   const [stats, setStats] = useState<ErrorStats | null>(null);
   const [logs, setLogs] = useState<ErrorLogRow[]>([]);
@@ -162,20 +164,20 @@ export const AdminErrorMonitor: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+      <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
               <Activity size={24} className="text-red-500" />
               {t("error_monitor.title")}
             </h1>
-            <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1">
+            <p className={cx("text-sm mt-1", tokens.text.muted)}>
               {t("error_monitor.desc")}
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <div className="flex rounded-xl border border-slate-800 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-slate-50 p-1">
+            <div className={cx("flex rounded-xl border border-slate-800 light_sakura:border-slate-200 p-1", tokens.surface.subtle)}>
               {PERIOD_OPTIONS.map((p) => (
                 <button
                   key={p.hours}
@@ -193,7 +195,7 @@ export const AdminErrorMonitor: React.FC = () => {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-slate-800 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-white hover:bg-slate-700 light_sakura:hover:bg-slate-50 text-slate-300 light_sakura:text-slate-600 cursor-pointer transition-colors disabled:opacity-50"
+              className={cx("flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-slate-800 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-white hover:bg-slate-700 light_sakura:hover:bg-slate-50 cursor-pointer transition-colors disabled:opacity-50", tokens.text.label)}
             >
               <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
               {t("admin.refresh_data")}
@@ -216,8 +218,8 @@ export const AdminErrorMonitor: React.FC = () => {
               { label: t("error_monitor.warnings"), val: stats?.warnings ?? 0, color: "text-amber-400 light_sakura:text-amber-600" },
               { label: t("error_monitor.info"), val: stats?.info ?? 0, color: "text-sky-400 light_sakura:text-sky-600" },
             ].map((m, i) => (
-              <div key={i} className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 shadow-sm light_sakura:bg-white light_sakura:border-slate-100">
-                <p className="text-xs font-medium text-slate-400 light_sakura:text-slate-500">{m.label}</p>
+              <div key={i} className={cx("rounded-2xl border bg-slate-950/40 p-4 shadow-sm light_sakura:bg-white", tokens.border.default)}>
+                <p className={cx("text-xs font-medium", tokens.text.muted)}>{m.label}</p>
                 <h3 className={`font-bold text-2xl mt-1 ${m.color}`}>{m.val.toLocaleString()}</h3>
               </div>
             ))}
@@ -233,8 +235,8 @@ export const AdminErrorMonitor: React.FC = () => {
 
           {/* By-source breakdown */}
           {sources.length > 0 && (
-            <div className="bg-slate-900 light_sakura:bg-white p-6 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
-              <p className="text-sm font-semibold text-slate-300 light_sakura:text-slate-700 mb-4">
+            <div className={cx("p-6 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
+              <p className={cx("text-sm font-semibold mb-4", tokens.text.secondary)}>
                 {t("error_monitor.by_source_title")}
               </p>
               <div className="space-y-3">
@@ -247,8 +249,8 @@ export const AdminErrorMonitor: React.FC = () => {
                       className={`w-full text-left transition-opacity cursor-pointer ${sourceFilter !== "all" && sourceFilter !== s.source ? "opacity-40" : ""}`}
                     >
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="font-mono text-slate-300 light_sakura:text-slate-700">{s.source}</span>
-                        <span className="text-slate-400 light_sakura:text-slate-500">{s.count} ({pct}%)</span>
+                        <span className={cx("font-mono", tokens.text.secondary)}>{s.source}</span>
+                        <span className={cx(tokens.text.muted)}>{s.count} ({pct}%)</span>
                       </div>
                       <div className="h-1.5 rounded-full bg-slate-800 light_sakura:bg-slate-100 overflow-hidden">
                         <div className="h-full rounded-full bg-red-500/70 transition-all duration-500" style={{ width: `${pct}%` }} />
@@ -263,7 +265,7 @@ export const AdminErrorMonitor: React.FC = () => {
       )}
 
       {/* Level filter */}
-      <div className="flex items-center gap-2 p-2 bg-slate-800 light_sakura:bg-slate-50 rounded-2xl w-fit flex-wrap">
+      <div className={cx("flex items-center gap-2 p-2 rounded-2xl w-fit flex-wrap", tokens.surface.subtle)}>
         {(["all", "error", "warning", "info"] as const).map((lvl) => (
           <button
             key={lvl}
@@ -287,7 +289,7 @@ export const AdminErrorMonitor: React.FC = () => {
       </div>
 
       {/* Log table */}
-      <div className="overflow-hidden rounded-3xl border border-slate-800 light_sakura:border-slate-100 bg-slate-900 light_sakura:bg-white shadow-sm">
+      <div className={cx("overflow-hidden rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         {logsLoading ? (
           <div className="py-16 flex items-center justify-center">
             <Activity className="animate-pulse text-red-500" size={28} />
@@ -298,8 +300,8 @@ export const AdminErrorMonitor: React.FC = () => {
           <EmptyState message={t("error_monitor.no_logs_found")} />
         ) : (
           <ScrollableTableWrapper>
-            <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[820px]">
-              <thead className="bg-slate-800 light_sakura:bg-slate-50 text-slate-400 light_sakura:text-slate-500 uppercase text-xs">
+            <table className={cx("w-full text-left text-sm min-w-[820px]", tokens.text.label)}>
+              <thead className={cx("uppercase text-xs", tokens.text.muted, tokens.surface.subtle)}>
                 <tr>
                   <th className="px-6 py-4 w-24">{t("error_monitor.col_level")}</th>
                   <th className="px-6 py-4 w-44">{t("error_monitor.col_source")}</th>
@@ -327,12 +329,12 @@ export const AdminErrorMonitor: React.FC = () => {
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="font-mono text-xs text-slate-400 light_sakura:text-slate-500">{log.source}</span>
+                          <span className={cx("font-mono text-xs", tokens.text.muted)}>{log.source}</span>
                         </td>
                         <td className="px-6 py-4">
                           <p className="text-slate-200 light_sakura:text-slate-800 line-clamp-2">{log.message}</p>
                         </td>
-                        <td className="px-6 py-4 text-xs text-slate-400 light_sakura:text-slate-500 whitespace-nowrap">
+                        <td className={cx("px-6 py-4 text-xs whitespace-nowrap", tokens.text.muted)}>
                           {formatRelativeTime(log.created_at, t)}
                         </td>
                         <td className="px-6 py-4">
@@ -343,7 +345,7 @@ export const AdminErrorMonitor: React.FC = () => {
                         <tr className="bg-slate-950/40 light_sakura:bg-slate-50">
                           <td colSpan={5} className="px-6 py-4">
                             <p className="text-xs text-slate-500 mb-2">{formatDate(log.created_at)}{log.trace_id ? ` · trace: ${log.trace_id}` : ""}</p>
-                            <pre className="text-xs text-slate-400 light_sakura:text-slate-600 whitespace-pre-wrap break-all font-mono bg-slate-900 light_sakura:bg-white p-3 rounded-xl border border-slate-800 light_sakura:border-slate-100">
+                            <pre className={cx("text-xs whitespace-pre-wrap break-all font-mono p-3 rounded-xl border", tokens.text.mutedAlt, tokens.surface.card, tokens.border.default)}>
                               {JSON.stringify(log.context, null, 2)}
                             </pre>
                           </td>
@@ -387,15 +389,15 @@ export const AdminErrorMonitor: React.FC = () => {
               <button
                 disabled={page === 0}
                 onClick={() => setPage((p) => p - 1)}
-                className="p-2 rounded-xl bg-slate-900 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
               >
                 <ChevronLeft size={14} />
               </button>
-              <span className="font-medium text-white light_sakura:text-slate-800">{page + 1} / {totalPages}</span>
+              <span className={cx("font-medium", tokens.text.onSurface)}>{page + 1} / {totalPages}</span>
               <button
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => p + 1)}
-                className="p-2 rounded-xl bg-slate-900 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
               >
                 <ChevronRight size={14} />
               </button>

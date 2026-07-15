@@ -3,6 +3,7 @@ import { supabase } from "../lib/supabase";
 import { PremiumVoucher } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Modal } from "../components/Modal";
 import { DropdownField } from "../components/DropdownField";
@@ -18,6 +19,7 @@ interface PremiumVoucherWithUsage extends PremiumVoucher {
 
 export const AdminVoucherManager: React.FC = () => {
   const [vouchers, setVouchers] = useState<PremiumVoucherWithUsage[]>([]);
+  const { tokens, cx } = useThemeTokens();
   const [code, setCode] = useState("");
   const [percent, setPercent] = useState("");
   const [revokeTarget, setRevokeTarget] = useState<PremiumVoucherWithUsage | null>(null);
@@ -240,25 +242,25 @@ export const AdminVoucherManager: React.FC = () => {
           {t: t("voucher.active_vouchers"), v: stats.active, color: "text-emerald-500"},
           {t: t("voucher.inactive_vouchers"), v: stats.inactive, color: "text-slate-400 light_sakura:text-slate-500"}
         ].map(s=>(
-          <div key={s.t} className="bg-slate-900 light_sakura:bg-white p-6 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
-            <p className="text-slate-400 light_sakura:text-slate-500 text-sm font-medium">{s.t}</p>
+          <div key={s.t} className={cx("p-6 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
+            <p className={cx("text-sm font-medium", tokens.text.muted)}>{s.t}</p>
             <p className={`text-3xl font-bold mt-2 ${s.color}`}>{s.v}</p>
           </div>
         ))}
       </div>
 
       {/* Global Premium Price Setting Card */}
-      <div className="bg-slate-900 light_sakura:bg-white p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm space-y-6">
-        <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">{t("admin.premium_price")}</h2>
+      <div className={cx("p-8 rounded-3xl border shadow-sm space-y-6", tokens.surface.card, tokens.border.default)}>
+        <h2 className={cx("text-xl font-bold", tokens.text.onSurface)}>{t("admin.premium_price")}</h2>
         <div className="flex flex-col sm:flex-row gap-4 items-end">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-1.5">{t("voucher.base_price")}</label>
+            <label className={cx("block text-sm font-medium mb-1.5", tokens.text.secondary)}>{t("voucher.base_price")}</label>
             <input 
               type="number" 
               placeholder="20000" 
               value={premiumPrice} 
               onChange={e => setPremiumPrice(e.target.value)} 
-              className="w-full bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 p-3 rounded-xl text-white light_sakura:text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-indigo-500" 
+              className={cx("w-full border p-3 rounded-xl placeholder-slate-500 focus:ring-2 focus:ring-indigo-500", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)} 
             />
           </div>
           <button 
@@ -271,16 +273,16 @@ export const AdminVoucherManager: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-slate-900 light_sakura:bg-white p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
-        <h2 className="text-xl font-bold text-white light_sakura:text-slate-800 mb-6">{t("voucher.create_voucher")}</h2>
+      <div className={cx("p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
+        <h2 className={cx("text-xl font-bold mb-6", tokens.text.onSurface)}>{t("voucher.create_voucher")}</h2>
         <div className="flex gap-4 items-end">
           <div className="flex-1">
-            <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-1.5">{t("voucher.voucher_code")}</label>
-            <input placeholder={t("voucher.placeholder_code")} value={code} onChange={e => setCode(e.target.value)} className="w-full bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 p-3 rounded-xl text-white light_sakura:text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-indigo-500" />
+            <label className={cx("block text-sm font-medium mb-1.5", tokens.text.secondary)}>{t("voucher.voucher_code")}</label>
+            <input placeholder={t("voucher.placeholder_code")} value={code} onChange={e => setCode(e.target.value)} className={cx("w-full border p-3 rounded-xl placeholder-slate-500 focus:ring-2 focus:ring-indigo-500", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)} />
           </div>
           <div className="w-32">
-            <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-1.5">{t("voucher.discount_percent")}</label>
-            <input placeholder="50" type="number" value={percent} onChange={e => setPercent(e.target.value)} className="w-full bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 p-3 rounded-xl text-white light_sakura:text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-indigo-500" />
+            <label className={cx("block text-sm font-medium mb-1.5", tokens.text.secondary)}>{t("voucher.discount_percent")}</label>
+            <input placeholder="50" type="number" value={percent} onChange={e => setPercent(e.target.value)} className={cx("w-full border p-3 rounded-xl placeholder-slate-500 focus:ring-2 focus:ring-indigo-500", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)} />
           </div>
           <button
             onClick={createVoucher}
@@ -296,17 +298,17 @@ export const AdminVoucherManager: React.FC = () => {
         </div>
       </div>
 
-      <div className="bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm overflow-hidden">
+      <div className={cx("rounded-3xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
         {loading ? (
-          <div className="py-16 text-center text-slate-400 light_sakura:text-slate-500 text-sm">{t("admin.loading")}</div>
+          <div className={cx("py-16 text-center text-sm", tokens.text.muted)}>{t("admin.loading")}</div>
         ) : vouchersError ? (
           <ErrorState onRetry={fetchVouchers} />
         ) : vouchers.length === 0 ? (
           <EmptyState message={t("voucher.no_vouchers")} />
         ) : (
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[700px]">
-            <thead className="bg-slate-800 light_sakura:bg-slate-50 text-slate-400 light_sakura:text-slate-500 uppercase text-xs">
+          <table className={cx("w-full text-left text-sm min-w-[700px]", tokens.text.label)}>
+            <thead className={cx("uppercase text-xs", tokens.text.muted, tokens.surface.subtle)}>
               <tr>
                 <th className="p-6">{t("voucher.code")}</th>
                 <th className="p-6">{t("voucher.discount", { percent: "" }).replace("{percent}%", "").trim()}</th>
@@ -321,7 +323,7 @@ export const AdminVoucherManager: React.FC = () => {
                 const usageCount = v.usage_count || 0;
                 return (
                   <tr key={v.id} className="hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50">
-                    <td className="p-6 font-semibold text-white light_sakura:text-slate-900">{v.code}</td>
+                    <td className={cx("p-6 font-semibold", tokens.text.primary)}>{v.code}</td>
                     <td className="p-6">{v.discount_percent}%</td>
                     <td className="p-6">
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${v.is_active ? "bg-emerald-900/20 light_sakura:bg-emerald-50 text-emerald-400 light_sakura:text-emerald-600" : "bg-slate-800 light_sakura:bg-slate-100 text-slate-400 light_sakura:text-slate-600"}`}>
@@ -333,7 +335,7 @@ export const AdminVoucherManager: React.FC = () => {
                         {usageCount === 0 ? t("voucher.never_used") : t("voucher.used_times", { count: usageCount }).replace("{count}", String(usageCount))}
                       </span>
                     </td>
-                    <td className="p-6 text-slate-300 light_sakura:text-slate-600">
+                    <td className={cx("p-6", tokens.text.label)}>
                       {formatDate(v.last_used_at)}
                     </td>
                     <td className="p-6 text-right">
@@ -388,15 +390,15 @@ export const AdminVoucherManager: React.FC = () => {
               <button
                 disabled={page === 0}
                 onClick={() => setPage(p => p - 1)}
-                className="p-2 rounded-xl bg-slate-900 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
               >
                 <ChevronLeft size={14} />
               </button>
-              <span className="font-medium text-white light_sakura:text-slate-800">{page + 1} / {Math.ceil(vouchers.length / pageSize)}</span>
+              <span className={cx("font-medium", tokens.text.onSurface)}>{page + 1} / {Math.ceil(vouchers.length / pageSize)}</span>
               <button
                 disabled={(page + 1) * pageSize >= vouchers.length}
                 onClick={() => setPage(p => p + 1)}
-                className="p-2 rounded-xl bg-slate-900 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
               >
                 <ChevronRight size={14} />
               </button>

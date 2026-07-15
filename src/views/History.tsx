@@ -27,6 +27,7 @@ import { useCategories } from "../hooks/useCategories";
 import { useWallets } from "../hooks/useWallets";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { ErrorState } from "../components/ErrorState";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -41,6 +42,7 @@ export const History: React.FC<HistoryProps> = ({
 }) => {
   const { t, locale } = useLanguage();
   const { categories } = useCategories();
+  const { tokens, cx } = useThemeTokens();
   const { activeWallets, wallets: allWallets } = useWallets();
   const locationState = useLocation().state as { filterWalletId?: string } | null;
   const { user } = useAuth();
@@ -262,7 +264,7 @@ export const History: React.FC<HistoryProps> = ({
     <div className="space-y-5">
 
       {/* ── Header card ─────────────────────────────────────────────── */}
-      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
+      <div className={cx("rounded-3xl border border-slate-800/60 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}>
         {/* Accent stripe */}
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">
@@ -282,21 +284,21 @@ export const History: React.FC<HistoryProps> = ({
             <div className="grid grid-cols-3 gap-2">
               <div className="rounded-2xl bg-red-500/8 border border-red-500/15 px-3 py-3 light_sakura:bg-red-50/60 light_sakura:border-red-100">
                 <div className="flex items-start gap-1.5 mb-1 min-h-[1.9rem]">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 light_sakura:text-slate-400 leading-tight break-words">
+                  <span className={cx("text-[10px] font-bold uppercase tracking-wider leading-tight break-words", tokens.text.faint)}>
                     {t("dashboard.expense")}
                   </span>
                 </div>
-                <p className="font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight text-red-400 light_sakura:text-red-600">
+                <p className={cx("font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.danger)}>
                   −{formatIDR(stats.expense)}
                 </p>
               </div>
               <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-3 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
                 <div className="flex items-start gap-1.5 mb-1 min-h-[1.9rem]">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 light_sakura:text-slate-400 leading-tight break-words">
+                  <span className={cx("text-[10px] font-bold uppercase tracking-wider leading-tight break-words", tokens.text.faint)}>
                     {t("dashboard.income")}
                   </span>
                 </div>
-                <p className="font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight text-emerald-400 light_sakura:text-emerald-600">
+                <p className={cx("font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.success)}>
                   +{formatIDR(stats.income)}
                 </p>
               </div>
@@ -306,7 +308,7 @@ export const History: React.FC<HistoryProps> = ({
                   : "bg-orange-500/8 border-orange-500/15 light_sakura:bg-orange-50/60 light_sakura:border-orange-100"
               }`}>
                 <div className="flex items-start gap-1.5 mb-1 min-h-[1.9rem]">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 light_sakura:text-slate-400 leading-tight break-words">
+                  <span className={cx("text-[10px] font-bold uppercase tracking-wider leading-tight break-words", tokens.text.faint)}>
                     {t("dashboard.balance")}
                   </span>
                 </div>
@@ -433,7 +435,7 @@ export const History: React.FC<HistoryProps> = ({
             className="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-[60] flex flex-col items-center justify-center p-6"
           >
             <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col items-center max-w-xs w-full text-center shadow-2xl light_sakura:bg-white light_sakura:border-rose-100"
+              className={cx("border p-8 rounded-3xl flex flex-col items-center max-w-xs w-full text-center shadow-2xl", tokens.surface.card, tokens.border.accent)}
             >
               <div className="relative w-20 h-20 mb-6 flex items-center justify-center">
                 <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
@@ -442,8 +444,8 @@ export const History: React.FC<HistoryProps> = ({
                   className="absolute w-12 h-12 border-4 border-t-rose-500 border-r-transparent border-b-amber-400 border-l-transparent rounded-full" />
                 <Trash2 className="text-red-400" size={20} />
               </div>
-              <h3 className="font-sans font-bold text-base text-white mb-2 light_sakura:text-slate-900">{t("history.ledger_sync_title")}</h3>
-              <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-600">{t("history.ledger_sync_desc")}</p>
+              <h3 className={cx("font-sans font-bold text-base mb-2", tokens.text.primary)}>{t("history.ledger_sync_title")}</h3>
+              <p className={cx("font-sans text-xs leading-relaxed", tokens.text.mutedAlt)}>{t("history.ledger_sync_desc")}</p>
             </motion.div>
           </motion.div>
         )}

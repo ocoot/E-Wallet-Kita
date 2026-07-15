@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { Modal } from "../components/Modal";
@@ -43,6 +44,7 @@ export const AdminPremiumMonitor: React.FC = () => {
   const { showToast } = useToast();
   const { t, locale } = useLanguage();
   const { isAdmin } = useAdmin();
+  const { tokens, cx } = useThemeTokens();
 
   const [refreshing, setRefreshing] = useState(false);
   const [metrics, setMetrics] = useState<RevenueMetrics | null>(null);
@@ -178,14 +180,14 @@ export const AdminPremiumMonitor: React.FC = () => {
     <div className="space-y-6">
 
       {/* Header Wrapped in One Card Container */}
-      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+      <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
               <CreditCard className="text-amber-500" size={24} />
               {t("admin.premium_monitor_title")}
             </h1>
-            <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1">
+            <p className={cx("text-sm mt-1", tokens.text.muted)}>
               {t("admin.premium_monitor_desc")}
             </p>
           </div>
@@ -201,7 +203,7 @@ export const AdminPremiumMonitor: React.FC = () => {
                 setRefreshing(false);
               }
             }}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-slate-800 light_sakura:bg-white border border-slate-700 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-700 light_sakura:hover:bg-slate-50 transition-colors cursor-pointer shrink-0"
+            className={cx("flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-slate-800 light_sakura:bg-white border hover:bg-slate-700 light_sakura:hover:bg-slate-50 transition-colors cursor-pointer shrink-0", tokens.text.label, tokens.border.strong)}
           >
             <RefreshCw size={16} />
             {t("admin.refresh_data")}
@@ -218,17 +220,17 @@ export const AdminPremiumMonitor: React.FC = () => {
       )}
 
       {/* Dummy QRIS toggle card */}
-      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+      <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className={`p-3 rounded-2xl border ${dummyQrisEnabled ? "bg-purple-900/20 light_sakura:bg-purple-50 border-purple-800/50 light_sakura:border-purple-100 text-purple-400 light_sakura:text-purple-600" : "bg-slate-800 light_sakura:bg-slate-50 border-slate-700 light_sakura:border-slate-100 text-slate-500"}`}>
               <FlaskConical size={20} />
             </div>
             <div>
-              <p className="font-semibold text-white light_sakura:text-slate-900">
+              <p className={cx("font-semibold", tokens.text.primary)}>
                 {t("admin.dummy_qris_title")}
               </p>
-              <p className="text-xs text-slate-400 light_sakura:text-slate-500 mt-0.5 max-w-md">
+              <p className={cx("text-xs mt-0.5 max-w-md", tokens.text.muted)}>
                 {t("admin.dummy_qris_desc")}
               </p>
               <p className="text-xs mt-1.5 font-medium text-purple-400 light_sakura:text-purple-600">
@@ -279,8 +281,8 @@ export const AdminPremiumMonitor: React.FC = () => {
             { label: t("admin.status_failed"), val: metrics.failedCount, color: "text-red-500 light_sakura:text-red-600" },
             { label: t("admin.metrics.total"), val: metrics.totalTransactions, color: "text-slate-200 light_sakura:text-slate-800" },
           ].map((m, i) => (
-            <div key={i} className="bg-slate-900 light_sakura:bg-white p-6 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
-              <p className="text-sm font-medium text-slate-400 light_sakura:text-slate-500">{m.label}</p>
+            <div key={i} className={cx("p-6 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
+              <p className={cx("text-sm font-medium", tokens.text.muted)}>{m.label}</p>
               <h3 className={`font-bold text-2xl mt-2 ${m.color}`}>
                 {m.val}
               </h3>
@@ -290,7 +292,7 @@ export const AdminPremiumMonitor: React.FC = () => {
       )}
 
       {/* Filter */}
-      <div className="flex items-center gap-2 p-2 bg-slate-800 light_sakura:bg-slate-50 rounded-2xl w-fit">
+      <div className={cx("flex items-center gap-2 p-2 rounded-2xl w-fit", tokens.surface.subtle)}>
         {["all", "SUCCESS", "PENDING", "EXPIRED", "FAILED"].map((s) => (
           <button
             key={s}
@@ -306,7 +308,7 @@ export const AdminPremiumMonitor: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-3xl border border-slate-800 light_sakura:border-slate-100 bg-slate-900 light_sakura:bg-white shadow-sm">
+      <div className={cx("overflow-hidden rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         {loading ? (
           <div className="py-16 flex items-center justify-center">
             <Clock className="animate-spin text-indigo-500" size={28} />
@@ -317,8 +319,8 @@ export const AdminPremiumMonitor: React.FC = () => {
           <EmptyState message={t("admin.no_transactions_found")} />
         ) : (
           <ScrollableTableWrapper>
-            <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[900px]">
-              <thead className="bg-slate-800 light_sakura:bg-slate-50 text-slate-400 light_sakura:text-slate-500 uppercase text-xs">
+            <table className={cx("w-full text-left text-sm min-w-[900px]", tokens.text.label)}>
+              <thead className={cx("uppercase text-xs", tokens.text.muted, tokens.surface.subtle)}>
                 <tr>
                   <th className="px-6 py-4">{t("admin.user_col")}</th>
                   <th className="px-6 py-4">{t("admin.order_id")}</th>
@@ -336,16 +338,16 @@ export const AdminPremiumMonitor: React.FC = () => {
                   return (
                     <tr key={tx.id} className="hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50">
                       <td className="px-6 py-4">
-                        <p className="font-semibold text-white light_sakura:text-slate-900">{tx.display_name || "—"}</p>
-                        <p className="text-xs text-slate-400 light_sakura:text-slate-500">{tx.email || "—"}</p>
+                        <p className={cx("font-semibold", tokens.text.primary)}>{tx.display_name || "—"}</p>
+                        <p className={cx("text-xs", tokens.text.muted)}>{tx.email || "—"}</p>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-mono text-xs text-slate-400 light_sakura:text-slate-500">{tx.order_id}</span>
+                        <span className={cx("font-mono text-xs", tokens.text.muted)}>{tx.order_id}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="font-semibold text-white light_sakura:text-slate-900">{formatIDR(tx.total_amount)}</p>
+                        <p className={cx("font-semibold", tokens.text.primary)}>{formatIDR(tx.total_amount)}</p>
                         {tx.total_amount !== tx.amount && (
-                          <p className="text-xs text-slate-400 light_sakura:text-slate-500">
+                          <p className={cx("text-xs", tokens.text.muted)}>
                             base: {formatIDR(tx.amount)}
                           </p>
                         )}
@@ -361,8 +363,8 @@ export const AdminPremiumMonitor: React.FC = () => {
                           {tx.is_sandbox ? t("admin.sandbox_badge") : t("admin.live_badge")}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-xs text-slate-400 light_sakura:text-slate-500">{formatDate(tx.paid_at)}</td>
-                      <td className="px-6 py-4 text-xs text-slate-400 light_sakura:text-slate-500">{formatDate(tx.created_at)}</td>
+                      <td className={cx("px-6 py-4 text-xs", tokens.text.muted)}>{formatDate(tx.paid_at)}</td>
+                      <td className={cx("px-6 py-4 text-xs", tokens.text.muted)}>{formatDate(tx.created_at)}</td>
                     </tr>
                   );
                 })}
@@ -404,15 +406,15 @@ export const AdminPremiumMonitor: React.FC = () => {
               <button
                 disabled={page === 0}
                 onClick={() => setPage(p => p - 1)}
-                className="p-2 rounded-xl bg-slate-900 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
               >
                 <ChevronLeft size={14} />
               </button>
-              <span className="font-medium text-white light_sakura:text-slate-800">{page + 1} / {totalPages}</span>
+              <span className={cx("font-medium", tokens.text.onSurface)}>{page + 1} / {totalPages}</span>
               <button
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage(p => p + 1)}
-                className="p-2 rounded-xl bg-slate-900 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
               >
                 <ChevronRight size={14} />
               </button>

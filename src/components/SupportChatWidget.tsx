@@ -9,6 +9,7 @@ import { matchSupportFaqTopic, SUPPORT_FAQ_TOPICS } from "../lib/supportFaq";
 import { Modal } from "./Modal";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { audioFeedback } from "../lib/audio";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 type WidgetTab = "faq" | "admin";
 
@@ -60,6 +61,7 @@ export const SupportChatWidget: React.FC = () => {
   const { t, locale } = useLanguage();
   const { showToast } = useToast();
   const { user } = useAuth();
+  const { tokens, cx } = useThemeTokens();
 
   const [isOpen, setIsOpen] = useState(false);
   const [tab, setTab] = useState<WidgetTab>("faq");
@@ -363,26 +365,26 @@ export const SupportChatWidget: React.FC = () => {
             initial={{ opacity: 0, y: 16, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
-            className="fixed z-40 top-20 bottom-24 left-4 right-4 sm:top-auto sm:bottom-52 sm:left-auto sm:right-6 sm:w-96 sm:max-h-[70vh] flex flex-col rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
+            className={cx("fixed z-40 top-20 bottom-24 left-4 right-4 sm:top-auto sm:bottom-52 sm:left-auto sm:right-6 sm:w-96 sm:max-h-[70vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden", tokens.surface.card, tokens.border.accent)}
           >
             {/* Header */}
-            <div className="px-4 py-3.5 border-b border-slate-800 light_sakura:border-rose-100 flex items-center gap-3">
+            <div className={cx("px-4 py-3.5 border-b flex items-center gap-3", tokens.border.accent)}>
               <div className="relative w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300 flex items-center justify-center shrink-0 shadow-lg shadow-indigo-600/20 light_sakura:shadow-rose-500/20">
                 <Bot size={18} className="text-white" />
                 <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-900 light_sakura:border-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">
+                <h3 className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>
                   {t("support.title")}
                 </h3>
-                <p className="flex items-center gap-1.5 text-[11px] font-medium text-emerald-400 light_sakura:text-emerald-600">
+                <p className={cx("flex items-center gap-1.5 text-[11px] font-medium", tokens.text.success)}>
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.18)]" />
                   {t("support.widget_status")}
                 </p>
               </div>
             </div>
 
-            <div className="flex gap-1.5 px-4 pt-3 pb-3 border-b border-slate-800 light_sakura:border-rose-100">
+            <div className={cx("flex gap-1.5 px-4 pt-3 pb-3 border-b", tokens.border.accent)}>
               <button
                 type="button"
                 onClick={() => setTab("faq")}
@@ -523,10 +525,10 @@ export const SupportChatWidget: React.FC = () => {
                             <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-800 light_sakura:border-rose-50" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-900 truncate">
+                            <p className={cx("text-xs font-bold truncate", tokens.text.heading)}>
                               {t("support.admin_chat.identity_name")}
                             </p>
-                            <p className="text-[11px] font-medium text-emerald-400 light_sakura:text-emerald-600">
+                            <p className={cx("text-[11px] font-medium", tokens.text.success)}>
                               {t("support.admin_chat.identity_status")}
                             </p>
                           </div>
@@ -555,7 +557,7 @@ export const SupportChatWidget: React.FC = () => {
 
                   {session && (
                     <>
-                      <div className="flex items-center justify-between text-xs text-slate-400 light_sakura:text-slate-500">
+                      <div className={cx("flex items-center justify-between text-xs", tokens.text.muted)}>
                         <span>
                           {session.status === "claimed"
                             ? t("support.admin_chat.claimed_by_admin")
@@ -576,7 +578,7 @@ export const SupportChatWidget: React.FC = () => {
 
                       {messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
-                          <p className="text-xs text-slate-500 light_sakura:text-slate-400 max-w-[220px]">
+                          <p className={cx("text-xs max-w-[220px]", tokens.text.faint)}>
                             {t("support.admin_chat.prompt_first_message")}
                           </p>
                         </div>
@@ -603,7 +605,7 @@ export const SupportChatWidget: React.FC = () => {
                           ))}
                           <div className="flex flex-col items-center justify-center gap-2 py-4 text-center">
                             <Loader2 size={20} className="text-indigo-400 light_sakura:text-rose-400 animate-spin" />
-                            <p className="text-xs text-slate-500 light_sakura:text-slate-400 max-w-[220px]">
+                            <p className={cx("text-xs max-w-[220px]", tokens.text.faint)}>
                               {t("support.admin_chat.waiting_first_reply")}
                             </p>
                           </div>
@@ -641,7 +643,7 @@ export const SupportChatWidget: React.FC = () => {
 
             {/* Footer input */}
             {tab === "faq" && (
-              <div className="p-3 border-t border-slate-800 flex gap-2 light_sakura:border-rose-100">
+              <div className={cx("p-3 border-t flex gap-2", tokens.border.accent)}>
                 <input
                   value={faqInput}
                   onChange={(e) => setFaqInput(e.target.value)}
@@ -660,7 +662,7 @@ export const SupportChatWidget: React.FC = () => {
             )}
 
             {tab === "admin" && session && session.status !== "closed" && (
-              <div className="p-3 border-t border-slate-800 flex gap-2 light_sakura:border-rose-100">
+              <div className={cx("p-3 border-t flex gap-2", tokens.border.accent)}>
                 <input
                   value={adminInput}
                   onChange={(e) => setAdminInput(e.target.value)}

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { dbService } from "../lib/db";
 import { useGoldSavings } from "../hooks/useGoldSavings";
 import { useWallets } from "../hooks/useWallets";
@@ -85,6 +86,7 @@ export const GoldSavings: React.FC = () => {
   const { showToast } = useToast();
   const { pockets, summary, prices, loading, error: pocketsError, refresh } = useGoldSavings(user?.id);
   const { activeWallets } = useWallets();
+  const { tokens, cx } = useThemeTokens();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<GoldPocket | null>(null);
@@ -375,7 +377,7 @@ export const GoldSavings: React.FC = () => {
                   <PackageMinus size={12} /> {t("gold.manual_remove_button_short")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); audioFeedback.playClick(); openEditForm(p); }} tabIndex={isFlipped ? 0 : -1}
-                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer bg-slate-700/40 text-slate-300 hover:bg-slate-700/60 light_sakura:bg-slate-100 light_sakura:text-slate-600">
+                  className={cx("flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer bg-slate-700/40 hover:bg-slate-700/60 light_sakura:bg-slate-100", tokens.text.label)}>
                   <Edit2 size={12} /> {t("common.edit")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); toggleArchive(p); }} disabled={busyId === p.id} tabIndex={isFlipped ? 0 : -1}
@@ -416,16 +418,16 @@ export const GoldSavings: React.FC = () => {
         />
       )}
 
-      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
+      <div className={cx("rounded-3xl border border-slate-800/60 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500" />
         <div className="p-6 md:p-8 space-y-6">
 
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
-              <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+              <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
                 {t("gold.page_title")}
               </h1>
-              <p className="text-sm text-slate-400 mt-1 light_sakura:text-slate-500 leading-relaxed">
+              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
                 {t("gold.page_subtitle")}
               </p>
             </div>
@@ -438,11 +440,11 @@ export const GoldSavings: React.FC = () => {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="rounded-2xl bg-amber-500/8 border border-amber-500/15 px-3 py-3 light_sakura:bg-amber-50/60 light_sakura:border-amber-100">
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_total_grams")}</span>
-              <p className="font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight text-amber-400 light_sakura:text-amber-600">{formatGrams(summary.total_grams)}</p>
+              <p className={cx("font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.warning)}>{formatGrams(summary.total_grams)}</p>
             </div>
             <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-3 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_market_value")}</span>
-              <p className="font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight text-indigo-400 light_sakura:text-indigo-600">{formatIDR(summary.total_market_value)}</p>
+              <p className={cx("font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.accentStrong)}>{formatIDR(summary.total_market_value)}</p>
               {/* Footnote "estimasi" -- nilai ini dihitung dari harga acuan
                   (sumber + margin app), bukan harga jual resmi yang bisa
                   langsung dieksekusi ke toko. Lihat sim_disclaimer_* untuk
@@ -478,7 +480,7 @@ export const GoldSavings: React.FC = () => {
 
           <div className="flex items-start gap-2.5 rounded-2xl border border-indigo-500/15 bg-indigo-500/5 px-4 py-3 light_sakura:bg-indigo-50/40 light_sakura:border-indigo-100">
             <Info size={14} className="text-indigo-400 light_sakura:text-indigo-500 shrink-0 mt-0.5" />
-            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed text-slate-400 light_sakura:text-slate-600">{t("gold.info_banner_text")}</p>
+            <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed", tokens.text.mutedAlt)}>{t("gold.info_banner_text")}</p>
           </div>
 
           {/* Ticker harga pasar -- auto-scroll (Konsep D), berhenti sebentar
@@ -502,7 +504,7 @@ export const GoldSavings: React.FC = () => {
                         className={`shrink-0 px-4 py-0.5 border-r border-slate-800/60 light_sakura:border-slate-200 ${isStaleVsOthers ? "bg-amber-500/5" : ""}`}
                       >
                         <p className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap">{t(`gold.brand_${pr.brand}`)}</p>
-                        <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-amber-400 light_sakura:text-amber-600 flex items-center gap-1 whitespace-nowrap">
+                        <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold flex items-center gap-1 whitespace-nowrap", tokens.text.warning)}>
                           {formatIDR(pr.sell_price_per_gram)}
                           {renderPriceDelta(pr.sell_price_per_gram, pr.prev_sell_price_per_gram, t)}
                         </p>
@@ -549,10 +551,10 @@ export const GoldSavings: React.FC = () => {
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className="w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl">
+              className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl", tokens.surface.card)}>
               <div className="h-1 w-full bg-gradient-to-r from-amber-500 to-yellow-500" />
               <div className="p-6 space-y-4">
-                <h2 className="font-sans font-bold text-lg text-slate-100 light_sakura:text-slate-900">
+                <h2 className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
                   {editTarget ? t("gold.edit_title") : t("gold.add_title")}
                 </h2>
                 <Input
@@ -598,7 +600,7 @@ export const GoldSavings: React.FC = () => {
                   accent="amber"
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeForm} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
+                  <button onClick={closeForm} className={cx("flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer", tokens.text.label)}>{t("common.cancel")}</button>
                   <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm transition-colors shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer">{isSaving ? t("common.loading") : t("common.save")}</button>
                 </div>
               </div>
@@ -618,11 +620,11 @@ export const GoldSavings: React.FC = () => {
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className="w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl">
+              className={cx("w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl", tokens.surface.card)}>
               <div className={`h-1 w-full ${copy.barClass}`} />
               <div className="p-6 space-y-4">
                 <div>
-                  <h2 className="font-sans font-bold text-lg text-slate-100 light_sakura:text-slate-900">
+                  <h2 className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
                     {t(copy.title, { name: moveTarget.pocket.name })}
                   </h2>
                   <p className="text-xs text-slate-400 mt-1">{t(copy.desc)}</p>
@@ -666,7 +668,7 @@ export const GoldSavings: React.FC = () => {
                   accent="amber"
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeMoveModal} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
+                  <button onClick={closeMoveModal} className={cx("flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer", tokens.text.label)}>{t("common.cancel")}</button>
                   <button onClick={executeMove} disabled={isMoving}
                     className={`flex-1 py-3 rounded-2xl text-white font-semibold text-sm transition-colors shadow-lg disabled:opacity-50 cursor-pointer ${copy.buttonClass}`}>
                     {isMoving ? t("common.loading") : t(copy.button)}

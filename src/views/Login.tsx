@@ -9,6 +9,7 @@ import { Mail, Lock, User, LogIn, Sparkles, AlertCircle, Eye, EyeOff } from "luc
 import { motion, AnimatePresence, useAnimation } from "motion/react";
 import { Modal } from "../components/Modal";
 import { audioFeedback } from "../lib/audio";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 /* ─────────────────────────────────────────────────────────
    Brand panel decoration — faint background arc rings only.
@@ -108,10 +109,11 @@ interface InputFieldProps {
 const InputField: React.FC<InputFieldProps> = ({
   icon, label, type, placeholder, value, onChange,
   disabled, required, minLength, rightAddon, autoComplete
-}) => (
+}) => {
+  const { tokens, cx } = useThemeTokens();
+  return (
   <div className="space-y-1.5">
-    <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold tracking-[0.12em] uppercase
-                      text-slate-400 light_sakura:text-slate-500">
+    <label className={cx("block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold tracking-[0.12em] uppercase", tokens.text.muted)}>
       {label}
     </label>
     <div className="relative group">
@@ -129,23 +131,15 @@ const InputField: React.FC<InputFieldProps> = ({
         value={value}
         autoComplete={autoComplete}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full pl-10 pr-10 py-3 rounded-xl text-sm
-                   bg-slate-800/60 border border-slate-700/60 text-white placeholder:text-slate-500
-                   focus:outline-none focus:border-indigo-500 focus:bg-slate-800/90
-                   focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)]
-                   transition-all duration-200 disabled:opacity-40
-                   light_sakura:bg-slate-100/80 light_sakura:border-rose-200
-                   light_sakura:text-slate-800 light_sakura:placeholder:text-slate-400
-                   light_sakura:focus:border-rose-400
-                   light_sakura:focus:shadow-[0_0_0_3px_rgba(244,63,94,0.12)]
-                   light_sakura:focus:bg-white"
+        className={cx("w-full pl-10 pr-10 py-3 rounded-xl text-sm bg-slate-800/60 border border-slate-700/60 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 focus:bg-slate-800/90 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)] transition-all duration-200 disabled:opacity-40 light_sakura:bg-slate-100/80 light_sakura:border-rose-200 light_sakura:placeholder:text-slate-400 light_sakura:focus:border-rose-400 light_sakura:focus:shadow-[0_0_0_3px_rgba(244,63,94,0.12)] light_sakura:focus:bg-white", tokens.text.onSurface)}
       />
       {rightAddon && (
         <span className="absolute right-3.5 top-1/2 -translate-y-1/2">{rightAddon}</span>
       )}
     </div>
   </div>
-);
+  );
+};
 
 /* ════════════════════════════════════════════════════════
    MAIN LOGIN COMPONENT
@@ -156,6 +150,7 @@ export const Login: React.FC = () => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const shakeControls = useAnimation();
+  const { tokens, cx } = useThemeTokens();
 
   const [isSignUp, setIsSignUp]               = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -514,7 +509,7 @@ export const Login: React.FC = () => {
                 alt="E-Wallet Kita"
                 className="w-8 h-8 object-contain"
               />
-              <span className="font-bold text-sm text-white light_sakura:text-slate-800">
+              <span className={cx("font-bold text-sm", tokens.text.onSurface)}>
                 E-Wallet Kita
               </span>
             </div>
@@ -522,8 +517,7 @@ export const Login: React.FC = () => {
               type="button"
               onClick={() => { audioFeedback.playClick(); setMobileStage("landing"); }}
               disabled={isLoading}
-              className="text-xs font-semibold text-indigo-400 hover:underline
-                         disabled:opacity-50 light_sakura:text-rose-500"
+              className={cx("text-xs font-semibold hover:underline disabled:opacity-50", tokens.icon.accent)}
             >
               {t("auth.back_to_welcome")}
             </button>
@@ -543,12 +537,12 @@ export const Login: React.FC = () => {
                 <div className="mb-7">
                   <div className="w-11 h-11 rounded-2xl flex items-center justify-center mb-4
                                   bg-indigo-600/10 light_sakura:bg-rose-100">
-                    <Lock size={20} className="text-indigo-400 light_sakura:text-rose-500" />
+                    <Lock size={20} className={cx(tokens.icon.accent)} />
                   </div>
-                  <h2 className="font-bold text-xl text-white mb-1 light_sakura:text-slate-900">
+                  <h2 className={cx("font-bold text-xl mb-1", tokens.text.primary)}>
                     {t("auth.forgot_password_title")}
                   </h2>
-                  <p className="text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
+                  <p className={cx("text-xs leading-relaxed", tokens.text.muted)}>
                     {t("auth.forgot_password_desc")}
                   </p>
                 </div>
@@ -589,8 +583,7 @@ export const Login: React.FC = () => {
                   <button
                     onClick={() => { audioFeedback.playClick(); setIsForgotPassword(false); }}
                     disabled={isLoading}
-                    className="text-xs text-indigo-400 hover:underline cursor-pointer
-                               disabled:opacity-50 light_sakura:text-rose-500"
+                    className={cx("text-xs hover:underline cursor-pointer disabled:opacity-50", tokens.icon.accent)}
                   >
                     {t("auth.forgot_password_back")}
                   </button>
@@ -608,10 +601,10 @@ export const Login: React.FC = () => {
               >
                 {/* Section heading */}
                 <div className="mb-7">
-                  <h2 className="font-bold text-xl text-white mb-0.5 light_sakura:text-slate-900">
+                  <h2 className={cx("font-bold text-xl mb-0.5", tokens.text.primary)}>
                     {isSignUp ? t("auth.btn_signup") : t("auth.btn_signin")}
                   </h2>
-                  <p className="text-xs text-slate-400 light_sakura:text-slate-500">
+                  <p className={cx("text-xs", tokens.text.muted)}>
                     {isSignUp ? t("auth.to_signin") : t("auth.to_signup")}
                   </p>
                 </div>
@@ -647,8 +640,7 @@ export const Login: React.FC = () => {
 
                     <div className="space-y-1.5">
                       <div className="flex justify-between items-center">
-                        <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold tracking-[0.12em] uppercase
-                                          text-slate-400 light_sakura:text-slate-500">
+                        <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold tracking-[0.12em] uppercase", tokens.text.muted)}>
                           {t("auth.label_password")}
                         </label>
                         {!isSignUp && (
@@ -656,8 +648,7 @@ export const Login: React.FC = () => {
                             type="button"
                             onClick={() => { audioFeedback.playClick(); setIsForgotPassword(true); }}
                             disabled={isLoading}
-                            className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-indigo-400 hover:underline cursor-pointer
-                                       light_sakura:text-rose-500"
+                            className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] hover:underline cursor-pointer", tokens.icon.accent)}
                           >
                             {t("auth.forgot_password")}
                           </button>
@@ -713,8 +704,7 @@ export const Login: React.FC = () => {
                   <button
                     onClick={() => { audioFeedback.playClick(); setIsSignUp(!isSignUp); }}
                     disabled={isLoading}
-                    className="text-xs text-indigo-400 hover:underline cursor-pointer
-                               disabled:opacity-50 light_sakura:text-rose-500"
+                    className={cx("text-xs hover:underline cursor-pointer disabled:opacity-50", tokens.icon.accent)}
                   >
                     {isSignUp ? t("auth.to_signin") : t("auth.to_signup")}
                   </button>
@@ -723,8 +713,7 @@ export const Login: React.FC = () => {
                 {/* Divider */}
                 <div className="relative my-5 flex items-center">
                   <div className="flex-1 h-px bg-slate-800 light_sakura:bg-rose-100" />
-                  <span className="px-3 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold uppercase tracking-widest
-                                   text-slate-500 light_sakura:text-slate-400">
+                  <span className={cx("px-3 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold uppercase tracking-widest", tokens.text.faint)}>
                     {t("auth.or_divider_instant")}
                   </span>
                   <div className="flex-1 h-px bg-slate-800 light_sakura:bg-rose-100" />
@@ -770,11 +759,7 @@ export const Login: React.FC = () => {
                 </div>
 
                 {/* Guest disclaimer */}
-                <div className="mt-5 flex gap-2 p-3 rounded-xl
-                                bg-amber-500/5 border border-amber-500/15 text-[clamp(0.5625rem,2.6vw,0.625rem)]
-                                text-slate-400 leading-relaxed
-                                light_sakura:bg-rose-50 light_sakura:border-rose-200/60
-                                light_sakura:text-slate-500">
+                <div className={cx("mt-5 flex gap-2 p-3 rounded-xl bg-amber-500/5 border border-amber-500/15 text-[clamp(0.5625rem,2.6vw,0.625rem)] leading-relaxed light_sakura:bg-rose-50 light_sakura:border-rose-200/60", tokens.text.muted)}>
                   <AlertCircle size={13} className="text-amber-400 shrink-0 mt-0.5 light_sakura:text-rose-400" />
                   <p>{t("auth.guest_disclaimer")}</p>
                 </div>
@@ -823,10 +808,7 @@ export const Login: React.FC = () => {
               initial={{ scale: 0.93, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.93, opacity: 0 }}
-              className="flex flex-col items-center text-center p-8
-                         bg-slate-900 border border-slate-800 rounded-3xl
-                         shadow-2xl max-w-xs w-full
-                         light_sakura:bg-white light_sakura:border-rose-100"
+              className={cx("flex flex-col items-center text-center p-8 border rounded-3xl shadow-2xl max-w-xs w-full", tokens.surface.card, tokens.border.accent)}
             >
               <div className="relative w-14 h-14 flex items-center justify-center mb-4">
                 <div className="absolute inset-0 border-[3px] border-indigo-600/20 rounded-full
@@ -839,10 +821,10 @@ export const Login: React.FC = () => {
                   className="w-7 h-7 object-contain animate-pulse"
                 />
               </div>
-              <h3 className="font-bold text-base text-white mb-1 light_sakura:text-slate-900">
+              <h3 className={cx("font-bold text-base mb-1", tokens.text.primary)}>
                 {t("common.loading")}
               </h3>
-              <p className="text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
+              <p className={cx("text-xs leading-relaxed", tokens.text.muted)}>
                 {isSignUp ? t("auth.loading_signup_desc") : t("auth.loading_signin_desc")}
               </p>
             </motion.div>

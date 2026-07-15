@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useAdmin } from "../hooks/useAdmin";
 import { useMaintenance } from "../contexts/MaintenanceContext";
 import { LoadingOverlay } from "../components/LoadingOverlay";
@@ -30,6 +31,7 @@ export const AdminMaintenance: React.FC = () => {
   const { showToast } = useToast();
   const { isAdmin } = useAdmin();
   const { refresh } = useMaintenance();
+  const { tokens, cx } = useThemeTokens();
 
   const [isActive, setIsActive] = useState(false);
   const [messageId, setMessageId] = useState("");
@@ -150,13 +152,13 @@ export const AdminMaintenance: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* ── Global Maintenance Toggle ── */}
-      <div className="bg-slate-900 light_sakura:bg-white p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm space-y-6">
-        <div className="border-b border-slate-800 light_sakura:border-slate-100 pb-5">
-          <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
+      <div className={cx("p-8 rounded-3xl border shadow-sm space-y-6", tokens.surface.card, tokens.border.default)}>
+        <div className={cx("border-b pb-5", tokens.border.default)}>
+          <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
             <Wrench size={24} className="text-amber-500" />
             {t("admin.maintenance_title")}
           </h1>
-          <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1">
+          <p className={cx("text-sm mt-1", tokens.text.muted)}>
             {t("admin.maintenance_desc")}
           </p>
         </div>
@@ -175,10 +177,10 @@ export const AdminMaintenance: React.FC = () => {
               <Power size={20} />
             </div>
             <div>
-              <p className="font-semibold text-white light_sakura:text-slate-900">
+              <p className={cx("font-semibold", tokens.text.primary)}>
                 {t("admin.maintenance_global_toggle_label")}
               </p>
-              <p className="text-xs text-slate-400 light_sakura:text-slate-500">
+              <p className={cx("text-xs", tokens.text.muted)}>
                 {isActive ? t("admin.maintenance_status_on") : t("admin.maintenance_status_off")}
               </p>
             </div>
@@ -200,25 +202,25 @@ export const AdminMaintenance: React.FC = () => {
         {/* Running text message editors */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-2 flex items-center gap-2">
+            <label className={cx("block text-sm font-medium mb-2 flex items-center gap-2", tokens.text.secondary)}>
               <MessageSquareWarning size={16} /> {t("admin.maintenance_message_id_label")}
             </label>
             <textarea
               value={messageId}
               onChange={e => setMessageId(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 rounded-2xl text-sm bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 text-white light_sakura:text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-amber-500 resize-none leading-relaxed"
+              className={cx("w-full px-4 py-3 rounded-2xl text-sm border placeholder-slate-500 focus:ring-2 focus:ring-amber-500 resize-none leading-relaxed", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-2 flex items-center gap-2">
+            <label className={cx("block text-sm font-medium mb-2 flex items-center gap-2", tokens.text.secondary)}>
               <MessageSquareWarning size={16} /> {t("admin.maintenance_message_en_label")}
             </label>
             <textarea
               value={messageEn}
               onChange={e => setMessageEn(e.target.value)}
               rows={3}
-              className="w-full px-4 py-3 rounded-2xl text-sm bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 text-white light_sakura:text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-amber-500 resize-none leading-relaxed"
+              className={cx("w-full px-4 py-3 rounded-2xl text-sm border placeholder-slate-500 focus:ring-2 focus:ring-amber-500 resize-none leading-relaxed", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)}
             />
           </div>
         </div>
@@ -226,7 +228,7 @@ export const AdminMaintenance: React.FC = () => {
         <div className="flex justify-end gap-3">
           <button
             onClick={loadAll}
-            className="px-6 py-3 text-sm font-semibold rounded-xl border border-slate-700 light_sakura:border-slate-200 hover:bg-slate-800 light_sakura:hover:bg-slate-50 text-slate-300 light_sakura:text-slate-600 cursor-pointer flex items-center gap-2"
+            className={cx("px-6 py-3 text-sm font-semibold rounded-xl border cursor-pointer flex items-center gap-2", tokens.text.label, tokens.border.strong, tokens.hover.surface)}
           >
             <RefreshCw size={16} /> {t("admin.refresh")}
           </button>
@@ -240,22 +242,22 @@ export const AdminMaintenance: React.FC = () => {
       </div>
 
       {/* ── Per-feature lock list ── */}
-      <div className="bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm overflow-hidden">
-        <div className="px-8 py-6 border-b border-slate-800 light_sakura:border-slate-100">
-          <p className="font-semibold text-white light_sakura:text-slate-900">
+      <div className={cx("rounded-3xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
+        <div className={cx("px-8 py-6 border-b", tokens.border.default)}>
+          <p className={cx("font-semibold", tokens.text.primary)}>
             {t("admin.maintenance_feature_lock_title")}
           </p>
-          <p className="text-xs text-slate-400 light_sakura:text-slate-500 mt-1">
+          <p className={cx("text-xs mt-1", tokens.text.muted)}>
             {t("admin.maintenance_feature_lock_desc")}
           </p>
 
           {/* Legend header */}
           <div className="flex items-center gap-6 mt-4">
-            <div className="flex items-center gap-2 text-xs text-slate-400 light_sakura:text-slate-500">
+            <div className={cx("flex items-center gap-2 text-xs", tokens.text.muted)}>
               <Lock size={13} className="text-red-400" />
               <span>{t("admin.maintenance_col_lock")}</span>
             </div>
-            <div className="flex items-center gap-2 text-xs text-slate-400 light_sakura:text-slate-500">
+            <div className={cx("flex items-center gap-2 text-xs", tokens.text.muted)}>
               <FlaskConical size={13} className="text-violet-400" />
               <span>{t("admin.maintenance_col_sandbox_bypass")}</span>
             </div>
@@ -277,11 +279,11 @@ export const AdminMaintenance: React.FC = () => {
                   {feature.is_locked ? <Lock size={18} /> : <Unlock size={18} />}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white light_sakura:text-slate-900 truncate">
+                  <p className={cx("text-sm font-semibold truncate", tokens.text.primary)}>
                     {getFeatureLabel(feature.feature_key)}
                   </p>
-                  <p className="text-xs text-slate-400 light_sakura:text-slate-500 mt-0.5">
-                    <code className="text-slate-500 light_sakura:text-slate-400 text-[clamp(0.5625rem,2.6vw,0.625rem)]">
+                  <p className={cx("text-xs mt-0.5", tokens.text.muted)}>
+                    <code className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.text.faint)}>
                       {feature.feature_key}
                     </code>
                   </p>

@@ -17,6 +17,7 @@ import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { Input } from "../components/ui/Input";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 export const Budget: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -24,6 +25,7 @@ export const Budget: React.FC = () => {
   const { showToast } = useToast();
   const { categories, loading: loadingCategories } = useCategories();
   const { budgets, loading: loadingBudgets, error: budgetsError, refresh } = useBudgets(user?.id);
+  const { tokens, cx } = useThemeTokens();
 
   // Hanya kategori expense/both yang relevan untuk budget pengeluaran
   const expenseCategories = categories.filter((c) => c.type === "expense" || c.type === "both");
@@ -190,20 +192,20 @@ export const Budget: React.FC = () => {
   const statusBadge = (status: "safe" | "warning" | "danger") => {
     if (status === "danger") {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-600">
+        <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-red-500/15 light_sakura:bg-red-50", tokens.text.danger)}>
           <AlertTriangle size={12} /> {t("budget.status_danger")}
         </span>
       );
     }
     if (status === "warning") {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-amber-500/15 text-amber-400 light_sakura:bg-amber-50 light_sakura:text-amber-600">
+        <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-amber-500/15 light_sakura:bg-amber-50", tokens.text.warning)}>
           <AlertTriangle size={12} /> {t("budget.status_warning")}
         </span>
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-600">
+      <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-emerald-500/15 light_sakura:bg-emerald-50", tokens.text.success)}>
         <CheckCircle2 size={12} /> {t("budget.status_safe")}
       </span>
     );
@@ -220,7 +222,7 @@ export const Budget: React.FC = () => {
           border-slate-900 (identik dgn bg-slate-900 sehingga border tidak
           kelihatan sama sekali) dan tanpa accent stripe -- beda sendiri dari
           semua halaman list lainnya. */}
-      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 transition-colors duration-300 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
+      <div className={cx("rounded-3xl border border-slate-800/60 transition-colors duration-300 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}>
       {/* Accent stripe */}
       <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
       <div className="p-6 md:p-8 space-y-6">
@@ -228,14 +230,14 @@ export const Budget: React.FC = () => {
       {/* Header */}
       <div className="flex items-start justify-between gap-3.5 flex-wrap border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:text-rose-500 shrink-0">
+          <div className={cx("w-11 h-11 rounded-2xl bg-indigo-500/10 flex items-center justify-center light_sakura:bg-rose-500/10 shrink-0", tokens.icon.accent)}>
             <PiggyBank size={22} />
           </div>
           <div>
-            <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
               {t("budget.page_title")}
             </h1>
-            <p className="text-xs text-slate-400 light_sakura:text-slate-600 mt-0.5 max-w-xl leading-relaxed">
+            <p className={cx("text-xs mt-0.5 max-w-xl leading-relaxed", tokens.text.mutedAlt)}>
               {t("budget.page_subtitle")}
             </p>
           </div>
@@ -255,7 +257,7 @@ export const Budget: React.FC = () => {
       </div>
 
       {loading ? (
-        <div className="text-sm text-slate-400 light_sakura:text-slate-500">…</div>
+        <div className={cx("text-sm", tokens.text.muted)}>…</div>
       ) : budgetsError ? (
         <ErrorState onRetry={refresh} />
       ) : expenseCategories.length === 0 ? (
@@ -355,11 +357,11 @@ export const Budget: React.FC = () => {
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl outline-none text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
+              className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl outline-none light_sakura:bg-rose-50/90 light_sakura:border-rose-100", tokens.text.onSurface)}
             >
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="rounded-full p-2.5 bg-indigo-500/15 text-indigo-400 light_sakura:bg-indigo-50 light_sakura:text-indigo-600">
+                  <div className={cx("rounded-full p-2.5 bg-indigo-500/15 light_sakura:bg-indigo-50", tokens.text.accentStrong)}>
                     <PiggyBank size={20} />
                   </div>
                   <h3 className="font-sans text-lg font-semibold tracking-tight">
@@ -376,7 +378,7 @@ export const Budget: React.FC = () => {
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-medium text-slate-400 light_sakura:text-slate-500 block mb-1.5">
+                  <label className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-medium block mb-1.5", tokens.text.muted)}>
                     {t("budget.select_category_label")}
                   </label>
                   <DropdownField

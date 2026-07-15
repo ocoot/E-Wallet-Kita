@@ -4,6 +4,7 @@ import { UserProfile } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import {
   X, Shield, Ban, Crown, Mail, MessageCircle, Calendar, Hash, Wallet, TrendingUp, TrendingDown
 } from "lucide-react";
@@ -24,6 +25,7 @@ interface Props {
 
 export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
   const { t, locale } = useLanguage();
+  const { tokens, cx } = useThemeTokens();
   const [detail, setDetail] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -106,7 +108,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
         role="dialog"
         aria-modal="true"
         tabIndex={-1}
-        className="relative z-10 w-full max-w-md my-auto max-h-[85vh] flex flex-col bg-slate-950 border border-slate-800 rounded-3xl shadow-2xl overflow-hidden outline-none light_sakura:bg-rose-50/95 light_sakura:border-rose-100">
+        className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] flex flex-col bg-slate-950 border rounded-3xl shadow-2xl overflow-hidden outline-none light_sakura:bg-rose-50/95", tokens.border.accent)}>
 
         {/* Header */}
         <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-800/60 bg-slate-900/50 light_sakura:border-rose-100/60 light_sakura:bg-rose-100/20">
@@ -115,14 +117,14 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
               {user.display_name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h2 className="font-black text-sm text-white light_sakura:text-slate-800">{user.display_name}</h2>
-              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-400 font-mono light_sakura:text-slate-500">{user.id.slice(0, 16)}...</p>
+              <h2 className={cx("font-black text-sm", tokens.text.onSurface)}>{user.display_name}</h2>
+              <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-mono", tokens.text.muted)}>{user.id.slice(0, 16)}...</p>
             </div>
           </div>
           <button
             onClick={onClose}
             aria-label="Tutup"
-            className="p-2 rounded-xl hover:bg-slate-800 text-slate-400 cursor-pointer transition-colors light_sakura:hover:bg-rose-200/40 light_sakura:text-slate-500"
+            className={cx("p-2 rounded-xl hover:bg-slate-800 cursor-pointer transition-colors light_sakura:hover:bg-rose-200/40", tokens.text.muted)}
           >
             <X size={16} />
           </button>
@@ -176,12 +178,12 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
 
             {/* Stats Summary */}
             <div>
-              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase tracking-wider text-slate-400 mb-2 light_sakura:text-slate-500">
+              <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase tracking-wider mb-2", tokens.text.muted)}>
                 {t("admin.transaction_stats_title")}
               </p>
               <div className="grid grid-cols-3 gap-3">
                 <StatCard
-                  icon={<Wallet size={14} className="text-slate-400 light_sakura:text-slate-500" />}
+                  icon={<Wallet size={14} className={cx(tokens.text.muted)} />}
                   label={t("admin.stats_count")}
                   value={String(detail.totalTransactions)}
                   color="text-slate-300 light_sakura:text-slate-700"
@@ -221,21 +223,27 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
   );
 };
 
-const InfoRow: React.FC<{ icon: React.ReactNode; label: string; value: string; mono?: boolean }> = ({ icon, label, value, mono }) => (
+const InfoRow: React.FC<{ icon: React.ReactNode; label: string; value: string; mono?: boolean }> = ({ icon, label, value, mono }) => {
+  const { tokens, cx } = useThemeTokens();
+  return (
   <div className="flex items-start justify-between gap-4">
-    <div className="flex items-center gap-1.5 text-slate-500 shrink-0 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mt-0.5 light_sakura:text-slate-400">
+    <div className={cx("flex items-center gap-1.5 shrink-0 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mt-0.5", tokens.text.faint)}>
       {icon} {label}
     </div>
     <span className={`text-xs text-slate-300 text-right break-all light_sakura:text-slate-700 ${mono ? "font-mono text-[clamp(0.5625rem,2.6vw,0.625rem)]" : ""}`}>
       {value}
     </span>
   </div>
-);
+  );
+};
 
-const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: string; color: string }> = ({ icon, label, value, color }) => (
-  <div className="rounded-xl bg-slate-900 border border-slate-800 p-3 text-center light_sakura:bg-white light_sakura:border-rose-100">
+const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: string; color: string }> = ({ icon, label, value, color }) => {
+  const { tokens, cx } = useThemeTokens();
+  return (
+  <div className={cx("rounded-xl border p-3 text-center", tokens.surface.card, tokens.border.accent)}>
     <div className="flex justify-center mb-1">{icon}</div>
     <p className={`font-black text-xs ${color} leading-tight`}>{value}</p>
-    <p className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-500 mt-0.5 light_sakura:text-slate-400">{label}</p>
+    <p className={cx("text-[clamp(0.5062rem,2.34vw,0.5625rem)] mt-0.5", tokens.text.faint)}>{label}</p>
   </div>
-);
+  );
+};

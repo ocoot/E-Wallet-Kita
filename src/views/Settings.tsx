@@ -523,7 +523,7 @@ export const Settings: React.FC<SettingsProps> = ({
     <div className="max-w-3xl mx-auto space-y-5 pb-24">
       
       {/* Main Card */}
-      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
+      <div className={cx("rounded-3xl border border-slate-800/60 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
         
@@ -612,7 +612,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+                className={cx("w-full bg-slate-950 border rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:text-slate-800", tokens.border.accent)}
               />
             </div>
 
@@ -651,7 +651,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 leftIcon={<Lock size={14} />}
-                className="bg-slate-950 border-slate-800 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-100"
+                className={cx("bg-slate-950 text-xs light_sakura:bg-slate-50", tokens.border.accent)}
                 rightElement={
                   <button
                     type="button"
@@ -675,7 +675,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 leftIcon={<Key size={14} />}
-                className="bg-slate-950 border-slate-800 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-100"
+                className={cx("bg-slate-950 text-xs light_sakura:bg-slate-50", tokens.border.accent)}
                 rightElement={
                   <button
                     type="button"
@@ -699,7 +699,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                 leftIcon={<Key size={14} />}
-                className="bg-slate-950 border-slate-800 text-xs light_sakura:bg-slate-50 light_sakura:border-rose-100"
+                className={cx("bg-slate-950 text-xs light_sakura:bg-slate-50", tokens.border.accent)}
                 rightElement={
                   <button
                     type="button"
@@ -884,7 +884,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   type="button"
                   onClick={handleExportMyData}
                   disabled={isExportingData}
-                  className="w-full cursor-pointer border border-slate-700 bg-slate-900 hover:bg-slate-800 py-2.5 rounded-xl font-sans text-xs font-semibold text-slate-200 tracking-tight transition-all disabled:opacity-50 flex items-center justify-center gap-2 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                  className={cx("w-full cursor-pointer border border-slate-700 hover:bg-slate-800 py-2.5 rounded-xl font-sans text-xs font-semibold text-slate-200 tracking-tight transition-all disabled:opacity-50 flex items-center justify-center gap-2 light_sakura:border-rose-200 light_sakura:text-slate-700", tokens.surface.card)}
                 >
                   <Download size={13} />
                   <span>{isExportingData ? t("common.loading") : t("settings.privacy_export_button")}</span>

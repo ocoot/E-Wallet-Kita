@@ -155,7 +155,7 @@ export const Onboarding: React.FC = () => {
         </div>
         <button
           onClick={() => setSoundEnabled(!soundEnabled)}
-          className="p-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-300 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:hover:bg-rose-50/50 light_sakura:text-rose-600 transition-colors"
+          className={cx("p-2 rounded-xl border hover:bg-slate-800 text-slate-300 light_sakura:hover:bg-rose-50/50 light_sakura:text-rose-600 transition-colors", tokens.surface.card, tokens.border.accent)}
           title="Toggle Onboarding Sound"
         >
           {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
@@ -191,7 +191,7 @@ export const Onboarding: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="bg-slate-950/40 rounded-2xl p-4 border border-slate-800/50 text-left space-y-3 max-w-md mx-auto light_sakura:bg-rose-50/30 light_sakura:border-rose-100">
+                <div className={cx("rounded-2xl p-4 border border-slate-800/50 text-left space-y-3 max-w-md mx-auto light_sakura:border-rose-100", tokens.surface.sunken)}>
                   <div className={cx("flex items-start gap-3 text-sm", tokens.text.secondary)}>
                     <span className="flex-shrink-0">{t("onboarding.welcome_point_1")}</span>
                   </div>
@@ -244,7 +244,7 @@ export const Onboarding: React.FC = () => {
                             value={practiceAmount}
                             onChange={(e) => setPracticeAmount(e.target.value)}
                             disabled={hasPracticedCatat}
-                            className="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-900 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:focus:border-rose-400 disabled:opacity-50"
+                            className={cx("w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-800 text-white focus:outline-none focus:border-indigo-500 light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:focus:border-rose-400 disabled:opacity-50", tokens.surface.card)}
                           />
                         </div>
                       </div>
@@ -279,7 +279,7 @@ export const Onboarding: React.FC = () => {
                         value={practiceNote}
                         onChange={(e) => setPracticeNote(e.target.value)}
                         disabled={hasPracticedCatat}
-                        className="w-full px-3 py-2 text-sm rounded-xl border border-slate-800 bg-slate-900 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:focus:border-rose-400 disabled:opacity-50"
+                        className={cx("w-full px-3 py-2 text-sm rounded-xl border border-slate-800 text-white focus:outline-none focus:border-indigo-500 light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:focus:border-rose-400 disabled:opacity-50", tokens.surface.card)}
                       />
                     </div>
 
@@ -347,7 +347,7 @@ export const Onboarding: React.FC = () => {
                     transition={{ duration: 0.4, delay: 0.4 }}
                     className="flex justify-start"
                   >
-                    <div className="max-w-[75%] bg-slate-900 border border-slate-800 text-slate-200 text-xs sm:text-sm px-3.5 py-2 rounded-2xl rounded-tl-sm shadow-sm light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-700">
+                    <div className={cx("max-w-[75%] border text-slate-200 text-xs sm:text-sm px-3.5 py-2 rounded-2xl rounded-tl-sm shadow-sm light_sakura:text-slate-700", tokens.surface.card, tokens.border.accent)}>
                       {t("onboarding.telegram_mock_bot_reply")}
                     </div>
                   </motion.div>
@@ -424,7 +424,7 @@ export const Onboarding: React.FC = () => {
                         placeholder={t("history.search_placeholder")}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-800 bg-slate-900 text-white focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-800"
+                        className={cx("w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-800 text-white focus:outline-none focus:border-indigo-500 light_sakura:border-rose-200 light_sakura:text-slate-800", tokens.surface.card)}
                       />
                     </div>
 
@@ -536,7 +536,7 @@ export const Onboarding: React.FC = () => {
                     { label: "BCA", amount: "Rp2.100.000" },
                     { label: t("wallet.group_cash"), amount: "Rp50.000" },
                   ].map((w, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
+                    <div key={i} className={cx("flex items-center justify-between p-3 rounded-xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 light_sakura:bg-rose-50 light_sakura:text-rose-500">
                           <Wallet size={14} />
@@ -585,7 +585,7 @@ export const Onboarding: React.FC = () => {
                   </h3>
 
                   <div className="space-y-4">
-                    <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
+                    <div className={cx("p-4 rounded-xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
                       <div className="flex justify-between items-center mb-2">
                         <span className={cx("text-sm font-semibold", tokens.text.onSurface)}>{t("categories.food_drink")}</span>
                         <span className="text-xs text-rose-400 font-mono">85%</span>
@@ -647,7 +647,7 @@ export const Onboarding: React.FC = () => {
                     {t("onboarding.catat_practice_title")} (Simulasi)
                   </h3>
 
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
+                  <div className={cx("p-4 rounded-xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
                     <div className="flex justify-between items-center mb-2">
                       <span className={cx("text-sm font-semibold", tokens.text.onSurface)}>{t("onboarding.savings_mock_pocket_name")}</span>
                       <span className="text-xs text-emerald-400 light_sakura:text-rose-500 font-mono">35%</span>
@@ -752,7 +752,7 @@ export const Onboarding: React.FC = () => {
                     {t("onboarding.catat_practice_title")} (Simulasi)
                   </h3>
 
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
+                  <div className={cx("p-4 rounded-xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
                     <div className="flex justify-between items-center mb-2">
                       <span className={cx("text-sm font-semibold", tokens.text.onSurface)}>{t("onboarding.installments_mock_name")}</span>
                       <span className="text-xs text-slate-400 font-mono">8/24 {t("onboarding.installments_mock_unit")}</span>
@@ -804,7 +804,7 @@ export const Onboarding: React.FC = () => {
                     {t("onboarding.catat_practice_title")} (Simulasi)
                   </h3>
 
-                  <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm relative overflow-hidden">
+                  <div className={cx("p-4 rounded-xl border shadow-sm relative overflow-hidden", tokens.surface.card, tokens.border.accent)}>
                     <div className="absolute top-0 right-0 p-2">
                       <span className="px-2 py-0.5 rounded text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold bg-rose-500/20 text-rose-400 light_sakura:bg-rose-50 light_sakura:text-rose-600">
                         {t("bill_reminders.status_due_soon")}

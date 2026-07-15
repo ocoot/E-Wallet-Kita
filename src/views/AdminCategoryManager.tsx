@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ErrorState } from "../components/ErrorState";
@@ -25,6 +26,7 @@ export const AdminCategoryManager: React.FC = () => {
   const { showToast } = useToast();
   const { t, locale } = useLanguage();
   const { isAdmin } = useAdmin();
+  const { tokens, cx } = useThemeTokens();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [categoriesError, setCategoriesError] = useState(false);
@@ -155,21 +157,21 @@ export const AdminCategoryManager: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header Wrapped in One Card Container */}
-      <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+      <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
               <Tag className="text-purple-500" size={24} />
               {t("admin.category_manager_title")}
             </h1>
-            <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1">
+            <p className={cx("text-sm mt-1", tokens.text.muted)}>
               {t("admin.category_manager_desc")}
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={loadCategories}
-              className="p-2 rounded-xl border border-slate-700 light_sakura:border-slate-200 hover:bg-slate-800 light_sakura:hover:bg-slate-50 text-slate-300 light_sakura:text-slate-600 cursor-pointer transition-colors"
+              className={cx("p-2 rounded-xl border cursor-pointer transition-colors", tokens.text.label, tokens.border.strong, tokens.hover.surface)}
             >
               <RefreshCw size={16} />
             </button>
@@ -185,13 +187,13 @@ export const AdminCategoryManager: React.FC = () => {
 
       {/* Add Form */}
       {showAddForm && (
-        <div className="bg-slate-900 light_sakura:bg-white p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm space-y-6">
-          <h3 className="font-semibold text-white light_sakura:text-slate-800">{t("admin.add_category_title")}</h3>
+        <div className={cx("p-8 rounded-3xl border shadow-sm space-y-6", tokens.surface.card, tokens.border.default)}>
+          <h3 className={cx("font-semibold", tokens.text.onSurface)}>{t("admin.add_category_title")}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputField label={t("admin.key_label")} value={addForm.key}
               onChange={v => setAddForm(f => ({ ...f, key: v }))} placeholder="e.g., transport_online" />
             <div>
-              <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-1.5">{t("admin.type_label")}</label>
+              <label className={cx("block text-sm font-medium mb-1.5", tokens.text.secondary)}>{t("admin.type_label")}</label>
               <DropdownField
                 value={addForm.type}
                 onChange={(v) => setAddForm(f => ({ ...f, type: v }))}
@@ -215,7 +217,7 @@ export const AdminCategoryManager: React.FC = () => {
           </div>
           <div className="flex gap-2 justify-end">
             <button onClick={() => setShowAddForm(false)}
-              className="px-6 py-3 text-sm font-semibold rounded-xl text-slate-400 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 cursor-pointer">
+              className={cx("px-6 py-3 text-sm font-semibold rounded-xl cursor-pointer", tokens.text.mutedAlt, tokens.hover.surface)}>
               {t("admin.cancel_btn")}
             </button>
             <button onClick={handleAdd}
@@ -228,14 +230,14 @@ export const AdminCategoryManager: React.FC = () => {
 
       {/* Category List */}
       {loading ? (
-        <div className="py-16 text-center text-slate-400 light_sakura:text-slate-500 text-sm">{t("admin.loading")}</div>
+        <div className={cx("py-16 text-center text-sm", tokens.text.muted)}>{t("admin.loading")}</div>
       ) : categoriesError ? (
         <ErrorState onRetry={loadCategories} />
       ) : (
-        <div className="rounded-3xl border border-slate-800 light_sakura:border-slate-100 bg-slate-900 light_sakura:bg-white shadow-sm overflow-hidden">
+        <div className={cx("rounded-3xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
           <ScrollableTableWrapper>
-            <table className="w-full text-left text-sm text-slate-300 light_sakura:text-slate-600 min-w-[900px]">
-              <thead className="bg-slate-800 light_sakura:bg-slate-50 text-slate-400 light_sakura:text-slate-500 uppercase text-xs">
+            <table className={cx("w-full text-left text-sm min-w-[900px]", tokens.text.label)}>
+              <thead className={cx("uppercase text-xs", tokens.text.muted, tokens.surface.subtle)}>
                 <tr>
                   <th className="px-6 py-4">Priority</th>
                   <th className="px-6 py-4">{t("admin.table_key_col")}</th>
@@ -253,29 +255,29 @@ export const AdminCategoryManager: React.FC = () => {
                     <td className="px-6 py-4">
                       {editingKey === cat.key ? (
                         <input type="number" value={editForm.priority} onChange={e => setEditForm(f => ({ ...f, priority: Number(e.target.value) || 0 }))}
-                          className="w-16 px-2 py-1 text-xs bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 rounded text-white light_sakura:text-slate-900" />
+                          className={cx("w-16 px-2 py-1 text-xs border rounded", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)} />
                       ) : (
                         <span className="text-xs text-slate-500">{cat.priority}</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 font-mono text-xs text-slate-400 light_sakura:text-slate-500">{cat.key}</td>
+                    <td className={cx("px-6 py-4 font-mono text-xs", tokens.text.muted)}>{cat.key}</td>
 
                     {editingKey === cat.key ? (
                       <>
                         <td className="px-6 py-4">
                           <input value={editForm.label_id} onChange={e => setEditForm(f => ({ ...f, label_id: e.target.value }))}
-                            className="w-full px-3 py-2 text-sm bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 rounded-xl text-white light_sakura:text-slate-900 focus:ring-2 focus:ring-indigo-500" />
+                            className={cx("w-full px-3 py-2 text-sm border rounded-xl focus:ring-2 focus:ring-indigo-500", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)} />
                         </td>
                         <td className="px-6 py-4">
                           <input value={editForm.label_en} onChange={e => setEditForm(f => ({ ...f, label_en: e.target.value }))}
-                            className="w-full px-3 py-2 text-sm bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 rounded-xl text-white light_sakura:text-slate-900 focus:ring-2 focus:ring-indigo-500" />
+                            className={cx("w-full px-3 py-2 text-sm border rounded-xl focus:ring-2 focus:ring-indigo-500", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)} />
                         </td>
                         <td className="px-6 py-4">
                           <div className="space-y-1">
                             <input placeholder="ID" value={editForm.description_id} onChange={e => setEditForm(f => ({ ...f, description_id: e.target.value }))}
-                              className="w-full px-2 py-1 text-xs bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 rounded text-white light_sakura:text-slate-900" />
+                              className={cx("w-full px-2 py-1 text-xs border rounded", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)} />
                             <input placeholder="EN" value={editForm.description_en} onChange={e => setEditForm(f => ({ ...f, description_en: e.target.value }))}
-                              className="w-full px-2 py-1 text-xs bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 rounded text-white light_sakura:text-slate-900" />
+                              className={cx("w-full px-2 py-1 text-xs border rounded", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)} />
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -299,11 +301,11 @@ export const AdminCategoryManager: React.FC = () => {
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button onClick={() => saveEdit(cat.key)}
-                              className="p-2 rounded-xl bg-emerald-950/40 light_sakura:bg-emerald-50 text-emerald-400 light_sakura:text-emerald-600 hover:bg-emerald-950/60 light_sakura:hover:bg-emerald-100 cursor-pointer">
+                              className={cx("p-2 rounded-xl bg-emerald-950/40 light_sakura:bg-emerald-50 hover:bg-emerald-950/60 light_sakura:hover:bg-emerald-100 cursor-pointer", tokens.text.success)}>
                               <Check size={16} />
                             </button>
                             <button onClick={() => setEditingKey(null)}
-                              className="p-2 rounded-xl bg-slate-800 light_sakura:bg-slate-100 text-slate-400 light_sakura:text-slate-600 hover:bg-slate-700 light_sakura:hover:bg-slate-200 cursor-pointer">
+                              className={cx("p-2 rounded-xl bg-slate-800 light_sakura:bg-slate-100 hover:bg-slate-700 light_sakura:hover:bg-slate-200 cursor-pointer", tokens.text.mutedAlt)}>
                               <X size={16} />
                             </button>
                           </div>
@@ -311,13 +313,13 @@ export const AdminCategoryManager: React.FC = () => {
                       </>
                     ) : (
                       <>
-                        <td className="px-6 py-4 text-sm text-white light_sakura:text-slate-900">{cat.label_id || "—"}</td>
-                        <td className="px-6 py-4 text-sm text-slate-400 light_sakura:text-slate-500">{cat.label_en || "—"}</td>
+                        <td className={cx("px-6 py-4 text-sm", tokens.text.primary)}>{cat.label_id || "—"}</td>
+                        <td className={cx("px-6 py-4 text-sm", tokens.text.muted)}>{cat.label_en || "—"}</td>
                         <td className="px-6 py-4 text-xs text-slate-500 truncate max-w-[150px]" title={cat.description_id || ""}>
                           {cat.description_id || "—"}
                         </td>
                         <td className="px-6 py-4">
-                          <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 light_sakura:bg-slate-100 text-slate-400 light_sakura:text-slate-600 capitalize">
+                          <span className={cx("px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 light_sakura:bg-slate-100 capitalize", tokens.text.mutedAlt)}>
                             {cat.type}
                           </span>
                         </td>
@@ -328,7 +330,7 @@ export const AdminCategoryManager: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <button onClick={() => startEdit(cat)}
-                            className="p-2 rounded-xl border border-slate-700 light_sakura:border-slate-200 text-slate-400 light_sakura:text-slate-500 hover:bg-slate-800 light_sakura:hover:bg-slate-50 cursor-pointer transition-colors">
+                            className={cx("p-2 rounded-xl border cursor-pointer transition-colors", tokens.text.muted, tokens.border.strong, tokens.hover.surface)}>
                             <Pencil size={16} />
                           </button>
                         </td>
@@ -375,15 +377,15 @@ export const AdminCategoryManager: React.FC = () => {
                 <button
                   disabled={page === 0}
                   onClick={() => setPage(p => p - 1)}
-                  className="p-2 rounded-xl bg-slate-900 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                  className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
                 >
                   <ChevronLeft size={14} />
                 </button>
-                <span className="font-medium text-white light_sakura:text-slate-800">{page + 1} / {Math.ceil(categories.length / pageSize)}</span>
+                <span className={cx("font-medium", tokens.text.onSurface)}>{page + 1} / {Math.ceil(categories.length / pageSize)}</span>
                 <button
                   disabled={(page + 1) * pageSize >= categories.length}
                   onClick={() => setPage(p => p + 1)}
-                  className="p-2 rounded-xl bg-slate-900 light_sakura:bg-white border border-slate-800 light_sakura:border-slate-200 text-slate-300 light_sakura:text-slate-600 hover:bg-slate-800 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                  className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
                 >
                   <ChevronRight size={14} />
                 </button>
@@ -402,14 +404,15 @@ export const AdminCategoryManager: React.FC = () => {
 };
 
 const InputField: React.FC<{ label: string; value: string; onChange: (v: string) => void; placeholder?: string }> = ({ label, value, onChange, placeholder }) => {
+  const { tokens, cx } = useThemeTokens();
   return (
     <div>
-      <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-1.5">{label}</label>
+      <label className={cx("block text-sm font-medium mb-1.5", tokens.text.secondary)}>{label}</label>
       <input
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full px-4 py-3 rounded-xl border border-slate-700 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-slate-50 text-white light_sakura:text-slate-900 focus:ring-2 focus:ring-indigo-500 placeholder-slate-500"
+        className={cx("w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-indigo-500 placeholder-slate-500", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)}
       />
     </div>
   );

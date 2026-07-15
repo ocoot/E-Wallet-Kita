@@ -7,6 +7,7 @@ import { audioFeedback } from "../lib/audio";
 import type { VoiceParsedResult } from "./VoiceRecorder";
 import { DropdownField } from "./DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 export type VoiceModalStatus = "processing" | "error" | "success" | null;
 
@@ -35,6 +36,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
 }) => {
   const { t, locale } = useLanguage();
   const { categories } = useCategories();
+  const { tokens, cx } = useThemeTokens();
 
   // ── Editable local state, disinkronkan ulang setiap kali draft baru masuk ──
   const [type, setType] = useState<"income" | "expense">("expense");
@@ -106,9 +108,9 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               transition={{ type: "spring", duration: 0.3 }}
-              className="relative z-10 w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-8 shadow-2xl bg-slate-900 border-indigo-500/20 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-rose-100 flex flex-col items-center text-center space-y-4"
+              className={cx("relative z-10 w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-8 shadow-2xl border-indigo-500/20 light_sakura:border-rose-100 flex flex-col items-center text-center space-y-4", tokens.text.onSurface, tokens.surface.card)}
             >
-              <div className="p-3.5 rounded-full bg-indigo-500/10 text-indigo-400 light_sakura:bg-rose-50 light_sakura:text-rose-500">
+              <div className={cx("p-3.5 rounded-full bg-indigo-500/10 light_sakura:bg-rose-50", tokens.icon.accent)}>
                 <Loader2 className="animate-spin" size={28} />
               </div>
               <div className="space-y-1.5">
@@ -129,7 +131,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               transition={{ type: "spring", duration: 0.3 }}
-              className="relative z-10 w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl bg-slate-900 border-red-500/30 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-red-200"
+              className={cx("relative z-10 w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl border-red-500/30 light_sakura:border-red-200", tokens.text.onSurface, tokens.surface.card)}
             >
               <div className="flex flex-col items-center text-center space-y-4">
                 <div className="p-3.5 rounded-full bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500">
@@ -148,7 +150,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={handleDismiss}
-                  className="flex-1 cursor-pointer py-3 px-4 bg-slate-800 hover:bg-slate-700/80 text-slate-300 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border border-slate-800 light_sakura:bg-slate-100 light_sakura:text-slate-700 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent"
+                  className={cx("flex-1 cursor-pointer py-3 px-4 bg-slate-800 hover:bg-slate-700/80 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border border-slate-800 light_sakura:bg-slate-100 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent", tokens.text.secondary)}
                 >
                   <X size={14} />
                   <span>{t("dashboard.voice_close")}</span>
@@ -174,12 +176,12 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               transition={{ type: "spring", duration: 0.3 }}
-              className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl bg-slate-900 border-indigo-500/20 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-rose-100"
+              className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl border-indigo-500/20 light_sakura:border-rose-100", tokens.text.onSurface, tokens.surface.card)}
             >
               {/* Header */}
               <div className="flex items-center justify-between border-b border-slate-800/80 pb-4 mb-5 light_sakura:border-rose-100/50">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 bg-indigo-500/10 text-indigo-400 rounded-xl light_sakura:bg-rose-50 light_sakura:text-rose-500">
+                  <div className={cx("p-2.5 bg-indigo-500/10 rounded-xl light_sakura:bg-rose-50", tokens.icon.accent)}>
                     <Mic size={20} />
                   </div>
                   <div>
@@ -286,7 +288,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               <div className="flex gap-3">
                 <button
                   onClick={handleDismiss}
-                  className="flex-1 cursor-pointer py-3.5 px-4 bg-slate-800 hover:bg-slate-700/80 text-slate-300 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border border-slate-800 light_sakura:bg-slate-100 light_sakura:text-slate-700 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent"
+                  className={cx("flex-1 cursor-pointer py-3.5 px-4 bg-slate-800 hover:bg-slate-700/80 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border border-slate-800 light_sakura:bg-slate-100 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent", tokens.text.secondary)}
                 >
                   <X size={14} />
                   <span>{t("dashboard.voice_not_correct")}</span>

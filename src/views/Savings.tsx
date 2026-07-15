@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { dbService } from "../lib/db";
 import { useSavings, SavingsPocketWithProgress } from "../hooks/useSavings";
 import { useWallets } from "../hooks/useWallets";
@@ -58,6 +59,7 @@ export const Savings: React.FC = () => {
   const { showToast } = useToast();
   const { pockets, summary, loading, error: pocketsError, refresh } = useSavings(user?.id);
   const { activeWallets } = useWallets();
+  const { tokens, cx } = useThemeTokens();
 
   const [availableBalance, setAvailableBalance] = useState<number | null>(null);
 
@@ -227,9 +229,9 @@ export const Savings: React.FC = () => {
                   : "conic-gradient(rgba(148,163,184,0.25) 360deg, rgba(148,163,184,0.15) 0deg)"
               }}
             >
-              <div className="w-[62px] h-[62px] rounded-full bg-slate-900 light_sakura:bg-white flex flex-col items-center justify-center">
+              <div className={cx("w-[62px] h-[62px] rounded-full flex flex-col items-center justify-center", tokens.surface.card)}>
                 <Icon size={16} className={colorClasses.split(" ")[0]} />
-                {pct != null && <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-300 light_sakura:text-slate-600 mt-0.5">{pct}%</span>}
+                {pct != null && <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold mt-0.5", tokens.text.label)}>{pct}%</span>}
               </div>
             </div>
             {p.is_archived && (
@@ -240,12 +242,12 @@ export const Savings: React.FC = () => {
           </div>
 
           <div>
-            <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{p.name}</p>
+            <p className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>{p.name}</p>
             <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] text-slate-500 mt-0.5">{t(`savings.pocket_type_${p.pocket_type}`)}</p>
           </div>
 
           {p.target_amount != null ? (
-            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold text-slate-300 light_sakura:text-slate-600">{formatIDR(p.current_amount)} <span className="text-slate-500 font-normal">/ {formatIDR(p.target_amount)}</span></p>
+            <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold", tokens.text.label)}>{formatIDR(p.current_amount)} <span className="text-slate-500 font-normal">/ {formatIDR(p.target_amount)}</span></p>
           ) : (
             <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-slate-200 light_sakura:text-slate-700">{formatIDR(p.current_amount)}</p>
           )}
@@ -263,7 +265,7 @@ export const Savings: React.FC = () => {
             </button>
           </div>
           <div className="flex items-center justify-center gap-1.5">
-            <button onClick={() => { audioFeedback.playClick(); openEditForm(p); }} className="p-1.5 rounded-lg bg-slate-700/50 text-slate-400 hover:text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer light_sakura:bg-slate-100 light_sakura:text-slate-500"><Edit2 size={12} /></button>
+            <button onClick={() => { audioFeedback.playClick(); openEditForm(p); }} className={cx("p-1.5 rounded-lg bg-slate-700/50 hover:text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer light_sakura:bg-slate-100", tokens.text.muted)}><Edit2 size={12} /></button>
             <button onClick={() => toggleArchive(p)} disabled={busyId === p.id}
               title={p.is_archived ? t("savings.unarchive_button") : t("savings.archive_button")}
               className="p-1.5 rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors cursor-pointer disabled:opacity-50 light_sakura:bg-amber-50">
@@ -279,16 +281,16 @@ export const Savings: React.FC = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
-      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
+      <div className={cx("rounded-3xl border border-slate-800/60 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-indigo-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">
 
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
-              <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+              <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
                 {t("savings.page_title")}
               </h1>
-              <p className="text-sm text-slate-400 mt-1 light_sakura:text-slate-500 leading-relaxed">
+              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
                 {t("savings.page_subtitle")}
               </p>
             </div>
@@ -301,11 +303,11 @@ export const Savings: React.FC = () => {
           <div className="grid grid-cols-3 gap-2">
             <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-3 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_total_saved")}</span>
-              <p className="font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight text-emerald-400 light_sakura:text-emerald-600">{formatIDR(summary.total_saved)}</p>
+              <p className={cx("font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.success)}>{formatIDR(summary.total_saved)}</p>
             </div>
             <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-3 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_available_balance")}</span>
-              <p className="font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight text-indigo-400 light_sakura:text-indigo-600">{availableBalance != null ? formatIDR(availableBalance) : "-"}</p>
+              <p className={cx("font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.accentStrong)}>{availableBalance != null ? formatIDR(availableBalance) : "-"}</p>
             </div>
             <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-3 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_pocket_count")}</span>
@@ -315,7 +317,7 @@ export const Savings: React.FC = () => {
 
           <div className="flex items-start gap-2.5 rounded-2xl border border-indigo-500/15 bg-indigo-500/5 px-4 py-3 light_sakura:bg-indigo-50/40 light_sakura:border-indigo-100">
             <Info size={14} className="text-indigo-400 light_sakura:text-indigo-500 shrink-0 mt-0.5" />
-            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed text-slate-400 light_sakura:text-slate-600">{t("savings.info_banner_text")}</p>
+            <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed", tokens.text.mutedAlt)}>{t("savings.info_banner_text")}</p>
           </div>
 
           {loading ? (
@@ -348,10 +350,10 @@ export const Savings: React.FC = () => {
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className="w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl">
+              className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl", tokens.surface.card)}>
               <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-indigo-500" />
               <div className="p-6 space-y-4">
-                <h2 className="font-sans font-bold text-lg text-slate-100 light_sakura:text-slate-900">
+                <h2 className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
                   {editTarget ? t("savings.edit_title") : t("savings.add_title")}
                 </h2>
                 <Input
@@ -406,7 +408,7 @@ export const Savings: React.FC = () => {
                   placeholder={t("savings.form_notes_placeholder")}
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeForm} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
+                  <button onClick={closeForm} className={cx("flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer", tokens.text.label)}>{t("common.cancel")}</button>
                   <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 text-white font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/20 disabled:opacity-50 cursor-pointer">{isSaving ? t("common.loading") : t("common.save")}</button>
                 </div>
               </div>
@@ -426,11 +428,11 @@ export const Savings: React.FC = () => {
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className="w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none bg-slate-900 light_sakura:bg-white rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl">
+              className={cx("w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl", tokens.surface.card)}>
               <div className={`h-1 w-full ${moveTarget.direction === "deposit" ? "bg-emerald-500" : "bg-indigo-500"}`} />
               <div className="p-6 space-y-4">
                 <div>
-                  <h2 className="font-sans font-bold text-lg text-slate-100 light_sakura:text-slate-900">
+                  <h2 className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
                     {t(moveTarget.direction === "deposit" ? "savings.deposit_title" : "savings.withdraw_title", { name: moveTarget.pocket.name })}
                   </h2>
                   <p className="text-xs text-slate-400 mt-1">
@@ -467,7 +469,7 @@ export const Savings: React.FC = () => {
                   onChange={e => setMoveNote(e.target.value)}
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeMoveModal} className="flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer">{t("common.cancel")}</button>
+                  <button onClick={closeMoveModal} className={cx("flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer", tokens.text.label)}>{t("common.cancel")}</button>
                   <button onClick={executeMove} disabled={isMoving}
                     className={`flex-1 py-3 rounded-2xl text-white font-semibold text-sm transition-colors shadow-lg disabled:opacity-50 cursor-pointer ${moveTarget.direction === "deposit" ? "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20" : "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/20"}`}>
                     {isMoving ? t("common.loading") : t(moveTarget.direction === "deposit" ? "savings.deposit_button" : "savings.withdraw_button")}

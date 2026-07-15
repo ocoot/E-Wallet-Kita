@@ -27,6 +27,7 @@ import {
 import { motion } from "motion/react";
 import { Modal } from "../components/Modal";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 
 // Import other panel views and components
@@ -48,6 +49,7 @@ export const AdminPanel: React.FC = () => {
   const { showToast } = useToast();
   const { user: currentUser } = useAuth();
   const { isAdmin, isOwner } = useAdmin();
+  const { tokens, cx } = useThemeTokens();
 
   const [activeTab, setActiveTab] = useState<AdminTab>("users");
   const [users, setUsers] = useState<UserProfile[]>([]);
@@ -444,16 +446,16 @@ export const AdminPanel: React.FC = () => {
     <div className="space-y-6">
       
       {/* Upper header section */}
-      <div className="rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm overflow-hidden bg-slate-900 light_sakura:bg-white">
+      <div className={cx("rounded-3xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-              <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
-                <Shield className="text-indigo-400 light_sakura:text-rose-500" />
+              <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
+                <Shield className={cx(tokens.icon.accent)} />
                 <span>{t("nav.admin_panel")}</span>
               </h1>
-              <p className="font-sans text-xs text-slate-400 mt-1 light_sakura:text-slate-500">
+              <p className={cx("font-sans text-xs mt-1", tokens.text.muted)}>
                 {t("admin.panel_desc")}
               </p>
             </div>
@@ -471,7 +473,7 @@ export const AdminPanel: React.FC = () => {
                   fetchUsers();
                   loadMetrics();
                 }}
-                className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                className={cx("px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.secondary)}
               >
                 {t("admin.refresh")}
               </button>
@@ -481,7 +483,7 @@ export const AdminPanel: React.FC = () => {
       </div>
 
       {/* Tab Navigation links */}
-      <div className="bg-slate-900 light_sakura:bg-white px-4 py-3 rounded-2xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+      <div className={cx("px-4 py-3 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="flex gap-1 overflow-x-auto">
           {([
             { key: "users",       label: t("admin.tab_users") },
@@ -516,13 +518,13 @@ export const AdminPanel: React.FC = () => {
       {activeTab === "users" && (
         <>
           {/* Metrics Cards Grid - Wrapped in One Card Container */}
-          <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+          <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 shadow-sm light_sakura:bg-rose-100/10 light_sakura:border-rose-200 space-y-2">
-                <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-slate-400 light_sakura:text-slate-600">
+                <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
                   {t("admin.metrics.total")}
                 </p>
-                <h2 className="font-sans font-black text-2xl text-slate-100 light_sakura:text-slate-900">
+                <h2 className={cx("font-sans font-black text-2xl", tokens.text.heading)}>
                   {metrics.totalUsers}
                 </h2>
                 <div className="h-1 rounded-full bg-slate-800 overflow-hidden light_sakura:bg-rose-100">
@@ -534,7 +536,7 @@ export const AdminPanel: React.FC = () => {
                 <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-amber-400/80 light_sakura:text-amber-600">
                   {t("admin.metrics.premium")}
                 </p>
-                <h2 className="font-sans font-black text-2xl text-amber-400 light_sakura:text-amber-600">
+                <h2 className={cx("font-sans font-black text-2xl", tokens.text.warning)}>
                   {metrics.premiumUsers}
                 </h2>
                 <div className="h-1 rounded-full bg-amber-900/30 overflow-hidden light_sakura:bg-amber-100">
@@ -575,7 +577,7 @@ export const AdminPanel: React.FC = () => {
           </div>
 
           {/* Control panel (Search & filters) - Wrapped in One Card Container */}
-          <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm">
+          <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="relative">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 light_sakura:text-rose-400" size={16} />
@@ -584,7 +586,7 @@ export const AdminPanel: React.FC = () => {
                   placeholder={t("admin.search_placeholder")}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:text-slate-800 light_sakura:placeholder-slate-400"
+                  className={cx("w-full pl-10 pr-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 placeholder-slate-500 focus:outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:placeholder-slate-400", tokens.text.onSurface)}
                 />
               </div>
               
@@ -660,10 +662,10 @@ export const AdminPanel: React.FC = () => {
           )}
 
           {/* Main Users Table - Wrapped in One Card Container */}
-          <div className="bg-slate-900 light_sakura:bg-white p-6 md:p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm overflow-hidden">
+          <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
             {loading ? (
               <div className="py-20 flex flex-col items-center justify-center space-y-3">
-                <Clock className="animate-spin text-indigo-400 light_sakura:text-rose-500" size={32} />
+                <Clock className={cx("animate-spin", tokens.icon.accent)} size={32} />
                 <p className="font-sans text-xs text-slate-400">
                   {t("admin.loading")}
                 </p>
@@ -680,7 +682,7 @@ export const AdminPanel: React.FC = () => {
                 <ScrollableTableWrapper>
                 <table className="w-full text-left border-collapse table-auto min-w-[900px]">
                   <thead>
-                    <tr className="border-b border-slate-800 bg-slate-800/60 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:border-rose-200 light_sakura:text-slate-600">
+                    <tr className={cx("border-b border-slate-800 bg-slate-800/60 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:border-rose-200", tokens.text.mutedAlt)}>
                       <th className="px-4 py-4 w-10">
                         <input
                            type="checkbox"
@@ -725,7 +727,7 @@ export const AdminPanel: React.FC = () => {
                                 {user.display_name.charAt(0).toUpperCase()}
                               </div>
                               <div>
-                                <span className="font-sans font-bold text-xs text-white light_sakura:text-slate-800 block">
+                                <span className={cx("font-sans font-bold text-xs block", tokens.text.onSurface)}>
                                   {user.display_name} {isSelf && t("admin.self_label")}
                                 </span>
                                 <span className="font-mono text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-400 block">
@@ -737,7 +739,7 @@ export const AdminPanel: React.FC = () => {
 
                           {/* Email */}
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center gap-1.5 font-sans text-xs text-slate-300 light_sakura:text-slate-600">
+                            <div className={cx("flex items-center gap-1.5 font-sans text-xs", tokens.text.label)}>
                                <Mail size={12} className="text-slate-500 shrink-0" />
                                <span>{user.email || t("admin.no_email")}</span>
                             </div>
@@ -756,7 +758,7 @@ export const AdminPanel: React.FC = () => {
                                  {t("admin.premium_active")}
                                 </span>
                               ) : (
-                                <span className="px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-slate-800 text-slate-400 border border-slate-700 rounded-lg hover:bg-slate-700/50 inline-flex light_sakura:bg-slate-100 light_sakura:text-slate-600 light_sakura:border-slate-200">
+                                <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700/50 inline-flex light_sakura:bg-slate-100 light_sakura:border-slate-200", tokens.text.mutedAlt)}>
                                   {t("admin.premium_lite")}
                                 </span>
                               )}
@@ -799,7 +801,7 @@ export const AdminPanel: React.FC = () => {
                                   audioFeedback.playClick();
                                   setDetailUser(user);
                                 }}
-                                className="p-1 px-2.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-300 border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                                className={cx("p-1 px-2.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.label)}
                                 title={t("admin.user_detail_title")}
                               >
                                 <User size={10} />
@@ -810,7 +812,7 @@ export const AdminPanel: React.FC = () => {
                               <button
                                 disabled={isSelf || user.role === "owner" || !isOwner}
                                 onClick={() => handleToggleRole(user)}
-                                className="p-1 px-2.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-300 border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                                className={cx("p-1 px-2.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.label)}
                                 title={t("admin.role_title")}
                               >
                                 <Shield size={10} />
@@ -879,7 +881,7 @@ export const AdminPanel: React.FC = () => {
                       audioFeedback.playClick();
                       setPage(p => Math.max(0, p - 1));
                     }}
-                    className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
+                    className={cx("px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white", tokens.text.secondary)}
                   >
                     {t("admin.prev")}
                   </button>
@@ -892,7 +894,7 @@ export const AdminPanel: React.FC = () => {
                       audioFeedback.playClick();
                       setPage(p => p + 1);
                     }}
-                    className="px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/60 hover:bg-slate-900 text-slate-300 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white light_sakura:text-slate-700"
+                    className={cx("px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white", tokens.text.secondary)}
                   >
                     {t("admin.next")}
                   </button>

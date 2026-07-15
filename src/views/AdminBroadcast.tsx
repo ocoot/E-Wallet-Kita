@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { Send, Users, MessageSquare, AlertTriangle, Bell, RefreshCw } from "lucide-react";
@@ -17,6 +18,7 @@ export const AdminBroadcast: React.FC = () => {
   const { showToast } = useToast();
   const { t } = useLanguage();
   const { isAdmin } = useAdmin();
+  const { tokens, cx } = useThemeTokens();
   const [message, setMessage] = useState("");
   const [title, setTitle] = useState("");
   const [channel, setChannel] = useState<BroadcastChannel>("telegram");
@@ -152,21 +154,21 @@ export const AdminBroadcast: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-slate-900 light_sakura:bg-white p-8 rounded-3xl border border-slate-800 light_sakura:border-slate-100 shadow-sm space-y-6">
+      <div className={cx("p-8 rounded-3xl border shadow-sm space-y-6", tokens.surface.card, tokens.border.default)}>
         {/* Header inside Card Container */}
-        <div className="border-b border-slate-800 light_sakura:border-slate-100 pb-5">
-          <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-2">
+        <div className={cx("border-b pb-5", tokens.border.default)}>
+          <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
             <Send className="text-indigo-500" size={24} />
             {t("admin.broadcast_title")}
           </h1>
-          <p className="text-sm text-slate-400 light_sakura:text-slate-500 mt-1">
+          <p className={cx("text-sm mt-1", tokens.text.muted)}>
             {t("admin.broadcast_desc")}
           </p>
         </div>
 
         {/* Channel selector */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-3">
+          <label className={cx("block text-sm font-medium mb-3", tokens.text.secondary)}>
             {t("admin.broadcast_target_label")}
           </label>
           <div className="flex gap-2">
@@ -192,7 +194,7 @@ export const AdminBroadcast: React.FC = () => {
               </button>
             ))}
           </div>
-          <p className="text-xs text-slate-400 light_sakura:text-slate-500 mt-2">
+          <p className={cx("text-xs mt-2", tokens.text.muted)}>
             {t("admin.channel_help_text")}
           </p>
         </div>
@@ -217,7 +219,7 @@ export const AdminBroadcast: React.FC = () => {
             <p className="text-sm font-semibold text-indigo-300">
               {t("admin.update_notif_btn")}
             </p>
-            <p className="text-xs text-slate-400 light_sakura:text-slate-500 truncate">
+            <p className={cx("text-xs truncate", tokens.text.muted)}>
               {t("admin.update_notif_hint")}
             </p>
           </div>
@@ -225,28 +227,28 @@ export const AdminBroadcast: React.FC = () => {
 
         {/* Recipient count indicators */}
         <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 flex items-center gap-3 px-6 py-4 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-100">
+          <div className={cx("flex-1 flex items-center gap-3 px-6 py-4 rounded-2xl border border-slate-700 light_sakura:border-slate-100", tokens.surface.subtle)}>
             <Users className="text-indigo-500 shrink-0" size={24} />
             <div>
-              <p className="text-sm font-semibold text-white light_sakura:text-slate-800">
+              <p className={cx("text-sm font-semibold", tokens.text.onSurface)}>
                 {targetsError ? (
                   <button onClick={loadTargetCounts} className="text-red-400 hover:underline">{t("common.retry")}</button>
                 ) : linkedCount === null ? t("admin.loading") : t("admin.connected_users", { count: linkedCount })}
               </p>
-              <p className="text-xs text-slate-400 light_sakura:text-slate-500">
+              <p className={cx("text-xs", tokens.text.muted)}>
                 {t("admin.connected_users_desc")}
               </p>
             </div>
           </div>
-          <div className="flex-1 flex items-center gap-3 px-6 py-4 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-100">
+          <div className={cx("flex-1 flex items-center gap-3 px-6 py-4 rounded-2xl border border-slate-700 light_sakura:border-slate-100", tokens.surface.subtle)}>
             <Bell className="text-indigo-500 shrink-0" size={24} />
             <div>
-              <p className="text-sm font-semibold text-white light_sakura:text-slate-800">
+              <p className={cx("text-sm font-semibold", tokens.text.onSurface)}>
                 {targetsError ? (
                   <button onClick={loadTargetCounts} className="text-red-400 hover:underline">{t("common.retry")}</button>
                 ) : pushTokenCount === null ? t("admin.loading") : t("admin.push_users_count", { count: pushTokenCount })}
               </p>
-              <p className="text-xs text-slate-400 light_sakura:text-slate-500">
+              <p className={cx("text-xs", tokens.text.muted)}>
                 {t("admin.connected_users_desc")}
               </p>
             </div>
@@ -264,7 +266,7 @@ export const AdminBroadcast: React.FC = () => {
         {/* Push title input (only for push/both channels) */}
         {showPushTitle && (
           <div>
-            <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-2 flex items-center gap-2">
+            <label className={cx("block text-sm font-medium mb-2 flex items-center gap-2", tokens.text.secondary)}>
               <Bell size={16} /> Push Title
             </label>
             <input
@@ -273,14 +275,14 @@ export const AdminBroadcast: React.FC = () => {
               onChange={e => setTitle(e.target.value)}
               placeholder="E-Wallet Kita"
               maxLength={100}
-              className="w-full px-4 py-3 rounded-2xl text-sm bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 text-white light_sakura:text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-indigo-500"
+              className={cx("w-full px-4 py-3 rounded-2xl text-sm border placeholder-slate-500 focus:ring-2 focus:ring-indigo-500", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)}
             />
           </div>
         )}
 
         {/* Body Input */}
         <div>
-          <label className="block text-sm font-medium text-slate-300 light_sakura:text-slate-700 mb-2 flex items-center gap-2">
+          <label className={cx("block text-sm font-medium mb-2 flex items-center gap-2", tokens.text.secondary)}>
             <MessageSquare size={16} /> {t("admin.message_body_label")}
           </label>
           <textarea
@@ -288,10 +290,10 @@ export const AdminBroadcast: React.FC = () => {
             onChange={e => setMessage(e.target.value.slice(0, maxChar))}
             rows={6}
             placeholder={t("admin.message_placeholder")}
-            className="w-full px-4 py-3 rounded-2xl text-sm bg-slate-800 light_sakura:bg-slate-50 border border-slate-700 light_sakura:border-slate-200 text-white light_sakura:text-slate-900 placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 resize-none leading-relaxed"
+            className={cx("w-full px-4 py-3 rounded-2xl text-sm border placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 resize-none leading-relaxed", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)}
           />
           <div className="flex items-center justify-between mt-2">
-            <p className="text-xs text-slate-400 light_sakura:text-slate-500">
+            <p className={cx("text-xs", tokens.text.muted)}>
               {t("admin.markdown_hint")}
             </p>
             <p className={`text-xs font-semibold ${charCount > maxChar * 0.9 ? "text-amber-500 light_sakura:text-amber-600" : "text-slate-400 light_sakura:text-slate-500"}`}>
@@ -302,8 +304,8 @@ export const AdminBroadcast: React.FC = () => {
 
         {/* Live Preview */}
         {message.trim().length > 0 && (
-          <div className="rounded-2xl border border-slate-700 light_sakura:border-slate-100 bg-slate-800 light_sakura:bg-slate-50 p-6">
-            <p className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 mb-3 uppercase tracking-wider">{t("admin.preview_label")}</p>
+          <div className={cx("rounded-2xl border border-slate-700 light_sakura:border-slate-100 p-6", tokens.surface.subtle)}>
+            <p className={cx("text-xs font-semibold mb-3 uppercase tracking-wider", tokens.text.muted)}>{t("admin.preview_label")}</p>
             <div className="text-sm text-slate-200 light_sakura:text-slate-700 whitespace-pre-wrap leading-relaxed font-mono">
              <strong>Pesan dari Admin E-Wallet Kita</strong>{"\n\n"}
               {message.trim()}{"\n\n"}
