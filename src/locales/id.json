@@ -359,7 +359,10 @@
     "profile_update_desc": "Ganti nama tampilan utama Anda menjadi '{name}'?",
     "profile_update_confirm": "Perbarui Nama",
     "delete_item_confirm": "Hapus Log",
-    "review_before_save": "Periksa lagi sebelum disimpan. Semua bisa diedit."
+    "review_before_save": "Periksa lagi sebelum disimpan. Semua bisa diedit.",
+    "duplicate_checking": "Memeriksa kemungkinan transaksi duplikat...",
+    "duplicate_warning_desc": "Transaksi dengan nominal, tanggal, dan catatan yang sama persis sudah pernah disimpan sebelumnya ({time}). Mungkin Anda sudah pernah menyimpan struk ini.",
+    "duplicate_checkbox_label": "Saya yakin ini bukan duplikat, tetap simpan"
   },
   "toast": {
     "error_general": "Terjadi kesalahan internal. Silakan coba kembali.",
@@ -797,6 +800,7 @@
     "backup_col_file": "File",
     "backup_manual": "Manual",
     "backup_scheduled": "Terjadwal",
+    "backup_pre_restore": "Pengaman Restore",
     "backup_col_actions": "Aksi",
     "backup_select_all": "Pilih semua",
     "backup_deleted_badge": "Dihapus",

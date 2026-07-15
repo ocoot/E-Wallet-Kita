@@ -79,6 +79,46 @@ export const dbService = {
     return data as Transaction[];
   },
 
+  // Root cause / why: insiden 15/7/2026 -- ditemukan 9 baris transaksi
+  // untuk 1 struk fisik yang sama (merchant, nominal, tanggal, catatan
+  // identik), tersebar 12 jam, kategori beda-beda tiap percobaan. Bukan
+  // bug teknis (tombol konfirmasi sudah correctly disabled saat isSaving,
+  // jadi bukan double-click race) -- pengguna berulang kali submit ULANG
+  // struk fisik yang SAMA karena tidak yakin percobaan sebelumnya
+  // tersimpan, dan aplikasi tidak pernah memperingatkan "ini mirip
+  // transaksi yang sudah ada". Fungsi ini dipanggil dari layar konfirmasi
+  // (ConfirmTransactionModal) SEBELUM saveTransaction, murni untuk
+  // menampilkan peringatan -- tidak memblokir, karena transaksi mirip yang
+  // memang legitimate (mis. beli kopi 20rb 2x sehari) tetap harus bisa
+  // disimpan tanpa gesekan.
+  async findPossibleDuplicateTransaction(
+    userId: string,
+    amount: number,
+    transactionDate: string,
+    note: string | null
+  ): Promise<Transaction | null> {
+    if (!note || !note.trim()) return null;
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('amount', amount)
+      .eq('transaction_date', transactionDate)
+      .eq('note', note.trim())
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      // Soft-fail: kegagalan cek duplikat TIDAK BOLEH menghalangi pengguna
+      // menyimpan transaksi yang sah -- ini cuma lapisan peringatan.
+      console.error('Error checking possible duplicate transaction:', error);
+      return null;
+    }
+    return (data as Transaction) ?? null;
+  },
+
   async saveTransaction(
     userId: string,
     type: "income" | "expense",

@@ -106,6 +106,11 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   const [receiptDraft, setReceiptDraft] = useState<any>(null);
   const [confirmDraft, setConfirmDraft] = useState<ConfirmTransactionDraft | null>(null);
   const [confirmSource, setConfirmSource] = useState<"manual" | "receipt" | "voice">("manual");
+  // Insiden 15/7/2026: state untuk peringatan transaksi duplikat -- lihat
+  // dbService.findPossibleDuplicateTransaction untuk detail kasusnya.
+  const [duplicateChecking, setDuplicateChecking] = useState(false);
+  const [duplicateWarning, setDuplicateWarning] = useState<{ createdAt: string } | null>(null);
+  const [duplicateAcknowledged, setDuplicateAcknowledged] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Begitu wallet sudah termuat, defaultkan pilihan ke "Saldo Total" (general)
@@ -233,6 +238,33 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     });
   };
 
+  // Insiden 15/7/2026: cek transaksi duplikat setiap kali draft konfirmasi
+  // dibuka atau field kuncinya (nominal/tanggal/catatan) diubah pengguna.
+  // Soft-fail lewat dbService (lihat komentar di sana) -- kalau query cek
+  // gagal, dianggap "tidak ada duplikat" supaya tidak menghalangi simpan.
+  useEffect(() => {
+    let cancelled = false;
+    if (!confirmDraft || !currentUser?.id) {
+      setDuplicateWarning(null);
+      setDuplicateChecking(false);
+      return;
+    }
+    setDuplicateAcknowledged(false);
+    setDuplicateChecking(true);
+    (async () => {
+      const existing = await dbService.findPossibleDuplicateTransaction(
+        currentUser.id,
+        Number(confirmDraft.amount),
+        confirmDraft.date,
+        confirmDraft.note
+      );
+      if (cancelled) return;
+      setDuplicateWarning(existing ? { createdAt: (existing as any).created_at } : null);
+      setDuplicateChecking(false);
+    })();
+    return () => { cancelled = true; };
+  }, [confirmDraft?.amount, confirmDraft?.date, confirmDraft?.note, currentUser?.id]);
+
   const handleExecuteSave = async () => {
     if (!confirmDraft) return;
     const draft = confirmDraft;
@@ -261,6 +293,8 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
       showToast(t("toast.error_general"), "error");
     } finally {
       setIsLoading(false);
+      setDuplicateWarning(null);
+      setDuplicateAcknowledged(false);
     }
   };
 
@@ -561,7 +595,16 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         isSaving={isLoading}
         onChange={setConfirmDraft}
         onConfirm={handleExecuteSave}
-        onCancel={() => { audioFeedback.playClick(); setConfirmDraft(null); }}
+        onCancel={() => {
+          audioFeedback.playClick();
+          setConfirmDraft(null);
+          setDuplicateWarning(null);
+          setDuplicateAcknowledged(false);
+        }}
+        duplicateChecking={duplicateChecking}
+        duplicateWarning={duplicateWarning}
+        duplicateAcknowledged={duplicateAcknowledged}
+        onDuplicateAcknowledgedChange={setDuplicateAcknowledged}
       />
 
       <LoadingOverlay isOpen={isLoading} message={t("common.loading")} />

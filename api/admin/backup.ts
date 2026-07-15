@@ -281,6 +281,7 @@ async function handleRestore(
     storage_path: backupRow.storage_path,
     scope,
     table_names: scope === 'table' ? tableNames.join(',') : '',
+    triggered_by_admin: adminId,
   });
 
   if (!dispatchResult.ok) {

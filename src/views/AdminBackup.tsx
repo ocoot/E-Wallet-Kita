@@ -28,7 +28,7 @@ import {
 interface BackupLogRow {
   id: string;
   status: "running" | "success" | "failed";
-  triggered_by: "cron" | "manual";
+  triggered_by: "cron" | "manual" | "pre_restore";
   file_name: string | null;
   file_size_bytes: number | null;
   storage_provider: string;
@@ -494,7 +494,11 @@ export const AdminBackup: React.FC = () => {
                         )}
                       </td>
                       <td className="py-2.5 pr-4 capitalize text-slate-400 light_sakura:text-slate-500">
-                        {row.triggered_by === "manual" ? t("admin.backup_manual") : t("admin.backup_scheduled")}
+                        {row.triggered_by === "manual"
+                          ? t("admin.backup_manual")
+                          : row.triggered_by === "pre_restore"
+                            ? t("admin.backup_pre_restore")
+                            : t("admin.backup_scheduled")}
                       </td>
                       <td className="py-2.5 pr-4 text-slate-400 light_sakura:text-slate-500 font-mono">
                         {row.file_name || "-"}

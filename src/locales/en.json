@@ -359,7 +359,10 @@
     "profile_update_desc": "Change your display name to '{name}'?",
     "profile_update_confirm": "Update Name",
     "delete_item_confirm": "Delete Log",
-    "review_before_save": "Review before saving. Everything can be edited."
+    "review_before_save": "Review before saving. Everything can be edited.",
+    "duplicate_checking": "Checking for possible duplicate transactions...",
+    "duplicate_warning_desc": "A transaction with the exact same amount, date, and note was already saved earlier ({time}). You may have already saved this receipt.",
+    "duplicate_checkbox_label": "I'm sure this isn't a duplicate, save anyway"
   },
   "toast": {
     "error_general": "Internal error occurred. Please try again.",
@@ -797,6 +800,7 @@
     "backup_col_file": "File",
     "backup_manual": "Manual",
     "backup_scheduled": "Scheduled",
+    "backup_pre_restore": "Pre-Restore Safety",
     "backup_col_actions": "Actions",
     "backup_select_all": "Select all",
     "backup_deleted_badge": "Deleted",

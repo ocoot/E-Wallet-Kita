@@ -41,6 +41,10 @@ on:
         description: "Nama tabel dipisah koma, hanya dipakai jika scope=table"
         required: false
         default: ""
+      triggered_by_admin:
+        description: "UUID admin yang memicu restore (untuk atribusi backup pengaman otomatis)"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -61,6 +65,7 @@ jobs:
       STORAGE_PATH: ${{ github.event.inputs.storage_path }}
       SCOPE: ${{ github.event.inputs.scope }}
       TABLE_NAMES: ${{ github.event.inputs.table_names }}
+      TRIGGERED_BY_ADMIN: ${{ github.event.inputs.triggered_by_admin }}
 
     steps:
       - name: Validasi input scope
@@ -97,6 +102,74 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y -qq "postgresql-client-17=${PG_CLIENT_VERSION}"
           curl -s https://rclone.org/install.sh | sudo bash
+
+      - name: Auto-backup pengaman sebelum restore
+        id: prebackup
+        run: |
+          set -euo pipefail
+          # ═══════════════════════════════════════════════════════════════
+          # LAPISAN PENGAMAN TAMBAHAN (saran pasca insiden 15/7/2026):
+          # SEBELUM restore menyentuh satu baris pun, ambil snapshot segar
+          # dari kondisi database SAAT INI dan upload ke Google Drive dulu.
+          # Kalau restore ternyata masih bermasalah (bug lain yang belum
+          # ketahuan, dump yang dipilih admin ternyata korup, dsb), admin
+          # punya titik pemulihan yang PASTI mencerminkan kondisi tepat
+          # sebelum restore ini dijalankan -- tidak perlu berharap file
+          # backup lain kebetulan masih relevan.
+          #
+          # Step ini SENGAJA tidak pakai `continue-on-error` -- kalau backup
+          # pengaman ini gagal (kredensial rclone bermasalah, koneksi DB
+          # gagal, dll), SELURUH restore dibatalkan (job berhenti di sini).
+          # Lebih baik restore tertunda daripada jalan tanpa jaring pengaman
+          # setelah insiden kehilangan data kemarin.
+          #
+          # pg_dump di sini pakai flag PERSIS SAMA dengan db-backup.yml
+          # (--schema=public + --exclude-table tabel operasional) supaya
+          # konsisten dan tidak ikut membekukan status backup_logs miliknya
+          # sendiri (lihat db-backup.yml untuk penjelasan lengkap kenapa
+          # exclude ini wajib).
+          PG_DUMP=/usr/lib/postgresql/17/bin/pg_dump
+          TS=$(date -u +"%Y%m%d-%H%M%S")
+          FILE_NAME="ewallet-kita-prerestore-${TS}.dump"
+
+          "$PG_DUMP" "${{ secrets.SUPABASE_DB_URL }}" \
+            --no-owner --no-privileges --format=custom --compress=9 \
+            --schema=public \
+            --exclude-table=public.backup_logs \
+            --exclude-table=public.backup_restore_logs \
+            --exclude-table=public.backup_restorable_tables \
+            --exclude-table=public.admin_audit_logs \
+            --exclude-table=public.error_logs \
+            --exclude-table=public.maintenance_settings \
+            --exclude-table=public.maintenance_feature_locks \
+            --exclude-table=public.telegram_processed_updates \
+            --exclude-table=public.telegram_link_attempts \
+            --exclude-table=public.api_rate_limits \
+            --file="$FILE_NAME"
+
+          FILE_SIZE=$(stat -c%s "$FILE_NAME")
+          STORAGE_PATH="ewallet-kita-backups/${FILE_NAME}"
+
+          echo "::notice::Mengunggah backup pengaman ke Google Drive: ${STORAGE_PATH}"
+          rclone copy "$FILE_NAME" "gdrive:ewallet-kita-backups/" --progress
+
+          # Catat sebagai baris backup_logs biasa (triggered_by='pre_restore',
+          # lihat migration 20260819000000) supaya muncul di riwayat Admin
+          # Panel dan bisa dipakai untuk restore manual kalau dibutuhkan --
+          # sama seperti backup manual/terjadwal biasa, cuma sumbernya beda.
+          RESP=$(curl -sS -w "\n%{http_code}" -X POST "${{ secrets.SUPABASE_URL }}/rest/v1/backup_logs" \
+            -H "apikey: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=representation" \
+            -d "{\"status\":\"success\",\"triggered_by\":\"pre_restore\",\"triggered_by_admin\":$( [ -n "$TRIGGERED_BY_ADMIN" ] && echo "\"$TRIGGERED_BY_ADMIN\"" || echo null ),\"file_name\":\"${FILE_NAME}\",\"file_size_bytes\":${FILE_SIZE},\"storage_path\":\"${STORAGE_PATH}\",\"storage_provider\":\"gdrive\",\"finished_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}")
+          HTTP_CODE=$(echo "$RESP" | tail -n1)
+          if [ "$HTTP_CODE" -ge 300 ]; then
+            echo "::warning::Backup pengaman berhasil dibuat & diupload, tapi gagal dicatat ke backup_logs (HTTP $HTTP_CODE). File tetap ada di Google Drive: ${STORAGE_PATH}"
+          fi
+
+          echo "::notice::Backup pengaman selesai: ${STORAGE_PATH} (${FILE_SIZE} bytes). Kalau restore ini bermasalah, file ini bisa dipakai untuk restore ulang ke kondisi SEBELUM restore ini dijalankan."
+          echo "pre_restore_storage_path=${STORAGE_PATH}" >> "$GITHUB_OUTPUT"
 
       - name: Download file backup dari Google Drive
         id: dl
@@ -244,7 +317,7 @@ jobs:
 
           curl -sS -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}" \
-            -d text="✅ Restore database sukses (scope: ${SCOPE}). Maintenance mode dimatikan otomatis."
+            -d text="✅ Restore database sukses (scope: ${SCOPE}). Maintenance mode dimatikan otomatis. Backup pengaman (kondisi SEBELUM restore ini) tersimpan di: ${{ steps.prebackup.outputs.pre_restore_storage_path }}"
 
       - name: Catat status gagal (tetap matikan maintenance mode)
         if: failure()
@@ -255,12 +328,16 @@ jobs:
             -H "Content-Type: application/json" \
             -d "{\"status\":\"failed\",\"error_message\":\"Lihat log GitHub Actions run ${{ github.run_id }}\",\"finished_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"}"
 
-          # Tetap matikan maintenance mode supaya app tidak terkunci selamanya --
-          # TAPI kalau restore FULL gagal di tengah jalan, database bisa dalam
-          # kondisi tidak konsisten (sebagian tabel sudah ke-drop/ke-restore,
-          # sebagian belum). Notifikasi Telegram di bawah SENGAJA dibuat
-          # mencolok supaya admin langsung cek manual, bukan asumsi app aman
-          # dipakai lagi hanya karena maintenance mode sudah mati.
+          # Tetap matikan maintenance mode supaya app tidak terkunci selamanya.
+          # CATATAN (update pasca-fix atomicity 15/7/2026): restore sekarang
+          # DIJAMIN atomik -- DELETE dan INSERT berada dalam SATU transaksi
+          # psql --single-transaction (lihat step "Jalankan restore"). Kalau
+          # step ini gagal, transaksi itu ROLLBACK SELURUHNYA, jadi data yang
+          # ada di database SEBELUM restore ini dijalankan TIDAK IKUT
+          # terhapus/berubah. Beda dengan insiden 15/7/2026 (versi lama yang
+          # DELETE-nya tidak atomik dengan INSERT). Notifikasi di bawah tetap
+          # menyertakan path backup pengaman sebagai referensi tambahan,
+          # bukan karena data live diasumsikan rusak.
           curl -sS -X PATCH "$SUPABASE_URL/rest/v1/maintenance_settings?id=eq.1" \
             -H "apikey: $SUPABASE_SERVICE_ROLE_KEY" \
             -H "Authorization: Bearer $SUPABASE_SERVICE_ROLE_KEY" \
@@ -269,4 +346,4 @@ jobs:
 
           curl -sS -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
             -d chat_id="${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}" \
-            -d text="🚨 RESTORE GAGAL (scope: ${SCOPE})! Cek GitHub Actions run ${{ github.run_id }} SEGERA -- database mungkin dalam kondisi tidak konsisten. Maintenance mode dimatikan otomatis, TAPI sebaiknya nyalakan ulang manual sampai kondisi DB diverifikasi."
+            -d text="🚨 RESTORE GAGAL (scope: ${SCOPE}). Cek GitHub Actions run ${{ github.run_id }} untuk detail error. Restore ini atomik -- data SEBELUM restore seharusnya tidak ikut berubah (rollback penuh). Backup pengaman (kondisi tepat sebelum restore ini) tetap tersimpan di: ${{ steps.prebackup.outputs.pre_restore_storage_path }} kalau dibutuhkan untuk verifikasi/pemulihan manual."

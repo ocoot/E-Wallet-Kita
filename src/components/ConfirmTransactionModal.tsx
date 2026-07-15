@@ -42,6 +42,18 @@ interface ConfirmTransactionModalProps {
   onChange: (draft: ConfirmTransactionDraft) => void;
   onConfirm: () => void;
   onCancel: () => void;
+  // Insiden 15/7/2026: peringatan non-blocking kalau ada transaksi lain
+  // dengan nominal+tanggal+catatan identik. `duplicateChecking` dipakai
+  // untuk menampilkan status "memeriksa..." sekilas supaya tombol Simpan
+  // tidak terasa nge-lag tanpa penjelasan. Kalau duplikat terdeteksi,
+  // pengguna WAJIB centang `duplicateAcknowledged` dulu sebelum tombol
+  // Simpan aktif -- ini sengaja bikin gesekan kecil supaya submit ulang
+  // benar-benar disengaja, bukan diblokir total (transaksi mirip yang
+  // memang sah tetap harus bisa disimpan).
+  duplicateChecking?: boolean;
+  duplicateWarning?: { createdAt: string } | null;
+  duplicateAcknowledged?: boolean;
+  onDuplicateAcknowledgedChange?: (checked: boolean) => void;
 }
 
 export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = ({
@@ -53,6 +65,10 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
   onChange,
   onConfirm,
   onCancel,
+  duplicateChecking,
+  duplicateWarning,
+  duplicateAcknowledged,
+  onDuplicateAcknowledgedChange,
 }) => {
   const { t, locale } = useLanguage();
 
@@ -66,6 +82,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
   const categoryOptions = categories.filter((c) => c.type === draft.type || c.type === "both");
   const activeWallets = wallets.filter((w) => !w.is_archived);
   const formatIDR = (n: number) => "Rp" + Math.round(n || 0).toLocaleString("id-ID");
+  const confirmBlockedByDuplicate = !!duplicateWarning && !duplicateAcknowledged;
 
   const walletLabel = (w: WalletWithBalance) =>
     `${WALLET_TYPE_ICON[w.type]} ${w.name}${w.provider ? " · " + w.provider : ""}`;
@@ -186,6 +203,32 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
             </div>
           </div>
 
+          {duplicateChecking && (
+            <div className="rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-2 mb-3 text-[11px] text-slate-400 flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full border-2 border-slate-500 border-t-transparent animate-spin shrink-0" />
+              {t("confirm.duplicate_checking")}
+            </div>
+          )}
+
+          {duplicateWarning && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 mb-3 space-y-2">
+              <p className="text-[11px] text-amber-400 leading-relaxed">
+                {t("confirm.duplicate_warning_desc", {
+                  time: new Date(duplicateWarning.createdAt).toLocaleString(locale === "id" ? "id-ID" : "en-US"),
+                })}
+              </p>
+              <label className="flex items-start gap-2 text-[11px] text-amber-300 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={!!duplicateAcknowledged}
+                  onChange={(e) => onDuplicateAcknowledgedChange?.(e.target.checked)}
+                  className="mt-0.5 w-3.5 h-3.5 rounded accent-amber-500 cursor-pointer"
+                />
+                {t("confirm.duplicate_checkbox_label")}
+              </label>
+            </div>
+          )}
+
           <div className="flex items-center justify-end gap-3 pt-5">
             <Button
               type="button"
@@ -200,7 +243,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
               type="button"
               variant={isExpense ? "danger" : "success"}
               onClick={onConfirm}
-              disabled={isSaving || !draft.amount || draft.amount <= 0}
+              disabled={isSaving || !draft.amount || draft.amount <= 0 || confirmBlockedByDuplicate}
               isLoading={isSaving}
               className="rounded-xl"
             >
