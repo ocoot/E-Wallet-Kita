@@ -4,6 +4,7 @@ import { AlertTriangle, CheckCircle2, TrendingUp, Flame } from "lucide-react";
 import { BudgetWithProgress } from "../hooks/useBudgets";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Badge, type BadgeTone } from "./ui/Badge";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface BudgetProgressCardProps {
   budget: BudgetWithProgress;
@@ -84,6 +85,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
   onDelete,
 }) => {
   const { t } = useLanguage();
+  const { tokens, cx } = useThemeTokens();
   const cfg = STATUS_CONFIG[budget.status];
   const clampedPercent = Math.min(100, budget.percent);
   const animPercent = useCountUp(Math.round(budget.percent));
@@ -114,7 +116,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
         {/* Header row */}
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest text-slate-500 light_sakura:text-slate-400 mb-0.5">
+            <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest mb-0.5", tokens.text.faint)}>
               {t("budget.page_title")}
             </p>
             <h3 className="font-semibold text-sm text-slate-100 light_sakura:text-slate-800 truncate leading-snug">
@@ -176,7 +178,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
               >
                 {animPercent > 999 ? "999+" : animPercent}%
               </span>
-              <span className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-500 light_sakura:text-slate-400 font-medium mt-0.5">
+              <span className={cx("text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-medium mt-0.5", tokens.text.faint)}>
                 terpakai
               </span>
             </div>
@@ -186,7 +188,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
           <div className="flex-1 space-y-3 min-w-0">
             {/* Segmented progress bar */}
             <div className="space-y-1">
-              <div className="flex justify-between text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 light_sakura:text-slate-400">
+              <div className={cx("flex justify-between text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.text.faint)}>
                 <span>Rp0</span>
                 <span>{formatIDR(budget.monthly_limit)}</span>
               </div>
@@ -223,7 +225,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
               {/* Threshold label */}
               {budget.alert_threshold_percent < 100 && (
                 <div
-                  className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-500 light_sakura:text-slate-400"
+                  className={cx("text-[clamp(0.5062rem,2.34vw,0.5625rem)]", tokens.text.faint)}
                   style={{ paddingLeft: `${Math.min(budget.alert_threshold_percent, 80)}%` }}
                 >
                   ↑ {budget.alert_threshold_percent}%
@@ -234,7 +236,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
             {/* Spent / Remaining */}
             <div className="grid grid-cols-2 gap-2">
               <div className="rounded-xl bg-slate-900/60 light_sakura:bg-rose-50/60 px-3 py-2">
-                <p className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] uppercase tracking-wider font-bold text-slate-500 light_sakura:text-slate-400 mb-0.5">
+                <p className={cx("text-[clamp(0.5062rem,2.34vw,0.5625rem)] uppercase tracking-wider font-bold mb-0.5", tokens.text.faint)}>
                   Terpakai
                 </p>
                 <p
@@ -245,7 +247,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
                 </p>
               </div>
               <div className="rounded-xl bg-slate-900/60 light_sakura:bg-rose-50/60 px-3 py-2">
-                <p className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] uppercase tracking-wider font-bold text-slate-500 light_sakura:text-slate-400 mb-0.5">
+                <p className={cx("text-[clamp(0.5062rem,2.34vw,0.5625rem)] uppercase tracking-wider font-bold mb-0.5", tokens.text.faint)}>
                   {overBudget ? "Melebihi" : "Sisa"}
                 </p>
                 <p className={`text-[10.5px] font-black leading-tight whitespace-nowrap tabular-nums tracking-tight ${overBudget ? "text-red-400" : "text-emerald-400"}`}>
@@ -262,9 +264,9 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
         <div className="border-t border-slate-800/40 light_sakura:border-rose-100/30 pt-4 space-y-3">
           <div className="flex items-center gap-2">
             <TrendingUp size={11} className="text-slate-500 shrink-0" />
-            <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 light_sakura:text-slate-400">
-              Anggaran bulanan: <span className="font-semibold text-slate-300 light_sakura:text-slate-600">{formatIDR(budget.monthly_limit)}</span>
-              {" · "}Peringatan di <span className="font-semibold text-slate-300 light_sakura:text-slate-600">{budget.alert_threshold_percent}%</span>
+            <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.text.faint)}>
+              Anggaran bulanan: <span className={cx("font-semibold", tokens.text.label)}>{formatIDR(budget.monthly_limit)}</span>
+              {" · "}Peringatan di <span className={cx("font-semibold", tokens.text.label)}>{budget.alert_threshold_percent}%</span>
             </p>
           </div>
           {editSlot}

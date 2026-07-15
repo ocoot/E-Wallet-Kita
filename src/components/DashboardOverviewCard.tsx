@@ -9,6 +9,7 @@ import { InfoTooltip } from "./InfoTooltip";
 import { audioFeedback } from "../lib/audio";
 import { useBalanceVisibility, maskCurrency } from "../contexts/BalanceVisibilityContext";
 import { Card } from "./ui/Card";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface DashboardOverviewCardProps {
   /** Berubah setiap kali ada transaksi baru/diubah, dipakai untuk trigger refetch. */
@@ -54,6 +55,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
 }) => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const { tokens, cx } = useThemeTokens();
   const [data, setData] = useState<AccumulatedBalance | null>(null);
   const [savings, setSavings] = useState<SavingsSummary | null>(null);
   const [gold, setGold] = useState<GoldHoldingsSummary | null>(null);
@@ -121,21 +123,21 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
           terpisah di Dashboard (lihat DashboardWalletCards.tsx). */}
       <div className="p-5 sm:p-6 pb-4">
         <div className="flex items-center gap-2 mb-4">
-          <Layers size={14} className="text-indigo-400 light_sakura:text-rose-500" />
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500">
+          <Layers size={14} className={tokens.icon.accent} />
+          <h3 className={cx("text-xs font-bold uppercase tracking-wider", tokens.text.muted)}>
             {t("dashboard.overall_summary_label")}
           </h3>
         </div>
         <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-indigo-500/15 flex items-center justify-center text-indigo-400 shrink-0 light_sakura:bg-rose-500/15 light_sakura:text-rose-500">
+          <div className={cx("w-11 h-11 rounded-2xl bg-indigo-500/15 flex items-center justify-center shrink-0 light_sakura:bg-rose-500/15", tokens.icon.accent)}>
             <Layers size={20} />
           </div>
           <div className="min-w-0">
-            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase tracking-wider text-slate-400 light_sakura:text-slate-500 flex items-center gap-1.5">
+            <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase tracking-wider flex items-center gap-1.5", tokens.text.muted)}>
               {t("dashboard.accumulated_balance_label")}
               <InfoTooltip text={t("dashboard.net_worth_tooltip")} align="left" />
             </p>
-            <p className={`font-sans font-bold text-2xl sm:text-3xl tracking-tight ${isPositive ? "text-white light_sakura:text-slate-900" : "text-red-400"}`}>
+            <p className={`font-sans font-bold text-2xl sm:text-3xl tracking-tight ${isPositive ? tokens.text.primary : "text-red-400"}`}>
               {balanceVisible ? formatIDR(netWorth) : maskCurrency(formatIDR(netWorth))}
             </p>
           </div>
@@ -157,9 +159,9 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
               <TrendingDown size={12} className="text-red-400 shrink-0" />
               <span className="text-xs font-bold text-red-400 whitespace-nowrap">{balanceVisible ? formatIDR(monthlySummary.expense) : maskCurrency(formatIDR(monthlySummary.expense))}</span>
             </div>
-            <div className="flex items-center gap-1.5 pl-3 border-l border-slate-800 light_sakura:border-rose-100">
+            <div className={cx("flex items-center gap-1.5 pl-3 border-l", tokens.border.accent)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 shrink-0">{t("dashboard.balance")}</span>
-              <span className={`text-xs font-bold whitespace-nowrap ${monthlySummary.balance >= 0 ? "text-emerald-400 light_sakura:text-emerald-600" : "text-red-400"}`}>
+              <span className={`text-xs font-bold whitespace-nowrap ${monthlySummary.balance >= 0 ? tokens.text.success : "text-red-400"}`}>
                 {balanceVisible ? formatIDR(monthlySummary.balance) : maskCurrency(formatIDR(monthlySummary.balance))}
               </span>
             </div>
@@ -174,7 +176,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
             onClick={() => { audioFeedback.playClick(); setShowDetails(v => !v); }}
             className="w-full flex items-center justify-between py-2 cursor-pointer group"
           >
-            <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-slate-400 group-hover:text-slate-300 light_sakura:text-slate-500 light_sakura:group-hover:text-slate-700 transition-colors">
+            <span className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold group-hover:text-slate-300 light_sakura:group-hover:text-slate-700 transition-colors", tokens.text.muted)}>
               {t("dashboard.asset_breakdown_label")}
             </span>
             <ChevronDown size={14} className={`text-slate-500 transition-transform ${showDetails ? "rotate-180" : ""}`} />

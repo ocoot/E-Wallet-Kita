@@ -5,6 +5,7 @@ import { Activity } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
 import { EmptyState } from "./EmptyState";
 import { Card } from "./ui/Card";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -44,24 +45,25 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
   formatIDR,
 }) => {
   const { t } = useLanguage();
+  const { tokens, cx } = useThemeTokens();
 
   // Custom tooltips renderer to perfectly match Obsidian and Sakura modes
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="p-4 bg-slate-950/95 border border-slate-800 text-slate-100 rounded-2xl shadow-xl backdrop-blur-md light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-800">
-          <p className="font-sans font-bold text-xs mb-2 text-slate-400 light_sakura:text-slate-500">{label}</p>
+          <p className={cx("font-sans font-bold text-xs mb-2", tokens.text.muted)}>{label}</p>
           <div className="space-y-1.5 font-mono text-xs">
             {payload.map((p: any) => {
               const isInc = p.name === labelIncome;
               const isExp = p.name === labelExpense;
-              let colorCls = "text-indigo-400 light_sakura:text-indigo-600";
-              if (isInc) colorCls = "text-emerald-400 light_sakura:text-emerald-600";
+              let colorCls: string = tokens.text.accentStrong;
+              if (isInc) colorCls = tokens.text.success;
               if (isExp) colorCls = "text-red-400 light_sakura:text-rose-600";
 
               return (
                 <div key={p.name} className="flex items-center justify-between gap-6">
-                  <span className="text-slate-400 light_sakura:text-slate-500">{p.name}:</span>
+                  <span className={tokens.text.muted}>{p.name}:</span>
                   <span className={`font-bold ${colorCls}`}>{formatIDR(p.value)}</span>
                 </div>
               );
@@ -78,10 +80,10 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
       {/* Chart Header & Tab Options */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800/50 pb-5 light_sakura:border-rose-100/30">
         <div>
-          <h3 className="font-sans font-bold text-base text-white tracking-tight light_sakura:text-slate-800">
+          <h3 className={cx("font-sans font-bold text-base tracking-tight", tokens.text.onSurface)}>
             {t("dashboard.chart_title")}
           </h3>
-          <p className="font-sans text-xs text-slate-400 mt-1 light_sakura:text-slate-500">
+          <p className={cx("font-sans text-xs mt-1", tokens.text.muted)}>
             {chartType === "cumulative" 
               ? t("dashboard.chart_desc_cumulative")
               : t("dashboard.chart_desc_daily")}
@@ -90,17 +92,18 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Chart Type Selector: Cumulative vs Daily */}
-          <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 light_sakura:bg-rose-50/50 light_sakura:border-rose-100">
+          <div className={cx("flex bg-slate-950 p-1 rounded-xl border light_sakura:bg-rose-50/50", tokens.border.accent)}>
             <button
               onClick={() => {
                 audioFeedback.playClick();
                 setChartType("cumulative");
               }}
-              className={`px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer ${
+              className={cx(
+                "px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer",
                 chartType === "cumulative"
-                  ? "bg-slate-900 text-indigo-400 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
-                  : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500"
-              }`}
+                  ? cx("bg-slate-900 shadow-sm light_sakura:bg-white", tokens.text.accent)
+                  : cx("hover:text-slate-200", tokens.text.muted)
+              )}
             >
               {t("dashboard.chart_cumulative")}
             </button>
@@ -109,28 +112,30 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
                 audioFeedback.playClick();
                 setChartType("daily");
               }}
-              className={`px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer ${
+              className={cx(
+                "px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer",
                 chartType === "daily"
-                  ? "bg-slate-900 text-indigo-400 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
-                  : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500"
-              }`}
+                  ? cx("bg-slate-900 shadow-sm light_sakura:bg-white", tokens.text.accent)
+                  : cx("hover:text-slate-200", tokens.text.muted)
+              )}
             >
               {t("dashboard.chart_daily")}
             </button>
           </div>
 
           {/* Chart Mode Selector: Area vs Line */}
-          <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 light_sakura:bg-rose-50/50 light_sakura:border-rose-100">
+          <div className={cx("flex bg-slate-950 p-1 rounded-xl border light_sakura:bg-rose-50/50", tokens.border.accent)}>
             <button
               onClick={() => {
                 audioFeedback.playClick();
                 setChartMode("area");
               }}
-              className={`px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer ${
+              className={cx(
+                "px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer",
                 chartMode === "area"
                   ? "bg-slate-900 text-indigo-300 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
-                  : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500"
-              }`}
+                  : cx("hover:text-slate-200", tokens.text.muted)
+              )}
             >
               {t("dashboard.chart_area")}
             </button>
@@ -139,11 +144,12 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
                 audioFeedback.playClick();
                 setChartMode("line");
               }}
-              className={`px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer ${
+              className={cx(
+                "px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer",
                 chartMode === "line"
                   ? "bg-slate-900 text-indigo-300 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
-                  : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500"
-              }`}
+                  : cx("hover:text-slate-200", tokens.text.muted)
+              )}
             >
               {t("dashboard.chart_line")}
             </button>
@@ -300,7 +306,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
 
       {/* Small Elegant Secondary Panel explaining Category analysis context */}
       {transactions.length > 0 && (
-        <div className="flex flex-wrap gap-4 items-center justify-between text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 border-t border-slate-800/40 pt-4 progress-legend light_sakura:border-rose-100/30 light_sakura:text-slate-400">
+        <div className={cx("flex flex-wrap gap-4 items-center justify-between text-[clamp(0.6188rem,2.86vw,0.6875rem)] border-t border-slate-800/40 pt-4 progress-legend light_sakura:border-rose-100/30", tokens.text.faint)}>
           <span className="flex items-center gap-1.5 font-sans font-medium">
             <Activity size={12} className="text-zinc-400" />
             {t("dashboard.chart_instruction")}
