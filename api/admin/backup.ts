@@ -111,7 +111,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 async function dispatchWorkflow(
   workflowFile: string,
   inputs: Record<string, string>
-): Promise<{ ok: true } | { ok: false; status: number; text: string }> {
+): Promise<{ result: 'success' } | { result: 'failure'; status: number; text: string }> {
   const dispatchRes = await fetch(
     `https://api.github.com/repos/${githubRepo}/actions/workflows/${workflowFile}/dispatches`,
     {
@@ -126,9 +126,9 @@ async function dispatchWorkflow(
   );
 
   if (!dispatchRes.ok) {
-    return { ok: false, status: dispatchRes.status, text: await dispatchRes.text() };
+    return { result: 'failure', status: dispatchRes.status, text: await dispatchRes.text() };
   }
-  return { ok: true };
+  return { result: 'success' };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -137,7 +137,7 @@ async function dispatchWorkflow(
 async function handleBackup(adminId: string, res: VercelResponse) {
   const result = await dispatchWorkflow(WORKFLOW_FILES.backup, { triggered_by_admin: adminId });
 
-  if (!result.ok) {
+  if (result.result === 'failure') {
     if (supabaseServiceKey) {
       await logError(createClient(supabaseUrl, supabaseServiceKey), {
         source: 'admin/backup',
@@ -284,7 +284,7 @@ async function handleRestore(
     triggered_by_admin: adminId,
   });
 
-  if (!dispatchResult.ok) {
+  if (dispatchResult.result === 'failure') {
     // Rollback: tandai gagal + matikan maintenance mode supaya app tidak
     // terkunci gara-gara workflow bahkan belum sempat mulai.
     await serviceSupabase
@@ -373,7 +373,7 @@ async function handleDelete(
     triggered_by_admin: adminId,
   });
 
-  if (!dispatchResult.ok) {
+  if (dispatchResult.result === 'failure') {
     if (supabaseServiceKey) {
       await logError(createClient(supabaseUrl, supabaseServiceKey), {
         source: 'admin/backup',

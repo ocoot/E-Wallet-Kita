@@ -34,3 +34,15 @@
 2. Hapus 6 file lama yang disebutkan di atas.
 3. Jalankan `npm run build` / `npm run dev` untuk memastikan tidak ada import yang patah.
 4. Test manual: pindai struk, kirim struk email, catat via suara, catat via teks, widget cuaca.
+
+## Update tambahan (fix TS error saat deploy, TIDAK terkait konsolidasi endpoint)
+- `api/admin/backup.ts` — DIUBAH (bukan file baru, timpa saja)
+  - Penyebab: project tidak set `strict`/`strictNullChecks` di tsconfig.json,
+    dan di kondisi itu TypeScript gagal narrow union yang pakai diskriminator
+    boolean (`{ ok: true } | { ok: false; ... }`). Diganti jadi diskriminator
+    string (`{ result: 'success' } | { result: 'failure'; ... }`) yang tetap
+    narrow dengan benar walau strictNullChecks mati.
+  - Tidak mengubah perilaku endpoint sama sekali, murni perbaikan tipe.
+  - Tidak berkaitan dengan endpoint yang digabung sebelumnya — deployment
+    sebelumnya sudah sukses walau ada error TS ini karena Vercel build
+    memakai esbuild yang tidak strict soal type-check.
