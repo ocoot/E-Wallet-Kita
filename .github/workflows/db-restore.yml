@@ -5,17 +5,16 @@ name: Database Restore (Google Drive -> Supabase)
 # admin/owner, pengecekan backup berstatus 'success', dan penguncian
 # maintenance mode SEBELUM workflow ini dipicu.
 #
-# Dua mode restore:
-#   scope=full  -> pg_restore --clean --if-exists seluruh dump. SELURUH
-#                  data (semua tabel, semua pengguna) akan ditimpa ke
-#                  kondisi saat backup diambil. Untuk disaster recovery.
-#   scope=table -> pg_restore -t <tabel> per tabel yang dipilih SAJA.
-#                  Hanya data di tabel tsb yang ditimpa (tetap berlaku
-#                  untuk SEMUA pengguna yang punya baris di tabel itu,
-#                  bukan cuma satu pengguna), tabel lain tidak tersentuh.
-#                  Daftar tabel yang boleh dipilih dibatasi ke
-#                  public.backup_restorable_tables (lihat migration
-#                  20260817000000_backup_restore_delete.sql).
+# Dua mode restore (KEDUANYA data-only, TIDAK PERNAH menyentuh
+# schema/fungsi/extension -- lihat step "Jalankan restore" untuk alasannya,
+# insiden 14/7/2026):
+#   scope=full  -> Semua tabel YANG ADA DI DALAM FILE DUMP (dideteksi
+#                  otomatis lewat `pg_restore --list`) ditimpa datanya.
+#                  Untuk disaster recovery.
+#   scope=table -> Hanya tabel yang dipilih admin yang ditimpa datanya.
+#                  Tabel lain tidak tersentuh. Daftar tabel yang boleh
+#                  dipilih dibatasi ke public.backup_restorable_tables
+#                  (lihat migration 20260817000000_backup_restore_delete.sql).
 #
 # PENTING (table-scope): DELETE dijalankan dengan
 # `session_replication_role = replica` supaya foreign-key trigger tidak
@@ -121,70 +120,100 @@ jobs:
           FILE_NAME="${{ steps.dl.outputs.file_name }}"
 
           if [ "$SCOPE" = "full" ]; then
-            echo "::notice::Restore FULL -- seluruh database akan ditimpa ke kondisi backup."
-            # --clean --if-exists: drop objek lama dulu (aman dipanggil walau
-            # objeknya belum ada) baru dibuat ulang + data dimuat.
-            "$PG_RESTORE" --no-owner --no-privileges --clean --if-exists \
-              --dbname="$DB_URL" "$FILE_NAME"
+            echo "::notice::Restore FULL -- seluruh tabel di dalam file dump akan ditimpa."
+            # PENTING (insiden 14/7/2026): SEBELUMNYA pakai
+            # `pg_restore --clean --if-exists` yang mencoba DROP/CREATE
+            # schema public + semua fungsi di dalamnya. Ini GAGAL kalau ada
+            # objek di schema LAIN (mis. trigger on_auth_user_created di
+            # auth.users, dikelola Supabase Auth, di luar dump) yang masih
+            # mereferensikan fungsi/schema itu -- pg_restore tidak tahu cara
+            # men-drop dependency lintas-schema itu tanpa CASCADE, jadi
+            # error "cannot drop function ... because other objects depend
+            # on it" / "cannot drop schema public because ...". Menambah
+            # CASCADE juga BERBAHAYA (bisa ikut menghapus trigger auth resmi
+            # milik Supabase).
+            #
+            # FIX: JANGAN sentuh schema/fungsi/extension SAMA SEKALI.
+            # Restore FULL sekarang pakai teknik yang SAMA PERSIS dengan
+            # restore TABLE-SCOPE di bawah (data-only + session_replication_
+            # role=replica + single-transaction) -- bedanya cuma daftar
+            # tabelnya diambil dari SEMUA "TABLE DATA" yang benar-benar ada
+            # di dalam file dump (lewat `pg_restore --list`), bukan
+            # daftar tabel pilihan admin. Ini juga otomatis lebih aman kalau
+            # dump lebih lama dari migration terbaru (tidak asumsi skema
+            # sekarang = skema saat dump diambil).
+            mapfile -t TABLES < <(
+              "$PG_RESTORE" --list "$FILE_NAME" \
+                | grep -E ' TABLE DATA public ' \
+                | awk '{print $7}'
+            )
+            if [ "${#TABLES[@]}" -eq 0 ]; then
+              echo "::error::Tidak ada 'TABLE DATA public' ditemukan di file dump -- restore dibatalkan, cek file dump-nya."
+              exit 1
+            fi
+            echo "::notice::Ditemukan ${#TABLES[@]} tabel di dalam dump: ${TABLES[*]}"
           else
             echo "::notice::Restore TABLE-SCOPE -- hanya tabel: $TABLE_NAMES"
             IFS=',' read -ra TABLES <<< "$TABLE_NAMES"
-
-            # Bangun daftar argumen -t per tabel untuk pg_restore
-            TABLE_ARGS=()
-            for T in "${TABLES[@]}"; do
-              T_TRIMMED=$(echo "$T" | xargs)
-              TABLE_ARGS+=("-t" "$T_TRIMMED")
-            done
-
-            for T in "${TABLES[@]}"; do
-              T_TRIMMED=$(echo "$T" | xargs)
-              echo "::notice::Mengosongkan tabel public.$T_TRIMMED (tanpa cascade ke tabel lain)..."
-              # session_replication_role=replica menonaktifkan trigger FK
-              # untuk sesi ini SAJA, supaya DELETE di tabel ini tidak ikut
-              # menghapus baris di tabel lain yang mereferensikannya.
-              "$PSQL" "$DB_URL" -v ON_ERROR_STOP=1 -c \
-                "SET session_replication_role = 'replica'; DELETE FROM public.${T_TRIMMED};"
-            done
-
-            echo "::notice::Memuat data dari dump untuk tabel terpilih..."
-            # PENTING: JANGAN pakai flag --disable-triggers milik pg_restore.
-            # Flag itu menjalankan `ALTER TABLE ... DISABLE/ENABLE TRIGGER ALL`,
-            # yang hanya boleh dieksekusi oleh role SUPERUSER sungguhan untuk
-            # trigger FK internal (RI_ConstraintTrigger_*). Role postgres di
-            # Supabase BUKAN superuser sungguhan -> "permission denied: ...
-            # is a system trigger". Sebagai gantinya, matikan semua trigger
-            # untuk SESI INI SAJA lewat GUC session_replication_role=replica
-            # (role Supabase diizinkan set ini), konsisten dengan teknik yang
-            # dipakai pada step DELETE di atas.
-            #
-            # PENTING JUGA: --single-transaction WAJIB dipakai di sini.
-            # Tanpa ini, pg_restore --data-only membuka transaksi terpisah
-            # per tabel/COPY. Kalau DB_URL yang dipakai adalah connection
-            # string lewat pooler (Supavisor/PgBouncer transaction mode),
-            # pooler bisa memindahkan koneksi client ke backend fisik yang
-            # BERBEDA di setiap transaksi baru -> GUC session_replication_role
-            # yang di-set lewat PGOPTIONS di awal koneksi tidak lagi aktif di
-            # backend yang baru, sehingga trigger FK tetap menyala saat COPY
-            # tabel berikutnya jalan (inilah penyebab error
-            # "violates foreign key constraint" yang sebelumnya terjadi pada
-            # restore bill_reminders -> transactions). Dengan
-            # --single-transaction, SELURUH COPY untuk semua tabel terpilih
-            # berjalan dalam SATU transaksi = SATU koneksi backend yang sama,
-            # jadi GUC-nya konsisten aktif sepanjang restore. Efek samping
-            # yang diinginkan: restore table-scope jadi atomik (all-or-nothing),
-            # tidak ada lagi kondisi tabel A ke-restore tapi tabel B gagal.
-            #
-            # Urutan argumen -t (TABLE_ARGS) TIDAK menjamin urutan COPY --
-            # pg_restore memuat sesuai urutan TOC di file dump, bukan urutan
-            # -t yang diberikan. session_replication_role=replica sudah cukup
-            # untuk mencegah FK violation walau urutan child-before-parent,
-            # tapi --single-transaction di atas adalah syarat supaya GUC itu
-            # betul-betul konsisten menyala di semua COPY.
-            PGOPTIONS="-c session_replication_role=replica" \
-              "$PG_RESTORE" --no-owner --no-privileges --data-only --single-transaction \
-                "${TABLE_ARGS[@]}" --dbname="$DB_URL" "$FILE_NAME"
           fi
+
+          # Bangun daftar argumen -t per tabel untuk pg_restore
+          TABLE_ARGS=()
+          for T in "${TABLES[@]}"; do
+            T_TRIMMED=$(echo "$T" | xargs)
+            [ -z "$T_TRIMMED" ] && continue
+            TABLE_ARGS+=("-t" "$T_TRIMMED")
+          done
+
+          for T in "${TABLES[@]}"; do
+            T_TRIMMED=$(echo "$T" | xargs)
+            [ -z "$T_TRIMMED" ] && continue
+            echo "::notice::Mengosongkan tabel public.$T_TRIMMED (tanpa cascade ke tabel lain)..."
+            # session_replication_role=replica menonaktifkan trigger FK
+            # untuk sesi ini SAJA, supaya DELETE di tabel ini tidak ikut
+            # menghapus baris di tabel lain yang mereferensikannya.
+            "$PSQL" "$DB_URL" -v ON_ERROR_STOP=1 -c \
+              "SET session_replication_role = 'replica'; DELETE FROM public.${T_TRIMMED};"
+          done
+
+          echo "::notice::Memuat data dari dump untuk tabel terpilih..."
+          # PENTING: JANGAN pakai flag --disable-triggers milik pg_restore.
+          # Flag itu menjalankan `ALTER TABLE ... DISABLE/ENABLE TRIGGER ALL`,
+          # yang hanya boleh dieksekusi oleh role SUPERUSER sungguhan untuk
+          # trigger FK internal (RI_ConstraintTrigger_*). Role postgres di
+          # Supabase BUKAN superuser sungguhan -> "permission denied: ...
+          # is a system trigger". Sebagai gantinya, matikan semua trigger
+          # untuk SESI INI SAJA lewat GUC session_replication_role=replica
+          # (role Supabase diizinkan set ini), konsisten dengan teknik yang
+          # dipakai pada step DELETE di atas.
+          #
+          # PENTING JUGA: --single-transaction WAJIB dipakai di sini.
+          # Tanpa ini, pg_restore --data-only membuka transaksi terpisah
+          # per tabel/COPY. Kalau DB_URL yang dipakai adalah connection
+          # string lewat pooler (Supavisor/PgBouncer transaction mode),
+          # pooler bisa memindahkan koneksi client ke backend fisik yang
+          # BERBEDA di setiap transaksi baru -> GUC session_replication_role
+          # yang di-set lewat PGOPTIONS di awal koneksi tidak lagi aktif di
+          # backend yang baru, sehingga trigger FK tetap menyala saat COPY
+          # tabel berikutnya jalan (inilah penyebab error
+          # "violates foreign key constraint" yang sebelumnya terjadi pada
+          # restore bill_reminders -> transactions). Dengan
+          # --single-transaction, SELURUH COPY untuk semua tabel terpilih
+          # berjalan dalam SATU transaksi = SATU koneksi backend yang sama,
+          # jadi GUC-nya konsisten aktif sepanjang restore. Efek samping
+          # yang diinginkan: restore (baik full maupun table-scope) jadi
+          # atomik (all-or-nothing) -- tidak ada lagi kondisi tabel A
+          # ke-restore tapi tabel B gagal.
+          #
+          # Urutan argumen -t (TABLE_ARGS) TIDAK menjamin urutan COPY --
+          # pg_restore memuat sesuai urutan TOC di file dump, bukan urutan
+          # -t yang diberikan. session_replication_role=replica sudah cukup
+          # untuk mencegah FK violation walau urutan child-before-parent,
+          # tapi --single-transaction di atas adalah syarat supaya GUC itu
+          # betul-betul konsisten menyala di semua COPY.
+          PGOPTIONS="-c session_replication_role=replica" \
+            "$PG_RESTORE" --no-owner --no-privileges --data-only --single-transaction \
+              "${TABLE_ARGS[@]}" --dbname="$DB_URL" "$FILE_NAME"
 
       - name: Catat status sukses & matikan maintenance mode
         if: success()

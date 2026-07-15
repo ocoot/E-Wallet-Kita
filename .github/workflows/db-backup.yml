@@ -206,9 +206,36 @@ jobs:
           # Kalau di masa depan project ini menambah custom schema selain
           # public, tambahkan flag --schema=<nama> lagi di sini (bisa
           # diulang, pg_dump mendukung multiple --schema).
+          #
+          # --exclude-table untuk tabel OPERASIONAL/META (insiden 14/7/2026):
+          # tabel-tabel ini menyimpan status proses backup/restore itu
+          # SENDIRI, audit log, error log, dan rate-limit/dedup bot -- bukan
+          # "data aplikasi" yang boleh di-restore. Kalau ikut ter-dump,
+          # masalahnya adalah pg_dump berjalan SEBELUM step "Catat status
+          # sukses" di bawah meng-update baris backup_logs milik run ini
+          # sendiri jadi 'success' -- jadi file dump SELALU membekukan
+          # baris backup_logs miliknya sendiri dalam kondisi 'running'.
+          # Kalau admin restore full dari backup itu (bahkan cuma beberapa
+          # menit kemudian), baris yang sudah benar 'success' di DB akan
+          # DITIMPA BALIK ke snapshot 'running' itu -- Admin Panel jadi
+          # menampilkan "Berjalan" selamanya padahal backup sudah lama
+          # selesai. Watchdog (migration 20260818000000) cuma menambal
+          # gejalanya (auto-mark 'failed' setelah 30 menit); exclude di
+          # sini adalah perbaikan akarnya supaya kasusnya tidak terjadi
+          # lagi sama sekali.
           "$PG_DUMP" "${{ secrets.SUPABASE_DB_URL }}" \
             --no-owner --no-privileges --format=custom --compress=9 \
             --schema=public \
+            --exclude-table=public.backup_logs \
+            --exclude-table=public.backup_restore_logs \
+            --exclude-table=public.backup_restorable_tables \
+            --exclude-table=public.admin_audit_logs \
+            --exclude-table=public.error_logs \
+            --exclude-table=public.maintenance_settings \
+            --exclude-table=public.maintenance_feature_locks \
+            --exclude-table=public.telegram_processed_updates \
+            --exclude-table=public.telegram_link_attempts \
+            --exclude-table=public.api_rate_limits \
             --file="$FILE_NAME"
           echo "file_name=$FILE_NAME" >> "$GITHUB_OUTPUT"
           echo "file_size=$(stat -c%s "$FILE_NAME")" >> "$GITHUB_OUTPUT"
