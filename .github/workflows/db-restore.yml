@@ -165,55 +165,64 @@ jobs:
             TABLE_ARGS+=("-t" "$T_TRIMMED")
           done
 
-          for T in "${TABLES[@]}"; do
-            T_TRIMMED=$(echo "$T" | xargs)
-            [ -z "$T_TRIMMED" ] && continue
-            echo "::notice::Mengosongkan tabel public.$T_TRIMMED (tanpa cascade ke tabel lain)..."
-            # session_replication_role=replica menonaktifkan trigger FK
-            # untuk sesi ini SAJA, supaya DELETE di tabel ini tidak ikut
-            # menghapus baris di tabel lain yang mereferensikannya.
-            "$PSQL" "$DB_URL" -v ON_ERROR_STOP=1 -c \
-              "SET session_replication_role = 'replica'; DELETE FROM public.${T_TRIMMED};"
-          done
-
-          echo "::notice::Memuat data dari dump untuk tabel terpilih..."
-          # PENTING: JANGAN pakai flag --disable-triggers milik pg_restore.
-          # Flag itu menjalankan `ALTER TABLE ... DISABLE/ENABLE TRIGGER ALL`,
-          # yang hanya boleh dieksekusi oleh role SUPERUSER sungguhan untuk
-          # trigger FK internal (RI_ConstraintTrigger_*). Role postgres di
-          # Supabase BUKAN superuser sungguhan -> "permission denied: ...
-          # is a system trigger". Sebagai gantinya, matikan semua trigger
-          # untuk SESI INI SAJA lewat GUC session_replication_role=replica
-          # (role Supabase diizinkan set ini), konsisten dengan teknik yang
-          # dipakai pada step DELETE di atas.
+          echo "::notice::Menjalankan DELETE + restore data dalam SATU transaksi sungguhan..."
+          # ═══════════════════════════════════════════════════════════════
+          # PERBAIKAN KRUSIAL (insiden kehilangan data total 15/7/2026):
           #
-          # PENTING JUGA: --single-transaction WAJIB dipakai di sini.
-          # Tanpa ini, pg_restore --data-only membuka transaksi terpisah
-          # per tabel/COPY. Kalau DB_URL yang dipakai adalah connection
-          # string lewat pooler (Supavisor/PgBouncer transaction mode),
-          # pooler bisa memindahkan koneksi client ke backend fisik yang
-          # BERBEDA di setiap transaksi baru -> GUC session_replication_role
-          # yang di-set lewat PGOPTIONS di awal koneksi tidak lagi aktif di
-          # backend yang baru, sehingga trigger FK tetap menyala saat COPY
-          # tabel berikutnya jalan (inilah penyebab error
-          # "violates foreign key constraint" yang sebelumnya terjadi pada
-          # restore bill_reminders -> transactions). Dengan
-          # --single-transaction, SELURUH COPY untuk semua tabel terpilih
-          # berjalan dalam SATU transaksi = SATU koneksi backend yang sama,
-          # jadi GUC-nya konsisten aktif sepanjang restore. Efek samping
-          # yang diinginkan: restore (baik full maupun table-scope) jadi
-          # atomik (all-or-nothing) -- tidak ada lagi kondisi tabel A
-          # ke-restore tapi tabel B gagal.
+          # Versi SEBELUMNYA menjalankan DELETE per tabel lewat PEMANGGILAN
+          # `psql` TERPISAH (satu proses psql = satu koneksi = auto-commit
+          # sendiri-sendiri), BARU SETELAH SEMUA tabel kosong, `pg_restore
+          # --single-transaction` dijalankan sebagai proses/koneksi LAIN
+          # untuk memuat ulang datanya. Dua masalah fatal:
           #
-          # Urutan argumen -t (TABLE_ARGS) TIDAK menjamin urutan COPY --
-          # pg_restore memuat sesuai urutan TOC di file dump, bukan urutan
-          # -t yang diberikan. session_replication_role=replica sudah cukup
-          # untuk mencegah FK violation walau urutan child-before-parent,
-          # tapi --single-transaction di atas adalah syarat supaya GUC itu
-          # betul-betul konsisten menyala di semua COPY.
-          PGOPTIONS="-c session_replication_role=replica" \
-            "$PG_RESTORE" --no-owner --no-privileges --data-only --single-transaction \
-              "${TABLE_ARGS[@]}" --dbname="$DB_URL" "$FILE_NAME"
+          #   1. PGOPTIONS="-c session_replication_role=replica" yang
+          #      dipasang di pg_restore TIDAK PERNAH benar-benar aktif --
+          #      itu parameter startup koneksi, dan pooler Supabase
+          #      (Supavisor) mengabaikannya secara diam-diam. Akibatnya FK
+          #      trigger tetap aktif saat pg_restore meng-COPY data balik,
+          #      dan gagal begitu ada tabel anak yang ke-load sebelum tabel
+          #      induknya (mis. bill_reminder_notifications sebelum users).
+          #
+          #   2. KARENA DELETE (banyak koneksi terpisah, auto-commit) dan
+          #      INSERT (satu koneksi pg_restore) TIDAK berada dalam
+          #      transaksi yang SAMA, begitu pg_restore gagal di tengah
+          #      jalan dan --single-transaction meng-ROLLBACK, yang
+          #      ROLLBACK cuma bagian INSERT-nya. DELETE yang sudah lebih
+          #      dulu ke-commit TIDAK IKUT rollback -> hasilnya SEMUA 28
+          #      tabel kosong permanen (data pengguna, transaksi, aktivasi
+          #      premium, bill reminder, dst hilang total).
+          #
+          # FIX: SET session_replication_role, SEMUA DELETE, dan SEMUA
+          # INSERT/COPY sekarang dikirim sebagai SATU naskah SQL ke SATU
+          # proses `psql` (bukan PGOPTIONS di pg_restore), dibungkus
+          # `--single-transaction` MILIK PSQL (bukan milik pg_restore).
+          # `SET session_replication_role` di sini adalah PERINTAH SQL
+          # biasa yang dieksekusi DALAM sesi yang sudah terbentuk -- bukan
+          # startup parameter -- jadi pasti diteruskan oleh pooler,
+          # terbukti dari step DELETE versi lama yang justru berhasil
+          # dengan pola persis ini.
+          #
+          # Dengan `psql -v ON_ERROR_STOP=1 --single-transaction`: KALAU
+          # ADA satu saja statement yang gagal (termasuk FK violation),
+          # SELURUH transaksi (DELETE + INSERT sekaligus) di-ROLLBACK --
+          # artinya data ASLI (sebelum restore) tetap utuh tidak
+          # tersentuh sama sekali kalau restore gagal. Ini baru benar-benar
+          # atomik (all-or-nothing).
+          #
+          # `pg_restore --data-only -f -` (bukan --dbname) membuat pg_restore
+          # menulis SQL teks biasa ke stdout, TIDAK terhubung ke database
+          # sama sekali -- semua koneksi & transaksi sepenuhnya dikendalikan
+          # oleh psql di ujung pipe ini.
+          {
+            echo "SET session_replication_role = 'replica';"
+            for T in "${TABLES[@]}"; do
+              T_TRIMMED=$(echo "$T" | xargs)
+              [ -z "$T_TRIMMED" ] && continue
+              echo "DELETE FROM public.${T_TRIMMED};"
+            done
+            "$PG_RESTORE" --no-owner --no-privileges --data-only \
+              "${TABLE_ARGS[@]}" -f - "$FILE_NAME"
+          } | "$PSQL" "$DB_URL" -v ON_ERROR_STOP=1 --single-transaction -q
 
       - name: Catat status sukses & matikan maintenance mode
         if: success()
