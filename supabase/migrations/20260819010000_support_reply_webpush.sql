@@ -21,10 +21,19 @@
 --        yang sama.
 --     3. Trigger AFTER INSERT di `support_messages` (khusus sender =
 --        'admin') yang mengecek status sesi & flag `user_viewing`
---        langsung di SQL, lalu memanggil endpoint internal Vercel
---        (`/api/internal/send-support-reply-push`, endpoint baru --
---        lihat api/internal/send-support-reply-push.ts) lewat
+--        langsung di SQL, lalu memanggil endpoint internal Vercel yang
+--        SUDAH ADA, `/api/internal/send-bill-reminder-push.ts`, lewat
 --        `net.http_post` kalau memang perlu dikirim push.
+--
+--        SENGAJA reuse endpoint itu (bukan bikin endpoint baru
+--        `send-support-reply-push.ts`) -- endpoint tsb sudah generik
+--        (terima user_id/title/body/data apa saja, tidak spesifik ke
+--        bill reminder), dan project ini sudah PAS di limit 12
+--        Serverless Function route pada Vercel Hobby plan (file di
+--        `api/_lib/*` tidak dihitung karena prefix `_`, tapi 12 route
+--        di luar itu sudah penuh). Menambah 1 file route baru di `api/`
+--        akan membuat deployment gagal dengan error "No more than 12
+--        Serverless Functions..." kecuali upgrade ke Pro plan.
 --
 --   Trigger ini otomatis menangkap KEDUA jalur balasan admin yang ada di
 --   codebase (RPC admin_reply_support_session() dari Admin Panel web,
@@ -125,7 +134,7 @@ begin
   end;
 
   perform net.http_post(
-    url := 'https://e-wallet-kita.vercel.app/api/internal/send-support-reply-push',
+    url := 'https://e-wallet-kita.vercel.app/api/internal/send-bill-reminder-push',
     headers := jsonb_build_object(
       'Content-Type', 'application/json',
       'x-internal-secret', v_secret
@@ -160,4 +169,4 @@ create trigger trg_support_messages_notify_push
   execute function public.notify_support_reply_push();
 
 comment on trigger trg_support_messages_notify_push on public.support_messages is
-  'Kirim webpush ke user pemilik sesi saat admin membalas (via Admin Panel web ATAUPUN grup Telegram, keduanya insert ke tabel ini), kecuali sesi sudah closed atau user sedang membuka widget chat sesi tsb (support_sessions.user_viewing). Lihat notify_support_reply_push() dan api/internal/send-support-reply-push.ts.';
+  'Kirim webpush ke user pemilik sesi saat admin membalas (via Admin Panel web ATAUPUN grup Telegram, keduanya insert ke tabel ini), kecuali sesi sudah closed atau user sedang membuka widget chat sesi tsb (support_sessions.user_viewing). Lihat notify_support_reply_push() dan api/internal/send-bill-reminder-push.ts (endpoint generik yang di-reuse, lihat komentar di atas function ini).';

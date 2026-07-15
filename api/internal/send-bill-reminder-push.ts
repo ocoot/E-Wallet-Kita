@@ -8,17 +8,28 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
 /**
  * Internal endpoint: send an FCM push to one user's registered devices.
+ * Generic by design (user_id/title/body/data) — NOT specific to bill
+ * reminders despite the filename; see callers below.
  *
- * WHY THIS EXISTS: the bill-reminder-notifier Supabase Edge Function runs
- * on Deno and only sends Telegram messages today. To also notify via FCM
- * push (secondary channel, on top of Telegram — see #7 in the FCM audit),
- * it needs firebase-admin's HTTP v1 signing, which is already wired up in
- * api/_lib/fcm.ts for this Node/Vercel runtime. Rather than reimplementing
- * FCM HTTP v1's OAuth2 JWT signing in Deno (error-prone to hand-roll,
- * and the old fcm.googleapis.com/fcm/send legacy endpoint that doesn't
- * need that signing was shut down by Google in June 2024), the edge
- * function calls this endpoint, which reuses the existing, tested
- * firebase-admin setup.
+ * WHY THIS EXISTS: Postgres/Deno don't have firebase-admin's HTTP v1
+ * OAuth2 JWT signing set up (error-prone to hand-roll, and the old
+ * fcm.googleapis.com/fcm/send legacy endpoint that didn't need it was
+ * shut down by Google in June 2024). That signing is already wired up
+ * in api/_lib/fcm.ts for this Node/Vercel runtime, so callers delegate
+ * to this endpoint instead of reimplementing it themselves.
+ *
+ * CURRENT CALLERS (both reuse this same endpoint on purpose — see
+ * migration 20260819010000_support_reply_webpush.sql for why a second
+ * dedicated route wasn't added: this Vercel project is already at the
+ * 12 Serverless Function limit on the Hobby plan, so any new file
+ * directly under `api/` breaks deployment unless upgraded to Pro):
+ *   1. bill-reminder-notifier (Supabase Edge Function, Deno) — bill due
+ *      reminders, secondary channel on top of Telegram.
+ *   2. notify_support_reply_push() (Postgres trigger on
+ *      support_messages, AFTER INSERT WHEN sender='admin') — notifies
+ *      the user when an admin replies to their Support Chat session,
+ *      unless the session is closed or the user is actively viewing
+ *      the chat widget (support_sessions.user_viewing).
  *
  * Auth: shared-secret header (INTERNAL_API_SECRET), not a user JWT —
  * this is a service-to-service call from another Supabase-controlled
