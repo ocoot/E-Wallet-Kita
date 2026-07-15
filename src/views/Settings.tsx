@@ -31,7 +31,9 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  ShieldCheck
+  ShieldCheck,
+  Bell,
+  BellOff
 } from "lucide-react";
 import { motion } from "motion/react";
 import { UserSession } from "../types";
@@ -40,6 +42,8 @@ import { PremiumModal } from "../components/PremiumModal";
 import { uploadAvatar, AvatarValidationError } from "../lib/avatar";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
+import { ToggleSwitch } from "../components/ui/ToggleSwitch";
+import { useNotificationPreferences, NotificationPreferenceKey } from "../hooks/useNotificationPreferences";
 
 interface SettingsProps {
   onUserPrefUpdated: (user: UserSession) => void;
@@ -58,6 +62,14 @@ export const Settings: React.FC<SettingsProps> = ({
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
   const isGuest = user?.is_anonymous ?? false;
   const isTelegramLocked = isGuest || !isPremium;
+
+  // Preferensi notifikasi (push & Telegram) -- lihat useNotificationPreferences.ts
+  const {
+    preferences: notifPrefs,
+    loading: notifPrefsLoading,
+    savingKey: notifPrefsSavingKey,
+    setPreference: setNotifPreference,
+  } = useNotificationPreferences(user?.id);
 
   // PWA Custom Installation States
   const [canInstall, setCanInstall] = useState(!!window.deferredPrompt);
@@ -457,6 +469,13 @@ export const Settings: React.FC<SettingsProps> = ({
       showToast(t("toast.success_unlink"), "success");
     } catch (err: any) {
       showToast(err.message, "error");
+    }
+  };
+
+  const handleToggleNotifPref = async (key: NotificationPreferenceKey, next: boolean) => {
+    const ok = await setNotifPreference(key, next);
+    if (!ok) {
+      showToast(t("settings.notif_save_error"), "error");
     }
   };
 
@@ -1074,6 +1093,95 @@ export const Settings: React.FC<SettingsProps> = ({
                   </div>
                 )}
               </div>
+            )}
+          </div>
+
+          {/* Section: Notification Preferences (push & Telegram, per kategori).
+              SENGAJA tidak ada toggle untuk "Balasan Admin Support Chat" --
+              channel itu dikecualikan dan tetap selalu ON. */}
+          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
+            <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
+              <Bell size={14} className="text-indigo-400 light_sakura:text-rose-500" />
+              <span>{t("settings.notif_section")}</span>
+            </h3>
+
+            <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
+              {t("settings.notif_section_desc")}
+            </p>
+
+            {notifPrefsLoading ? (
+              <div className="flex items-center justify-center py-6 text-slate-500">
+                <Loader2 size={18} className="animate-spin" />
+              </div>
+            ) : (
+              <>
+                {/* Push (FCM) */}
+                <div className="space-y-1">
+                  <span className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-wider">
+                    {t("settings.notif_group_push")}
+                  </span>
+                  <div className="rounded-xl bg-slate-950 border border-slate-800 px-3.5 divide-y divide-slate-800/60 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 light_sakura:divide-rose-200/40">
+                    <ToggleSwitch
+                      label={t("settings.notif_push_transaction")}
+                      description={t("settings.notif_push_transaction_desc")}
+                      checked={notifPrefs.push_transaction}
+                      loading={notifPrefsSavingKey === "push_transaction"}
+                      onChange={(next) => handleToggleNotifPref("push_transaction", next)}
+                    />
+                    <ToggleSwitch
+                      label={t("settings.notif_push_bill_reminder")}
+                      description={t("settings.notif_push_bill_reminder_desc")}
+                      checked={notifPrefs.push_bill_reminder}
+                      loading={notifPrefsSavingKey === "push_bill_reminder"}
+                      onChange={(next) => handleToggleNotifPref("push_bill_reminder", next)}
+                    />
+                    <ToggleSwitch
+                      label={t("settings.notif_push_broadcast")}
+                      description={t("settings.notif_push_broadcast_desc")}
+                      checked={notifPrefs.push_broadcast}
+                      loading={notifPrefsSavingKey === "push_broadcast"}
+                      onChange={(next) => handleToggleNotifPref("push_broadcast", next)}
+                    />
+                  </div>
+                </div>
+
+                {/* Telegram */}
+                <div className="space-y-1">
+                  <span className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-wider">
+                    {t("settings.notif_group_telegram")}
+                  </span>
+                  {isTelegramLocked || !isTelegramLinked ? (
+                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-500 text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed flex items-center gap-2 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50">
+                      <BellOff size={13} className="shrink-0" />
+                      <span>{t("settings.notif_telegram_locked")}</span>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl bg-slate-950 border border-slate-800 px-3.5 divide-y divide-slate-800/60 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 light_sakura:divide-rose-200/40">
+                      <ToggleSwitch
+                        label={t("settings.notif_telegram_budget_alert")}
+                        description={t("settings.notif_telegram_budget_alert_desc")}
+                        checked={notifPrefs.telegram_budget_alert}
+                        loading={notifPrefsSavingKey === "telegram_budget_alert"}
+                        onChange={(next) => handleToggleNotifPref("telegram_budget_alert", next)}
+                      />
+                      <ToggleSwitch
+                        label={t("settings.notif_telegram_bill_reminder")}
+                        description={t("settings.notif_telegram_bill_reminder_desc")}
+                        checked={notifPrefs.telegram_bill_reminder}
+                        loading={notifPrefsSavingKey === "telegram_bill_reminder"}
+                        onChange={(next) => handleToggleNotifPref("telegram_bill_reminder", next)}
+                      />
+                      <ToggleSwitch
+                        label={t("settings.notif_telegram_broadcast")}
+                        description={t("settings.notif_telegram_broadcast_desc")}
+                        checked={notifPrefs.telegram_broadcast}
+                        loading={notifPrefsSavingKey === "telegram_broadcast"}
+                        onChange={(next) => handleToggleNotifPref("telegram_broadcast", next)}
+                      />
+                    </div>
+                  )}
+                </div>
+              </>
             )}
           </div>
 

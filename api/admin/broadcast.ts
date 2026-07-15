@@ -4,6 +4,7 @@ import { timingSafeEqual } from 'crypto';
 import { sendPushNotificationBatch } from '../_lib/fcm.js';
 import { sendTelegramMessageOrThrow } from '../_lib/telegram.js';
 import { logError } from '../_lib/errorLogger.js';
+import { getUsersWithDisabledPreference } from '../_lib/notificationPreferences.js';
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
@@ -205,7 +206,20 @@ async function handlePushBroadcast(
     return;
   }
 
-  const allTokens = tokens.map((r: { fcm_token: string }) => r.fcm_token).filter(Boolean) as string[];
+  // Skip token milik user yang mematikan toggle "push_broadcast" di
+  // Settings (ini juga mencakup notifikasi "app_update" dari CI/CD, karena
+  // keduanya lewat handlePushBroadcast() yang sama). Fail-open: user yang
+  // belum punya baris preferensi tetap dianggap menerima broadcast.
+  const disabledUserIds = await getUsersWithDisabledPreference(supabaseBackend, 'push_broadcast');
+  const allTokens = tokens
+    .filter((r: { fcm_token: string; user_id: string }) => !disabledUserIds.has(r.user_id))
+    .map((r: { fcm_token: string }) => r.fcm_token)
+    .filter(Boolean) as string[];
+
+  if (allTokens.length === 0) {
+    res.status(200).json({ success: true, total: 0, successCount: 0, failCount: 0 });
+    return;
+  }
   const total = allTokens.length;
   let successCount = 0;
   let failCount = 0;

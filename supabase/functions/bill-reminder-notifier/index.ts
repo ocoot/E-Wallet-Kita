@@ -10,8 +10,11 @@
 //   1. Panggil RPC get_due_bill_reminders_for_notification() (service-role).
 //      RPC itu sendiri yang sudah menyaring: belum lunas, jam lokal user
 //      persis 19:00, window H-3..H+0, fitur bill_reminders tidak dikunci
-//      admin, dan belum pernah dikirim untuk siklus jatuh tempo + hari-ke
-//      yang sama (dedup).
+//      admin, toggle "telegram_bill_reminder" user tidak dimatikan (lihat
+//      migration 20260820000000_notification_preferences.sql), dan belum
+//      pernah dikirim untuk siklus jatuh tempo + hari-ke yang sama (dedup).
+//      RPC juga mengembalikan push_bill_reminder_enabled per baris, dipakai
+//      di langkah 3b untuk memutuskan channel FCM sekunder.
 //   2. Untuk setiap baris, ambil label kategori dari tabel `categories`
 //      (sama seperti getCategoryLabel() di api/telegram-webhook.ts:
 //      label_id/label_en dengan fallback ke category_key).
@@ -43,6 +46,7 @@ interface DueBillRow {
   amount: number | null;
   next_due_date: string; // YYYY-MM-DD
   days_until_due: number; // 0..3
+  push_bill_reminder_enabled: boolean;
 }
 
 interface CategoryRow {
@@ -278,7 +282,10 @@ Deno.serve(async (req: Request) => {
 
         // FCM secondary channel — fire-and-forget, never blocks dedup
         // logging or affects the Telegram-based `sent`/`skipped` counts.
-        if (fcmChannelEnabled) {
+        // Also respects the user's "push_bill_reminder" toggle (Settings),
+        // already resolved per-row by get_due_bill_reminders_for_notification
+        // (fail-open to true if the user has no preferences row yet).
+        if (fcmChannelEnabled && row.push_bill_reminder_enabled) {
           const pushTitle = row.lang === "id" ? "Pengingat Tagihan" : "Bill Reminder";
           const pushBody = row.lang === "id"
             ? `${row.name} jatuh tempo ${row.days_until_due === 0 ? "hari ini" : `${row.days_until_due} hari lagi`}`

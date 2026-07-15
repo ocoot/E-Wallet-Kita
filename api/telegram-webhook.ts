@@ -12,6 +12,7 @@ import { tr } from './_lib/botText.js';
 import { inferCategoryKey } from './_lib/categoryInference.js';
 import { sendTelegramMessage, editTelegramMessage, answerTelegramCallback, sendTelegramDocument } from './_lib/telegram.js';
 import { sendPushNotificationToUser } from './_lib/fcm.js';
+import { isNotificationEnabled } from './_lib/notificationPreferences.js';
 import { Transaction } from '../src/types.js';
 
 type Lang = "id" | "en";
@@ -166,6 +167,12 @@ async function sendBudgetWarningIfNeeded(
   try {
     const result = await checkCategoryBudgetStatus(userId, categoryKey);
     if (!result || result.status === "safe") return;
+
+    // Hormati toggle "Peringatan Budget via Telegram" di Settings sebelum
+    // kirim -- kalau dimatikan, skip total (tidak ada channel lain untuk
+    // peringatan budget ini saat ini, jadi tidak ada fallback push).
+    const budgetAlertEnabled = await isNotificationEnabled(supabaseBackend, userId, "telegram_budget_alert");
+    if (!budgetAlertEnabled) return;
 
     const catLabel = await getCategoryLabel(categoryKey, lang);
     const percentStr = String(Math.round(result.percent));
@@ -1212,13 +1219,16 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           // sendBudgetWarningIfNeeded does.
           if (userCtx) {
             try {
-              const typeLabelPush = row.type === 'income' ? 'Pemasukan' : 'Pengeluaran';
-              await sendPushNotificationToUser(
-                supabaseBackend,
-                userCtx.id,
-                `Transaksi ${typeLabelPush}`,
-                `${amountStr} - ${row.original_text || row.category_key}`
-              );
+              const transactionPushEnabled = await isNotificationEnabled(supabaseBackend, userCtx.id, 'push_transaction');
+              if (transactionPushEnabled) {
+                const typeLabelPush = row.type === 'income' ? 'Pemasukan' : 'Pengeluaran';
+                await sendPushNotificationToUser(
+                  supabaseBackend,
+                  userCtx.id,
+                  `Transaksi ${typeLabelPush}`,
+                  `${amountStr} - ${row.original_text || row.category_key}`
+                );
+              }
             } catch (err) {
               console.error('[FCM] Failed to send transaction push:', err);
             }
@@ -1330,12 +1340,15 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             // receipt-based transaction saves. Non-blocking — push failure
             // never blocks the transaction.
             try {
-              await sendPushNotificationToUser(
-                supabaseBackend,
-                resApprove.transaction.user_id,
-                'Struk Tercatat',
-                `${formatIDR(resApprove.draft.total_amount)} - ${resApprove.draft.merchant_name || 'Receipt Scan'}`
-              );
+              const receiptPushEnabled = await isNotificationEnabled(supabaseBackend, resApprove.transaction.user_id, 'push_transaction');
+              if (receiptPushEnabled) {
+                await sendPushNotificationToUser(
+                  supabaseBackend,
+                  resApprove.transaction.user_id,
+                  'Struk Tercatat',
+                  `${formatIDR(resApprove.draft.total_amount)} - ${resApprove.draft.merchant_name || 'Receipt Scan'}`
+                );
+              }
             } catch (fcmErr) {
               console.error('[FCM] Failed to send receipt push:', fcmErr);
             }

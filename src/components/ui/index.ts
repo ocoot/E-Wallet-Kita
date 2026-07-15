@@ -6,3 +6,4 @@ export { Input } from "./Input";
 export type { InputAccent } from "./Input";
 export { Badge } from "./Badge";
 export type { BadgeTone } from "./Badge";
+export { ToggleSwitch } from "./ToggleSwitch";
