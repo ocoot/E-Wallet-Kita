@@ -22,6 +22,7 @@ import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { useNavItems, MOBILE_PRIMARY_NAV_IDS } from "../hooks/useNavItems";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { audioFeedback } from "../lib/audio";
 
 interface MobileBottomNavProps {
@@ -49,6 +50,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const { user } = useAuth();
   const { locale, setLocale, t } = useLanguage();
   const { theme, setTheme } = useTheme();
+  const { tokens, cx } = useThemeTokens();
   const { isFeatureLocked } = useMaintenance();
   const location = useLocation();
   const menuItems = useNavItems();
@@ -208,8 +210,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             size={20}
             className={
               isMoreActive
-                ? "text-indigo-400 light_sakura:text-rose-500"
-                : "text-slate-400 light_sakura:text-slate-500"
+                ? tokens.icon.accent
+                : tokens.text.muted
             }
           />
           <AnimatePresence initial={false}>
@@ -220,8 +222,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.18, ease: "easeOut" }}
-                className="font-sans text-[10px] font-medium truncate max-w-full px-0.5
-                  overflow-hidden text-indigo-400 light_sakura:text-rose-500"
+                className={cx(
+                  "font-sans text-[10px] font-medium truncate max-w-full px-0.5 overflow-hidden",
+                  tokens.text.accent
+                )}
               >
                 {t("nav.more")}
               </motion.span>
@@ -289,7 +293,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     {isGuest ? (
                       <ShieldAlert size={16} className="text-amber-400" />
                     ) : (
-                      <ShieldCheck size={16} className="text-emerald-400 light_sakura:text-emerald-600" />
+                      <ShieldCheck size={16} className={tokens.text.success} />
                     )}
                     <span className="font-sans font-semibold text-sm truncate max-w-[220px] dark_obsidian:text-slate-200 light_sakura:text-slate-900">
                       {displayName}
@@ -352,7 +356,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     {isMuted ? (
                       <VolumeX size={13} className="text-red-400 light_sakura:text-red-500 mb-0.5" />
                     ) : (
-                      <Volume2 size={13} className="text-indigo-400 light_sakura:text-rose-500 mb-0.5" />
+                      <Volume2 size={13} className={cx(tokens.icon.accent, "mb-0.5")} />
                     )}
                     <span>{isMuted ? t("common.muted") : t("common.sound")}</span>
                   </button>
