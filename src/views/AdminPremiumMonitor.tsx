@@ -246,7 +246,7 @@ export const AdminPremiumMonitor: React.FC = () => {
           <button
             disabled={!dummyQrisLoaded}
             onClick={() => requestToggleDummyQris(!dummyQrisEnabled)}
-            className={`relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0 disabled:opacity-50
+            className={`btn-exact relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0 disabled:opacity-50
               ${dummyQrisEnabled ? "bg-purple-600" : "bg-slate-700 light_sakura:bg-slate-200"}`}
             aria-pressed={dummyQrisEnabled}
           >

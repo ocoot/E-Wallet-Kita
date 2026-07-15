@@ -54,7 +54,7 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
           audioFeedback.playClick();
           onChange(!checked);
         }}
-        className={`relative shrink-0 w-11 h-6 rounded-full border transition-colors duration-200 cursor-pointer disabled:cursor-not-allowed
+        className={`btn-exact relative shrink-0 w-11 h-6 rounded-full border transition-colors duration-200 cursor-pointer disabled:cursor-not-allowed
           ${checked
             ? "bg-indigo-600 border-indigo-500 light_sakura:bg-rose-500 light_sakura:border-rose-400"
             : "bg-slate-800 border-slate-700 light_sakura:bg-rose-100 light_sakura:border-rose-200"

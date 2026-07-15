@@ -402,13 +402,21 @@ html { scroll-behavior: smooth; }
 }
 
 /* ── Mobile touch target sizing ──────────────────────────────────── */
-/* Ensure all interactive elements have ≥ 44px tap area on mobile */
+/* Ensure all interactive elements have ≥ 44px tap area on mobile.
+   PENTING: kedua rule di bawah HARUS pakai `:not(.btn-exact)` yang sama --
+   sebelumnya rule pertama tidak punya pengecualian ini sama sekali,
+   sehingga class `.btn-exact` di rule kedua efektifnya tidak pernah
+   berfungsi (spesifisitas sama, rule pertama tetap menang / kedua rule
+   men-declare properti yang identik). Elemen kecil yang MEMANG didesain
+   presisi (mis. switch/toggle pill custom seperti ToggleSwitch.tsx,
+   AdminMaintenance.tsx, AdminPremiumMonitor.tsx) butuh `.btn-exact` untuk
+   lolos dari pemaksaan min-height 44px ini, karena kalau tidak, tinggi
+   pill-nya (mis. h-6/h-7) ikut dipaksa jadi 44px sementara lebarnya tetap
+   sesuai desain -- hasilnya bulat gepeng, bukan pil switch yang benar. */
 @media (max-width: 639px) {
-  button, a[role="button"], [role="button"], input, select, textarea,
+  button:not(.btn-exact), a[role="button"]:not(.btn-exact), [role="button"]:not(.btn-exact),
+  input, select, textarea,
   .btn-mobile-target {
-    min-height: 44px;
-  }
-  button:not(.btn-exact), a[role="button"]:not(.btn-exact) {
     min-height: 44px;
   }
 }

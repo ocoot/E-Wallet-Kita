@@ -186,7 +186,7 @@ export const AdminMaintenance: React.FC = () => {
 
           <button
             onClick={() => setIsActive(v => !v)}
-            className={`relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0
+            className={`btn-exact relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0
               ${isActive ? "bg-amber-600" : "bg-slate-700 light_sakura:bg-slate-200"}`}
             aria-pressed={isActive}
           >
@@ -303,7 +303,7 @@ export const AdminMaintenance: React.FC = () => {
                       handleToggleSandboxBypass(feature.feature_key, !feature.bypass_in_sandbox)
                     }
                     disabled={!feature.is_locked}
-                    className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer shrink-0
+                    className={`btn-exact relative w-10 h-5 rounded-full transition-colors cursor-pointer shrink-0
                       ${feature.bypass_in_sandbox ? "bg-violet-600" : "bg-slate-700 light_sakura:bg-slate-200"}`}
                     aria-pressed={feature.bypass_in_sandbox}
                     aria-label={`Sandbox bypass ${feature.feature_key}`}
@@ -318,7 +318,7 @@ export const AdminMaintenance: React.FC = () => {
                 {/* Lock / Unlock main toggle */}
                 <button
                   onClick={() => handleToggleFeature(feature.feature_key, !feature.is_locked)}
-                  className={`relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0
+                  className={`btn-exact relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0
                     ${feature.is_locked ? "bg-red-600" : "bg-slate-700 light_sakura:bg-slate-200"}`}
                   aria-pressed={feature.is_locked}
                   aria-label={`Lock ${feature.feature_key}`}
