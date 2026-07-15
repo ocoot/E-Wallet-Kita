@@ -13,6 +13,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
@@ -41,6 +42,7 @@ export const BillReminders: React.FC = () => {
   const { categories } = useCategories();
   const { reminders, loading, error: remindersError, refresh } = useBillReminders(user?.id);
   const navigate = useNavigate();
+  const { tokens, cx } = useThemeTokens();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editTarget, setEditTarget] = useState<BillReminderWithUrgency | null>(null);
@@ -205,7 +207,7 @@ export const BillReminders: React.FC = () => {
               </p>
             </div>
             <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white font-semibold text-sm transition-colors shadow-lg shadow-emerald-500/20 shrink-0 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-500/20 cursor-pointer">
+              className={cx("flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold text-sm transition-colors shadow-lg shadow-emerald-500/20 shrink-0 light_sakura:shadow-rose-500/20 cursor-pointer", tokens.button.accentEmerald)}>
               <Plus size={16} /> {t("bill_reminders.add_button")}
             </button>
           </div>

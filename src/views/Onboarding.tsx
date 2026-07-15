@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Sparkles,
@@ -32,6 +33,7 @@ export const Onboarding: React.FC = () => {
   const { t, locale } = useLanguage();
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const { tokens, cx } = useThemeTokens();
 
   const [currentStep, setCurrentStep] = useState(0);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -144,7 +146,7 @@ export const Onboarding: React.FC = () => {
   return (
     <div className="min-h-[80vh] flex flex-col justify-center items-center py-6 sm:py-10 px-4 select-none">
       {/* Sound Controller and Progress indicator */}
-      <div className="w-full max-w-3xl flex items-center justify-between mb-6 text-sm text-slate-400 light_sakura:text-slate-600">
+      <div className={cx("w-full max-w-3xl flex items-center justify-between mb-6 text-sm", tokens.text.mutedAlt)}>
         <div className="flex items-center gap-2">
           <BookOpen className="text-emerald-500 light_sakura:text-rose-500" size={18} />
           <span className="font-medium tracking-tight">
@@ -177,26 +179,26 @@ export const Onboarding: React.FC = () => {
             {/* STEP 0: WELCOME */}
             {currentStep === 0 && (
               <div className="text-center space-y-6">
-                <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500 animate-pulse">
+                <div className={cx("mx-auto w-16 h-16 rounded-full flex items-center justify-center animate-pulse", tokens.chip.accentEmerald)}>
                   <Sparkles size={32} />
                 </div>
                 <div className="space-y-2">
-                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white light_sakura:text-slate-800">
+                  <h1 className={cx("text-2xl sm:text-3xl font-bold tracking-tight", tokens.text.onSurface)}>
                     {t("onboarding.welcome_title")}
                   </h1>
-                  <p className="text-slate-400 light_sakura:text-slate-600 max-w-lg mx-auto text-sm sm:text-base">
+                  <p className={cx("max-w-lg mx-auto text-sm sm:text-base", tokens.text.mutedAlt)}>
                     {t("onboarding.welcome_desc")}
                   </p>
                 </div>
 
                 <div className="bg-slate-950/40 rounded-2xl p-4 border border-slate-800/50 text-left space-y-3 max-w-md mx-auto light_sakura:bg-rose-50/30 light_sakura:border-rose-100">
-                  <div className="flex items-start gap-3 text-sm text-slate-300 light_sakura:text-slate-700">
+                  <div className={cx("flex items-start gap-3 text-sm", tokens.text.secondary)}>
                     <span className="flex-shrink-0">{t("onboarding.welcome_point_1")}</span>
                   </div>
-                  <div className="flex items-start gap-3 text-sm text-slate-300 light_sakura:text-slate-700">
+                  <div className={cx("flex items-start gap-3 text-sm", tokens.text.secondary)}>
                     <span className="flex-shrink-0">{t("onboarding.welcome_point_2")}</span>
                   </div>
-                  <div className="flex items-start gap-3 text-sm text-slate-300 light_sakura:text-slate-700">
+                  <div className={cx("flex items-start gap-3 text-sm", tokens.text.secondary)}>
                     <span className="flex-shrink-0">{t("onboarding.welcome_point_3")}</span>
                   </div>
                 </div>
@@ -207,14 +209,14 @@ export const Onboarding: React.FC = () => {
             {currentStep === 1 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                  <div className={cx("w-10 h-10 rounded-xl flex items-center justify-center", tokens.chip.accentEmerald)}>
                     <Edit3 size={20} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                    <h2 className={cx("text-xl font-bold", tokens.text.onSurface)}>
                       {t("onboarding.catat_title")}
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                    <p className={cx("text-xs sm:text-sm", tokens.text.mutedAlt)}>
                       {t("onboarding.catat_desc")}
                     </p>
                   </div>
@@ -222,7 +224,7 @@ export const Onboarding: React.FC = () => {
 
                 {/* Simulated form interface */}
                 <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
-                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider mb-4">
+                  <h3 className={cx("text-xs font-semibold uppercase tracking-wider mb-4", tokens.text.muted)}>
                     {t("onboarding.catat_practice_title")}
                   </h3>
 
@@ -230,7 +232,7 @@ export const Onboarding: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {/* Amount */}
                       <div>
-                        <label className="block text-xs font-medium text-slate-400 light_sakura:text-slate-600 mb-1">
+                        <label className={cx("block text-xs font-medium mb-1", tokens.text.mutedAlt)}>
                           {t("onboarding.catat_practice_amount")} <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
@@ -249,7 +251,7 @@ export const Onboarding: React.FC = () => {
 
                       {/* Category selection */}
                       <div>
-                        <label className="block text-xs font-medium text-slate-400 light_sakura:text-slate-600 mb-1">
+                        <label className={cx("block text-xs font-medium mb-1", tokens.text.mutedAlt)}>
                           {t("onboarding.catat_practice_cat")}
                         </label>
                         <DropdownField
@@ -268,7 +270,7 @@ export const Onboarding: React.FC = () => {
 
                     {/* Note description */}
                     <div>
-                      <label className="block text-xs font-medium text-slate-400 light_sakura:text-slate-600 mb-1">
+                      <label className={cx("block text-xs font-medium mb-1", tokens.text.mutedAlt)}>
                         {t("onboarding.catat_practice_note")}
                       </label>
                       <input
@@ -284,7 +286,7 @@ export const Onboarding: React.FC = () => {
                     {!hasPracticedCatat ? (
                       <button
                         type="submit"
-                        className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold transition-colors flex items-center justify-center gap-2 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 shadow-lg shadow-emerald-500/20 light_sakura:shadow-rose-500/20"
+                        className={cx("w-full py-2.5 px-4 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 light_sakura:shadow-rose-500/20", tokens.button.accentEmerald)}
                       >
                         <Plus size={16} />
                         {t("onboarding.catat_practice_btn")}
@@ -304,20 +306,20 @@ export const Onboarding: React.FC = () => {
             {currentStep === 2 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                  <div className={cx("w-10 h-10 rounded-xl flex items-center justify-center", tokens.chip.accentEmerald)}>
                     <Send size={20} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                    <h2 className={cx("text-xl font-bold", tokens.text.onSurface)}>
                       {t("onboarding.telegram_title")}
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                    <p className={cx("text-xs sm:text-sm", tokens.text.mutedAlt)}>
                       {t("onboarding.telegram_desc")}
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                <div className={cx("grid grid-cols-1 md:grid-cols-2 gap-3 text-xs", tokens.text.secondary)}>
                   <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
                     <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
                     <span>{t("onboarding.telegram_feature_1")}</span>
@@ -330,7 +332,7 @@ export const Onboarding: React.FC = () => {
 
                 {/* Simulated chat bubble mockup */}
                 <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-3 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
-                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                  <h3 className={cx("text-xs font-semibold uppercase tracking-wider", tokens.text.muted)}>
                     {t("onboarding.catat_practice_title")} (Simulasi)
                   </h3>
 
@@ -351,7 +353,7 @@ export const Onboarding: React.FC = () => {
                   </motion.div>
                 </div>
 
-                <p className="text-[clamp(0.625rem,2.6vw,0.6875rem)] text-slate-500 light_sakura:text-slate-500 text-center">
+                <p className="text-[clamp(0.625rem,2.6vw,0.6875rem)] text-slate-500 text-center">
                   {t("onboarding.telegram_setup_hint")}
                 </p>
               </div>
@@ -361,21 +363,21 @@ export const Onboarding: React.FC = () => {
             {currentStep === 3 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                  <div className={cx("w-10 h-10 rounded-xl flex items-center justify-center", tokens.chip.accentEmerald)}>
                     <ListFilter size={20} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                    <h2 className={cx("text-xl font-bold", tokens.text.onSurface)}>
                       {t("onboarding.history_title")}
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                    <p className={cx("text-xs sm:text-sm", tokens.text.mutedAlt)}>
                       {t("onboarding.history_desc")}
                     </p>
                   </div>
                 </div>
 
                 {/* Bullet items explaining ledger utilities */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                <div className={cx("grid grid-cols-1 md:grid-cols-3 gap-3 text-xs", tokens.text.secondary)}>
                   <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100">
                     {t("onboarding.history_feature_1")}
                   </div>
@@ -391,7 +393,7 @@ export const Onboarding: React.FC = () => {
                 <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-4 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                      <h3 className={cx("text-xs font-semibold uppercase tracking-wider", tokens.text.muted)}>
                         {t("onboarding.history_practice_title")}
                       </h3>
                       <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs text-slate-500 light_sakura:text-slate-600">
@@ -499,20 +501,20 @@ export const Onboarding: React.FC = () => {
             {currentStep === 4 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                  <div className={cx("w-10 h-10 rounded-xl flex items-center justify-center", tokens.chip.accentEmerald)}>
                     <Wallet size={20} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                    <h2 className={cx("text-xl font-bold", tokens.text.onSurface)}>
                       {t("onboarding.wallet_title")}
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                    <p className={cx("text-xs sm:text-sm", tokens.text.mutedAlt)}>
                       {t("onboarding.wallet_desc")}
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                <div className={cx("grid grid-cols-1 md:grid-cols-2 gap-3 text-xs", tokens.text.secondary)}>
                   <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
                     <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
                     <span>{t("onboarding.wallet_feature_1")}</span>
@@ -525,7 +527,7 @@ export const Onboarding: React.FC = () => {
 
                 {/* Simulated wallet list */}
                 <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-3 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
-                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                  <h3 className={cx("text-xs font-semibold uppercase tracking-wider", tokens.text.muted)}>
                     {t("onboarding.catat_practice_title")} (Simulasi)
                   </h3>
 
@@ -539,7 +541,7 @@ export const Onboarding: React.FC = () => {
                         <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 light_sakura:bg-rose-50 light_sakura:text-rose-500">
                           <Wallet size={14} />
                         </div>
-                        <span className="text-sm font-semibold text-white light_sakura:text-slate-800">{w.label}</span>
+                        <span className={cx("text-sm font-semibold", tokens.text.onSurface)}>{w.label}</span>
                       </div>
                       <span className="text-sm font-mono text-slate-300 light_sakura:text-slate-600">{w.amount}</span>
                     </div>
@@ -552,20 +554,20 @@ export const Onboarding: React.FC = () => {
             {currentStep === 5 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                  <div className={cx("w-10 h-10 rounded-xl flex items-center justify-center", tokens.chip.accentEmerald)}>
                     <PiggyBank size={20} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                    <h2 className={cx("text-xl font-bold", tokens.text.onSurface)}>
                       {t("onboarding.budget_title")}
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                    <p className={cx("text-xs sm:text-sm", tokens.text.mutedAlt)}>
                       {t("onboarding.budget_desc")}
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                <div className={cx("grid grid-cols-1 md:grid-cols-2 gap-3 text-xs", tokens.text.secondary)}>
                   <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
                     <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
                     <span>{t("onboarding.budget_feature_1")}</span>
@@ -578,14 +580,14 @@ export const Onboarding: React.FC = () => {
 
                 {/* Simulated Budget Visual */}
                 <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-4 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
-                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                  <h3 className={cx("text-xs font-semibold uppercase tracking-wider", tokens.text.muted)}>
                     {t("onboarding.catat_practice_title")} (Simulasi)
                   </h3>
 
                   <div className="space-y-4">
                     <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
                       <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm font-semibold text-white light_sakura:text-slate-800">{t("categories.food_drink")}</span>
+                        <span className={cx("text-sm font-semibold", tokens.text.onSurface)}>{t("categories.food_drink")}</span>
                         <span className="text-xs text-rose-400 font-mono">85%</span>
                       </div>
                       <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden light_sakura:bg-rose-50">
@@ -615,20 +617,20 @@ export const Onboarding: React.FC = () => {
             {currentStep === 6 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                  <div className={cx("w-10 h-10 rounded-xl flex items-center justify-center", tokens.chip.accentEmerald)}>
                     <Target size={20} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                    <h2 className={cx("text-xl font-bold", tokens.text.onSurface)}>
                       {t("onboarding.savings_title")}
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                    <p className={cx("text-xs sm:text-sm", tokens.text.mutedAlt)}>
                       {t("onboarding.savings_desc")}
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                <div className={cx("grid grid-cols-1 md:grid-cols-2 gap-3 text-xs", tokens.text.secondary)}>
                   <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
                     <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
                     <span>{t("onboarding.savings_feature_1")}</span>
@@ -641,13 +643,13 @@ export const Onboarding: React.FC = () => {
 
                 {/* Simulated savings progress */}
                 <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-4 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
-                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                  <h3 className={cx("text-xs font-semibold uppercase tracking-wider", tokens.text.muted)}>
                     {t("onboarding.catat_practice_title")} (Simulasi)
                   </h3>
 
                   <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-semibold text-white light_sakura:text-slate-800">{t("onboarding.savings_mock_pocket_name")}</span>
+                      <span className={cx("text-sm font-semibold", tokens.text.onSurface)}>{t("onboarding.savings_mock_pocket_name")}</span>
                       <span className="text-xs text-emerald-400 light_sakura:text-rose-500 font-mono">35%</span>
                     </div>
                     <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden light_sakura:bg-rose-50">
@@ -671,20 +673,20 @@ export const Onboarding: React.FC = () => {
             {currentStep === 7 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                  <div className={cx("w-10 h-10 rounded-xl flex items-center justify-center", tokens.chip.accentEmerald)}>
                     <Coins size={20} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                    <h2 className={cx("text-xl font-bold", tokens.text.onSurface)}>
                       {t("gold.page_title")}
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                    <p className={cx("text-xs sm:text-sm", tokens.text.mutedAlt)}>
                       {t("onboarding.gold_desc")}
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                <div className={cx("grid grid-cols-1 md:grid-cols-2 gap-3 text-xs", tokens.text.secondary)}>
                   <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
                     <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
                     <span>{t("onboarding.gold_feature_1")}</span>
@@ -697,14 +699,14 @@ export const Onboarding: React.FC = () => {
 
                 {/* Simulated gold pocket card */}
                 <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-4 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
-                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                  <h3 className={cx("text-xs font-semibold uppercase tracking-wider", tokens.text.muted)}>
                     {t("onboarding.catat_practice_title")} (Simulasi)
                   </h3>
 
                   <div className="p-4 rounded-xl bg-gradient-to-br from-amber-500/10 to-slate-900 border border-amber-500/20 light_sakura:from-amber-50 light_sakura:to-white light_sakura:border-amber-200 shadow-sm">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-bold text-white light_sakura:text-slate-800">2.5 gram Antam</p>
+                        <p className={cx("text-sm font-bold", tokens.text.onSurface)}>2.5 gram Antam</p>
                         <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-0.5">{t("gold.stat_market_value")}: Rp3.250.000</p>
                       </div>
                       <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-500/10 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-700">
@@ -720,20 +722,20 @@ export const Onboarding: React.FC = () => {
             {currentStep === 8 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                  <div className={cx("w-10 h-10 rounded-xl flex items-center justify-center", tokens.chip.accentEmerald)}>
                     <CalendarClock size={20} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                    <h2 className={cx("text-xl font-bold", tokens.text.onSurface)}>
                       {t("installments.page_title")}
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                    <p className={cx("text-xs sm:text-sm", tokens.text.mutedAlt)}>
                       {t("onboarding.installments_desc")}
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                <div className={cx("grid grid-cols-1 md:grid-cols-2 gap-3 text-xs", tokens.text.secondary)}>
                   <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
                     <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
                     <span>{t("onboarding.installments_feature_1")}</span>
@@ -746,13 +748,13 @@ export const Onboarding: React.FC = () => {
 
                 {/* Simulated installment progress */}
                 <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-4 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
-                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                  <h3 className={cx("text-xs font-semibold uppercase tracking-wider", tokens.text.muted)}>
                     {t("onboarding.catat_practice_title")} (Simulasi)
                   </h3>
 
                   <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100 shadow-sm">
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-sm font-semibold text-white light_sakura:text-slate-800">{t("onboarding.installments_mock_name")}</span>
+                      <span className={cx("text-sm font-semibold", tokens.text.onSurface)}>{t("onboarding.installments_mock_name")}</span>
                       <span className="text-xs text-slate-400 font-mono">8/24 {t("onboarding.installments_mock_unit")}</span>
                     </div>
                     <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden light_sakura:bg-rose-50">
@@ -772,20 +774,20 @@ export const Onboarding: React.FC = () => {
             {currentStep === 9 && (
               <div className="space-y-6">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                  <div className={cx("w-10 h-10 rounded-xl flex items-center justify-center", tokens.chip.accentEmerald)}>
                     <ReceiptText size={20} />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white light_sakura:text-slate-800">
+                    <h2 className={cx("text-xl font-bold", tokens.text.onSurface)}>
                       {t("onboarding.bill_title")}
                     </h2>
-                    <p className="text-xs sm:text-sm text-slate-400 light_sakura:text-slate-600">
+                    <p className={cx("text-xs sm:text-sm", tokens.text.mutedAlt)}>
                       {t("onboarding.bill_desc")}
                     </p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-slate-300 light_sakura:text-slate-700">
+                <div className={cx("grid grid-cols-1 md:grid-cols-2 gap-3 text-xs", tokens.text.secondary)}>
                   <div className="p-3 rounded-xl bg-slate-950/40 border border-slate-800/40 light_sakura:bg-rose-50/10 light_sakura:border-rose-100 flex items-start gap-2">
                     <CheckCircle2 size={14} className="mt-0.5 text-emerald-500 light_sakura:text-rose-500" />
                     <span>{t("onboarding.bill_feature_1")}</span>
@@ -798,7 +800,7 @@ export const Onboarding: React.FC = () => {
 
                 {/* Simulated Bill Card */}
                 <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 space-y-4 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
-                  <h3 className="text-xs font-semibold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider">
+                  <h3 className={cx("text-xs font-semibold uppercase tracking-wider", tokens.text.muted)}>
                     {t("onboarding.catat_practice_title")} (Simulasi)
                   </h3>
 
@@ -814,7 +816,7 @@ export const Onboarding: React.FC = () => {
                         <ReceiptText size={18} />
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-white light_sakura:text-slate-800">PLN Pasca Bayar</h4>
+                        <h4 className={cx("text-sm font-bold", tokens.text.onSurface)}>PLN Pasca Bayar</h4>
                         <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500">{t("bill_reminders.due_day_label", { day: 20 })}</p>
                       </div>
                     </div>
@@ -822,7 +824,7 @@ export const Onboarding: React.FC = () => {
                     <div className="flex items-end justify-between">
                       <div>
                         <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase tracking-wider">{t("bill_reminders.amount_label")}</p>
-                        <p className="text-sm font-mono font-bold text-white light_sakura:text-slate-800">Rp350.000</p>
+                        <p className={cx("text-sm font-mono font-bold", tokens.text.onSurface)}>Rp350.000</p>
                       </div>
                       <button 
                         type="button"
@@ -830,7 +832,7 @@ export const Onboarding: React.FC = () => {
                           playSuccess();
                           showToast(t("bill_reminders.marked_paid"), "success");
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-white text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                        className={cx("px-3 py-1.5 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold transition-colors", tokens.button.accentEmerald)}
                       >
                         {t("bill_reminders.mark_paid")}
                       </button>
@@ -843,14 +845,14 @@ export const Onboarding: React.FC = () => {
             {/* STEP 10: WRAP UP / GET STARTED */}
             {currentStep === 10 && (
               <div className="text-center space-y-6 py-4">
-                <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500 animate-bounce">
+                <div className={cx("mx-auto w-16 h-16 rounded-full flex items-center justify-center animate-bounce", tokens.chip.accentEmerald)}>
                   <CheckCircle2 size={32} />
                 </div>
                 <div className="space-y-2">
-                  <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white light_sakura:text-slate-800">
+                  <h1 className={cx("text-2xl sm:text-3xl font-bold tracking-tight", tokens.text.onSurface)}>
                     {t("onboarding.concl_title")}
                   </h1>
-                  <p className="text-slate-400 light_sakura:text-slate-600 max-w-lg mx-auto text-sm sm:text-base">
+                  <p className={cx("max-w-lg mx-auto text-sm sm:text-base", tokens.text.mutedAlt)}>
                     {t("onboarding.concl_desc")}
                   </p>
                 </div>
@@ -887,7 +889,7 @@ export const Onboarding: React.FC = () => {
 
             <button
               onClick={handleNext}
-              className="py-2 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 shadow-lg shadow-emerald-500/20 light_sakura:shadow-rose-500/20"
+              className={cx("py-2 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 light_sakura:shadow-rose-500/20", tokens.button.accentEmerald)}
             >
               <span>{currentStep === stepsCount - 1 ? t("onboarding.btn_finish") : t("onboarding.btn_next")}</span>
               <ArrowRight size={16} />

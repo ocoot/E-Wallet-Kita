@@ -88,6 +88,35 @@ export const themeTokens = {
     muted: "text-slate-400 light_sakura:text-slate-500",
   },
 
+  /**
+   * Kombinasi bg+text (bukan cuma text) -- dipakai untuk "chip" bulat/rounded
+   * di belakang ikon fitur (bg lembut + warna ikon senada di atasnya).
+   */
+  chip: {
+    /**
+     * Ikon fitur/step dengan aksen emerald (dark) / rose (light) -- BEDA
+     * dari `icon.accent` (indigo/rose) di atas. Dipakai utuh identik di
+     * Onboarding.tsx (11x) & Dashboard.tsx -- exact match terverifikasi
+     * sebelum ditambahkan ke sini.
+     */
+    accentEmerald:
+      "bg-emerald-500/10 text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500",
+  },
+
+  button: {
+    /**
+     * Tombol CTA solid emerald (dark) / rose (light) dengan teks putih di
+     * kedua tema -- dipakai di luar `ui/Button.tsx` (tombol custom inline,
+     * bukan lewat komponen Button). Exact match diverifikasi di 3 file:
+     * Onboarding.tsx (3x), BillReminders.tsx, Dashboard.tsx. Shadow/ukuran/
+     * radius TIDAK termasuk token ini karena bervariasi per pemakaian --
+     * tetap ditulis literal di pemanggil (mis. "shadow-lg shadow-emerald-
+     * 500/20 light_sakura:shadow-rose-500/20").
+     */
+    accentEmerald:
+      "bg-emerald-500 hover:bg-emerald-400 text-white light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400",
+  },
+
   form: {
     /**
      * Styling standar <input> teks/angka di form (nama pos, saldo awal,

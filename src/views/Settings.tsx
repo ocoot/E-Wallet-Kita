@@ -42,6 +42,7 @@ import { PremiumModal } from "../components/PremiumModal";
 import { uploadAvatar, AvatarValidationError } from "../lib/avatar";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { useNotificationPreferences, NotificationPreferenceKey } from "../hooks/useNotificationPreferences";
 
@@ -57,6 +58,7 @@ export const Settings: React.FC<SettingsProps> = ({
   const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { tokens, cx } = useThemeTokens();
 
   const { isPremium, refresh: refreshPremium } = usePremium();
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
@@ -527,7 +529,7 @@ export const Settings: React.FC<SettingsProps> = ({
         
         {/* View Header */}
         <div className="flex flex-col border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
-          <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+          <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
             {t("settings.title")}
           </h1>
           <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500 font-medium">
@@ -602,7 +604,7 @@ export const Settings: React.FC<SettingsProps> = ({
             </h3>
 
             <div className="space-y-1.5">
-              <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider block">
+              <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block", tokens.text.muted)}>
                 {t("settings.display_name")}
               </label>
               
@@ -632,7 +634,7 @@ export const Settings: React.FC<SettingsProps> = ({
               className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4"
             >
               <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
-                <ShieldCheck size={14} className="text-indigo-400 light_sakura:text-rose-500" />
+                <ShieldCheck size={14} className={cx(tokens.icon.accent)} />
                 <span>{t("settings.security_section")}</span>
               </h3>
 
@@ -734,8 +736,8 @@ export const Settings: React.FC<SettingsProps> = ({
 
             {/* Language selector row */}
             <div className="space-y-1.5">
-              <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                <Globe size={12} className="text-indigo-400 light_sakura:text-rose-500" />
+              <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider flex items-center gap-2", tokens.text.muted)}>
+                <Globe size={12} className={cx(tokens.icon.accent)} />
                 <span>{t("settings.language")}</span>
               </label>
               
@@ -775,8 +777,8 @@ export const Settings: React.FC<SettingsProps> = ({
 
             {/* Theme selector row */}
             <div className="space-y-1.5">
-              <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider flex items-center gap-2">
-                <SunMoon size={12} className="text-indigo-400 light_sakura:text-rose-500" />
+              <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider flex items-center gap-2", tokens.text.muted)}>
+                <SunMoon size={12} className={cx(tokens.icon.accent)} />
                 <span>{t("settings.theme")}</span>
               </label>
               
@@ -819,7 +821,7 @@ export const Settings: React.FC<SettingsProps> = ({
           {/* Section 3: PWA Installation Block */}
           <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
             <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
-              <Smartphone size={14} className="text-indigo-400 light_sakura:text-rose-500" />
+              <Smartphone size={14} className={cx(tokens.icon.accent)} />
               <span>{t("settings.pwa_section")}</span>
             </h3>
 
@@ -828,7 +830,7 @@ export const Settings: React.FC<SettingsProps> = ({
             </p>
 
             {isStandalone ? (
-              <div className="flex items-center gap-2 text-emerald-400 light_sakura:text-emerald-600 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20">
+              <div className={cx("flex items-center gap-2 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20", tokens.text.success)}>
                 <CheckCircle size={16} />
                 <span className="font-sans text-xs font-semibold">{t("settings.pwa_installed")}</span>
               </div>
@@ -855,7 +857,7 @@ export const Settings: React.FC<SettingsProps> = ({
             {/* Section 4: Privacy & Data controls (self-service export & account deletion) */}
             <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
               <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
-                <ShieldQuestion size={14} className="text-indigo-400 light_sakura:text-rose-500" />
+                <ShieldQuestion size={14} className={cx(tokens.icon.accent)} />
                 <span>{t("settings.privacy_section")}</span>
               </h3>
 
@@ -866,7 +868,7 @@ export const Settings: React.FC<SettingsProps> = ({
               {/* Export my data */}
               <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 space-y-2.5">
                 <div className="flex items-start gap-2.5">
-                  <Download size={14} className="text-indigo-400 light_sakura:text-rose-500 mt-0.5 shrink-0" />
+                  <Download size={14} className={cx("mt-0.5 shrink-0", tokens.icon.accent)} />
                   <div>
                     <p className="font-sans text-xs font-semibold text-slate-200 light_sakura:text-slate-800">
                       {t("settings.privacy_export_title")}
@@ -947,10 +949,10 @@ export const Settings: React.FC<SettingsProps> = ({
                   <Lock size={24} className="animate-pulse" />
                 </div>
                 <div className="space-y-1">
-                  <h4 className="font-sans font-bold text-xs text-white light_sakura:text-slate-800">
+                  <h4 className={cx("font-sans font-bold text-xs", tokens.text.onSurface)}>
                     {t("settings.premium_locked_title")}
                   </h4>
-                  <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 light_sakura:text-slate-600 max-w-sm leading-relaxed">
+                  <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] max-w-sm leading-relaxed", tokens.text.mutedAlt)}>
                     {isGuest 
                       ? t("settings.premium_locked_guest_desc")
                       : t("settings.premium_locked_user_desc")
@@ -984,7 +986,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     </div>
                     
                     <div>
-                      <h4 className="font-sans font-bold text-xs text-white light_sakura:text-slate-800">
+                      <h4 className={cx("font-sans font-bold text-xs", tokens.text.onSurface)}>
                         {t("settings.telegram_sync_status")}
                       </h4>
                       <div className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 mt-0.5 light_sakura:text-slate-500">
@@ -998,13 +1000,13 @@ export const Settings: React.FC<SettingsProps> = ({
 
                 {/* Features Highlight */}
                 <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 space-y-3">
-                  <h4 className="font-sans font-bold text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-400 light_sakura:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                  <h4 className={cx("font-sans font-bold text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest flex items-center gap-1.5", tokens.text.muted)}>
                     <Sparkles size={12} className="text-amber-400" />
                     <span>{t("settings.telegram_features_title")}</span>
                   </h4>
                   <ul className="space-y-2">
                     {[1, 2, 3, 4].map(i => (
-                      <li key={i} className="flex items-start gap-2 text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 light_sakura:text-slate-600">
+                      <li key={i} className={cx("flex items-start gap-2 text-[clamp(0.6188rem,2.86vw,0.6875rem)]", tokens.text.mutedAlt)}>
                         <CheckCircle size={12} className="text-emerald-500 shrink-0 mt-0.5" />
                         <span>{t(`settings.telegram_feature_${i}`)}</span>
                       </li>
@@ -1041,7 +1043,7 @@ export const Settings: React.FC<SettingsProps> = ({
                         <div className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-indigo-400 shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
                           {step}
                         </div>
-                        <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 light_sakura:text-slate-600 leading-normal pt-0.5">
+                        <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-normal pt-0.5", tokens.text.mutedAlt)}>
                           {t(`settings.telegram_step_${step}`)}
                         </p>
                       </div>
@@ -1082,7 +1084,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     <div className="w-full h-px bg-slate-800/50 light_sakura:bg-rose-100" />
 
                     <div className="flex flex-col items-center gap-2">
-                       <div className="flex items-center gap-2 font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 light_sakura:text-slate-500 font-semibold uppercase tracking-wider">
+                       <div className={cx("flex items-center gap-2 font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold uppercase tracking-wider", tokens.text.muted)}>
                         <RefreshCw size={13} className="animate-spin text-indigo-400" />
                         <span>{t("settings.code_expires")}: {formatTimerStr(timerSeconds)}</span>
                       </div>
@@ -1101,7 +1103,7 @@ export const Settings: React.FC<SettingsProps> = ({
               channel itu dikecualikan dan tetap selalu ON. */}
           <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
             <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
-              <Bell size={14} className="text-indigo-400 light_sakura:text-rose-500" />
+              <Bell size={14} className={cx(tokens.icon.accent)} />
               <span>{t("settings.notif_section")}</span>
             </h3>
 
