@@ -29,7 +29,7 @@ export async function sendPremiumReceiptEmail(
   const { data: { session } } = await supabase.auth.getSession();
   const token = session?.access_token;
 
-  const response = await fetch("/api/send-receipt", {
+  const response = await fetch("/api/receipt?action=send", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

@@ -207,7 +207,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
       const base64Audio = await blobToBase64(blob);
 
       // Step 1: transcribe audio → text
-      const transcribeResp = await fetch("/api/parse-voice", {
+      const transcribeResp = await fetch("/api/parse?type=voice", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -242,9 +242,9 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
       }
 
       // Step 2: parse the transcript with the SAME pipeline typed text
-      // uses (/api/parse-transaction) — no separate amount/category logic
+      // uses (/api/parse?type=text) — no separate amount/category logic
       // for voice.
-      const parseResp = await fetch("/api/parse-transaction", {
+      const parseResp = await fetch("/api/parse?type=text", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

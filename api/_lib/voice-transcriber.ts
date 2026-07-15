@@ -4,8 +4,8 @@ import { GoogleGenAI } from "@google/genai";
 // Voice note transcription (audio → plain text)
 //
 // Shared between the Telegram bot (api/telegram-webhook.ts) and the web
-// app (api/parse-voice.ts). Both hand the raw transcript to the SAME
-// parseFinancialQuery / /api/parse-transaction pipeline used for typed
+// app (api/parse.ts, type=voice). Both hand the raw transcript to the SAME
+// parseFinancialQuery / /api/parse (type=text) pipeline used for typed
 // text, so no new amount/category parsing logic exists for voice — only
 // "turn audio into text" is voice-specific.
 //

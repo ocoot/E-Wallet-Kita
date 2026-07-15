@@ -154,7 +154,7 @@ html, body {
 /* ── Animasi partikel cuaca dinamis (DashboardWeatherLayer) ──────────
    Dipakai untuk mensimulasikan hujan, salju, awan bergerak, kabut, dan
    kilat di background welcome banner Dashboard, sesuai kondisi cuaca
-   real-time dari /api/weather. Semua partikel posisi & timing-nya
+   real-time dari /api/utils?type=weather. Semua partikel posisi & timing-nya
    di-generate di JS lalu dikontrol lewat CSS var per elemen supaya tidak
    perlu banyak keyframe unik. */
 

@@ -196,7 +196,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
         throw new Error("Ukuran data gambar setelah diproses masih terlalu besar. Silakan coba gambar dengan resolusi lebih rendah atau crop gambar.");
       }
         
-      const response = await fetch("/api/parse-receipt", {
+      const response = await fetch("/api/receipt?action=parse", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

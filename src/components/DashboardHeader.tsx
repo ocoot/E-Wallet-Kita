@@ -159,7 +159,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
       {/* Overlay event/liburan (confetti Piala Dunia, dll) -- sengaja dirender
           TERPISAH dari DashboardWeatherLayer supaya tetap muncul walau data
-          cuaca gagal/loading (geolocation ditolak, /api/weather down, dst).
+          cuaca gagal/loading (geolocation ditolak, /api/utils?type=weather down, dst).
           Sebelumnya overlay ini "menumpang" di dalam weather layer sehingga
           tidak pernah terlihat ketika cuaca gagal dimuat. */}
       {eventOverlay && (

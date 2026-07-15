@@ -16,12 +16,12 @@ console.log("====================================");
 /**
  * NOTE: this file used to keep its own GoogleGenAI client + a full copy of
  * the transaction-parsing logic (model call, fallback chain, category
- * inference) for the /api/parse-transaction route below. That copy had
+ * inference) for the /api/parse route below. That copy had
  * drifted badly from the real production handler in
- * api/parse-transaction.ts — missing auth, rate limiting, the multi-model
+ * api/parse.ts — missing auth, rate limiting, the multi-model
  * Gemini fallback chain, and DB-driven categories. The route now delegates
  * to that handler directly (see startServer() below), the same pattern
- * already used for broadcast, telegram-webhook, and send-receipt.
+ * already used for broadcast, telegram-webhook, and receipt.
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -42,43 +42,25 @@ async function startServer() {
 
   app.use(express.json());
 
-  // API Health Indicator
-  app.get("/api/health", (req, res) => {
-    res.json({ 
-      status: "ok", 
-      mode: process.env.NODE_ENV || "development"
-    });
-  });
-
   // Dynamic imports — these modules create Supabase clients at import time,
   // so env vars must already be loaded before they're required.
-  const parseTransactionHandler = (await import("./api/parse-transaction")).default;
-  const parseReceiptHandler = (await import("./api/parse-receipt")).default;
-  const parseVoiceHandler = (await import("./api/parse-voice")).default;
+  const parseHandler = (await import("./api/parse")).default;
   const telegramWebhookHandler = (await import("./api/telegram-webhook")).default;
-  const sendReceiptHandler = (await import("./api/send-receipt")).default;
+  const receiptHandler = (await import("./api/receipt")).default;
   const premiumPaymentHandler = (await import("./api/premium/payment")).default;
   const broadcastHandler = (await import("./api/admin/broadcast")).default;
-  const weatherHandler = (await import("./api/weather")).default;
+  const utilsHandler = (await import("./api/utils")).default;
 
-  // AI transaction parser (Delegated to serverless module — single source
-  // of truth in api/parse-transaction.ts: auth check, per-user rate
+  // API Health Indicator + widget cuaca (Delegated to serverless module —
+  // merged endpoint, routed via ?type=health / ?type=weather)
+  app.get("/api/utils", utilsHandler as any);
+
+  // AI transaction parser + voice-note transcription (Delegated to
+  // serverless module — merged endpoint, routed via ?type=text / ?type=voice.
+  // Single source of truth in api/parse.ts: auth check, per-user rate
   // limiting, 500-char query limit, the 7-model Gemini fallback chain, and
   // DB-driven categories all now apply in dev too, not just in production)
-  app.post("/api/parse-transaction", parseTransactionHandler as any);
-
-  // Web OCR receipt upload (Delegated to serverless module — same
-  // api/_lib/receipt-parser.ts the Telegram bot's handleReceiptPhoto uses
-  // internally, which is why the bot never showed this issue: it calls the
-  // parser function directly instead of going through this HTTP route).
-  // This route existed as a file but was never mounted here, so any web
-  // upload hit Express's/Vite's catch-all and came back as a 404.
-  app.post("/api/parse-receipt", parseReceiptHandler as any);
-
-  // Web voice-note transcription (same gap/fix as parse-receipt above —
-  // was defined in api/parse-voice.ts but never mounted, so VoiceRecorder.tsx's
-  // POST to /api/parse-voice would 404 in this dev/preview server too).
-  app.post("/api/parse-voice", parseVoiceHandler as any);
+  app.post("/api/parse", parseHandler as any);
 
   // Admin Broadcast — unified push + telegram (Delegated to serverless module)
   app.post("/api/admin/broadcast", broadcastHandler as any);
@@ -88,16 +70,14 @@ async function startServer() {
   app.post("/api/telegram-webhook", telegramWebhookHandler as any);
   app.post("/api/telegram/webhook", telegramWebhookHandler as any);
 
-  // Send premium receipt email via SMTP (Gmail)
-  app.post("/api/send-receipt", sendReceiptHandler as any);
+  // Receipt endpoints — OCR parse (?action=parse) + email send (?action=send)
+  // (Delegated to serverless module — merged endpoint)
+  app.post("/api/receipt", receiptHandler as any);
 
   // Premium payment — create, status check, webhook (Delegated to serverless module)
   app.post("/api/premium/payment", premiumPaymentHandler as any);
   app.get("/api/premium/payment", premiumPaymentHandler as any);
   app.put("/api/premium/payment", premiumPaymentHandler as any);
-
-  // Widget cuaca dinamis di Dashboard (Delegated to serverless module)
-  app.get("/api/weather", weatherHandler as any);
 
   // Vite development vs production static handler integration
   if (process.env.NODE_ENV !== "production") {

@@ -33,7 +33,7 @@ interface UseWeatherResult {
 }
 
 const CACHE_KEY = "ewk_weather_cache_v1";
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 menit, selaras dengan Cache-Control di /api/weather
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 menit, selaras dengan Cache-Control di /api/utils?type=weather
 
 function readCache(): WeatherData | null {
   try {
@@ -56,8 +56,8 @@ function writeCache(data: WeatherData) {
 }
 
 async function fetchWeather(lat?: number, lon?: number): Promise<WeatherData> {
-  const qs = lat != null && lon != null ? `?lat=${lat}&lon=${lon}` : "";
-  const resp = await fetch(`/api/weather${qs}`);
+  const qs = lat != null && lon != null ? `&lat=${lat}&lon=${lon}` : "";
+  const resp = await fetch(`/api/utils?type=weather${qs}`);
   if (!resp.ok) {
     const body = await resp.json().catch(() => ({}));
     throw new Error(body?.error || "Gagal memuat data cuaca.");
@@ -71,7 +71,7 @@ async function fetchWeather(lat?: number, lon?: number): Promise<WeatherData> {
  * Alur:
  *  1. Coba geolocation browser (butuh izin user) → paling akurat.
  *  2. Kalau ditolak/timeout/tidak didukung, fallback otomatis ke IP-based
- *     location (endpoint /api/weather tanpa lat/lon akan resolve dari IP).
+ *     location (endpoint /api/utils?type=weather tanpa lat/lon akan resolve dari IP).
  *  3. Hasil di-cache di sessionStorage 10 menit supaya berpindah halaman
  *     dalam rentang waktu itu tidak memicu request baru terus-menerus.
  *

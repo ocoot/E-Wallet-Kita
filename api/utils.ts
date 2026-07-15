@@ -8,9 +8,14 @@ const supabase = createClient(
 );
 
 /**
- * GET /api/weather?lat=..&lon=..
+ * GET /api/utils?type=health
+ * GET /api/utils?type=weather&lat=..&lon=..
  *
- * Endpoint tunggal untuk widget cuaca dinamis di Dashboard.
+ * Endpoint gabungan untuk dua utility publik yang tidak butuh auth:
+ *   - health check (dulu: api/health.ts)
+ *   - widget cuaca dinamis di Dashboard (dulu: api/weather.ts)
+ * Digabung supaya tidak menambah jumlah serverless function di Vercel
+ * Hobby plan (limit 12 function/project).
  *
  * Kenapa perlu endpoint backend (bukan langsung fetch dari client)?
  *   - Kalau user menolak izin geolocation browser, kita perlu fallback
@@ -186,12 +191,11 @@ async function reverseGeocode(lat: number, lon: number): Promise<ResolvedLocatio
   }
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'GET') {
-    res.setHeader('Allow', 'GET');
-    return res.status(405).json({ error: 'Method not allowed. Gunakan GET.' });
-  }
+function handleHealth(req: VercelRequest, res: VercelResponse) {
+  return res.status(200).json({ status: 'ok', mode: process.env.NODE_ENV || 'development' });
+}
 
+async function handleWeather(req: VercelRequest, res: VercelResponse) {
   try {
     const latParam = req.query.lat;
     const lonParam = req.query.lon;
@@ -279,4 +283,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       _error: errMsg, // debug info untuk inspect error di frontend (optional)
     });
   }
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).json({ error: 'Method not allowed. Gunakan GET.' });
+  }
+
+  const type = req.query.type;
+
+  if (type === 'health') {
+    return handleHealth(req, res);
+  }
+  if (type === 'weather') {
+    return handleWeather(req, res);
+  }
+  return res.status(400).json({ error: 'Parameter type wajib diisi: "health" atau "weather".' });
 }
