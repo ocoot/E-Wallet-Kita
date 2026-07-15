@@ -8,6 +8,7 @@ import { supabase } from "../lib/supabase";
 import { matchSupportFaqTopic, SUPPORT_FAQ_TOPICS } from "../lib/supportFaq";
 import { Modal } from "./Modal";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { audioFeedback } from "../lib/audio";
 
 type WidgetTab = "faq" | "admin";
 
@@ -166,6 +167,11 @@ export const SupportChatWidget: React.FC = () => {
     };
     loadMessages();
 
+    // Dedupe id pesan admin yang sudah dibunyikan -- realtime kadang
+    // mengirim ulang event yang sama (reconnect dsb), jangan sampai
+    // suara notifikasi ikut bunyi dobel untuk pesan yang sama.
+    const chimedMessageIds = new Set<string>();
+
     // Filter ketat by session_id supaya 3 sesi paralel tidak saling bocor di client manapun.
     const channel = supabase
       .channel(`support-session-${session.id}`)
@@ -173,10 +179,19 @@ export const SupportChatWidget: React.FC = () => {
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "support_messages", filter: `session_id=eq.${session.id}` },
         (payload: any) => {
+          const incoming = payload.new as SupportMessageRow;
           setMessages((prev) => {
-            if (prev.some((m) => m.id === payload.new.id)) return prev;
-            return [...prev, payload.new as SupportMessageRow];
+            if (prev.some((m) => m.id === incoming.id)) return prev;
+            return [...prev, incoming];
           });
+          // Suara notifikasi hanya untuk balasan admin (bukan echo pesan
+          // sendiri) -- webpush untuk kasus ini sudah di-skip lewat flag
+          // user_viewing (lihat efek di bawah), jadi suara ini yang jadi
+          // sinyal utama selagi widget sedang dibuka.
+          if (incoming.sender === "admin" && !chimedMessageIds.has(incoming.id)) {
+            chimedMessageIds.add(incoming.id);
+            audioFeedback.playChime();
+          }
         }
       )
       .on(
@@ -200,6 +215,48 @@ export const SupportChatWidget: React.FC = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Laporkan ke backend apakah user SEDANG membuka widget chat untuk
+  // sesi ini (tab "admin" terbuka + halaman visible) lewat kolom
+  // support_sessions.user_viewing. Trigger DB notify_support_reply_push()
+  // (lihat migration 20260819010000_support_reply_webpush.sql) memakai
+  // flag ini untuk skip pengiriman webpush kalau user sudah pasti lihat
+  // balasan admin lewat Realtime + suara chime di atas -- menghindari
+  // notifikasi dobel (in-app dan push muncul bersamaan).
+  useEffect(() => {
+    if (!session) return;
+
+    const setViewing = (viewing: boolean) => {
+      supabase
+        .rpc("set_support_session_viewing", { p_session_id: session.id, p_viewing: viewing })
+        .then(({ error }: { error: any }) => {
+          if (error) console.error("set_support_session_viewing error:", error);
+        });
+    };
+
+    const isCurrentlyViewing = () =>
+      isOpen && tab === "admin" && document.visibilityState === "visible";
+
+    setViewing(isCurrentlyViewing());
+
+    // Tab di-minimize/di-switch tanpa widget ditutup (isOpen tetap true)
+    // tetap harus dihitung "tidak sedang dilihat", makanya visibilitychange
+    // dipantau terpisah dari isOpen/tab.
+    const handleVisibilityChange = () => setViewing(isCurrentlyViewing());
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // Best-effort: tangkap kasus tab/app benar-benar ditutup (bukan cuma
+    // di-switch) supaya flag tidak "nyangkut" true selamanya kalau cleanup
+    // effect normal di bawah tidak sempat jalan.
+    const handlePageHide = () => setViewing(false);
+    window.addEventListener("pagehide", handlePageHide);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("pagehide", handlePageHide);
+      setViewing(false);
+    };
+  }, [session?.id, isOpen, tab]);
 
   const handleStartSession = async () => {
     setIsStarting(true);
