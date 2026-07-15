@@ -5,6 +5,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { useWallets } from "../hooks/useWallets";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { dbService } from "../lib/db";
 import { WalletType, WalletWithBalance } from "../types";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +34,11 @@ export const Wallets: React.FC = () => {
   const { showToast } = useToast();
   const { wallets, activeWallets, isLoading, error: walletsError, refresh } = useWallets();
   const navigate = useNavigate();
+  const { tokens, cx } = useThemeTokens();
+  // Border/opacity kombinasi ini (/60, /40) spesifik untuk halaman ini --
+  // dipakai 2x di bawah (kartu wallet biasa & wrapper utama). Bukan token
+  // global karena opacity-nya beda dari tokens.border.default/accent.
+  const cardSurfaceClass = cx(tokens.surface.card, "border-slate-800/60 light_sakura:border-rose-100/40");
 
   const [busy, setBusy] = useState(false);
   const [creatingType, setCreatingType] = useState<Exclude<WalletType, "general"> | null>(null);
@@ -141,17 +147,18 @@ export const Wallets: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        className={`rounded-2xl border p-4 space-y-3 ${
+        className={cx(
+          "rounded-2xl border p-4 space-y-3",
           isGeneral
             ? "bg-indigo-500/5 border-indigo-500/30 light_sakura:bg-indigo-50/40 light_sakura:border-indigo-200"
-            : "bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40"
-        }`}
+            : cardSurfaceClass
+        )}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="font-sans font-bold text-sm text-white truncate light_sakura:text-slate-900">{wallet.name}</p>
+            <p className={cx("font-sans font-bold text-sm truncate", tokens.text.primary)}>{wallet.name}</p>
             {wallet.provider && (
-              <p className="font-sans text-[11px] text-slate-400 truncate light_sakura:text-slate-500">{wallet.provider}</p>
+              <p className={cx("font-sans text-[11px] truncate", tokens.text.muted)}>{wallet.provider}</p>
             )}
           </div>
           <button
@@ -173,7 +180,7 @@ export const Wallets: React.FC = () => {
                 value={contactInput}
                 onChange={(e) => setContactInput(e.target.value)}
                 placeholder={contactLabel}
-                className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                className={tokens.form.input}
               />
               <div className="flex gap-2">
                 <button
@@ -197,7 +204,7 @@ export const Wallets: React.FC = () => {
               className="flex items-center gap-2 w-full text-left px-2.5 py-1.5 rounded-lg bg-slate-950/40 hover:bg-slate-800/60 light_sakura:bg-rose-50/40 light_sakura:hover:bg-rose-100/60 cursor-pointer group"
             >
               {wallet.type === "ewallet" ? <Phone size={12} className="text-slate-500 shrink-0" /> : <CreditCard size={12} className="text-slate-500 shrink-0" />}
-              <span className="font-sans text-[11px] text-slate-400 tabular-nums truncate light_sakura:text-slate-500 group-hover:text-slate-300">
+              <span className={cx("font-sans text-[11px] tabular-nums truncate group-hover:text-slate-300", tokens.text.muted)}>
                 {contactValue
                   ? (isContactVisible ? contactValue : maskContact(contactValue))
                   : `+ ${contactLabel}`}
@@ -222,7 +229,7 @@ export const Wallets: React.FC = () => {
               autoFocus
               value={balanceInput}
               onChange={(e) => setBalanceInput(e.target.value === "" ? "" : Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+              className={tokens.form.input}
             />
             <div className="flex gap-2">
               <button
@@ -242,7 +249,7 @@ export const Wallets: React.FC = () => {
           </div>
         ) : (
           <>
-            <p className="font-sans font-black text-xl tabular-nums text-white light_sakura:text-slate-900">
+            <p className={cx("font-sans font-black text-xl tabular-nums", tokens.text.primary)}>
               {formatIDR(wallet.balance)}
             </p>
             {wallet.earmarked_amount > 0 && (
@@ -253,13 +260,13 @@ export const Wallets: React.FC = () => {
             <div className="flex items-center gap-2 pt-1">
               <button
                 onClick={() => { setEditingBalanceId(wallet.id); setBalanceInput(Math.round(wallet.balance)); }}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800/70 hover:bg-slate-700 text-slate-300 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100 light_sakura:text-slate-600"
+                className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800/70 hover:bg-slate-700 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100", tokens.text.label)}
               >
                 <Pencil size={11} /> {t("wallet.edit_balance")}
               </button>
               <button
                 onClick={() => navigate("/transactions", { state: { filterWalletId: wallet.id } })}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800/70 hover:bg-slate-700 text-slate-300 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100 light_sakura:text-slate-600"
+                className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800/70 hover:bg-slate-700 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100", tokens.text.label)}
               >
                 <HistoryIcon size={11} /> {t("wallet.view_history")}
               </button>
@@ -272,24 +279,24 @@ export const Wallets: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="rounded-3xl border bg-slate-900 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/40 shadow-lg overflow-hidden">
+      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", cardSurfaceClass)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">
 
           {/* Header */}
           <div>
-            <h1 className="font-sans font-bold text-2xl tracking-tight text-white flex items-center gap-2 light_sakura:text-slate-900">
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
               <WalletIcon size={22} /> {t("wallet.title")}
             </h1>
-            <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500">{t("wallet.desc")}</p>
+            <p className={cx("font-sans text-sm mt-1", tokens.text.muted)}>{t("wallet.desc")}</p>
           </div>
 
           {/* Total banner */}
           <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-5 py-4 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
-            <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-widest light_sakura:text-slate-500">
+            <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
               {t("wallet.total_balance")}
             </p>
-            <p className="font-sans font-black text-3xl tabular-nums text-white mt-1 light_sakura:text-slate-900">
+            <p className={cx("font-sans font-black text-3xl tabular-nums mt-1", tokens.text.primary)}>
               {formatIDR(totalBalance)}
             </p>
           </div>
@@ -297,10 +304,10 @@ export const Wallets: React.FC = () => {
           {/* General wallet (Saldo Total) */}
           {generalWallet && (
             <div className="space-y-2">
-              <h2 className="font-sans text-xs font-bold text-slate-300 uppercase tracking-wider light_sakura:text-slate-600">
+              <h2 className={cx("font-sans text-xs font-bold uppercase tracking-wider", tokens.text.label)}>
                 {t("wallet.group_general")}
               </h2>
-              <p className="font-sans text-[11px] text-slate-500 -mt-1 light_sakura:text-slate-400">{t("wallet.general_desc")}</p>
+              <p className={cx("font-sans text-[11px] -mt-1", tokens.text.faint)}>{t("wallet.general_desc")}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <WalletCard wallet={generalWallet} />
               </div>
@@ -314,7 +321,7 @@ export const Wallets: React.FC = () => {
             return (
               <div key={type} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h2 className="font-sans text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5 light_sakura:text-slate-600">
+                  <h2 className={cx("font-sans text-xs font-bold uppercase tracking-wider flex items-center gap-1.5", tokens.text.label)}>
                     <span>{meta.icon}</span> {t(meta.labelKey)}
                   </h2>
                   <button
@@ -332,7 +339,7 @@ export const Wallets: React.FC = () => {
                     className="rounded-2xl border border-indigo-500/30 bg-indigo-500/5 p-4 space-y-3 light_sakura:bg-indigo-50/30"
                   >
                     <div>
-                      <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">
+                      <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
                         {t("wallet.field_name")}
                       </label>
                       <input
@@ -340,11 +347,11 @@ export const Wallets: React.FC = () => {
                         value={newName}
                         onChange={(e) => setNewName(e.target.value)}
                         placeholder={t(meta.placeholderKey)}
-                        className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                        className={tokens.form.input}
                       />
                     </div>
                     <div>
-                      <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">
+                      <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
                         {t("wallet.field_starting_balance")}
                       </label>
                       <input
@@ -352,19 +359,19 @@ export const Wallets: React.FC = () => {
                         value={newStartBalance}
                         onChange={(e) => setNewStartBalance(e.target.value === "" ? "" : Number(e.target.value))}
                         placeholder="0"
-                        className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                        className={tokens.form.input}
                       />
                     </div>
                     {(type === "ewallet" || type === "bank") && (
                       <div>
-                        <label className="text-[11px] font-bold text-slate-400 uppercase block mb-1 light_sakura:text-slate-500">
+                        <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
                           {type === "ewallet" ? t("wallet.field_phone") : t("wallet.field_account_number")}
                         </label>
                         <input
                           value={newContact}
                           onChange={(e) => setNewContact(e.target.value)}
                           placeholder={type === "ewallet" ? "08xxxxxxxxxx" : "1234567890"}
-                          className="w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                          className={tokens.form.input}
                         />
                       </div>
                     )}

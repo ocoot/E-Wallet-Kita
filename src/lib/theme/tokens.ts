@@ -87,6 +87,20 @@ export const themeTokens = {
     accent: "text-indigo-400 light_sakura:text-rose-500",
     muted: "text-slate-400 light_sakura:text-slate-500",
   },
+
+  form: {
+    /**
+     * Styling standar <input> teks/angka di form (nama pos, saldo awal,
+     * kontak, dst). Ditemukan berulang VERBATIM 5x hanya di Wallets.tsx
+     * saja -- indikasi kuat pola ini juga muncul di form-form lain
+     * (NewTransaction, Savings, Installments, dll). Kalau app ini nanti
+     * pindah ke `ui/Input.tsx` sepenuhnya untuk semua field, token ini bisa
+     * dipensiunkan; sampai saat itu, dipakai untuk <input> polos yang belum
+     * migrasi ke komponen `Input`.
+     */
+    input:
+      "w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700",
+  },
 } as const;
 
 export type ThemeTokens = typeof themeTokens;

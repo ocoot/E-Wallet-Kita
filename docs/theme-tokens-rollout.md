@@ -1,11 +1,28 @@
 # Rollout useThemeTokens() — Panduan Lanjutan
 
-Status per 2026-07-15: hook + token dasar sudah dibuat. 3 file sudah
+Status per 2026-07-15: hook + token dasar sudah dibuat. 5 file sudah
 direfactor: `src/components/ui/Card.tsx`, `src/components/DashboardWalletCards.tsx`,
-dan `src/components/MobileBottomNav.tsx`. Sisanya (~62 file) belum
-disentuh — sengaja tidak direfactor sekaligus dalam 1 sesi supaya setiap
-perubahan bisa direview & di-test per file, bukan 1 diff raksasa yang
-berisiko kalau ada yang salah.
+`src/components/MobileBottomNav.tsx`, dan `src/views/Wallets.tsx`. Sisanya
+(~61 file) belum disentuh — sengaja tidak direfactor sekaligus dalam 1 sesi
+supaya setiap perubahan bisa direview & di-test per file, bukan 1 diff
+raksasa yang berisiko kalau ada yang salah.
+
+## Wallets.tsx: 29 → 9 kemunculan `light_sakura:`
+
+File ini hasilnya jauh lebih bersih dari `MobileBottomNav.tsx` karena
+banyak pola form (label field, `<input>`) yang berulang PERSIS. Selain
+4 kategori token yang sudah ada, ditemukan 1 token baru yang layak jadi
+global:
+
+- **`tokens.form.input`** — styling `<input>` teks/angka standar
+  (bg/border/text/focus), berulang VERBATIM 5x hanya di file ini. Kalau
+  file lain (NewTransaction, Savings, dll) punya `<input>` custom serupa
+  (bukan lewat `ui/Input.tsx`), kemungkinan besar bisa pakai token ini juga
+  -- cek dulu exact match sebelum pakai.
+
+9 sisa kemunculan di `Wallets.tsx` sengaja tetap literal: opacity kartu
+umum (`/30`, `/40`) yang unik untuk state "general wallet", dan tombol
+"+ Tambah" dengan warna rose-600 yang tidak ada padanan tokennya.
 
 ## Temuan penting dari MobileBottomNav.tsx (378 baris, 29 kemunculan `light_sakura:`)
 
@@ -47,8 +64,8 @@ Urutkan pengerjaan dari sini ke bawah:
 12. `src/views/AdminMaintenance.tsx` — 32
 13. `src/views/Savings.tsx` / `src/views/NewTransaction.tsx` — 31
 14. `src/views/Installments.tsx` / `src/views/GoldSavings.tsx` — 30
-15. `src/views/Wallets.tsx` / `src/views/AdminBroadcast.tsx` — 29
-   (`MobileBottomNav.tsx` sudah selesai, dulu di posisi ini juga)
+15. `src/views/AdminBroadcast.tsx` — 29
+   (`MobileBottomNav.tsx` & `Wallets.tsx` sudah selesai, dulu di posisi ini juga)
 
 Untuk lihat sisa file & angka terbaru, jalankan dari root repo:
 
