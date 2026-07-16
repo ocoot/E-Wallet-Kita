@@ -12,6 +12,9 @@ import { useNavigate } from "react-router-dom";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
+import { WalletPickerField } from "../components/WalletPickerField";
+import { ProviderBadge } from "../components/ProviderBadge";
+import { PROVIDER_CATALOG, OTHER_PROVIDER_ID } from "../data/walletProviders";
 
 const GROUP_META: Record<Exclude<WalletType, "general">, { icon: string; labelKey: string; addKey: string; placeholderKey: string }> = {
   ewallet: { icon: "", labelKey: "wallet.group_ewallet", addKey: "wallet.add_wallet", placeholderKey: "wallet.field_name_placeholder_ewallet" },
@@ -42,6 +45,7 @@ export const Wallets: React.FC = () => {
 
   const [busy, setBusy] = useState(false);
   const [creatingType, setCreatingType] = useState<Exclude<WalletType, "general"> | null>(null);
+  const [selectedProviderId, setSelectedProviderId] = useState<string>("");
   const [newName, setNewName] = useState("");
   const [newStartBalance, setNewStartBalance] = useState<number | "">("");
   const [newContact, setNewContact] = useState("");
@@ -50,6 +54,14 @@ export const Wallets: React.FC = () => {
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const [contactInput, setContactInput] = useState("");
   const [visibleContactIds, setVisibleContactIds] = useState<Set<string>>(new Set());
+
+  const openCreateForm = (type: Exclude<WalletType, "general">) => {
+    setCreatingType(type);
+    setSelectedProviderId("");
+    setNewName("");
+    setNewStartBalance("");
+    setNewContact("");
+  };
 
   const toggleContactVisibility = (walletId: string) => {
     setVisibleContactIds((prev) => {
@@ -67,15 +79,35 @@ export const Wallets: React.FC = () => {
 
   const archivedWallets = wallets.filter((w) => w.is_archived);
 
+  const isCatalogType = (type: Exclude<WalletType, "general">): type is "ewallet" | "bank" => type === "ewallet" || type === "bank";
+
+  /** Provider dari katalog yang sedang dipilih di dropdown (kalau bukan "Lainnya"/cash). */
+  const selectedCatalogProvider = (type: Exclude<WalletType, "general">) =>
+    isCatalogType(type) ? PROVIDER_CATALOG[type].find((p) => p.id === selectedProviderId) || null : null;
+
+  const isOtherSelected = (type: Exclude<WalletType, "general">) =>
+    isCatalogType(type) && (selectedProviderId === OTHER_PROVIDER_ID || (!!selectedProviderId && !selectedCatalogProvider(type)));
+
+  const isFormValid = (type: Exclude<WalletType, "general">) => {
+    if (!isCatalogType(type)) return !!newName.trim();
+    if (!selectedProviderId) return false;
+    if (isOtherSelected(type)) return !!newName.trim();
+    return true;
+  };
+
   const handleCreateWallet = async (type: Exclude<WalletType, "general">) => {
-    if (!user?.id || !newName.trim()) return;
+    if (!user?.id || !isFormValid(type)) return;
     setBusy(true);
     try {
+      const catalogMatch = selectedCatalogProvider(type);
+      const finalName = isCatalogType(type) ? (catalogMatch ? catalogMatch.name : newName.trim()) : newName.trim();
+      const finalProvider = catalogMatch ? catalogMatch.name : null;
       const phone = type === "ewallet" ? (newContact.trim() || null) : null;
       const account = type === "bank" ? (newContact.trim() || null) : null;
-      await dbService.createWallet(user.id, newName.trim(), type, null, Number(newStartBalance) || 0, phone, account);
+      await dbService.createWallet(user.id, finalName, type, finalProvider, Number(newStartBalance) || 0, phone, account);
       showToast(t("wallet.toast_wallet_created"), "success");
       setCreatingType(null);
+      setSelectedProviderId("");
       setNewName("");
       setNewStartBalance("");
       setNewContact("");
@@ -155,11 +187,16 @@ export const Wallets: React.FC = () => {
         )}
       >
         <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className={cx("font-sans font-bold text-sm truncate", tokens.text.primary)}>{wallet.name}</p>
-            {wallet.provider && (
-              <p className={cx("font-sans text-[11px] truncate", tokens.text.muted)}>{wallet.provider}</p>
+          <div className="min-w-0 flex items-center gap-2.5">
+            {!isGeneral && (wallet.type === "ewallet" || wallet.type === "bank") && (
+              <ProviderBadge type={wallet.type} provider={wallet.provider} size={32} />
             )}
+            <div className="min-w-0">
+              <p className={cx("font-sans font-bold text-sm truncate", tokens.text.primary)}>{wallet.name}</p>
+              {wallet.provider && wallet.provider !== wallet.name && (
+                <p className={cx("font-sans text-[11px] truncate", tokens.text.muted)}>{wallet.provider}</p>
+              )}
+            </div>
           </div>
           <button
             onClick={() => handleToggleArchive(wallet)}
@@ -325,7 +362,7 @@ export const Wallets: React.FC = () => {
                     <span>{meta.icon}</span> {t(meta.labelKey)}
                   </h2>
                   <button
-                    onClick={() => { setCreatingType(type); setNewName(""); setNewStartBalance(""); setNewContact(""); }}
+                    onClick={() => openCreateForm(type)}
                     className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-indigo-500/15 hover:bg-indigo-500/25 text-indigo-300 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100 light_sakura:text-rose-600"
                   >
                     <Plus size={12} /> {t(meta.addKey)}
@@ -338,18 +375,55 @@ export const Wallets: React.FC = () => {
                     animate={{ opacity: 1, height: "auto" }}
                     className="rounded-2xl border border-indigo-500/30 bg-indigo-500/5 p-4 space-y-3 light_sakura:bg-indigo-50/30"
                   >
-                    <div>
-                      <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
-                        {t("wallet.field_name")}
-                      </label>
-                      <input
-                        autoFocus
-                        value={newName}
-                        onChange={(e) => setNewName(e.target.value)}
-                        placeholder={t(meta.placeholderKey)}
-                        className={tokens.form.input}
-                      />
-                    </div>
+                    {isCatalogType(type) ? (
+                      <>
+                        <div>
+                          <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
+                            {t("wallet.field_provider")}
+                          </label>
+                          <WalletPickerField
+                            options={[
+                              ...PROVIDER_CATALOG[type].map((p) => ({ value: p.id, label: p.name })),
+                              { value: OTHER_PROVIDER_ID, label: t("wallet.provider_other") },
+                            ]}
+                            value={selectedProviderId}
+                            onChange={(v) => {
+                              setSelectedProviderId(v);
+                              const match = PROVIDER_CATALOG[type].find((p) => p.id === v);
+                              setNewName(match ? match.name : "");
+                            }}
+                            placeholder={t("wallet.field_provider_placeholder")}
+                          />
+                        </div>
+                        {isOtherSelected(type) && (
+                          <div>
+                            <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
+                              {t("wallet.field_name")}
+                            </label>
+                            <input
+                              autoFocus
+                              value={newName}
+                              onChange={(e) => setNewName(e.target.value)}
+                              placeholder={t(meta.placeholderKey)}
+                              className={tokens.form.input}
+                            />
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div>
+                        <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
+                          {t("wallet.field_name")}
+                        </label>
+                        <input
+                          autoFocus
+                          value={newName}
+                          onChange={(e) => setNewName(e.target.value)}
+                          placeholder={t(meta.placeholderKey)}
+                          className={tokens.form.input}
+                        />
+                      </div>
+                    )}
                     <div>
                       <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
                         {t("wallet.field_starting_balance")}
@@ -362,7 +436,7 @@ export const Wallets: React.FC = () => {
                         className={tokens.form.input}
                       />
                     </div>
-                    {(type === "ewallet" || type === "bank") && (
+                    {isCatalogType(type) && (
                       <div>
                         <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
                           {type === "ewallet" ? t("wallet.field_phone") : t("wallet.field_account_number")}
@@ -378,7 +452,7 @@ export const Wallets: React.FC = () => {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleCreateWallet(type)}
-                        disabled={busy || !newName.trim()}
+                        disabled={busy || !isFormValid(type)}
                         className="flex-1 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-50"
                       >
                         {t("wallet.btn_save_wallet")}

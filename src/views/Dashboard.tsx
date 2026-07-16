@@ -19,7 +19,7 @@ import { DashboardBillReminders } from "../components/DashboardBillReminders";
 import { DashboardInstallments } from "../components/DashboardInstallments";
 import { DashboardOverviewCard } from "../components/DashboardOverviewCard";
 import { ErrorState } from "../components/ErrorState";
-import { DashboardWalletCards } from "../components/DashboardWalletCards";
+import { DashboardWalletCarousel } from "../components/DashboardWalletCarousel";
 import { useCategories } from "../hooks/useCategories";
 
 interface DashboardProps {
@@ -235,11 +235,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
         telegramStatus={telegramStatus} 
       />
 
-      {/* 1b. Pos Dompet -- kartu per pos (E-Wallet/Rekening/Cash/Saldo Total),
-          menggantikan kartu tunggal "Saldo Tersedia" yang menggabungkan semua
-          pos jadi satu angka. Kelola penuh (nomor HP/rekening, saldo manual,
-          arsip) ada di /wallets. */}
-      <DashboardWalletCards formatIDR={formatIDR} refreshTrigger={transactionsUpdatedTrigger} />
+      {/* 1b. Pos Dompet -- kartu penuh per pos (E-Wallet/Rekening/Cash/Saldo
+          Total), bisa digeser (swipe) satu per satu. Kartu E-Wallet/Bank
+          yang provider-nya cocok katalog (Gopay/OVO/ShopeePay/Dana/Mandiri/
+          BCA/BRI/BNI) pakai warna brand + logo dengan background transparan
+          (lihat data/walletProviders.ts). Kelola penuh (nomor HP/rekening,
+          saldo manual, arsip) ada di /wallets. */}
+      <DashboardWalletCarousel formatIDR={formatIDR} refreshTrigger={transactionsUpdatedTrigger} />
 
       {/* 1c. Ringkasan Keuangan -- Total Kekayaan, Bulan Ini, Rincian Aset
           (Tabungan/Emas) expandable. Angka "Saldo Tersedia" tunggal sudah

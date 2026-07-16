@@ -120,7 +120,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
     >
       {/* Total Kekayaan -- sekarang jadi angka utama kartu ini, karena
           "Saldo Tersedia" tunggal sudah dipindah jadi kartu-kartu Pos Dompet
-          terpisah di Dashboard (lihat DashboardWalletCards.tsx). */}
+          terpisah di Dashboard (lihat DashboardWalletCarousel.tsx). */}
       <div className="p-5 sm:p-6 pb-4">
         <div className="flex items-center gap-2 mb-4">
           <Layers size={14} className={tokens.icon.accent} />

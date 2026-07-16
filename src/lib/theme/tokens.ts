@@ -79,7 +79,7 @@ export const themeTokens = {
   hover: {
     /** Hover state untuk item list / row yang bisa diklik di atas surface.subtle. */
     surface: "hover:bg-slate-800 light_sakura:hover:bg-slate-50",
-    /** Hover state untuk kartu di atas surface.sunken (mis. DashboardWalletCards). */
+    /** Hover state untuk kartu di atas surface.sunken (mis. kartu terkait di Wallets.tsx). */
     sunken: "hover:bg-slate-800/60 light_sakura:hover:bg-rose-50/60",
   },
 

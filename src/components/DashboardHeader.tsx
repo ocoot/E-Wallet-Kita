@@ -229,8 +229,9 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         </motion.div>
       </div>
 
-      {/* Badge tamu saja di sini sekarang -- toggle mata nominal sudah
-          dipindah ke header kartu Pos Dompet, lihat DashboardWalletCards.tsx */}
+      {/* Badge tamu saja di sini sekarang -- toggle mata nominal yang dulu
+          ada di header kartu Pos Dompet sudah DIHAPUS (lihat
+          DashboardWalletCarousel.tsx), saldo selalu tampil apa adanya. */}
       <div className="relative z-10 flex flex-col items-start md:items-end gap-2 shrink-0">
         {currentUser.is_guest && (
           <motion.div 
