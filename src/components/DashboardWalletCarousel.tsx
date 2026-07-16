@@ -125,15 +125,6 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
 
   return (
     <div className="space-y-2.5">
-      <div className="flex items-center justify-between px-1">
-        <h3 className={cx("text-xs font-bold uppercase tracking-wider", tokens.text.muted)}>
-          {t("wallet.title")}
-        </h3>
-        <span className={cx("text-[10px] font-medium", tokens.text.faint)}>
-          {t("dashboard.wallet_carousel_hint")}
-        </span>
-      </div>
-
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -143,7 +134,7 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
             di strip yang sama dengan kartu Pos Dompet, supaya bisa digeser
             satu jari dari sini langsung ke kartu Saldo Umum / wallet lain. */}
         {headerSlot && (
-          <div className="shrink-0 w-[92%] sm:w-[420px] snap-center">
+          <div className="shrink-0 w-full sm:w-[420px] snap-center">
             {headerSlot}
           </div>
         )}
@@ -151,7 +142,7 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
         {showWalletSkeleton && (
           <div
             className={cx(
-              "shrink-0 w-[88%] sm:w-[360px] h-40 rounded-3xl border animate-pulse snap-center",
+              "shrink-0 w-full sm:w-[360px] h-40 rounded-3xl border animate-pulse snap-center",
               tokens.surface.card,
               "border-slate-800/60 light_sakura:border-rose-100/40"
             )}
@@ -189,7 +180,7 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
                 }
               }}
               style={borderStyle}
-              className="relative shrink-0 w-[88%] sm:w-[360px] snap-center overflow-hidden rounded-3xl border cursor-pointer transition-transform active:scale-[0.98]"
+              className="relative shrink-0 w-full sm:w-[360px] snap-center overflow-hidden rounded-3xl border cursor-pointer transition-transform active:scale-[0.98]"
             >
               {/* Layer background: kartu berlogo dibungkus penuh oleh gambar
                   logo provider (bukan badge kecil) + scrim gelap di atasnya
@@ -265,15 +256,15 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
       </div>
 
       {totalSnapItems > 1 && (
-        <div className="flex items-center justify-center gap-1.5 pt-0.5">
+        <div className="flex items-center justify-center gap-1 pt-0.5">
           {headerSlot && (
             <button
               type="button"
               aria-label="1"
               onClick={() => scrollToIndex(0)}
               className={cx(
-                "h-1.5 rounded-full transition-all cursor-pointer",
-                activeIndex === 0 ? "w-5 bg-indigo-400 light_sakura:bg-rose-400" : "w-1.5 bg-slate-700 light_sakura:bg-rose-200"
+                "h-1 rounded-full transition-all cursor-pointer",
+                activeIndex === 0 ? "w-3.5 bg-indigo-400 light_sakura:bg-rose-400" : "w-1 bg-slate-700 light_sakura:bg-rose-200"
               )}
             />
           )}
@@ -286,8 +277,8 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
                 aria-label={`${dotIndex + 1}`}
                 onClick={() => scrollToIndex(dotIndex)}
                 className={cx(
-                  "h-1.5 rounded-full transition-all cursor-pointer",
-                  dotIndex === activeIndex ? "w-5 bg-indigo-400 light_sakura:bg-rose-400" : "w-1.5 bg-slate-700 light_sakura:bg-rose-200"
+                  "h-1 rounded-full transition-all cursor-pointer",
+                  dotIndex === activeIndex ? "w-3.5 bg-indigo-400 light_sakura:bg-rose-400" : "w-1 bg-slate-700 light_sakura:bg-rose-200"
                 )}
               />
             );
