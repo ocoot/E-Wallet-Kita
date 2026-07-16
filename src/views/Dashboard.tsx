@@ -229,19 +229,27 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="space-y-6 pb-24 relative">
-      {/* 1. Welcome Message Banner */}
-      <DashboardHeader 
-        currentUser={currentUser} 
-        telegramStatus={telegramStatus} 
+      {/* 1 + 1b. Welcome/weather card ("dashboard dinamis") DAN Pos Dompet
+          (kartu penuh per pos: E-Wallet/Rekening/Cash/Saldo Total) sekarang
+          digabung jadi SATU strip yang bisa digeser (swipe) horizontal,
+          snap satu kartu per satu -- bukan ditumpuk vertikal terpisah
+          seperti sebelumnya. Kartu welcome/weather dilempar lewat
+          `headerSlot` supaya jadi snap-item pertama di strip yang sama.
+          Kartu E-Wallet/Bank yang provider-nya cocok katalog (Gopay/OVO/
+          ShopeePay/Dana/Mandiri/BCA/BRI/BNI) pakai warna brand + logo
+          dengan background transparan (lihat data/walletProviders.ts).
+          Kelola penuh (nomor HP/rekening, saldo manual, arsip) ada di
+          /wallets. */}
+      <DashboardWalletCarousel
+        formatIDR={formatIDR}
+        refreshTrigger={transactionsUpdatedTrigger}
+        headerSlot={
+          <DashboardHeader
+            currentUser={currentUser}
+            telegramStatus={telegramStatus}
+          />
+        }
       />
-
-      {/* 1b. Pos Dompet -- kartu penuh per pos (E-Wallet/Rekening/Cash/Saldo
-          Total), bisa digeser (swipe) satu per satu. Kartu E-Wallet/Bank
-          yang provider-nya cocok katalog (Gopay/OVO/ShopeePay/Dana/Mandiri/
-          BCA/BRI/BNI) pakai warna brand + logo dengan background transparan
-          (lihat data/walletProviders.ts). Kelola penuh (nomor HP/rekening,
-          saldo manual, arsip) ada di /wallets. */}
-      <DashboardWalletCarousel formatIDR={formatIDR} refreshTrigger={transactionsUpdatedTrigger} />
 
       {/* 1c. Ringkasan Keuangan -- Total Kekayaan, Bulan Ini, Rincian Aset
           (Tabungan/Emas) expandable. Angka "Saldo Tersedia" tunggal sudah

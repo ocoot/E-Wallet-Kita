@@ -19,14 +19,31 @@ const maskContact = (value: string) => {
 interface DashboardWalletCarouselProps {
   formatIDR: (num: number) => string;
   refreshTrigger: number;
+  /**
+   * Kartu "dashboard dinamis" (greeting/cuaca -- DashboardHeader) sekarang
+   * digeser jadi item PERTAMA di strip carousel yang sama dengan kartu Pos
+   * Dompet, bukan ditumpuk terpisah di atasnya lagi. Dilempar dari
+   * Dashboard.tsx lewat prop ini supaya seluruh logic cuaca/greeting tetap
+   * hidup di DashboardHeader.tsx (tidak diduplikasi di sini) -- komponen
+   * ini hanya membungkusnya jadi satu snap-item di antara kartu-kartu
+   * lainnya. Efeknya: satu strip horizontal, satu jari, geser satu-satu
+   * (kartu dashboard -> Saldo Umum -> kartu wallet lain -> ...), masing-
+   * masing kartu adalah snap-point sendiri (lihat class `snap-center` di
+   * bawah), jadi "mudah discroll per-kartu" untuk keduanya sekaligus.
+   */
+  headerSlot?: React.ReactNode;
 }
 
 /**
- * Kartu Pos Dompet -- pengganti DashboardWalletCards (baris chip kecil
- * berjejer). Sekarang tiap Pos Dompet (Saldo Umum, tiap E-Wallet/Rekening
- * yang diisi user, Cash) dirender sebagai KARTU PENUH bergaya kartu
- * e-wallet sungguhan, satu per satu, dan digeser (swipe) horizontal --
- * bukan discroll berjejer kecil.
+ * Strip carousel dashboard -- gabungan kartu "dashboard dinamis" (greeting +
+ * cuaca, dilempar lewat `headerSlot`) dan kartu Pos Dompet (Saldo Umum, tiap
+ * E-Wallet/Rekening yang diisi user, Cash), semuanya jadi SATU baris yang
+ * digeser (swipe) horizontal, snap satu-per-satu -- bukan dua blok terpisah
+ * yang ditumpuk vertikal seperti sebelumnya. Kartu E-Wallet/Bank yang
+ * provider-nya cocok katalog (Gopay/OVO/ShopeePay/Dana/Mandiri/BCA/BRI/BNI)
+ * pakai warna brand + logo dengan background transparan (lihat
+ * data/walletProviders.ts). Kelola penuh (nomor HP/rekening, saldo manual,
+ * arsip) ada di /wallets.
  *
  * REVISI: logo provider (Gopay/OVO/ShopeePay/Dana) sebelumnya dipasang
  * sebagai badge kecil (di-crop object-cover ke kotak 40px) -- karena aset
@@ -42,7 +59,7 @@ interface DashboardWalletCarouselProps {
  * nomor HP/rekening per-kartu tetap ada (fitur privasi berbeda, bukan
  * "nominal").
  */
-export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = ({ formatIDR }) => {
+export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = ({ formatIDR, headerSlot }) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { activeWallets, isLoading } = useWallets();
@@ -74,19 +91,16 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
     el.scrollTo({ left: card.offsetLeft - el.offsetLeft, behavior: "smooth" });
   };
 
-  if (isLoading) {
-    return (
-      <div
-        className={cx(
-          "h-40 rounded-3xl border animate-pulse",
-          tokens.surface.card,
-          "border-slate-800/60 light_sakura:border-rose-100/40"
-        )}
-      />
-    );
-  }
+  // Dulu: loading/kosong -> return skeleton/null lebih awal, jadi kartu
+  // dashboard dinamis (headerSlot) ikut tidak tampil kalau wallet masih
+  // loading atau belum ada. Sekarang headerSlot HARUS selalu tampil (dia
+  // snap-item pertama di strip), jadi skeleton/empty-state wallet dirender
+  // di DALAM strip yang sama, bukan menggantikan seluruh komponen.
+  const showWalletSkeleton = isLoading;
+  const showWalletCards = !isLoading && activeWallets.length > 0;
+  const totalSnapItems = (headerSlot ? 1 : 0) + (showWalletCards ? activeWallets.length : 0);
 
-  if (activeWallets.length === 0) return null;
+  if (!headerSlot && !showWalletSkeleton && !showWalletCards) return null;
 
   const isDark = theme === "dark_obsidian";
 
@@ -125,7 +139,26 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
         onScroll={handleScroll}
         className="flex gap-3 overflow-x-auto snap-x snap-mandatory pb-1 -mx-1 px-1 scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
       >
-        {activeWallets.map((w) => {
+        {/* Kartu dashboard dinamis (greeting + cuaca) -- snap-item pertama
+            di strip yang sama dengan kartu Pos Dompet, supaya bisa digeser
+            satu jari dari sini langsung ke kartu Saldo Umum / wallet lain. */}
+        {headerSlot && (
+          <div className="shrink-0 w-[92%] sm:w-[420px] snap-center">
+            {headerSlot}
+          </div>
+        )}
+
+        {showWalletSkeleton && (
+          <div
+            className={cx(
+              "shrink-0 w-[88%] sm:w-[360px] h-40 rounded-3xl border animate-pulse snap-center",
+              tokens.surface.card,
+              "border-slate-800/60 light_sakura:border-rose-100/40"
+            )}
+          />
+        )}
+
+        {showWalletCards && activeWallets.map((w) => {
           const contactValue = w.type === "ewallet" ? w.phone_number : w.type === "bank" ? w.account_number : null;
           const isContactVisible = visibleContactIds.has(w.id);
           const { color, hasLogoBg, logo, backgroundStyle, borderStyle } = cardVisual(w);
@@ -231,20 +264,34 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
         })}
       </div>
 
-      {activeWallets.length > 1 && (
+      {totalSnapItems > 1 && (
         <div className="flex items-center justify-center gap-1.5 pt-0.5">
-          {activeWallets.map((w, idx) => (
+          {headerSlot && (
             <button
-              key={w.id}
               type="button"
-              aria-label={`${idx + 1}`}
-              onClick={() => scrollToIndex(idx)}
+              aria-label="1"
+              onClick={() => scrollToIndex(0)}
               className={cx(
                 "h-1.5 rounded-full transition-all cursor-pointer",
-                idx === activeIndex ? "w-5 bg-indigo-400 light_sakura:bg-rose-400" : "w-1.5 bg-slate-700 light_sakura:bg-rose-200"
+                activeIndex === 0 ? "w-5 bg-indigo-400 light_sakura:bg-rose-400" : "w-1.5 bg-slate-700 light_sakura:bg-rose-200"
               )}
             />
-          ))}
+          )}
+          {showWalletCards && activeWallets.map((w, idx) => {
+            const dotIndex = (headerSlot ? 1 : 0) + idx;
+            return (
+              <button
+                key={w.id}
+                type="button"
+                aria-label={`${dotIndex + 1}`}
+                onClick={() => scrollToIndex(dotIndex)}
+                className={cx(
+                  "h-1.5 rounded-full transition-all cursor-pointer",
+                  dotIndex === activeIndex ? "w-5 bg-indigo-400 light_sakura:bg-rose-400" : "w-1.5 bg-slate-700 light_sakura:bg-rose-200"
+                )}
+              />
+            );
+          })}
         </div>
       )}
     </div>
