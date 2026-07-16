@@ -34,7 +34,7 @@ const maskContact = (value: string) => {
 
 /** Untuk kolom nomor HP (e-wallet) -- keyboard numerik ala dial-pad (boleh +). */
 const CONTACT_KEYBOARD_PROPS_PHONE = { type: "tel" as const, inputMode: "tel" as const };
-/** Untuk kolom nomor rekening (bank) -- keyboard numerik murni digit, tanpa +/*/#. */
+/** Untuk kolom nomor rekening (bank) -- keyboard numerik murni digit, tanpa plus/bintang/pagar. */
 const CONTACT_KEYBOARD_PROPS_ACCOUNT = { type: "text" as const, inputMode: "numeric" as const, pattern: "[0-9]*" };
 
 interface WalletCardProps {
