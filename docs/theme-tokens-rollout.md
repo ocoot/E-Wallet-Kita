@@ -1,13 +1,13 @@
 # Rollout useThemeTokens() — Panduan Lanjutan
 
-Status per 2026-07-16 (sesi 11): hook + token dasar sudah dibuat. File yang
+Status per 2026-07-16 (sesi 13): hook + token dasar sudah dibuat. File yang
 sudah selesai/diaudit penuh: `src/components/ui/Card.tsx`,
 `src/components/DashboardWalletCards.tsx`, `src/components/MobileBottomNav.tsx`,
 `src/views/Wallets.tsx`, `src/views/Onboarding.tsx`, `src/views/Settings.tsx`,
 `src/views/Login.tsx`, `src/components/SkeletonLoader.tsx` (diaudit, 0
 migrasi -- lihat catatan sesi 11 di bawah, bukan berarti belum dikerjakan).
 File yang SUDAH dipasangi hook + sebagian token tapi BELUM full-audit
-cross-file (28 file): `src/views/AdminPanel.tsx`,
+cross-file (30 file): `src/views/AdminPanel.tsx`,
 `src/components/SupportChatWidget.tsx`, `src/views/AdminAiMonitor.tsx`,
 `src/components/Sidebar.tsx`, `src/views/AdminCategoryManager.tsx`,
 `src/views/AdminPremiumMonitor.tsx`, `src/views/AdminErrorMonitor.tsx`,
@@ -21,21 +21,120 @@ cross-file (28 file): `src/views/AdminPanel.tsx`,
 `src/views/Budget.tsx`, `src/components/AdminUserDetailModal.tsx`,
 `src/components/DashboardChart.tsx`, `src/components/DashboardOverviewCard.tsx`,
 `src/components/BudgetProgressCard.tsx`, `src/components/ConfirmTransactionModal.tsx`,
-`src/components/DashboardRecentTransactions.tsx`.
+`src/components/DashboardRecentTransactions.tsx`, `src/components/UpdatePrompt.tsx`,
+`src/components/ResetPasswordModal.tsx`.
 Sisanya belum disentuh.
 
 **Dead code / TIDAK dimigrasi (bukan bagian rollout):**
-`src/components/DashboardAccumulatedBalance.tsx` -- ditemukan di sesi 11
-TIDAK diimpor di mana pun (`grep -rln "DashboardAccumulatedBalance" src`
-cuma nemu dirinya sendiri + 2 komentar di `DashboardOverviewCard.tsx` &
-`InfoTooltip.tsx` yang menyebutnya sebagai "komponen lama"). Komponen ini
-sudah digantikan oleh `DashboardOverviewCard.tsx` (lihat komentar di kepala
-file itu). **Jangan migrasi token di file ini** -- kalau mau, hapus saja
-filenya (di luar scope rollout token, perlu konfirmasi dulu ke user karena
-ini keputusan penghapusan kode, bukan keputusan styling). Sebelum membuka
-file baru manapun untuk migrasi, WAJIB cek dulu apakah file itu benar-benar
-diimpor (`grep -rln "import.*<NamaKomponen>" src`) supaya tidak buang waktu
-migrasi token di dead code lagi.
+- `src/components/DashboardAccumulatedBalance.tsx` -- ditemukan di sesi 11
+  TIDAK diimpor di mana pun (`grep -rln "DashboardAccumulatedBalance" src`
+  cuma nemu dirinya sendiri + 2 komentar di `DashboardOverviewCard.tsx` &
+  `InfoTooltip.tsx` yang menyebutnya sebagai "komponen lama"). Digantikan
+  oleh `DashboardOverviewCard.tsx`.
+- `src/components/HistoryTable.tsx` -- ditemukan di sesi 12, TIDAK diimpor
+  di mana pun (`grep -rn "HistoryTable" src` cuma nemu dirinya sendiri +
+  1 komentar di `ScrollableTableWrapper.tsx`). Sempat masuk daftar
+  prioritas (17 `light_sakura:`) tapi dilewati setelah verifikasi impor.
+- `src/components/DashboardStats.tsx` -- ditemukan di sesi 12, TIDAK
+  diimpor (cuma disebut di komentar `DashboardAccumulatedBalance.tsx`,
+  `DashboardOverviewCard.tsx`, `InfoTooltip.tsx` sebagai "komponen lama"
+  yang sudah digantikan `DashboardOverviewCard.tsx`, pola sama seperti
+  `DashboardAccumulatedBalance.tsx`).
+- `src/components/WalletPickerField.tsx` -- ditemukan di sesi 12, TIDAK
+  diimpor (cuma disebut di komentar `useDropdownPosition.ts`).
+
+**Jangan migrasi token di file-file di atas** -- kalau mau dihapus, itu di
+luar scope rollout token, perlu konfirmasi dulu ke user karena keputusan
+penghapusan kode berbeda dari keputusan styling. Sebelum membuka file baru
+manapun untuk migrasi, WAJIB cek dulu apakah file itu benar-benar diimpor
+(`grep -rln "import.*<NamaKomponen>" src`) supaya tidak buang waktu migrasi
+token di dead code lagi.
+
+## Sesi 13: 1 file dimigrasi (16 → 6, 1 → total 34 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/ResetPasswordModal.tsx` | 16 | 6 | hook dipasang |
+
+Tidak ada token baru ditambahkan. Token yang dipakai: `surface.card`,
+`border.accent` (3x -- 1x di kartu modal utama, 2x identik di
+`className` override `<Input>` untuk field password & confirm password),
+`text.muted`, `icon.accent`, `text.primary`, `text.mutedAlt` (3x --
+deskripsi + 2 label field, className identik jadi diedit satu-satu pakai
+konteks baris tetangga yang beda (`t("auth.new_password_label")` vs
+`t("auth.confirm_password_label")`) supaya `str_replace` tetap unik).
+
+**Pola baru dicatat:** `className` override yang dilempar ke komponen
+`<Input>` (`bg-slate-950 border-slate-800 py-3 light_sakura:bg-slate-50
+light_sakura:border-rose-100`) -- BAGIAN BORDER exact match `border.accent`
+tapi bagian BACKGROUND (`bg-slate-950 light_sakura:bg-slate-50`) TIDAK
+match token manapun (`surface.subtle` beda di sisi dark: `bg-slate-800`
+bukan `bg-slate-950`) -- jadi cuma border yang ditoken-kan, bg tetap
+literal. Sama seperti prinsip sesi 11 soal tidak memaksa kombinasi
+sebagian; di sini kombinasi PECAH per kategori token (border vs surface),
+bukan cuma soal opacity.
+
+**Baris yang TIDAK dimigrasi:** tombol show/hide password
+(`text-slate-400 hover:text-slate-200`, tanpa `light_sakura:` sama sekali
+jadi bukan bagian hitungan) dan `shadow-rose-150/10` di kartu modal (tidak
+ada token shadow).
+
+`tsc --noEmit` penuh dijalankan (node_modules diinstall ulang karena
+dihapus di akhir sesi 12 sebelum zip) -- 0 hasil untuk `Cannot find name
+'tokens'/'cx'` di seluruh project, 0 error baru terkait
+`ResetPasswordModal.tsx`.
+
+Query prioritas berikutnya (sudah memfilter dead code & file di luar
+scope) menghasilkan `src/components/HistoryEditModal.tsx` (16, sudah
+diverifikasi diimpor di `src/views/History.tsx`, bukan dead code) sebagai
+kandidat sesi 14.
+
+## Sesi 12: 1 file dimigrasi (17 → 11, 1 → total 33 file tersentuh) + 3 dead code baru ditemukan
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/UpdatePrompt.tsx` | 17 | 11 | hook dipasang |
+
+Tidak ada token baru ditambahkan. Token yang dipakai: `surface.card`,
+`text.onSurface`, `icon.accent`, `text.muted`, `text.label` (2x, salah
+satunya diekstrak dari tengah string className panjang yang juga punya
+class `bg-*`/`hover:*`/`disabled:*` -- polanya sama seperti kasus
+`icon.accent` di `DashboardRecentTransactions.tsx` sesi 11: token
+diselipkan lewat `cx()` di antara class literal, class lain tidak
+dihapus).
+
+**Baris yang TIDAK dimigrasi (mirip tapi tidak persis, tetap literal):**
+- Baris tombol X close (`text-slate-500 hover:text-slate-300 ...
+  light_sakura:hover:text-slate-700 light_sakura:hover:bg-black/5`) --
+  pola hover-only, tidak ada token yang cocok.
+- Ikon bg (`bg-indigo-500/15 light_sakura:bg-rose-500/10`) -- sesuai
+  aturan sesi 11, background berwarna dengan opacity bukan bagian dari
+  token `icon.accent`, tetap ditulis literal terpisah dari token teksnya.
+- Label "Yang Baru" (`text-indigo-300 light_sakura:text-rose-500`) --
+  MIRIP `text.accent` (`text-indigo-400 light_sakura:text-rose-500`) tapi
+  beda shade dark (300 vs 400), tidak dipaksa.
+- Bullet list (`text-indigo-400 light_sakura:text-rose-400`) -- MIRIP
+  `text.accent` tapi beda shade light (rose-400 vs rose-500), tidak
+  dipaksa.
+- Tombol "Perbarui" (`bg-indigo-600 hover:bg-indigo-500 ...
+  light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400`) -- bagian
+  `light_sakura:` persis sama dengan `button.accentEmerald`, TAPI sisi
+  dark-nya beda warna (indigo vs emerald token), jadi bukan exact match,
+  tetap literal.
+
+**3 dead code baru ditemukan** (lihat detail di bagian atas dokumen):
+`HistoryTable.tsx`, `DashboardStats.tsx`, `WalletPickerField.tsx` -- semua
+lolos filter angka `light_sakura:` tinggi di query prioritas tapi gagal di
+langkah verifikasi impor (poin 2 prosedur sesi 11). Query prioritas
+sesudah memfilter dead code ini menghasilkan `ResetPasswordModal.tsx` (16)
+sebagai kandidat berikutnya untuk sesi 13.
+
+`npm install` dijalankan di awal sesi (node_modules belum ada).
+`tsc --noEmit` penuh dijalankan di akhir sesi -- 0 hasil untuk `Cannot
+find name 'tokens'/'cx'` di seluruh project. 1 error pre-existing tetap
+ada di `UpdatePrompt.tsx` baris 57 (`Property 'catch' does not exist on
+type 'PromiseLike<void>'`) -- sudah dikonfirmasi di catatan sesi 11
+sebagai pre-existing, tidak berkaitan dengan migrasi token.
 
 ## Sesi 11: 2 file dimigrasi + 1 file diaudit-tapi-tidak-dimigrasi (2 → total 32 file tersentuh)
 
@@ -539,7 +638,8 @@ sudah full-audited, bukan belum dikerjakan), `NewTransaction.tsx` (43),
 `AdminSupportChat.tsx` (18), `AdminVoucherManager.tsx` (13),
 `AdminCategoryManager.tsx` (13), `PremiumModal.tsx` (12),
 `DashboardChart.tsx` (14), `BudgetProgressCard.tsx` (15),
-`DashboardRecentTransactions.tsx` (6).
+`DashboardRecentTransactions.tsx` (6), `UpdatePrompt.tsx` (11),
+`ResetPasswordModal.tsx` (6).
 
 **File yang diaudit tapi TIDAK dipasangi hook (0 exact match token):**
 `SkeletonLoader.tsx` (19 tersisa, semua ber-opacity, lihat sesi 11).
