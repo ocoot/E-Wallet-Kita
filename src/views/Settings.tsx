@@ -45,6 +45,7 @@ import { Button } from "../components/ui/Button";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { useNotificationPreferences, NotificationPreferenceKey } from "../hooks/useNotificationPreferences";
+import { SettingsMobileMenu } from "../components/settings/SettingsMobileMenu";
 
 interface SettingsProps {
   onUserPrefUpdated: (user: UserSession) => void;
@@ -521,8 +522,32 @@ export const Settings: React.FC<SettingsProps> = ({
 
   return (
     <div className="max-w-3xl mx-auto space-y-5 pb-24">
-      
-      {/* Main Card */}
+
+      {/* ── Mobile-only redesign: menu list ala "Profile/Akun" ──────────
+          Menggantikan grid form raksasa di atas KHUSUS untuk breakpoint
+          mobile (md:hidden). Setiap baris menu di sini membuka route
+          barunya sendiri (lihat App.tsx: /settings/profile,
+          /settings/security, dst) alih-alih menampilkan semuanya
+          sekaligus dalam satu layar panjang seperti versi desktop.
+          Layar desktop (di bawah, dibungkus hidden md:block) TIDAK
+          diubah sama sekali. */}
+      <SettingsMobileMenu
+        displayName={displayName}
+        avatarUrl={avatarUrl}
+        isGuest={isGuest}
+        isPremium={isPremium}
+        onOpenPremium={() => { audioFeedback.playClick(); setIsPremiumOpen(true); }}
+        canChangePassword={canChangePassword}
+        isTelegramLinked={isTelegramLinked}
+        isTelegramLocked={isTelegramLocked}
+        isStandalone={isStandalone}
+        locale={locale}
+        theme={theme}
+      />
+
+      {/* Main Card -- tampilan desktop lama, tidak diubah, hanya
+          disembunyikan di breakpoint mobile. */}
+      <div className="hidden md:block">
       <div className={cx("rounded-3xl border border-slate-800/60 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
@@ -1235,6 +1260,7 @@ export const Settings: React.FC<SettingsProps> = ({
       </div>{/* grid */}
         </div>{/* card-body */}
       </div>{/* card */}
+      </div>{/* hidden md:block desktop wrapper */}
     </div>
   );
 };

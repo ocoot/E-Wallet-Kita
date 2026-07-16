@@ -60,6 +60,18 @@ const Savings = lazy(() => import("./views/Savings").then(m => ({ default: m.Sav
 const GoldSavings = lazy(() => import("./views/GoldSavings").then(m => ({ default: m.GoldSavings })));
 const AdminPanel = lazy(() => import("./views/AdminPanel").then(m => ({ default: m.AdminPanel })));
 
+// Halaman detail Profile/Akun (mobile-only redesign) -- setiap menu di
+// daftar /settings versi mobile membuka route sendiri di sini. Lihat
+// src/components/settings/SettingsMobileMenu.tsx & MobileSettingsDetailPage.tsx.
+const ProfileSettings = lazy(() => import("./views/settings/ProfileSettings").then(m => ({ default: m.ProfileSettings })));
+const SecuritySettings = lazy(() => import("./views/settings/SecuritySettings").then(m => ({ default: m.SecuritySettings })));
+const NotificationSettings = lazy(() => import("./views/settings/NotificationSettings").then(m => ({ default: m.NotificationSettings })));
+const LanguageSettings = lazy(() => import("./views/settings/LanguageSettings").then(m => ({ default: m.LanguageSettings })));
+const ThemeSettings = lazy(() => import("./views/settings/ThemeSettings").then(m => ({ default: m.ThemeSettings })));
+const PwaSettings = lazy(() => import("./views/settings/PwaSettings").then(m => ({ default: m.PwaSettings })));
+const TelegramSettings = lazy(() => import("./views/settings/TelegramSettings").then(m => ({ default: m.TelegramSettings })));
+const PrivacySettings = lazy(() => import("./views/settings/PrivacySettings").then(m => ({ default: m.PrivacySettings })));
+
 function RouteFallback() {
   // We can't call useLocation() here since Suspense boundary may trigger
   // before location is available. Use a simple shimmer instead.
@@ -337,6 +349,16 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                   <Route path="/settings" element={<FeatureLockGate featureKey="settings"><Settings onUserPrefUpdated={(updatedUser) => {
                     setUserProfile({ display_name: updatedUser.display_name });
                   }} /></FeatureLockGate>} />
+                  <Route path="/settings/profile" element={<FeatureLockGate featureKey="settings"><ProfileSettings onUserPrefUpdated={(updatedUser) => {
+                    setUserProfile({ display_name: updatedUser.display_name });
+                  }} /></FeatureLockGate>} />
+                  <Route path="/settings/security" element={<FeatureLockGate featureKey="settings"><SecuritySettings /></FeatureLockGate>} />
+                  <Route path="/settings/notifications" element={<FeatureLockGate featureKey="settings"><NotificationSettings /></FeatureLockGate>} />
+                  <Route path="/settings/language" element={<FeatureLockGate featureKey="settings"><LanguageSettings /></FeatureLockGate>} />
+                  <Route path="/settings/theme" element={<FeatureLockGate featureKey="settings"><ThemeSettings /></FeatureLockGate>} />
+                  <Route path="/settings/pwa" element={<FeatureLockGate featureKey="settings"><PwaSettings /></FeatureLockGate>} />
+                  <Route path="/settings/telegram" element={<FeatureLockGate featureKey="settings"><TelegramSettings /></FeatureLockGate>} />
+                  <Route path="/settings/privacy" element={<FeatureLockGate featureKey="settings"><PrivacySettings /></FeatureLockGate>} />
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/admin" element={
                     adminLoading

@@ -121,6 +121,32 @@ export const Breadcrumbs: React.FC = () => {
           icon: <PlusCircle size={14} />
         });
       }
+    } else if (parts.length === 2 && parts[0] === "settings") {
+      // First intermediate level: Profile/Akun
+      list.push({
+        label: t("nav.settings"),
+        path: "/settings",
+        icon: <Settings size={14} />
+      });
+      // Second level: menu detail yang sedang dibuka
+      const settingsSubLabels: Record<string, string> = {
+        profile: t("settings.menu_manage_profile"),
+        security: t("settings.menu_security"),
+        notifications: t("settings.menu_notifications"),
+        language: t("settings.menu_language"),
+        theme: t("settings.menu_theme"),
+        pwa: t("settings.menu_pwa"),
+        telegram: t("settings.menu_telegram"),
+        privacy: t("settings.menu_privacy"),
+      };
+      const subLabel = settingsSubLabels[parts[1]];
+      if (subLabel) {
+        list.push({
+          label: subLabel,
+          path: pathname,
+          icon: <Settings size={14} />
+        });
+      }
     }
 
     return list;
