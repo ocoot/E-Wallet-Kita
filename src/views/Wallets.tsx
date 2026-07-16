@@ -32,6 +32,214 @@ const maskContact = (value: string) => {
   return "•".repeat(digits.length - 4) + " " + digits.slice(-4);
 };
 
+/** Untuk kolom nomor HP (e-wallet) -- keyboard numerik ala dial-pad (boleh +). */
+const CONTACT_KEYBOARD_PROPS_PHONE = { type: "tel" as const, inputMode: "tel" as const };
+/** Untuk kolom nomor rekening (bank) -- keyboard numerik murni digit, tanpa +/*/#. */
+const CONTACT_KEYBOARD_PROPS_ACCOUNT = { type: "text" as const, inputMode: "numeric" as const, pattern: "[0-9]*" };
+
+interface WalletCardProps {
+  wallet: WalletWithBalance;
+  cardSurfaceClass: string;
+  editingContactId: string | null;
+  contactInput: string;
+  setContactInput: (v: string) => void;
+  setEditingContactId: (id: string | null) => void;
+  editingBalanceId: string | null;
+  balanceInput: number | "";
+  setBalanceInput: (v: number | "") => void;
+  setEditingBalanceId: (id: string | null) => void;
+  visibleContactIds: Set<string>;
+  toggleContactVisibility: (id: string) => void;
+  busy: boolean;
+  setWalletToDelete: (w: WalletWithBalance | null) => void;
+  handleSaveContact: (wallet: WalletWithBalance) => void;
+  handleSaveBalance: (walletId: string) => void;
+}
+
+/**
+ * Sengaja dipindah jadi komponen top-level (BUKAN didefinisikan di dalam body
+ * `Wallets`). Sebelumnya `WalletCard` dibuat ulang sebagai fungsi baru setiap
+ * kali `Wallets` re-render (mis. tiap ketikan 1 huruf/angka di kolom nomor
+ * HP/rekening memicu re-render lewat `setContactInput`). Karena identitas
+ * tipe komponennya berubah tiap render, React membongkar-pasang ULANG semua
+ * kartu pos dompet dari nol -- termasuk memutar ulang animasi masuk
+ * `motion.div` (`initial opacity:0 -> animate opacity:1`) setiap kartu --
+ * itulah "layar berkedip" yang dilaporkan tiap kali mengetik satu karakter.
+ * Dengan `WalletCard` jadi komponen stabil di luar, React cukup
+ * memperbarui DOM yang berubah saja, tanpa remount/replay animasi.
+ */
+const WalletCard: React.FC<WalletCardProps> = ({
+  wallet,
+  cardSurfaceClass,
+  editingContactId,
+  contactInput,
+  setContactInput,
+  setEditingContactId,
+  editingBalanceId,
+  balanceInput,
+  setBalanceInput,
+  setEditingBalanceId,
+  visibleContactIds,
+  toggleContactVisibility,
+  busy,
+  setWalletToDelete,
+  handleSaveContact,
+  handleSaveBalance,
+}) => {
+  const { t } = useLanguage();
+  const { tokens, cx } = useThemeTokens();
+  const navigate = useNavigate();
+
+  const isGeneral = wallet.type === "general";
+  const contactValue = wallet.type === "ewallet" ? wallet.phone_number : wallet.type === "bank" ? wallet.account_number : null;
+  const contactLabel = wallet.type === "ewallet" ? t("wallet.field_phone") : t("wallet.field_account_number");
+  const canHaveContact = wallet.type === "ewallet" || wallet.type === "bank";
+  const isContactVisible = visibleContactIds.has(wallet.id);
+  // Keyboard numerik yang sesuai: dial-pad ber-"+" utk nomor HP, digit murni
+  // utk nomor rekening -- lihat gambar referensi "Use The Right Keyboard".
+  const contactKeyboardProps = wallet.type === "ewallet" ? CONTACT_KEYBOARD_PROPS_PHONE : CONTACT_KEYBOARD_PROPS_ACCOUNT;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className={cx(
+        "rounded-2xl border p-4 space-y-3",
+        isGeneral
+          ? "bg-indigo-500/5 border-indigo-500/30 light_sakura:bg-indigo-50/40 light_sakura:border-indigo-200"
+          : cardSurfaceClass
+      )}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0 flex items-center gap-2.5">
+          {!isGeneral && (wallet.type === "ewallet" || wallet.type === "bank") && (
+            <ProviderBadge type={wallet.type} provider={wallet.provider} size={32} />
+          )}
+          <div className="min-w-0">
+            <p className={cx("font-sans font-bold text-sm truncate", tokens.text.primary)}>{wallet.name}</p>
+            {wallet.provider && wallet.provider !== wallet.name && (
+              <p className={cx("font-sans text-[11px] truncate", tokens.text.muted)}>{wallet.provider}</p>
+            )}
+          </div>
+        </div>
+        <button
+          onClick={() => setWalletToDelete(wallet)}
+          title={t("wallet.delete_wallet")}
+          disabled={isGeneral}
+          className="p-1.5 rounded-lg text-slate-500 hover:bg-red-500/15 hover:text-red-400 cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shrink-0 light_sakura:hover:bg-red-50 light_sakura:hover:text-red-500"
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
+
+      {/* Nomor HP (e-wallet) / Nomor Rekening (bank) -- bisa disembunyikan */}
+      {canHaveContact && (
+        editingContactId === wallet.id ? (
+          <div className="space-y-2">
+            <input
+              autoFocus
+              value={contactInput}
+              onChange={(e) => setContactInput(e.target.value)}
+              placeholder={contactLabel}
+              className={tokens.form.input}
+              {...contactKeyboardProps}
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleSaveContact(wallet)}
+                disabled={busy}
+                className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-50"
+              >
+                {t("common.save")}
+              </button>
+              <button
+                onClick={() => setEditingContactId(null)}
+                className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
+              >
+                {t("common.cancel")}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => { setEditingContactId(wallet.id); setContactInput(contactValue || ""); }}
+            className="flex items-center gap-2 w-full text-left px-2.5 py-1.5 rounded-lg bg-slate-950/40 hover:bg-slate-800/60 light_sakura:bg-rose-50/40 light_sakura:hover:bg-rose-100/60 cursor-pointer group"
+          >
+            {wallet.type === "ewallet" ? <Phone size={12} className="text-slate-500 shrink-0" /> : <CreditCard size={12} className="text-slate-500 shrink-0" />}
+            <span className={cx("font-sans text-[11px] tabular-nums truncate group-hover:text-slate-300", tokens.text.muted)}>
+              {contactValue
+                ? (isContactVisible ? contactValue : maskContact(contactValue))
+                : `+ ${contactLabel}`}
+            </span>
+            {contactValue && (
+              <span
+                role="button"
+                onClick={(e) => { e.stopPropagation(); toggleContactVisibility(wallet.id); }}
+                className="ml-auto p-1 rounded text-slate-500 hover:text-white cursor-pointer shrink-0"
+              >
+                {isContactVisible ? <EyeOff size={12} /> : <Eye size={12} />}
+              </span>
+            )}
+          </button>
+        )
+      )}
+
+      {editingBalanceId === wallet.id ? (
+        <div className="space-y-2">
+          <input
+            type="number"
+            inputMode="decimal"
+            autoFocus
+            value={balanceInput}
+            onChange={(e) => setBalanceInput(e.target.value === "" ? "" : Number(e.target.value))}
+            className={tokens.form.input}
+          />
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleSaveBalance(wallet.id)}
+              disabled={busy}
+              className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-50"
+            >
+              {t("common.save")}
+            </button>
+            <button
+              onClick={() => setEditingBalanceId(null)}
+              className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
+            >
+              {t("common.cancel")}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <p className={cx("font-sans font-black text-xl tabular-nums", tokens.text.primary)}>
+            {formatIDR(wallet.balance)}
+          </p>
+          {wallet.earmarked_amount > 0 && (
+            <p className="font-sans text-[10px] text-amber-400/90 -mt-2">
+              {t("wallet.earmarked_note", { earmarked: formatIDR(wallet.earmarked_amount), available: formatIDR(wallet.available_balance) })}
+            </p>
+          )}
+          <div className="flex items-center gap-2 pt-1">
+            <button
+              onClick={() => { setEditingBalanceId(wallet.id); setBalanceInput(Math.round(wallet.balance)); }}
+              className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800/70 hover:bg-slate-700 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100", tokens.text.label)}
+            >
+              <Pencil size={11} /> {t("wallet.edit_balance")}
+            </button>
+            <button
+              onClick={() => navigate("/transactions", { state: { filterWalletId: wallet.id } })}
+              className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800/70 hover:bg-slate-700 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100", tokens.text.label)}
+            >
+              <HistoryIcon size={11} /> {t("wallet.view_history")}
+            </button>
+          </div>
+        </>
+      )}
+    </motion.div>
+  );
+};
+
 export const Wallets: React.FC = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -169,150 +377,24 @@ export const Wallets: React.FC = () => {
     }
   };
 
-  const WalletCard: React.FC<{ wallet: WalletWithBalance }> = ({ wallet }) => {
-    const isGeneral = wallet.type === "general";
-    const contactValue = wallet.type === "ewallet" ? wallet.phone_number : wallet.type === "bank" ? wallet.account_number : null;
-    const contactLabel = wallet.type === "ewallet" ? t("wallet.field_phone") : t("wallet.field_account_number");
-    const canHaveContact = wallet.type === "ewallet" || wallet.type === "bank";
-    const isContactVisible = visibleContactIds.has(wallet.id);
-
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className={cx(
-          "rounded-2xl border p-4 space-y-3",
-          isGeneral
-            ? "bg-indigo-500/5 border-indigo-500/30 light_sakura:bg-indigo-50/40 light_sakura:border-indigo-200"
-            : cardSurfaceClass
-        )}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0 flex items-center gap-2.5">
-            {!isGeneral && (wallet.type === "ewallet" || wallet.type === "bank") && (
-              <ProviderBadge type={wallet.type} provider={wallet.provider} size={32} />
-            )}
-            <div className="min-w-0">
-              <p className={cx("font-sans font-bold text-sm truncate", tokens.text.primary)}>{wallet.name}</p>
-              {wallet.provider && wallet.provider !== wallet.name && (
-                <p className={cx("font-sans text-[11px] truncate", tokens.text.muted)}>{wallet.provider}</p>
-              )}
-            </div>
-          </div>
-          <button
-            onClick={() => setWalletToDelete(wallet)}
-            title={t("wallet.delete_wallet")}
-            disabled={isGeneral}
-            className="p-1.5 rounded-lg text-slate-500 hover:bg-red-500/15 hover:text-red-400 cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shrink-0 light_sakura:hover:bg-red-50 light_sakura:hover:text-red-500"
-          >
-            <Trash2 size={14} />
-          </button>
-        </div>
-
-        {/* Nomor HP (e-wallet) / Nomor Rekening (bank) -- bisa disembunyikan */}
-        {canHaveContact && (
-          editingContactId === wallet.id ? (
-            <div className="space-y-2">
-              <input
-                autoFocus
-                value={contactInput}
-                onChange={(e) => setContactInput(e.target.value)}
-                placeholder={contactLabel}
-                className={tokens.form.input}
-              />
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleSaveContact(wallet)}
-                  disabled={busy}
-                  className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-50"
-                >
-                  {t("common.save")}
-                </button>
-                <button
-                  onClick={() => setEditingContactId(null)}
-                  className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
-                >
-                  {t("common.cancel")}
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => { setEditingContactId(wallet.id); setContactInput(contactValue || ""); }}
-              className="flex items-center gap-2 w-full text-left px-2.5 py-1.5 rounded-lg bg-slate-950/40 hover:bg-slate-800/60 light_sakura:bg-rose-50/40 light_sakura:hover:bg-rose-100/60 cursor-pointer group"
-            >
-              {wallet.type === "ewallet" ? <Phone size={12} className="text-slate-500 shrink-0" /> : <CreditCard size={12} className="text-slate-500 shrink-0" />}
-              <span className={cx("font-sans text-[11px] tabular-nums truncate group-hover:text-slate-300", tokens.text.muted)}>
-                {contactValue
-                  ? (isContactVisible ? contactValue : maskContact(contactValue))
-                  : `+ ${contactLabel}`}
-              </span>
-              {contactValue && (
-                <span
-                  role="button"
-                  onClick={(e) => { e.stopPropagation(); toggleContactVisibility(wallet.id); }}
-                  className="ml-auto p-1 rounded text-slate-500 hover:text-white cursor-pointer shrink-0"
-                >
-                  {isContactVisible ? <EyeOff size={12} /> : <Eye size={12} />}
-                </span>
-              )}
-            </button>
-          )
-        )}
-
-        {editingBalanceId === wallet.id ? (
-          <div className="space-y-2">
-            <input
-              type="number"
-              autoFocus
-              value={balanceInput}
-              onChange={(e) => setBalanceInput(e.target.value === "" ? "" : Number(e.target.value))}
-              className={tokens.form.input}
-            />
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleSaveBalance(wallet.id)}
-                disabled={busy}
-                className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-50"
-              >
-                {t("common.save")}
-              </button>
-              <button
-                onClick={() => setEditingBalanceId(null)}
-                className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
-              >
-                {t("common.cancel")}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
-            <p className={cx("font-sans font-black text-xl tabular-nums", tokens.text.primary)}>
-              {formatIDR(wallet.balance)}
-            </p>
-            {wallet.earmarked_amount > 0 && (
-              <p className="font-sans text-[10px] text-amber-400/90 -mt-2">
-                {t("wallet.earmarked_note", { earmarked: formatIDR(wallet.earmarked_amount), available: formatIDR(wallet.available_balance) })}
-              </p>
-            )}
-            <div className="flex items-center gap-2 pt-1">
-              <button
-                onClick={() => { setEditingBalanceId(wallet.id); setBalanceInput(Math.round(wallet.balance)); }}
-                className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800/70 hover:bg-slate-700 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100", tokens.text.label)}
-              >
-                <Pencil size={11} /> {t("wallet.edit_balance")}
-              </button>
-              <button
-                onClick={() => navigate("/transactions", { state: { filterWalletId: wallet.id } })}
-                className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-800/70 hover:bg-slate-700 cursor-pointer light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100", tokens.text.label)}
-              >
-                <HistoryIcon size={11} /> {t("wallet.view_history")}
-              </button>
-            </div>
-          </>
-        )}
-      </motion.div>
-    );
+  // Props yang sama dipakai di semua instance <WalletCard>, di-spread biar
+  // tidak mengetik ulang 10+ props di 2 tempat pemanggilan berbeda.
+  const walletCardSharedProps = {
+    cardSurfaceClass,
+    editingContactId,
+    contactInput,
+    setContactInput,
+    setEditingContactId,
+    editingBalanceId,
+    balanceInput,
+    setBalanceInput,
+    setEditingBalanceId,
+    visibleContactIds,
+    toggleContactVisibility,
+    busy,
+    setWalletToDelete,
+    handleSaveContact,
+    handleSaveBalance,
   };
 
   return (
@@ -347,7 +429,7 @@ export const Wallets: React.FC = () => {
               </h2>
               <p className={cx("font-sans text-[11px] -mt-1", tokens.text.faint)}>{t("wallet.general_desc")}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <WalletCard wallet={generalWallet} />
+                <WalletCard wallet={generalWallet} {...walletCardSharedProps} />
               </div>
             </div>
           )}
@@ -431,6 +513,7 @@ export const Wallets: React.FC = () => {
                       </label>
                       <input
                         type="number"
+                        inputMode="decimal"
                         value={newStartBalance}
                         onChange={(e) => setNewStartBalance(e.target.value === "" ? "" : Number(e.target.value))}
                         placeholder="0"
@@ -447,6 +530,7 @@ export const Wallets: React.FC = () => {
                           onChange={(e) => setNewContact(e.target.value)}
                           placeholder={type === "ewallet" ? "08xxxxxxxxxx" : "1234567890"}
                           className={tokens.form.input}
+                          {...(type === "ewallet" ? CONTACT_KEYBOARD_PROPS_PHONE : CONTACT_KEYBOARD_PROPS_ACCOUNT)}
                         />
                       </div>
                     )}
@@ -472,7 +556,7 @@ export const Wallets: React.FC = () => {
                   <p className="font-sans text-xs text-slate-500 italic px-1">{t("wallet.empty_group")}</p>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {items.map((w) => <WalletCard key={w.id} wallet={w} />)}
+                    {items.map((w) => <WalletCard key={w.id} wallet={w} {...walletCardSharedProps} />)}
                   </div>
                 )}
               </div>
