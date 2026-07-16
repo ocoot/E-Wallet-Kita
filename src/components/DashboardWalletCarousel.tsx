@@ -134,7 +134,7 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
     // kartu (+ sedikit ruang), sisanya otomatis di-scroll/swipe seperti
     // carousel semestinya, dan hanya SATU kartu yang terlihat pada satu
     // waktu -- sama seperti perilaku di mobile.
-    <div className="space-y-2.5 sm:max-w-[440px]">
+    <div className="space-y-2.5 sm:w-[420px]">
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -142,7 +142,13 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
       >
         {/* Kartu dashboard dinamis (greeting + cuaca) -- snap-item pertama
             di strip yang sama dengan kartu Pos Dompet, supaya bisa digeser
-            satu jari dari sini langsung ke kartu Saldo Umum / wallet lain. */}
+            satu jari dari sini langsung ke kartu Saldo Umum / wallet lain.
+            Lebar kartu di sini (sm:w-[420px]) HARUS sama persis dengan
+            lebar wrapper luar (sm:w-[420px] di atas) dan kartu wallet di
+            bawah -- kalau tidak sama, sisa ruang di wrapper akan
+            menampakkan sepotong tipis kartu berikutnya (efek "terpotong"
+            yang dilaporkan), karena overflow-x-auto hanya meng-clip pada
+            batas lebar wrapper, bukan per-kartu. */}
         {headerSlot && (
           <div className="shrink-0 w-full sm:w-[420px] snap-center">
             {headerSlot}
@@ -152,7 +158,7 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
         {showWalletSkeleton && (
           <div
             className={cx(
-              "shrink-0 w-full sm:w-[360px] h-40 rounded-3xl border animate-pulse snap-center",
+              "shrink-0 w-full sm:w-[420px] h-40 rounded-3xl border animate-pulse snap-center",
               tokens.surface.card,
               "border-slate-800/60 light_sakura:border-rose-100/40"
             )}
@@ -190,7 +196,7 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
                 }
               }}
               style={borderStyle}
-              className="relative shrink-0 w-full sm:w-[360px] snap-center overflow-hidden rounded-3xl border cursor-pointer transition-transform active:scale-[0.98]"
+              className="relative shrink-0 w-full sm:w-[420px] snap-center overflow-hidden rounded-3xl border cursor-pointer transition-transform active:scale-[0.98]"
             >
               {/* Layer background: kartu berlogo dibungkus penuh oleh gambar
                   logo provider (bukan badge kecil) + scrim gelap di atasnya
@@ -198,10 +204,27 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
                   gradient warna brand transparan seperti sebelumnya. */}
               {hasLogoBg ? (
                 <>
-                  <img src={logo} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full object-cover" />
+                  {/* Dulu logo dipasang full-bleed dengan object-cover, yang
+                      artinya gambar di-zoom & dipotong supaya mengisi
+                      seluruh kartu -- hasilnya sebagian logo/teks (mis. "OVO")
+                      terpotong di tepi kartu. Sekarang logo diperkecil jadi
+                      elemen watermark (object-contain, dibatasi lebar &
+                      tinggi maksimum) yang ditaruh di pojok kanan bawah,
+                      di atas gradient warna brand -- seluruh logo selalu
+                      utuh terlihat, tidak ada bagian yang terpotong. */}
                   <div
                     className="absolute inset-0"
-                    style={{ background: `linear-gradient(180deg, ${color}66 0%, rgba(0,0,0,0.55) 45%, rgba(0,0,0,0.82) 100%)` }}
+                    style={{ background: `linear-gradient(135deg, ${color}59 0%, ${color}26 55%, transparent 100%)` }}
+                  />
+                  <img
+                    src={logo}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute -right-3 bottom-0 w-[46%] max-w-[150px] h-auto max-h-[70%] object-contain opacity-80 pointer-events-none select-none"
+                  />
+                  <div
+                    className="absolute inset-0"
+                    style={{ background: `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.82) 100%)` }}
                   />
                 </>
               ) : (
