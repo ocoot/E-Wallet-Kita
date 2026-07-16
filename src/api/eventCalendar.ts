@@ -19,6 +19,13 @@ export interface EventOverlayConfig {
   gradientClass?: string;
   /** Emoji ikon kecil di samping tanggal (opsional) */
   emoji?: string;
+  /**
+   * ID "doodle" -- animasi ilustrasi kecil ala Google Doodle yang
+   * merepresentasikan event ini (berbeda dari partikel overlay generik).
+   * Di-map ke komponen React di `EventDoodle.tsx`. Opsional: kalau kosong,
+   * event hanya dapat partikel overlay biasa tanpa doodle.
+   */
+  doodleId?: string;
 }
 
 export interface CalendarEvent {
@@ -113,7 +120,7 @@ const SPORTS_EVENTS: CalendarEvent[] = [
     name: { id: "Piala Dunia FIFA", en: "FIFA World Cup" },
     // Piala Dunia 2026: 11 Juni – 19 Juli (host USA/Kanada/Meksiko)
     range: { start: { month: 6, day: 11 }, end: { month: 7, day: 19 } },
-    overlay: { type: "confetti", emoji: "" },
+    overlay: { type: "confetti", emoji: "", doodleId: "fifa-world-cup" },
     countryCode: "*",
   },
   {
