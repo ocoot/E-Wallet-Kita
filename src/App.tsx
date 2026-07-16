@@ -106,7 +106,23 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   const navigate = useNavigate();
   const { showToast } = useToast();
   const { t } = useLanguage();
-  
+
+  // Durasi minimum splash screen tampil (ms). Sesi Supabase kadang sudah
+  // ter-resolve dari cache/localStorage dalam hitungan puluhan milidetik
+  // saja -- tanpa jeda ini, <SplashScreen/> (lihat AuthContext.tsx yang
+  // sudah diperbaiki supaya benar-benar sempat di-mount) akan "kedip"
+  // sekilas dan animasinya (ring berputar, fade-in) tidak sempat terlihat
+  // sama sekali. `loading` asli dari AuthContext TIDAK diubah/ditunda --
+  // ini murni penundaan tampilan (presentational), supaya state auth yang
+  // dipakai context lain (Theme/Language/Admin) tetap resolve secepat
+  // aslinya.
+  const MIN_SPLASH_DURATION_MS = 3000;
+  const [minSplashElapsed, setMinSplashElapsed] = useState(false);
+  useEffect(() => {
+    const timer = setTimeout(() => setMinSplashElapsed(true), MIN_SPLASH_DURATION_MS);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [userProfile, setUserProfile] = useState<{ display_name: string } | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [transactionsUpdatedTrigger, setTransactionsUpdatedTrigger] = useState(0);
@@ -266,7 +282,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
     }
   };
 
-  if (loading) {
+  if (loading || !minSplashElapsed) {
     return <SplashScreen />;
   }
 

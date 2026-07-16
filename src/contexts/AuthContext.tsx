@@ -130,7 +130,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider value={{ user, session, loading, isRecoveringPassword, setIsRecoveringPassword, signInWithGoogle, signInAsGuest, signOut }}>
-      {!loading && children}
+      {/*
+        PENTING: dulu ini `{!loading && children}` -- itu artinya SELURUH
+        pohon komponen (<App/>, Router, MainLayout, dst) tidak pernah
+        di-mount sama sekali selama `loading === true`. Akibatnya baris
+        `if (loading) return <SplashScreen />;` di MainLayout (App.tsx)
+        adalah dead code: MainLayout sendiri belum ada saat itu, jadi
+        SplashScreen TIDAK PERNAH sempat dirender -- apa pun desainnya.
+        Yang terlihat sebelumnya cuma <div id="root"></div> kosong
+        (putih/kosong polos) sampai sesi Supabase selesai di-resolve,
+        lalu app langsung "lompat" muncul penuh.
+
+        Fix: selalu render `children`. `loading` sudah dioper lewat
+        context (dipakai oleh App.tsx -> MainLayout) sehingga MainLayout
+        yang memutuskan kapan menampilkan <SplashScreen/> -- bukan
+        provider ini yang menyembunyikan seluruh app.
+      */}
+      {children}
     </AuthContext.Provider>
   );
 };
