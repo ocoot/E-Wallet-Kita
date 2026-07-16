@@ -27,13 +27,15 @@ interface SidebarProps {
   isCollapsed: boolean;
   onToggle: (collapsed: boolean) => void;
   userDisplayName?: string;
+  userAvatarUrl?: string | null;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   onLogoutClick,
   isCollapsed,
   onToggle,
-  userDisplayName
+  userDisplayName,
+  userAvatarUrl
 }) => {
   const { user } = useAuth();
   const { locale, setLocale, t } = useLanguage();
@@ -46,6 +48,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const isGuest = user?.is_anonymous ?? false;
   
   const [displayName, setDisplayName] = useState<string>(userDisplayName || user?.user_metadata?.full_name || user?.email || t("admin.guest_user"));
+  // `avatarUrl` mengikuti pola yang sama seperti `displayName` di atas --
+  // sinkron langsung dari prop `userAvatarUrl` (dilempar App.tsx begitu
+  // Settings/ProfileSettings memanggil onUserPrefUpdated setelah ganti
+  // foto), supaya avatar bulat di sidebar ini ikut ter-update SEKETIKA
+  // tanpa perlu reload halaman. Kalau prop belum ada (mis. saat baru buka
+  // app di route lain yang belum pernah menyentuh halaman profil), fallback
+  // fetch langsung dari Supabase di bawah.
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(userAvatarUrl ?? null);
 
   useEffect(() => {
     if (userDisplayName) {
@@ -54,20 +64,27 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, [userDisplayName]);
 
   useEffect(() => {
-    if (userDisplayName) return;
+    if (userAvatarUrl !== undefined) {
+      setAvatarUrl(userAvatarUrl);
+    }
+  }, [userAvatarUrl]);
+
+  useEffect(() => {
+    if (userDisplayName && userAvatarUrl !== undefined) return;
     if (!user) return;
     const fetchProfile = async () => {
       const { data, error } = await supabase
         .from("users")
-        .select("display_name")
+        .select("display_name, avatar_url")
         .eq("id", user.id)
         .single();
-      if (!error && data?.display_name) {
-        setDisplayName(data.display_name);
+      if (!error && data) {
+        if (!userDisplayName && data.display_name) setDisplayName(data.display_name);
+        if (userAvatarUrl === undefined && data.avatar_url) setAvatarUrl(data.avatar_url);
       }
     };
     fetchProfile();
-  }, [user, userDisplayName]);
+  }, [user, userDisplayName, userAvatarUrl]);
 
   const menuItems = useNavItems();
 
@@ -145,8 +162,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Profile widget summary and state */}
         <div className="px-4 mb-6">
           <div className={`transition-all duration-300 rounded-xl border flex items-center ${isCollapsed ? "bg-transparent border-transparent p-0 justify-center" : "p-3 bg-white/5 backdrop-blur-sm border-white/10 light_sakura:bg-rose-50/60 light_sakura:border-white/70 gap-2.5"}`}>
-            <div className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center bg-slate-900 text-indigo-400 light_sakura:bg-rose-200 light_sakura:text-rose-600 text-xs font-bold shadow-xs transition-all duration-300">
-              {displayName.charAt(0).toUpperCase()}
+            <div className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center overflow-hidden bg-slate-900 text-indigo-400 light_sakura:bg-rose-200 light_sakura:text-rose-600 text-xs font-bold shadow-xs transition-all duration-300">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
+              ) : (
+                displayName.charAt(0).toUpperCase()
+              )}
             </div>
             
             <div className={`transition-all duration-300 flex flex-col min-w-0 overflow-hidden ${isCollapsed ? "w-0 opacity-0 -translate-x-4" : "w-full opacity-100 translate-x-0"}`}>

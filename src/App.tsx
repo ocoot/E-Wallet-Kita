@@ -123,7 +123,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  const [userProfile, setUserProfile] = useState<{ display_name: string } | null>(null);
+  const [userProfile, setUserProfile] = useState<{ display_name: string; avatar_url?: string | null } | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [transactionsUpdatedTrigger, setTransactionsUpdatedTrigger] = useState(0);
   const lastRealtimeId = useRef<string | null>(null);
@@ -317,6 +317,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
         isCollapsed={isSidebarCollapsed}
         onToggle={setIsSidebarCollapsed}
         userDisplayName={userProfile?.display_name}
+        userAvatarUrl={userProfile?.avatar_url}
       />
 
       {/* Navbar bawah -- menggantikan sidebar di layar handphone (< md) */}
@@ -363,10 +364,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                   <Route path="/savings" element={<FeatureLockGate featureKey="savings"><Savings /></FeatureLockGate>} />
                   <Route path="/gold-savings" element={<FeatureLockGate featureKey="gold_savings"><GoldSavings /></FeatureLockGate>} />
                   <Route path="/settings" element={<FeatureLockGate featureKey="settings"><Settings onUserPrefUpdated={(updatedUser) => {
-                    setUserProfile({ display_name: updatedUser.display_name });
+                    setUserProfile({ display_name: updatedUser.display_name, avatar_url: updatedUser.avatar_url });
                   }} /></FeatureLockGate>} />
                   <Route path="/settings/profile" element={<FeatureLockGate featureKey="settings"><ProfileSettings onUserPrefUpdated={(updatedUser) => {
-                    setUserProfile({ display_name: updatedUser.display_name });
+                    setUserProfile({ display_name: updatedUser.display_name, avatar_url: updatedUser.avatar_url });
                   }} /></FeatureLockGate>} />
                   <Route path="/settings/security" element={<FeatureLockGate featureKey="settings"><SecuritySettings /></FeatureLockGate>} />
                   <Route path="/settings/notifications" element={<FeatureLockGate featureKey="settings"><NotificationSettings /></FeatureLockGate>} />
