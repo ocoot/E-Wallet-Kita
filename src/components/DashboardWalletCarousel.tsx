@@ -124,7 +124,17 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
   };
 
   return (
-    <div className="space-y-2.5">
+    // `sm:max-w-[440px]`: di layar >= 640px kartu-kartu di dalam strip pakai
+    // lebar tetap (420px/360px, lihat di bawah), BUKAN w-full seperti versi
+    // mobile. Tanpa pembatas ini, area strip mengikuti lebar kolom dashboard
+    // (bisa ratusan px lebih lebar dari satu kartu), sehingga kartu
+    // berikutnya ikut kepampang penuh di sebelahnya alih-alih tersembunyi di
+    // luar viewport carousel -- persis masalah yang dilaporkan (kartu
+    // sebelum/sesudahnya ikut tampil). Dengan strip dibatasi selebar satu
+    // kartu (+ sedikit ruang), sisanya otomatis di-scroll/swipe seperti
+    // carousel semestinya, dan hanya SATU kartu yang terlihat pada satu
+    // waktu -- sama seperti perilaku di mobile.
+    <div className="space-y-2.5 sm:max-w-[440px]">
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -262,8 +272,20 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
               type="button"
               aria-label="1"
               onClick={() => scrollToIndex(0)}
+              // `btn-exact`: lolos dari rule global tap-target mobile yang
+              // memaksa min-height 44px ke semua <button> (lihat index.css).
+              // Tanpa ini, titik dot yang seharusnya cuma h-1 (4px) ikut
+              // "digelembungkan" jadi bar tinggi 44px di mobile -- itulah
+              // "sliding" besar yang dilaporkan, padahal di web/tablet (yang
+              // tidak kena media query mobile itu) dot-nya sudah kecil rapi.
               className={cx(
-                "h-1 rounded-full transition-all cursor-pointer",
+                // `relative before:-inset-y-3.5 ...`: dot-nya sendiri tetap
+                // kecil (h-1) secara visual, tapi area sentuh diperlebar
+                // secara transparan lewat pseudo-element ::before (pola yang
+                // sama dipakai widget kecil lain) supaya tetap nyaman
+                // disentuh di layar mobile walau sudah lolos dari
+                // min-height 44px paksaan.
+                "btn-exact relative h-1 rounded-full transition-all cursor-pointer before:absolute before:-inset-y-3.5 before:-inset-x-1 before:content-['']",
                 activeIndex === 0 ? "w-3.5 bg-indigo-400 light_sakura:bg-rose-400" : "w-1 bg-slate-700 light_sakura:bg-rose-200"
               )}
             />
@@ -276,8 +298,13 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
                 type="button"
                 aria-label={`${dotIndex + 1}`}
                 onClick={() => scrollToIndex(dotIndex)}
+                // `btn-exact`: sama seperti dot pertama di atas -- cegah
+                // min-height 44px global membuat dot ini jadi bar tinggi di
+                // mobile.
                 className={cx(
-                  "h-1 rounded-full transition-all cursor-pointer",
+                  // Sama seperti dot pertama -- area sentuh diperlebar lewat
+                  // ::before transparan, visual dot tetap kecil.
+                  "btn-exact relative h-1 rounded-full transition-all cursor-pointer before:absolute before:-inset-y-3.5 before:-inset-x-1 before:content-['']",
                   dotIndex === activeIndex ? "w-3.5 bg-indigo-400 light_sakura:bg-rose-400" : "w-1 bg-slate-700 light_sakura:bg-rose-200"
                 )}
               />

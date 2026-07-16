@@ -270,6 +270,25 @@ export const dbService = {
     }
   },
 
+  /**
+   * Hapus pos dompet secara PERMANEN, termasuk SELURUH riwayat transaksi
+   * yang terhubung ke pos tersebut (lihat migrasi delete_wallet_rpc --
+   * beda dari FK default ON DELETE SET NULL, transaksinya benar-benar
+   * dihapus, bukan cuma dilepas wallet_id-nya). Menggantikan fitur
+   * arsipkan/unarchive yang lama -- pos Saldo Total (general) tetap tidak
+   * bisa dihapus, ditolak di level RPC.
+   */
+  async deleteWallet(userId: string, walletId: string): Promise<void> {
+    const { error } = await supabase.rpc('delete_wallet', {
+      p_user_id: userId,
+      p_wallet_id: walletId
+    });
+    if (error) {
+      console.error('Error deleting wallet:', error);
+      throw error;
+    }
+  },
+
   async updateWallet(
     userId: string,
     walletId: string,

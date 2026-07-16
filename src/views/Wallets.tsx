@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Plus, Pencil, Archive, ArchiveRestore, History as HistoryIcon, Wallet as WalletIcon, Eye, EyeOff, Phone, CreditCard } from "lucide-react";
+import { Plus, Pencil, Trash2, History as HistoryIcon, Wallet as WalletIcon, Eye, EyeOff, Phone, CreditCard } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
@@ -14,6 +14,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { WalletPickerField } from "../components/WalletPickerField";
 import { ProviderBadge } from "../components/ProviderBadge";
+import { Modal } from "../components/Modal";
 import { PROVIDER_CATALOG, OTHER_PROVIDER_ID } from "../data/walletProviders";
 
 const GROUP_META: Record<Exclude<WalletType, "general">, { icon: string; labelKey: string; addKey: string; placeholderKey: string }> = {
@@ -54,6 +55,7 @@ export const Wallets: React.FC = () => {
   const [editingContactId, setEditingContactId] = useState<string | null>(null);
   const [contactInput, setContactInput] = useState("");
   const [visibleContactIds, setVisibleContactIds] = useState<Set<string>>(new Set());
+  const [walletToDelete, setWalletToDelete] = useState<WalletWithBalance | null>(null);
 
   const openCreateForm = (type: Exclude<WalletType, "general">) => {
     setCreatingType(type);
@@ -76,8 +78,6 @@ export const Wallets: React.FC = () => {
 
   const grouped = (type: Exclude<WalletType, "general">) =>
     activeWallets.filter((w) => w.type === type);
-
-  const archivedWallets = wallets.filter((w) => w.is_archived);
 
   const isCatalogType = (type: Exclude<WalletType, "general">): type is "ewallet" | "bank" => type === "ewallet" || type === "bank";
 
@@ -154,12 +154,13 @@ export const Wallets: React.FC = () => {
     }
   };
 
-  const handleToggleArchive = async (wallet: WalletWithBalance) => {
-    if (!user?.id) return;
+  const handleDeleteWallet = async () => {
+    if (!user?.id || !walletToDelete) return;
     setBusy(true);
     try {
-      await dbService.updateWallet(user.id, wallet.id, { is_archived: !wallet.is_archived });
-      showToast(t("wallet.toast_wallet_updated"), "success");
+      await dbService.deleteWallet(user.id, walletToDelete.id);
+      showToast(t("wallet.toast_wallet_deleted"), "success");
+      setWalletToDelete(null);
       await refresh();
     } catch {
       showToast(t("toast.error_general"), "error");
@@ -199,12 +200,12 @@ export const Wallets: React.FC = () => {
             </div>
           </div>
           <button
-            onClick={() => handleToggleArchive(wallet)}
-            title={wallet.is_archived ? t("wallet.unarchive") : t("wallet.archive")}
+            onClick={() => setWalletToDelete(wallet)}
+            title={t("wallet.delete_wallet")}
             disabled={isGeneral}
-            className="p-1.5 rounded-lg text-slate-500 hover:bg-slate-800 hover:text-white cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shrink-0 light_sakura:hover:bg-rose-100"
+            className="p-1.5 rounded-lg text-slate-500 hover:bg-red-500/15 hover:text-red-400 cursor-pointer disabled:opacity-20 disabled:cursor-not-allowed shrink-0 light_sakura:hover:bg-red-50 light_sakura:hover:text-red-500"
           >
-            {wallet.is_archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
+            <Trash2 size={14} />
           </button>
         </div>
 
@@ -478,20 +479,23 @@ export const Wallets: React.FC = () => {
             );
           })}
 
-          {archivedWallets.length > 0 && (
-            <div className="space-y-2 opacity-60">
-              <h2 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">{t("wallet.archive")}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {archivedWallets.map((w) => <WalletCard key={w.id} wallet={w} />)}
-              </div>
-            </div>
-          )}
-
           {!isLoading && walletsError && <ErrorState onRetry={refresh} />}
           {!isLoading && !walletsError && activeWallets.length === 0 && <EmptyState />}
 
         </div>
       </div>
+
+      <Modal
+        isOpen={walletToDelete !== null}
+        type="danger"
+        title={walletToDelete ? t("wallet.delete_wallet_confirm_title", { name: walletToDelete.name }) : ""}
+        description={walletToDelete ? t("wallet.delete_wallet_confirm_desc", { name: walletToDelete.name }) : ""}
+        confirmLabel={t("wallet.delete_wallet_confirm_button")}
+        cancelLabel={t("wallet.btn_cancel")}
+        onConfirm={handleDeleteWallet}
+        onCancel={() => setWalletToDelete(null)}
+        confirmDisabled={busy}
+      />
 
       <LoadingOverlay isOpen={busy} message={t("common.loading")} />
     </div>
