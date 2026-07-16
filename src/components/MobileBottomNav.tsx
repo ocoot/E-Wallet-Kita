@@ -28,6 +28,7 @@ import { audioFeedback } from "../lib/audio";
 interface MobileBottomNavProps {
   onLogoutClick: () => void;
   userDisplayName?: string;
+  userAvatarUrl?: string | null;
 }
 
 /**
@@ -46,6 +47,7 @@ interface MobileBottomNavProps {
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onLogoutClick,
   userDisplayName,
+  userAvatarUrl,
 }) => {
   const { user } = useAuth();
   const { locale, setLocale, t } = useLanguage();
@@ -105,22 +107,27 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   return (
     <>
       {/* Navbar bawah -- hanya tampil di layar mobile.
-          Dua perubahan dari desain sebelumnya (mengikuti referensi):
-          1) Item "new_transaction" (tombol tambah) dirender sebagai tombol
+          Tiga perubahan dari desain sebelumnya (mengikuti referensi):
+          1) Navbar kini "mengambang" (floating pill): tidak menempel penuh
+             di tepi layar lagi, melainkan diberi jarak (inset-x + bottom)
+             di semua sisi, dengan sudut rounded-full dan bayangan menyebar
+             ke segala arah supaya terlihat melayang di atas konten.
+          2) Item "new_transaction" (tombol tambah) dirender sebagai tombol
              bulat "mengambang" (floating action button) yang menonjol di
              atas garis navbar -- bukan ikon flat sejajar item lain lagi.
-          2) Judul/label menu HANYA muncul otomatis di menu yang sedang
+          3) Judul/label menu HANYA muncul otomatis di menu yang sedang
              aktif; menu lain cuma tampil ikonnya saja, dan label itu
              muncul/hilang dgn animasi halus (framer-motion) saat pindah
              menu, bukan langsung tampil statis di semua item seperti
              sebelumnya. */}
       <nav
-        className="md:hidden fixed bottom-0 inset-x-0 z-40 flex items-stretch justify-around
-          bg-slate-950/50 backdrop-blur-2xl backdrop-saturate-150 border-t border-white/10 text-white
-          shadow-[0_-8px_32px_rgba(0,0,0,0.35)]
-          dark_obsidian:bg-slate-950/50 dark_obsidian:border-white/10
-          light_sakura:bg-white/75 light_sakura:backdrop-saturate-100 light_sakura:border-white/70 light_sakura:text-slate-800 light_sakura:shadow-[0_-8px_32px_rgba(244,63,94,0.1)]"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        className="md:hidden fixed inset-x-4 z-40 flex items-stretch justify-around
+          max-w-md mx-auto px-2
+          bg-slate-950/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 text-white
+          rounded-full shadow-[0_12px_32px_rgba(0,0,0,0.45)]
+          dark_obsidian:bg-slate-950/70 dark_obsidian:border-white/10
+          light_sakura:bg-white/85 light_sakura:backdrop-saturate-100 light_sakura:border-white/60 light_sakura:text-slate-800 light_sakura:shadow-[0_12px_32px_rgba(244,63,94,0.18)]"
+        style={{ bottom: "calc(1.1rem + env(safe-area-inset-bottom))" }}
       >
         {primaryItems.map((item) => {
           const IconComp = item.icon;
@@ -137,9 +144,9 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 key={item.id}
                 to={item.path}
                 aria-label={item.label}
-                className="flex-1 flex flex-col items-center justify-start pt-0 min-w-0 cursor-pointer"
+                className="flex-1 flex flex-col items-center justify-center min-w-0 cursor-pointer"
               >
-                <div className="relative -translate-y-5">
+                <div className="relative -translate-y-4">
                   <div
                     className={`w-14 h-14 rounded-full flex items-center justify-center
                       bg-gradient-to-br from-indigo-500 via-violet-500 to-indigo-600
@@ -165,7 +172,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             <Link
               key={item.id}
               to={item.path}
-              className="flex-1 flex flex-col items-center gap-0.5 pt-2.5 pb-1.5 min-w-0 cursor-pointer"
+              className="flex-1 flex flex-col items-center justify-center gap-0.5 py-3 min-w-0 cursor-pointer"
             >
               <div className="relative">
                 <IconComp
@@ -204,7 +211,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         {/* Tombol "Lainnya" -- membuka bottom-sheet berisi sisa menu */}
         <button
           onClick={() => setIsMoreOpen(true)}
-          className="flex-1 flex flex-col items-center gap-0.5 pt-2.5 pb-1.5 min-w-0 cursor-pointer"
+          className="flex-1 flex flex-col items-center justify-center gap-0.5 py-3 min-w-0 cursor-pointer"
         >
           <MoreHorizontal
             size={20}
@@ -286,18 +293,33 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-5 space-y-5">
                 {/* Profil ringkas */}
                 <div className="p-4 rounded-xl border bg-slate-950/40 border-slate-800 light_sakura:bg-rose-100/50 light_sakura:border-rose-200">
-                  <p className="font-mono text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-400 light_sakura:text-rose-600 uppercase tracking-widest">
-                    {isGuest ? t("history.status_guest") : t("history.status_verified")}
-                  </p>
-                  <div className="flex items-center gap-2.5 mt-1">
-                    {isGuest ? (
-                      <ShieldAlert size={16} className="text-amber-400" />
-                    ) : (
-                      <ShieldCheck size={16} className={tokens.text.success} />
-                    )}
-                    <span className="font-sans font-semibold text-sm truncate max-w-[220px] dark_obsidian:text-slate-200 light_sakura:text-slate-900">
-                      {displayName}
-                    </span>
+                  <div className="flex items-center gap-3">
+                    {/* Avatar bulat -- render foto profil kalau ada (sinkron
+                        dari App.tsx via prop `userAvatarUrl`, sama seperti
+                        di Sidebar desktop), fallback ke inisial huruf kalau
+                        belum pasang foto. */}
+                    <div className="w-10 h-10 shrink-0 rounded-full flex items-center justify-center overflow-hidden bg-slate-900 text-indigo-400 light_sakura:bg-rose-200 light_sakura:text-rose-600 text-sm font-bold">
+                      {userAvatarUrl ? (
+                        <img src={userAvatarUrl} alt={displayName} className="w-full h-full object-cover" />
+                      ) : (
+                        displayName.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-mono text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-400 light_sakura:text-rose-600 uppercase tracking-widest">
+                        {isGuest ? t("history.status_guest") : t("history.status_verified")}
+                      </p>
+                      <div className="flex items-center gap-2.5 mt-1">
+                        {isGuest ? (
+                          <ShieldAlert size={16} className="text-amber-400 shrink-0" />
+                        ) : (
+                          <ShieldCheck size={16} className={cx("shrink-0", tokens.text.success)} />
+                        )}
+                        <span className="font-sans font-semibold text-sm truncate max-w-[220px] dark_obsidian:text-slate-200 light_sakura:text-slate-900">
+                          {displayName}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 

@@ -133,7 +133,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
     const fetchProfile = async () => {
       const { data, error } = await supabase
         .from("users")
-        .select("display_name")
+        .select("display_name, avatar_url")
         .eq("id", user.id)
         .single();
       if (!error && data) {
@@ -324,6 +324,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
       <MobileBottomNav
         onLogoutClick={handleLogoutClick}
         userDisplayName={userProfile?.display_name}
+        userAvatarUrl={userProfile?.avatar_url}
       />
 
       {/* Header khusus tampilan handphone -- SENGAJA diletakkan di sini,
