@@ -45,14 +45,35 @@ interface DashboardWalletCarouselProps {
  * data/walletProviders.ts). Kelola penuh (nomor HP/rekening, saldo manual,
  * arsip) ada di /wallets.
  *
- * REVISI: logo provider (Gopay/OVO/ShopeePay/Dana) sebelumnya dipasang
- * sebagai badge kecil (di-crop object-cover ke kotak 40px) -- karena aset
- * logo yang ada berbentuk lockup/banner (bukan mark persegi), hasil crop-nya
- * terlihat terpotong aneh. Sekarang logo dipakai sebagai BACKGROUND yang
- * membungkus seluruh kartu (object-cover mengisi penuh area kartu, bukan
- * kotak kecil), dengan lapisan gradient gelap di atasnya supaya teks saldo
- * tetap terbaca. Kartu Bank/Cash/Saldo Umum/"Lainnya" (belum ada aset logo)
- * tetap pakai gradient warna brand + badge inisial seperti sebelumnya.
+ * REVISI 1: logo provider (Gopay/OVO/ShopeePay/Dana) sebelumnya dipasang
+ * full-bleed pakai object-cover -- karena aset logo berbentuk lockup/banner
+ * (rasio lebar:tinggi jauh dari rasio kartu), object-cover men-zoom &
+ * memotong sebagian logo/teks supaya mengisi penuh kartu (mis. "OVO"
+ * kepotong di tepi).
+ * REVISI 2: dicoba diperkecil jadi watermark kecil di pojok kartu -- tidak
+ * kepotong lagi, tapi malah terlihat mengambang aneh, terpisah dari
+ * background.
+ * REVISI 3: sempat diganti jadi badge kecil di header (seperti ProviderBadge
+ * di /wallets) -- tapi ini menghilangkan efek "foto membungkus kartu" yang
+ * memang diinginkan.
+ * REVISI 4 (final): logo TETAP membungkus seluruh kartu sebagai background,
+ * tapi pakai object-contain (bukan object-cover) supaya seluruh logo selalu
+ * utuh terlihat, tidak pernah terpotong. Sisa area kosong hasil letterbox
+ * (kalau rasio logo != rasio kartu) diisi warna solid `logoBgColor` yang
+ * sama persis dengan warna latar yang sudah baked-in di file logo itu
+ * sendiri (lihat data/walletProviders.ts) -- jadi tepi logo menyatu mulus
+ * dengan latar kartu, tidak ada garis pinggir/kotak yang kentara. Scrim
+ * gradient gelap tetap ditambahkan tipis di atasnya supaya teks saldo
+ * tetap kontras & terbaca. Kartu Bank/Cash/Saldo Umum/"Lainnya" (belum ada
+ * aset logo) tetap pakai gradient warna brand transparan seperti sebelumnya.
+ *
+ * REVISI 5: lebar kartu tadinya dipaku ke 420px di layar >=640px (supaya
+ * tidak ada sliver kartu berikutnya yang nongol) -- tapi ini membuat
+ * lebarnya beda dari kartu "Ringkasan Keseluruhan" di bawahnya. Sekarang
+ * kartu & wrapper carousel sama-sama w-full (ikut lebar kolom dashboard,
+ * sama seperti kartu-kartu lain di bawahnya); masalah sliver tetap aman
+ * karena kartu di dalam strip dan wrapper luarnya selalu punya lebar yang
+ * identik (sama-sama w-full), bukan karena dipaku ke angka piksel tetap.
  *
  * Toggle "sembunyikan nominal" yang dulu ada di header komponen ini SUDAH
  * DIHAPUS -- saldo selalu ditampilkan apa adanya di sini. Toggle show/hide
@@ -108,33 +129,23 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
     const matched = matchProvider(wallet.type, wallet.provider);
     const color = matched?.color || NEUTRAL_PROVIDER_COLOR;
     const hasLogoBg = !!matched?.logo;
+    const logoBgColor = matched?.logoBgColor || color;
     return {
       color,
       hasLogoBg,
       logo: matched?.logo,
-      backgroundStyle: hasLogoBg
-        ? undefined // background berupa <img>, bukan gradient -- lihat render di bawah
-        : ({
-            background: isDark
-              ? `linear-gradient(135deg, ${color}33 0%, ${color}0D 60%, transparent 100%)`
-              : `linear-gradient(135deg, ${color}26 0%, ${color}0A 60%, transparent 100%)`,
-          } as React.CSSProperties),
-      borderStyle: { borderColor: hasLogoBg ? `${color}55` : `${color}40` } as React.CSSProperties,
+      logoBgColor,
+      backgroundStyle: {
+        background: isDark
+          ? `linear-gradient(135deg, ${color}33 0%, ${color}0D 60%, transparent 100%)`
+          : `linear-gradient(135deg, ${color}26 0%, ${color}0A 60%, transparent 100%)`,
+      } as React.CSSProperties,
+      borderStyle: { borderColor: hasLogoBg ? `${logoBgColor}55` : `${color}40` } as React.CSSProperties,
     };
   };
 
   return (
-    // `sm:max-w-[440px]`: di layar >= 640px kartu-kartu di dalam strip pakai
-    // lebar tetap (420px/360px, lihat di bawah), BUKAN w-full seperti versi
-    // mobile. Tanpa pembatas ini, area strip mengikuti lebar kolom dashboard
-    // (bisa ratusan px lebih lebar dari satu kartu), sehingga kartu
-    // berikutnya ikut kepampang penuh di sebelahnya alih-alih tersembunyi di
-    // luar viewport carousel -- persis masalah yang dilaporkan (kartu
-    // sebelum/sesudahnya ikut tampil). Dengan strip dibatasi selebar satu
-    // kartu (+ sedikit ruang), sisanya otomatis di-scroll/swipe seperti
-    // carousel semestinya, dan hanya SATU kartu yang terlihat pada satu
-    // waktu -- sama seperti perilaku di mobile.
-    <div className="space-y-2.5 sm:w-[420px]">
+    <div className="space-y-2.5 w-full">
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -143,14 +154,16 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
         {/* Kartu dashboard dinamis (greeting + cuaca) -- snap-item pertama
             di strip yang sama dengan kartu Pos Dompet, supaya bisa digeser
             satu jari dari sini langsung ke kartu Saldo Umum / wallet lain.
-            Lebar kartu di sini (sm:w-[420px]) HARUS sama persis dengan
-            lebar wrapper luar (sm:w-[420px] di atas) dan kartu wallet di
-            bawah -- kalau tidak sama, sisa ruang di wrapper akan
-            menampakkan sepotong tipis kartu berikutnya (efek "terpotong"
-            yang dilaporkan), karena overflow-x-auto hanya meng-clip pada
-            batas lebar wrapper, bukan per-kartu. */}
+            Lebar kartu di sini (w-full) HARUS sama persis dengan lebar
+            wrapper luar (w-full di atas) dan kartu wallet di bawah -- kalau
+            tidak sama, sisa ruang di wrapper akan menampakkan sepotong
+            tipis kartu berikutnya (efek "terpotong" yang dilaporkan),
+            karena overflow-x-auto hanya meng-clip pada batas lebar
+            wrapper, bukan per-kartu. Pakai w-full (bukan angka piksel
+            tetap) di kedua sisi supaya lebarnya otomatis selalu sama
+            dengan kartu "Ringkasan Keseluruhan" di bawahnya. */}
         {headerSlot && (
-          <div className="shrink-0 w-full sm:w-[420px] snap-center">
+          <div className="shrink-0 w-full snap-center">
             {headerSlot}
           </div>
         )}
@@ -158,7 +171,7 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
         {showWalletSkeleton && (
           <div
             className={cx(
-              "shrink-0 w-full sm:w-[420px] h-40 rounded-3xl border animate-pulse snap-center",
+              "shrink-0 w-full h-40 rounded-3xl border animate-pulse snap-center",
               tokens.surface.card,
               "border-slate-800/60 light_sakura:border-rose-100/40"
             )}
@@ -168,17 +181,18 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
         {showWalletCards && activeWallets.map((w) => {
           const contactValue = w.type === "ewallet" ? w.phone_number : w.type === "bank" ? w.account_number : null;
           const isContactVisible = visibleContactIds.has(w.id);
-          const { color, hasLogoBg, logo, backgroundStyle, borderStyle } = cardVisual(w);
+          const { color, hasLogoBg, logo, logoBgColor, backgroundStyle, borderStyle } = cardVisual(w);
           const typeCaption =
             w.type === "ewallet" ? t("wallet.group_ewallet") :
             w.type === "bank" ? t("wallet.group_bank") :
             w.type === "cash" ? t("wallet.group_cash") : t("wallet.group_general");
-          // Kartu berlogo (background foto) selalu pakai teks terang -- scrim
-          // gradasi gelap di atasnya butuh kontras tetap, tidak boleh ikut
-          // switching text-gelap saat tema light_sakura seperti kartu lain.
+          // Kartu berlogo (foto membungkus seluruh kartu) selalu pakai teks
+          // terang -- scrim gradasi gelap di atasnya butuh kontras tetap,
+          // tidak boleh ikut switching text-gelap saat tema light_sakura
+          // seperti kartu lain.
           const primaryTextClass = hasLogoBg ? "text-white" : tokens.text.primary;
-          const mutedTextClass = hasLogoBg ? "text-white/70" : tokens.text.muted;
-          const faintTextClass = hasLogoBg ? "text-white/60" : tokens.text.faint;
+          const mutedTextClass = hasLogoBg ? "text-white/75" : tokens.text.muted;
+          const faintTextClass = hasLogoBg ? "text-white/65" : tokens.text.faint;
 
           return (
             <motion.div
@@ -196,35 +210,29 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
                 }
               }}
               style={borderStyle}
-              className="relative shrink-0 w-full sm:w-[420px] snap-center overflow-hidden rounded-3xl border cursor-pointer transition-transform active:scale-[0.98]"
+              className="relative shrink-0 w-full snap-center overflow-hidden rounded-3xl border cursor-pointer transition-transform active:scale-[0.98]"
             >
-              {/* Layer background: kartu berlogo dibungkus penuh oleh gambar
-                  logo provider (bukan badge kecil) + scrim gelap di atasnya
-                  supaya teks tetap terbaca; kartu tanpa aset logo pakai
-                  gradient warna brand transparan seperti sebelumnya. */}
               {hasLogoBg ? (
                 <>
-                  {/* Dulu logo dipasang full-bleed dengan object-cover, yang
-                      artinya gambar di-zoom & dipotong supaya mengisi
-                      seluruh kartu -- hasilnya sebagian logo/teks (mis. "OVO")
-                      terpotong di tepi kartu. Sekarang logo diperkecil jadi
-                      elemen watermark (object-contain, dibatasi lebar &
-                      tinggi maksimum) yang ditaruh di pojok kanan bawah,
-                      di atas gradient warna brand -- seluruh logo selalu
-                      utuh terlihat, tidak ada bagian yang terpotong. */}
-                  <div
-                    className="absolute inset-0"
-                    style={{ background: `linear-gradient(135deg, ${color}59 0%, ${color}26 55%, transparent 100%)` }}
-                  />
+                  {/* Base fill = warna solid yang sama persis dengan latar
+                      yang sudah baked-in di file logo (logoBgColor). Logo
+                      di atasnya pakai object-contain supaya SELALU utuh
+                      tampil (tidak pernah dipotong) -- kalau rasio logo
+                      tidak pas dengan rasio kartu, sisa ruang kosong
+                      (letterbox) otomatis "menyatu" dengan base fill ini,
+                      jadi hasil akhirnya tetap terlihat seperti foto yang
+                      membungkus penuh kartu, bukan gambar mengambang
+                      dengan pinggiran yang kentara. */}
+                  <div className="absolute inset-0" style={{ backgroundColor: logoBgColor }} />
                   <img
                     src={logo}
                     alt=""
                     aria-hidden="true"
-                    className="absolute -right-3 bottom-0 w-[46%] max-w-[150px] h-auto max-h-[70%] object-contain opacity-80 pointer-events-none select-none"
+                    className="absolute inset-0 w-full h-full object-contain"
                   />
                   <div
                     className="absolute inset-0"
-                    style={{ background: `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 55%, rgba(0,0,0,0.82) 100%)` }}
+                    style={{ background: `linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.4) 55%, rgba(0,0,0,0.78) 100%)` }}
                   />
                 </>
               ) : (
