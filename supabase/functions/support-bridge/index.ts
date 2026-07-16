@@ -31,6 +31,53 @@ serve(async (req) => {
     if (body.mode === "user_message") {
       const { session_id, content } = body;
 
+      if (!session_id || typeof content !== "string" || !content.trim()) {
+        return jsonResponse({ error: "session_id dan content wajib diisi." }, 400);
+      }
+
+      // This function runs on service_role (bypasses RLS), so ownership
+      // of session_id MUST be verified manually here -- otherwise anyone
+      // who knows (or guesses) a session_id could post messages into a
+      // stranger's support session and trigger the Telegram notification
+      // below on their behalf.
+      const caller = await getAuthorizedCaller(req, supabaseUrl);
+      if (!caller) {
+        return jsonResponse({ error: "Unauthorized" }, 401);
+      }
+
+      const { data: ownerCheck, error: ownerError } = await supabase
+        .from("support_sessions")
+        .select("id, user_id, status")
+        .eq("id", session_id)
+        .maybeSingle();
+      if (ownerError) throw ownerError;
+      if (!ownerCheck || ownerCheck.user_id !== caller.id) {
+        return jsonResponse({ error: "Unauthorized" }, 401);
+      }
+      if (!["open", "claimed"].includes(ownerCheck.status)) {
+        return jsonResponse({ error: "Sesi sudah ditutup." }, 400);
+      }
+
+      // Rate limit (per session, DB-backed — see migration
+      // 20260823000000_receipt_and_support_rate_limiting.sql). Without
+      // this, a single session could be used to spam-insert messages and
+      // fire the Telegram notification below on every request.
+      const { data: rlRows, error: rlError } = await supabase.rpc(
+        "check_and_increment_support_message_rate_limit",
+        { p_session_id: session_id, p_limit: 10, p_window_seconds: 60 }
+      );
+      if (rlError) {
+        // Fail-open on a DB hiccup, same tradeoff used elsewhere in this
+        // codebase (api/parse.ts) — don't block legit users over a
+        // transient rate-limit table issue.
+        console.error("[support-bridge] rate limit check failed, failing open:", rlError);
+      } else {
+        const rl = rlRows?.[0];
+        if (rl && !rl.allowed) {
+          return jsonResponse({ error: "Terlalu banyak pesan, coba lagi sebentar lagi.", retryAfter: rl.retry_after_seconds }, 429);
+        }
+      }
+
       const { data: msgData, error: msgError } = await supabase
         .from("support_messages")
         .insert({ session_id, sender: "user", content })
@@ -321,14 +368,14 @@ async function ensureForumTopic(
 }
 
 /**
- * Verifikasi caller (dari Authorization header yang dikirim
- * supabase.functions.invoke) benar-benar user login DAN rolenya admin/owner.
- * WAJIB dipanggil sebelum mengizinkan mode yang bertindak atas nama admin
- * (`admin_web_reply`), karena edge function ini pakai service_role client
- * yang bypass RLS -- tanpa cek ini, siapapun yang punya URL function bisa
- * kirim pesan mengatasnamakan admin.
+ * Verifikasi Authorization header (dikirim otomatis oleh
+ * supabase.functions.invoke) benar-benar JWT user yang valid & login.
+ * Dipakai sebagai dasar baik untuk cek "apakah caller pemilik sesi ini"
+ * (`user_message`) maupun "apakah caller admin/owner" (`admin_web_reply`)
+ * di bawah -- edge function ini pakai service_role client yang bypass
+ * RLS, jadi identitas caller HARUS diverifikasi manual di setiap mode.
  */
-async function getAuthorizedAdmin(req: Request, supabaseUrl: string): Promise<{ id: string } | null> {
+async function getAuthorizedCaller(req: Request, supabaseUrl: string): Promise<{ id: string } | null> {
   const authHeader = req.headers.get("Authorization") ?? "";
   const jwt = authHeader.replace(/^Bearer\s+/i, "");
   if (!jwt) return null;
@@ -341,13 +388,26 @@ async function getAuthorizedAdmin(req: Request, supabaseUrl: string): Promise<{ 
   const { data: userRes, error: userErr } = await authClient.auth.getUser(jwt);
   if (userErr || !userRes?.user) return null;
 
+  return { id: userRes.user.id };
+}
+
+/**
+ * Sama seperti getAuthorizedCaller, tapi juga mewajibkan role admin/owner.
+ * WAJIB dipanggil sebelum mengizinkan mode yang bertindak atas nama admin
+ * (`admin_web_reply`) -- tanpa ini, siapa saja yang tahu endpoint ini bisa
+ * mengirim pesan mengatasnamakan admin ke topic Telegram manapun.
+ */
+async function getAuthorizedAdmin(req: Request, supabaseUrl: string): Promise<{ id: string } | null> {
+  const caller = await getAuthorizedCaller(req, supabaseUrl);
+  if (!caller) return null;
+
   const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
   const adminClient = createClient(supabaseUrl, supabaseServiceKey);
-  const { data: profile } = await adminClient.from("users").select("role").eq("id", userRes.user.id).maybeSingle();
+  const { data: profile } = await adminClient.from("users").select("role").eq("id", caller.id).maybeSingle();
 
   if (!profile || !["admin", "owner"].includes(profile.role)) return null;
 
-  return { id: userRes.user.id };
+  return caller;
 }
 
 async function sendTelegram(token: string, chatId: string | number, text: string, messageThreadId?: number) {

@@ -10,6 +10,12 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Receipt OCR calls a paid AI/vision API per request — keep this modest.
+// DB-backed (see check_and_increment_receipt_rate_limit RPC) so it holds
+// across cold starts / multiple serverless instances.
+const RECEIPT_RATE_LIMIT = 5;               // requests per window, per user
+const RECEIPT_RATE_LIMIT_WINDOW = 60000;    // 1 minute
+
 /**
  * POST /api/receipt  { action: "parse", imageBase64 }
  *   → OCR struk (dulu: api/parse-receipt.ts). Premium-only.
@@ -49,6 +55,35 @@ async function handleParse(req: VercelRequest, res: VercelResponse, user: { id: 
   if (isFeatureLocked(maintenanceStatus, 'receipt_scan')) {
     res.status(423).json({ error: 'Fitur Pindai Struk (AI) sedang dikunci oleh admin untuk maintenance.' });
     return;
+  }
+
+  // Rate limiting (per user, DB-backed — same atomic pattern as
+  // api/parse.ts, see migration 20260823000000_receipt_and_support_rate_limiting.sql).
+  // This endpoint calls a paid AI/vision API per request, so it needs its
+  // own budget separate from the text/voice parse limits.
+  const { data: rateLimitRows, error: rateLimitError } = await supabase.rpc(
+    'check_and_increment_receipt_rate_limit',
+    {
+      p_user_id: userId,
+      p_limit: RECEIPT_RATE_LIMIT,
+      p_window_seconds: RECEIPT_RATE_LIMIT_WINDOW / 1000,
+    }
+  );
+
+  if (rateLimitError) {
+    // Fail-open on a DB hiccup — same tradeoff as api/parse.ts: an
+    // occasional burst is preferable to blocking every legitimate user
+    // because the rate-limit table had a transient issue.
+    console.error('[receipt/parse] rate limit check failed, failing open:', rateLimitError);
+  } else {
+    const limitResult = rateLimitRows?.[0];
+    if (limitResult && !limitResult.allowed) {
+      res.status(429).json({
+        error: 'Terlalu banyak permintaan Pindai Struk (AI). Coba lagi sebentar lagi.',
+        retryAfter: limitResult.retry_after_seconds,
+      });
+      return;
+    }
   }
 
   try {
