@@ -9,7 +9,6 @@ import { getWeatherTheme } from "../lib/weatherTheme";
 import { DashboardWeatherLayer } from "./DashboardWeatherLayer";
 import { WeatherDebugToggle, WeatherDebugOverride } from "./WeatherDebugToggle";
 import { EventOverlay } from "./EventOverlay";
-import { EventDoodle } from "./EventDoodle";
 import { getActiveEvent, fetchAllEvents } from "../api/eventCalendar";
 import type { NagerHoliday, SportsDbEvent } from "../api/eventCalendar";
 import type { OverlayType } from "../api/eventCalendar";
@@ -207,15 +206,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
             <WeatherDebugToggle value={debugOverride} onChange={setDebugOverride} />
           </div>
-          <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900 flex items-center gap-1">
+          <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
             {t(getGreetingKey(), { name: currentUser.display_name })}
-            {/* Doodle event ala Google Doodle -- hanya muncul kalau event
-                aktif punya doodleId terdaftar (POC: Piala Dunia). Sengaja
-                ditaruh persis di sebelah judul, bukan menimpa logo brand
-                di top bar/sidebar, supaya identitas brand tetap konsisten. */}
-            {activeEvent?.event.overlay.doodleId && (
-              <EventDoodle doodleId={activeEvent.event.overlay.doodleId} size={36} className="-mb-2" />
-            )}
           </h1>
           {(() => {
             const subGreeting = getDynamicSubGreeting();
