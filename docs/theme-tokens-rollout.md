@@ -1,11 +1,13 @@
 # Rollout useThemeTokens() — Panduan Lanjutan
 
-Status per 2026-07-16 (sesi 10): hook + token dasar sudah dibuat. File yang
+Status per 2026-07-16 (sesi 11): hook + token dasar sudah dibuat. File yang
 sudah selesai/diaudit penuh: `src/components/ui/Card.tsx`,
 `src/components/DashboardWalletCards.tsx`, `src/components/MobileBottomNav.tsx`,
 `src/views/Wallets.tsx`, `src/views/Onboarding.tsx`, `src/views/Settings.tsx`,
-`src/views/Login.tsx`. File yang SUDAH dipasangi hook + sebagian token
-tapi BELUM full-audit cross-file (26 file): `src/views/AdminPanel.tsx`,
+`src/views/Login.tsx`, `src/components/SkeletonLoader.tsx` (diaudit, 0
+migrasi -- lihat catatan sesi 11 di bawah, bukan berarti belum dikerjakan).
+File yang SUDAH dipasangi hook + sebagian token tapi BELUM full-audit
+cross-file (28 file): `src/views/AdminPanel.tsx`,
 `src/components/SupportChatWidget.tsx`, `src/views/AdminAiMonitor.tsx`,
 `src/components/Sidebar.tsx`, `src/views/AdminCategoryManager.tsx`,
 `src/views/AdminPremiumMonitor.tsx`, `src/views/AdminErrorMonitor.tsx`,
@@ -18,8 +20,89 @@ tapi BELUM full-audit cross-file (26 file): `src/views/AdminPanel.tsx`,
 `src/components/PremiumModal.tsx`, `src/components/VoicePreview.tsx`,
 `src/views/Budget.tsx`, `src/components/AdminUserDetailModal.tsx`,
 `src/components/DashboardChart.tsx`, `src/components/DashboardOverviewCard.tsx`,
-`src/components/BudgetProgressCard.tsx`.
+`src/components/BudgetProgressCard.tsx`, `src/components/ConfirmTransactionModal.tsx`,
+`src/components/DashboardRecentTransactions.tsx`.
 Sisanya belum disentuh.
+
+**Dead code / TIDAK dimigrasi (bukan bagian rollout):**
+`src/components/DashboardAccumulatedBalance.tsx` -- ditemukan di sesi 11
+TIDAK diimpor di mana pun (`grep -rln "DashboardAccumulatedBalance" src`
+cuma nemu dirinya sendiri + 2 komentar di `DashboardOverviewCard.tsx` &
+`InfoTooltip.tsx` yang menyebutnya sebagai "komponen lama"). Komponen ini
+sudah digantikan oleh `DashboardOverviewCard.tsx` (lihat komentar di kepala
+file itu). **Jangan migrasi token di file ini** -- kalau mau, hapus saja
+filenya (di luar scope rollout token, perlu konfirmasi dulu ke user karena
+ini keputusan penghapusan kode, bukan keputusan styling). Sebelum membuka
+file baru manapun untuk migrasi, WAJIB cek dulu apakah file itu benar-benar
+diimpor (`grep -rln "import.*<NamaKomponen>" src`) supaya tidak buang waktu
+migrasi token di dead code lagi.
+
+## Sesi 11: 2 file dimigrasi + 1 file diaudit-tapi-tidak-dimigrasi (2 → total 32 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/ConfirmTransactionModal.tsx` | 19 | 12 | hook dipasang |
+| `src/components/DashboardRecentTransactions.tsx` | 18 | 6 | hook dipasang |
+| `src/components/SkeletonLoader.tsx` | 19 | 19 | **diaudit, TIDAK ada exact match** -- lihat di bawah |
+
+Tidak ada token baru. Semua penggantian pakai token existing (`text.muted`,
+`text.onSurface`, `text.accent`, `icon.accent`, `text.label`, `text.danger`,
+`text.success`, `text.faint`).
+
+**`SkeletonLoader.tsx` -- kasus baru: file diaudit lengkap tapi 0 migrasi,
+hook TIDAK dipasang.** Semua 8 komponen skeleton di file ini
+(`DashboardSkeleton`, `HistorySkeleton`, `TransactionSkeleton`,
+`BudgetSkeleton`, `SettingsSkeleton`, `BillRemindersSkeleton`,
+`AdminSkeleton`, `DefaultSkeleton`) memakai 1 pola berulang: `bg-slate-900/50
+border border-slate-800/50 ... light_sakura:bg-rose-50/50
+light_sakura:border-rose-100/50` (8x identik) plus varian shimmer
+`bg-slate-800/60 light_sakura:bg-rose-200/60` (1x, di const module-level
+`shimmer`). **SEMUA class di file ini pakai suffix opacity (`/50`, `/60`,
+`/30`) yang TIDAK ada di token manapun di `tokens.ts`** (token yang ada
+semua tanpa opacity suffix, mis. `border.default` = `border-slate-800
+light_sakura:border-slate-100`, BUKAN `border-slate-800/50
+light_sakura:border-rose-100/50`) -- jadi TIDAK ADA satupun exact match di
+file ini. Dicek juga cross-file (`grep -rl "bg-slate-900/50 border
+border-slate-800/50" src/views src/components`) -- nihil, tidak ada file
+lain yang pakai kombinasi ini, jadi juga tidak memenuhi syarat token baru
+("≥2 file berbeda"). **Keputusan: TIDAK pasang `useThemeTokens()` hook di
+file ini** (beda dari file-file lain yang selalu dipasangi hook meski
+migrasi parsial) karena kalau hook dipasang tapi tidak ada satupun token
+yang dipakai, itu cuma nambah import + variabel `tokens`/`cx` yang tidak
+terpakai (dead code / bisa kena warning `noUnusedLocals` tergantung
+tsconfig). **Kalau nanti tokens.ts menambahkan varian ber-opacity untuk
+surface/border, baru revisit file ini.**
+
+**Pola yang ditemukan di 2 file yang dimigrasi (dicatat untuk audit
+lanjutan):**
+- `ConfirmTransactionModal.tsx` baris 157 & 201 (`<input>` nominal &
+  tanggal): classnya HAMPIR identik dengan `tokens.form.input`, BEDA CUMA
+  di `py-2.5` (di sini) vs `py-2` (di token) -- **TIDAK dipaksa pakai
+  token** sesuai aturan "mirip tapi tidak persis", tetap literal. Kalau
+  pola `py-2.5` versi ini muncul lagi identik di file lain (NewTransaction,
+  Savings, dll saat nanti diaudit penuh), baru pertimbangkan tambah varian
+  token baru (mis. `form.inputLg`) -- jangan asumsikan dari 1 file ini saja.
+- `DashboardRecentTransactions.tsx` baris 44: kombinasi `bg-indigo-500/15
+  ... light_sakura:bg-rose-50` (bg saja) dipasangkan dengan
+  `tokens.icon.accent` (yang cuma text-color) lewat `cx()` -- **PENTING:
+  token `icon.accent`/`text.accent` HANYA mencakup warna teks/ikon, bukan
+  background** -- background di sekitarnya (`bg-indigo-500/15`,
+  `light_sakura:bg-rose-50`, dst) tetap harus ditulis literal terpisah,
+  JANGAN dihapus saat menyisipkan token warna teks. (Nyaris kepotong tidak
+  sengaja saat pengeditan sesi ini, ketahuan & diperbaiki sebelum lanjut --
+  **pelajaran: selalu baca ulang hasil replace sebelum lanjut ke baris
+  berikutnya, khususnya saat 1 baris className punya bg DAN text token yang
+  overlap secara visual tapi beda konsep token-nya**.)
+
+Prosedur wajib (poin 1-8 di sesi 10) tetap dipakai. Sebelum membuka file
+baru, sesi ini menambahkan 1 langkah verifikasi: cek dulu file benar-benar
+dipakai (`grep -rln "import.*<Nama>" src`) -- ditemukan
+`DashboardAccumulatedBalance.tsx` (yang tadinya masuk daftar prioritas
+karena angka `light_sakura:`-nya tinggi) ternyata dead code, jadi DIGANTI
+dengan `DashboardRecentTransactions.tsx` sebagai file ke-3 sesi ini.
+`tsc --noEmit` penuh dijalankan di akhir sesi -- 0 error baru di kedua file
+yang dimigrasi (error pre-existing di `ErrorBoundary.tsx`/`SplashScreen.tsx`/
+`UpdatePrompt.tsx` masih ada, tidak berkaitan dengan sesi ini).
 
 ## Sesi 10: 3 file prioritas teratas (30 → total 30 file sudah tersentuh)
 
@@ -425,13 +508,21 @@ menyumbang import + hook yang konsisten dipakai di seluruh app.
 
 Urutkan pengerjaan dari sini ke bawah:
 
-Angka di bawah = jumlah KEMUNCULAN asli, diambil ulang di akhir sesi 10:
+Angka di bawah = jumlah KEMUNCULAN asli, diambil ulang di akhir sesi 11.
+**Sebelum mengerjakan, cek dulu file ini benar-benar dipakai** (lihat
+poin dead-code di sesi 11) -- `DashboardAccumulatedBalance.tsx` dan
+`HistoryTable.tsx` SUDAH DICORET dari daftar karena dead code (tidak
+diimpor di manapun, cuma disebut di komentar).
 
-1. `src/components/SkeletonLoader.tsx` — 19 (BELUM disentuh sama sekali)
-2. `src/components/DashboardAccumulatedBalance.tsx` — 19 (belum disentuh)
-3. `src/components/ConfirmTransactionModal.tsx` — 19 (belum disentuh)
-4. `src/components/DashboardRecentTransactions.tsx` — 18 (belum disentuh)
-5. `src/components/UpdatePrompt.tsx` — 17 (belum disentuh)
+1. `src/components/UpdatePrompt.tsx` — 17 (BELUM disentuh, dipakai di `App.tsx`)
+2. `src/components/ResetPasswordModal.tsx` — 16 (belum disentuh, dipakai di `App.tsx`)
+3. `src/components/HistoryEditModal.tsx` — 16 (belum disentuh, dipakai di `History.tsx`)
+4. `src/components/DropdownField.tsx` — 15 (belum disentuh -- cek dulu dipakai luas, kemungkinan besar dipakai banyak view, migrasi di sini akan berdampak ke banyak tempat sekaligus)
+5. `src/components/ReceiptUploader.tsx` — 14 (belum disentuh)
+6. `src/components/Modal.tsx` — 14 (belum disentuh -- cek dulu dipakai luas seperti `DropdownField.tsx`)
+
+~~`src/components/ui/Badge.tsx`~~ -- JANGAN disentuh, di luar cakupan
+refactor ini (lihat bagian "Tidak termasuk cakupan refactor ini" di bawah).
 
 File yang sudah dipasangi hook + token parsial (BELUM full-audit, boleh
 dilanjutkan kalau mau daripada buka file baru, urut dari kemunculan
@@ -444,60 +535,75 @@ sudah full-audited, bukan belum dikerjakan), `NewTransaction.tsx` (43),
 `History.tsx` (27), `AdminBackup.tsx` (26), `AdminBroadcast.tsx` (25),
 `VoicePreview.tsx` (25), `Budget.tsx` (22), `ReceiptPreview.tsx` (22),
 `AdminUserDetailModal.tsx` (22), `AdminMaintenance.tsx` (21),
-`DashboardOverviewCard.tsx` (20), `AdminSupportChat.tsx` (18),
-`AdminVoucherManager.tsx` (13), `AdminCategoryManager.tsx` (13),
-`PremiumModal.tsx` (12), `DashboardChart.tsx` (14),
-`BudgetProgressCard.tsx` (15).
+`DashboardOverviewCard.tsx` (20), `ConfirmTransactionModal.tsx` (12),
+`AdminSupportChat.tsx` (18), `AdminVoucherManager.tsx` (13),
+`AdminCategoryManager.tsx` (13), `PremiumModal.tsx` (12),
+`DashboardChart.tsx` (14), `BudgetProgressCard.tsx` (15),
+`DashboardRecentTransactions.tsx` (6).
 
-**Reminder wajib untuk sesi berikutnya** (prosedur 5 langkah dari sesi 8,
-DITAMBAH 1 poin baru dari temuan sesi 9, DITAMBAH 2 poin baru dari sesi 10):
+**File yang diaudit tapi TIDAK dipasangi hook (0 exact match token):**
+`SkeletonLoader.tsx` (19 tersisa, semua ber-opacity, lihat sesi 11).
+
+**Reminder wajib untuk sesi berikutnya** (prosedur dari sesi 8-10,
+DITAMBAH 2 poin baru dari sesi 11):
 1. `python3 scripts_migrate.py <file1> <file2> ...` -- kalau script sudah
    dihapus (selalu dihapus di akhir sesi), buat ulang dari isi word-pair
    token di bagian "Sesi 7", MENCAKUP SEMUA kategori (`text.*`,
    `surface.*`, `border.*`, `hover.*`, `icon.accent`).
-2. Cek `grep -c "useThemeTokens" <file>` -- kalau 0, pasang import + hook
-   call di komponen utama. Kalau file punya sub-komponen terpisah (arrow
-   function implicit-return `=> (...)` di luar komponen utama, mis.
-   `InputField`, `InfoRow`, `StatCard`), ubah jadi block-body `=> { const
-   {tokens,cx} = useThemeTokens(); return (...); }` dan pasang hook di
-   situ juga -- cek dengan `grep -n "^const.*React.FC" <file>` SEBELUM
-   menganggap file cuma punya 1 komponen. Kalau sub-komponen didefinisikan
-   sebagai `const` DI DALAM body komponen utama (bukan di luar, sejajar
-   scope module), TIDAK perlu hook sendiri -- otomatis dapat `tokens`/`cx`
-   lewat closure (lihat `CustomTooltip` di `DashboardChart.tsx`, sesi 10).
-3. WAJIB: `npx tsc --noEmit -p tsconfig.json 2>&1 | grep "Cannot find name
+2. **BARU (sesi 11): SEBELUM membuka file manapun untuk migrasi, cek dulu
+   file itu benar-benar diimpor/dipakai** dengan `grep -rln "import.*
+   <NamaKomponen>" src --include="*.tsx" | grep -v "src/components/
+   <NamaKomponen>.tsx"` (atau path `src/views/` kalau view). Kalau hasilnya
+   kosong atau cuma nemu komentar/referensi teks (bukan `import` statement
+   sungguhan), file itu KEMUNGKINAN dead code -- jangan buang waktu migrasi
+   token di situ, catat di bagian "Dead code" dokumen ini dan pindah ke
+   file berikutnya di daftar prioritas.
+3. Cek `grep -c "useThemeTokens" <file>` -- kalau 0, pasang import + hook
+   call di komponen utama, KECUALI kalau setelah diaudit ternyata TIDAK
+   ADA satupun kombinasi class yang exact-match ke token (lihat kasus
+   `SkeletonLoader.tsx` sesi 11) -- dalam kasus itu JANGAN pasang hook
+   (menghindari import/variabel tidak terpakai), cukup catat sebagai
+   "diaudit, 0 migrasi" di dokumen. Kalau file punya sub-komponen terpisah
+   (arrow function implicit-return `=> (...)` di luar komponen utama,
+   mis. `InputField`, `InfoRow`, `StatCard`), ubah jadi block-body `=> {
+   const {tokens,cx} = useThemeTokens(); return (...); }` dan pasang hook
+   di situ juga -- cek dengan `grep -n "^const.*React.FC\|^function " <file>`
+   SEBELUM menganggap file cuma punya 1 komponen. Kalau sub-komponen
+   didefinisikan sebagai `const`/fungsi DI DALAM body komponen utama
+   (bukan di luar, sejajar scope module), TIDAK perlu hook sendiri --
+   otomatis dapat `tokens`/`cx` lewat closure.
+4. WAJIB: `npx tsc --noEmit -p tsconfig.json 2>&1 | grep "Cannot find name
    'tokens'\|Cannot find name 'cx'"` ke SELURUH project -- harus 0 hasil.
-   **Kalau `node_modules` belum ada (cek dulu dengan `ls node_modules`),
-   jalankan `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install` DULU sebelum
-   bisa jalankan `tsc` sama sekali (temuan sesi 10).**
-4. Cek juga token multi-kata (`chip.accentEmerald`, `button.accentEmerald`,
-   `form.input`) dengan `grep -c` pola exact-nya di file yang dikerjakan.
-5. **(sesi 9):** setelah str_replace/insert manual (bukan lewat
-   script Python) yang menyisipkan baris baru DI ANTARA baris-baris
-   `const {...} = useXxx();` yang beruntun, WAJIB `sed -n` ulang area yang
-   diedit untuk pastikan tidak ada baris tetangga yang ikut kehapus --
-   jangan cuma percaya pesan sukses dari tool str_replace.
-6. **BARU (sesi 10):** kalau token dipasang ke variabel `let` yang di-
-   reassign kondisional (pola `let colorCls = tokens.text.x; if (...)
-   colorCls = tokens.text.y;`), WAJIB anotasi tipe eksplisit
-   `let colorCls: string = ...` -- kalau tidak, TypeScript infer literal
-   type dari token pertama (karena `themeTokens` pakai `as const`) dan
-   assignment berikutnya ke token lain akan gagal type-check (`TS2322`).
-   Ini TIDAK ketangkap oleh filter grep "Cannot find name" di poin 3, jadi
-   sesekali jalankan `tsc --noEmit` PENUH (tanpa filter) untuk file yang
-   baru disentuh guna menangkap error jenis ini.
-7. **BARU (sesi 10):** untuk className yang ditulis sebagai template
-   literal berisi ternary (`` className={`...${cond ? "A" : "B"}`} ``),
-   TIDAK bisa menyisipkan token langsung ke dalam string -- ubah strukturnya
-   jadi `className={cx("...bagian statis...", cond ? cx(...token/literal
-   campuran...) : cx(...))}`. Urutan class boleh berubah (aman untuk
-   Tailwind), tapi daftar class akhir harus tetap identik dengan sebelum
-   migrasi. Cabang ternary yang warnanya TIDAK exact match token dibiarkan
-   literal apa adanya, jangan dipaksa.
-8. Update tabel progress di dokumen ini + jalankan ulang query prioritas
-   (`for f in $(find src/views src/components -name "*.tsx"); do c=$(grep -o
-   "light_sakura:" "$f" | wc -l); [ "$c" -gt 0 ] && echo "$c $f"; done |
-   sort -rn | head -25`) supaya daftar di atas tetap akurat.
+   Kalau `node_modules` belum ada (cek dulu dengan `ls node_modules`),
+   jalankan `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install` DULU.
+5. Cek juga token multi-kata (`chip.accentEmerald`, `button.accentEmerald`,
+   `form.input`) dengan `grep -c` pola exact-nya di file yang dikerjakan --
+   TERMASUK varian yang MIRIP tapi beda 1 detail kecil (mis. `py-2.5` vs
+   `py-2` di `tokens.form.input`, ditemukan di `ConfirmTransactionModal.tsx`
+   sesi 11) -- jangan dipaksa cocok, tapi CATAT kalau ditemukan supaya
+   sesi lain yang menemukan pola sama tahu ini sudah pernah dicek.
+6. Setelah str_replace/insert manual (bukan lewat script Python) yang
+   menyisipkan baris baru DI ANTARA baris-baris `const {...} = useXxx();`
+   yang beruntun, WAJIB `sed -n` ulang area yang diedit untuk pastikan
+   tidak ada baris tetangga yang ikut kehapus.
+7. Kalau token dipasang ke variabel `let` yang di-reassign kondisional,
+   WAJIB anotasi tipe eksplisit `let x: string = tokens...` (lihat sesi 10).
+8. Untuk className template-literal+ternary, ekstrak lewat pola
+   `cx("...statis...", cond ? cx(...) : cx(...))` (lihat sesi 10).
+9. **BARU (sesi 11): token warna teks (`text.accent`, `icon.accent`, dst)
+   HANYA mencakup class warna TEKS, bukan background di sekitarnya.**
+   Saat menyisipkan token warna teks ke className yang JUGA punya
+   background berwarna (mis. `bg-indigo-500/15 ... text-indigo-400 ...
+   light_sakura:bg-rose-50 light_sakura:text-rose-500`), JANGAN ikut
+   menghapus bagian `bg-*`/`light_sakura:bg-*` -- itu class terpisah yang
+   harus tetap ditulis literal. Baca ulang hasil `cx(...)` sebelum lanjut
+   untuk pastikan tidak ada class background yang ikut kepotong.
+10. Update tabel progress di dokumen ini + jalankan ulang query prioritas
+    (`for f in $(find src/views src/components -name "*.tsx"); do c=$(grep -o
+    "light_sakura:" "$f" | wc -l); h=$(grep -c useThemeTokens "$f"); [ "$c"
+    -gt 0 ] && [ "$h" -eq 0 ] && echo "$c $f"; done | sort -rn | head -10`
+    -- versi ini SUDAH memfilter file yang sudah punya hook, supaya daftar
+    "belum disentuh" tetap akurat tanpa perlu cek manual satu-satu).
 
 Untuk lihat sisa file & angka terbaru, jalankan dari root repo:
 

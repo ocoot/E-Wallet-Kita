@@ -25,6 +25,7 @@ import { SupportChatWidget } from "./components/SupportChatWidget";
 import { UpdatePrompt } from "./components/UpdatePrompt";
 import { UpdateCheckingIndicator } from "./components/UpdateCheckingIndicator";
 import { Breadcrumbs } from "./components/Breadcrumbs";
+import { SplashScreen } from "./components/SplashScreen";
 import {
   DashboardSkeleton,
   HistorySkeleton,
@@ -254,11 +255,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-white">
-        Loading...
-      </div>
-    );
+    return <SplashScreen />;
   }
 
   if (!user) {

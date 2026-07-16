@@ -73,6 +73,7 @@
     "loading_signup_desc": "Mendaftarkan dan menyiapkan buku tabungan baru untuk Anda...",
     "loading_signin_desc": "Menghubungkan akun dan mengambil data mutasi dompet Anda...",
     "loading_logout_desc": "Mengakhiri sesi dan membersihkan data sementara Anda...",
+    "loading_app_desc": "Memuat isi dompetmu...",
     "back_to_welcome": "Kembali",
     "panel_tab_signin": "Masuk Akun",
     "panel_tab_signup": "Daftar Baru"

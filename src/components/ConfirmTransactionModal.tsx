@@ -7,6 +7,7 @@ import { DropdownField } from "./DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { Button } from "./ui/Button";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   food_drink: "", transport: "", shopping: "", health: "",
@@ -71,6 +72,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
   onDuplicateAcknowledgedChange,
 }) => {
   const { t, locale } = useLanguage();
+  const { tokens, cx } = useThemeTokens();
 
   useLockBodyScroll(isOpen && !!draft);
   const panelRef = React.useRef<HTMLDivElement>(null);
@@ -118,7 +120,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
                 <h3 className="font-sans text-lg font-semibold tracking-tight">
                   {t("confirm.save_transaction_title")}
                 </h3>
-                <p className="font-sans text-[11px] text-slate-400 light_sakura:text-slate-500">
+                <p className={cx("font-sans text-[11px]", tokens.text.muted)}>
                   {t("confirm.review_before_save")}
                 </p>
               </div>
@@ -146,7 +148,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
           <div className="space-y-3">
             {/* Nominal (editable) */}
             <div>
-              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
+              <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block mb-1.5", tokens.text.muted)}>
                 {t("transaction.label_amount")}
               </label>
               <input
@@ -160,7 +162,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
 
             {/* Kategori (editable) */}
             <div>
-              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
+              <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block mb-1.5", tokens.text.muted)}>
                 {t("transaction.label_category")}
               </label>
               <DropdownField
@@ -175,7 +177,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
 
             {/* Pos Dompet (editable) */}
             <div>
-              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
+              <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block mb-1.5", tokens.text.muted)}>
                 {t("wallet.label_pos")}
               </label>
               <DropdownField
@@ -190,7 +192,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
 
             {/* Tanggal (editable) */}
             <div>
-              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
+              <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block mb-1.5", tokens.text.muted)}>
                 {t("transaction.label_date")}
               </label>
               <input

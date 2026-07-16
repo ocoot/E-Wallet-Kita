@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { EmptyState } from "./EmptyState";
 import { Card } from "./ui/Card";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface DashboardRecentTransactionsProps {
   transactions: Transaction[];
@@ -23,6 +24,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
   categories,
 }) => {
   const { t, locale } = useLanguage();
+  const { tokens, cx } = useThemeTokens();
 
   // Sort and slice top 5 latest transactions
   const latestTransactions = [...transactions]
@@ -39,7 +41,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
     }
     if (source === "ai_web") {
       return (
-        <div className="bg-indigo-500/15 p-2 rounded-xl text-indigo-400 light_sakura:bg-rose-50 light_sakura:text-rose-500 flex items-center justify-center">
+        <div className={cx("bg-indigo-500/15 p-2 rounded-xl light_sakura:bg-rose-50 flex items-center justify-center", tokens.icon.accent)}>
           <Sparkles size={15} />
         </div>
       );
@@ -55,10 +57,10 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
     <Card id="recent-transactions-panel" padding="lg" border="subtle" elevation="lg" className="space-y-6">
       <div className="flex items-center justify-between border-b border-slate-800/50 pb-5 light_sakura:border-rose-100/30">
         <div>
-          <h3 className="font-sans font-bold text-base text-white tracking-tight light_sakura:text-slate-800">
+          <h3 className={cx("font-sans font-bold text-base tracking-tight", tokens.text.onSurface)}>
             {t("history.title")}
           </h3>
-          <p className="font-sans text-xs text-slate-400 mt-1 light_sakura:text-slate-500">
+          <p className={cx("font-sans text-xs mt-1", tokens.text.muted)}>
             {t("history.pagination_info", { current: latestTransactions.length, total: transactions.length })}
           </p>
         </div>
@@ -68,7 +70,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
             audioFeedback.playClick();
             onNavigateToHistory();
           }}
-          className="cursor-pointer px-3.5 py-2 hover:bg-slate-800 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-indigo-400 light_sakura:text-rose-500 light_sakura:hover:bg-rose-50 flex items-center gap-1.5 transition-colors"
+          className={cx("cursor-pointer px-3.5 py-2 hover:bg-slate-800 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold light_sakura:hover:bg-rose-50 flex items-center gap-1.5 transition-colors", tokens.text.accent)}
         >
           <span>{t("history.show_all")}</span>
           <ArrowRight size={13} />
@@ -92,7 +94,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
                 <div className="flex items-center gap-3">
                   {getSourceIcon(tx.source)}
                   <div>
-                    <div className="font-sans text-xs font-bold text-white light_sakura:text-slate-800">
+                    <div className={cx("font-sans text-xs font-bold", tokens.text.onSurface)}>
                       {(() => {
                         if (tx.note) return tx.note;
                         const cat = categories.find(c => c.key === tx.category);
@@ -100,10 +102,10 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
                         return locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key);
                       })()}
                     </div>
-                    <div className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-400 light_sakura:text-slate-500 mt-0.5 flex items-center gap-1.5">
+                    <div className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] mt-0.5 flex items-center gap-1.5", tokens.text.muted)}>
                       <span>{formatDateLabel(tx.transaction_date)}</span>
                       <span className="w-1 h-1 rounded-full bg-slate-700 light_sakura:bg-rose-100" />
-                      <span className="font-semibold text-slate-300 light_sakura:text-slate-600">
+                      <span className={cx("font-semibold", tokens.text.label)}>
                         {(() => {
                           const cat = categories.find(c => c.key === tx.category);
                           if (!cat) return tx.category;
@@ -115,11 +117,11 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
                 </div>
 
                 <div className="text-right">
-                  <div className={`font-mono font-bold text-sm flex items-center gap-1 justify-end ${isExpense ? "text-red-400 light_sakura:text-red-600" : "text-emerald-400 light_sakura:text-emerald-600"}`}>
+                  <div className={`font-mono font-bold text-sm flex items-center gap-1 justify-end ${isExpense ? tokens.text.danger : tokens.text.success}`}>
                     <span>{isExpense ? "-" : "+"}</span>
                     <span className="whitespace-nowrap tabular-nums">{formatIDR(tx.amount)}</span>
                   </div>
-                  <div className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-500 light_sakura:text-slate-400 font-sans mt-0.5">
+                  <div className={cx("text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-sans mt-0.5", tokens.text.faint)}>
                     {isExpense ? t("transaction.expense") : t("transaction.income")}
                   </div>
                 </div>

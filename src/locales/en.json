@@ -73,6 +73,7 @@
     "loading_signup_desc": "Registering and configuring your new wallet...",
     "loading_signin_desc": "Connecting your account and loading transaction ledger...",
     "loading_logout_desc": "Ending your session and clearing temporary data...",
+    "loading_app_desc": "Loading your wallet contents...",
     "back_to_welcome": "Back",
     "panel_tab_signin": "Sign In",
     "panel_tab_signup": "Sign Up"
