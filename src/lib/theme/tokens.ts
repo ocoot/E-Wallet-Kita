@@ -129,6 +129,16 @@ export const themeTokens = {
      */
     input:
       "w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700",
+    /**
+     * Varian `input` dengan `py-2.5` (bukan `py-2`) -- awalnya dicatat di
+     * sesi 11 sebagai "mirip tapi tidak persis" (1 kemunculan di
+     * `ConfirmTransactionModal.tsx`, tidak dipaksa jadi token). Sesi 13
+     * menemukan kemunculan identik ke-2 di `HistoryEditModal.tsx` (2x),
+     * total 4x di 2 file berbeda -- memenuhi syarat "≥2 file" untuk token
+     * baru, jadi ditambahkan di sini.
+     */
+    inputLg:
+      "w-full px-3 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700",
   },
 } as const;
 

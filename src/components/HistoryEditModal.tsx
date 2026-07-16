@@ -9,6 +9,7 @@ import { DropdownField } from "./DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { Button } from "./ui/Button";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface HistoryEditModalProps {
   transaction: Transaction | null;
@@ -25,6 +26,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
   onSave,
   isSaving,
 }) => {
+  const { tokens, cx } = useThemeTokens();
   const { t, locale } = useLanguage();
   const { categories } = useCategories();
   const { activeWallets } = useWallets();
@@ -77,11 +79,11 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
           role="dialog"
           aria-modal="true"
           tabIndex={-1}
-          className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl outline-none text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
+          className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl outline-none light_sakura:bg-rose-50/90 light_sakura:border-rose-100", tokens.text.onSurface)}
         >
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="rounded-full p-2.5 bg-indigo-500/15 text-indigo-400 light_sakura:bg-indigo-50 light_sakura:text-indigo-600">
+              <div className={cx("rounded-full p-2.5 bg-indigo-500/15 light_sakura:bg-indigo-50", tokens.text.accentStrong)}>
                 <Pencil size={20} />
               </div>
               <h3 className="font-sans text-lg font-semibold tracking-tight">
@@ -99,7 +101,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
+              <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block mb-1.5", tokens.text.muted)}>
                 {t("transaction.label_category")}
               </label>
               <DropdownField
@@ -113,7 +115,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
             </div>
 
             <div>
-              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
+              <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block mb-1.5", tokens.text.muted)}>
                 {t("transaction.label_date")}
               </label>
               <input
@@ -121,12 +123,12 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
                 value={transactionDate}
                 onChange={e => setTransactionDate(e.target.value)}
                 max={new Date().toISOString().split("T")[0]}
-                className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                className={tokens.form.inputLg}
               />
             </div>
 
             <div>
-              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
+              <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block mb-1.5", tokens.text.muted)}>
                 {t("wallet.label_pos")}
               </label>
               <DropdownField
@@ -140,7 +142,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
             </div>
 
             <div>
-              <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase block mb-1.5 light_sakura:text-slate-500">
+              <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block mb-1.5", tokens.text.muted)}>
                 {t("transaction.label_amount")}
               </label>
               <input
@@ -148,7 +150,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
                 min={1}
                 value={amount}
                 onChange={e => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
-                className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                className={tokens.form.inputLg}
               />
             </div>
 

@@ -1,13 +1,13 @@
 # Rollout useThemeTokens() — Panduan Lanjutan
 
-Status per 2026-07-16 (sesi 13): hook + token dasar sudah dibuat. File yang
+Status per 2026-07-16 (sesi 14): hook + token dasar sudah dibuat. File yang
 sudah selesai/diaudit penuh: `src/components/ui/Card.tsx`,
 `src/components/DashboardWalletCards.tsx`, `src/components/MobileBottomNav.tsx`,
 `src/views/Wallets.tsx`, `src/views/Onboarding.tsx`, `src/views/Settings.tsx`,
 `src/views/Login.tsx`, `src/components/SkeletonLoader.tsx` (diaudit, 0
 migrasi -- lihat catatan sesi 11 di bawah, bukan berarti belum dikerjakan).
 File yang SUDAH dipasangi hook + sebagian token tapi BELUM full-audit
-cross-file (30 file): `src/views/AdminPanel.tsx`,
+cross-file (31 file): `src/views/AdminPanel.tsx`,
 `src/components/SupportChatWidget.tsx`, `src/views/AdminAiMonitor.tsx`,
 `src/components/Sidebar.tsx`, `src/views/AdminCategoryManager.tsx`,
 `src/views/AdminPremiumMonitor.tsx`, `src/views/AdminErrorMonitor.tsx`,
@@ -22,7 +22,7 @@ cross-file (30 file): `src/views/AdminPanel.tsx`,
 `src/components/DashboardChart.tsx`, `src/components/DashboardOverviewCard.tsx`,
 `src/components/BudgetProgressCard.tsx`, `src/components/ConfirmTransactionModal.tsx`,
 `src/components/DashboardRecentTransactions.tsx`, `src/components/UpdatePrompt.tsx`,
-`src/components/ResetPasswordModal.tsx`.
+`src/components/ResetPasswordModal.tsx`, `src/components/HistoryEditModal.tsx`.
 Sisanya belum disentuh.
 
 **Dead code / TIDAK dimigrasi (bukan bagian rollout):**
@@ -49,6 +49,50 @@ penghapusan kode berbeda dari keputusan styling. Sebelum membuka file baru
 manapun untuk migrasi, WAJIB cek dulu apakah file itu benar-benar diimpor
 (`grep -rln "import.*<NamaKomponen>" src`) supaya tidak buang waktu migrasi
 token di dead code lagi.
+
+## Sesi 14: 1 file dimigrasi + 1 file direvisit dengan token baru (1 token baru ditambahkan, 1 → total 35 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/HistoryEditModal.tsx` | 16 | 4 | hook dipasang, file baru |
+| `src/components/ConfirmTransactionModal.tsx` | 14 | 8 | **direvisit** -- 2 baris `<input>` yang sesi 11 sengaja dibiarkan literal (pola `py-2.5`) sekarang pakai token baru `form.inputLg`, menghapus 6 `light_sakura:` (3 per baris x 2 baris); sisa 8 di baris lain (kartu modal utama, tombol close, preview nominal ternary) di luar cakupan revisit sesi ini -- polanya serupa dengan yang ditemukan TIDAK exact match di `HistoryEditModal.tsx` sesi ini (lihat catatan di bawah), kemungkinan besar sudah tidak ada token yang cocok, tapi belum diverifikasi baris-per-baris di file ini secara eksplisit |
+
+**Token baru ditambahkan: `tokens.form.inputLg`.** Sesi 11 mencatat pola
+`<input>` dengan `py-2.5` (beda dari `form.input` yang `py-2`) di
+`ConfirmTransactionModal.tsx` (2x) tapi tidak dipaksa jadi token karena cuma
+1 file. Sesi 14 menemukan kemunculan IDENTIK ke-2 di
+`HistoryEditModal.tsx` (2x) -- total 4x di 2 file berbeda, memenuhi syarat
+"≥2 file" di bagian "Kapan menambah token baru". Ditambahkan sebagai
+`form.inputLg` di `tokens.ts` (varian `form.input` dengan `py-2.5`), lalu
+dipakai di KEDUA file (2 baris baru di `HistoryEditModal.tsx` + 2 baris
+lama yang direvisit di `ConfirmTransactionModal.tsx`). Total 2 file
+tersentuh sesi ini (1 file baru + 1 revisit), tapi cuma `HistoryEditModal.tsx`
+yang dihitung sebagai "file baru" di angka total tersentuh (revisit tidak
+menambah hitungan karena filenya sudah pernah tersentuh di sesi 11).
+
+Sisa `light_sakura:` yang TIDAK dimigrasi di `HistoryEditModal.tsx`
+(bukan exact match, tetap literal):
+- Kartu modal utama: `bg-slate-900 light_sakura:bg-rose-50/90` (beda dari
+  `surface.card` yang light-nya `bg-white`) dan
+  `border-indigo-500/20 light_sakura:border-rose-100` (beda dari
+  `border.accent` yang dark-nya `border-slate-800`) -- hanya
+  `text.onSurface` (`text-white light_sakura:text-slate-800`) yang exact
+  match di baris ini.
+- Ikon pensil: `bg-indigo-500/15 light_sakura:bg-indigo-50` (bg
+  ber-opacity, tidak match token manapun) -- hanya warna teks/ikonnya
+  (`text.accentStrong`) yang ditoken-kan.
+- Tombol close: `text-slate-400 hover:bg-slate-800 hover:text-white
+  cursor-pointer light_sakura:hover:bg-rose-100` -- tidak ada pasangan
+  `light_sakura:text-*` di baris ini (cuma hover bg), jadi `text.muted`
+  TIDAK exact match, tetap literal.
+
+`npm install` (node_modules sudah ada dari sesi 13, tidak perlu install
+ulang). `tsc --noEmit` penuh dijalankan -- 0 hasil untuk `Cannot find name
+'tokens'/'cx'`, 0 error baru di kedua file yang disentuh sesi ini.
+
+Query prioritas berikutnya menghasilkan `src/components/DropdownField.tsx`
+(15, sudah diverifikasi diimpor di 21 file, jelas bukan dead code) sebagai
+kandidat sesi 15.
 
 ## Sesi 13: 1 file dimigrasi (16 → 6, 1 → total 34 file tersentuh)
 

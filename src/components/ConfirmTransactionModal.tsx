@@ -156,7 +156,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
                 min={1}
                 value={draft.amount}
                 onChange={(e) => onChange({ ...draft, amount: Number(e.target.value) || 0 })}
-                className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                className={tokens.form.inputLg}
               />
             </div>
 
@@ -200,7 +200,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
                 value={draft.date}
                 max={new Date().toISOString().split("T")[0]}
                 onChange={(e) => onChange({ ...draft, date: e.target.value })}
-                className="w-full px-3 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700"
+                className={tokens.form.inputLg}
               />
             </div>
           </div>
