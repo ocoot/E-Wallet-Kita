@@ -430,7 +430,7 @@ export const AdminPanel: React.FC = () => {
 
   if (!isAdmin) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-slate-950/20 rounded-3xl border border-red-500/10">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 bg-slate-950/20 rounded-2xl border border-red-500/10">
         <ShieldX size={48} className="text-red-500 mb-4 animate-bounce" />
         <h2 className="font-sans font-bold text-lg text-slate-100">
           {t("admin.access_denied")}
@@ -443,82 +443,106 @@ export const AdminPanel: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      
-      {/* Upper header section */}
-      <div className={cx("rounded-3xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
-        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
-        <div className="p-6 md:p-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-              <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
-                <Shield className={cx(tokens.icon.accent)} />
-                <span>{t("nav.admin_panel")}</span>
-              </h1>
-              <p className={cx("font-sans text-xs mt-1", tokens.text.muted)}>
-                {t("admin.panel_desc")}
-              </p>
-            </div>
-            <div className="flex gap-2 shrink-0">
-              {activeTab === "users" && (
+    <div className="space-y-5">
+
+      {/* Page title -- gaya polos sama seperti halaman Akun (SettingsMobileMenu):
+          judul + deskripsi langsung di atas background, TANPA kartu/border
+          pembungkus dan tanpa bar gradient di atasnya. */}
+      <div className="px-1">
+        <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+          {t("nav.admin_panel")}
+        </h1>
+        <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500 font-medium">
+          {t("admin.panel_desc")}
+        </p>
+      </div>
+
+      {/* Quick actions -- dipindah dari dalam hero card lama ke kartu ringan
+          rounded-2xl sendiri, gaya & radius disamakan dengan kartu-kartu di
+          halaman Akun (bandingkan profile summary card di SettingsMobileMenu). */}
+      <div className={cx("flex flex-wrap items-center gap-2 p-4 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
+        {activeTab === "users" && (
+          <button
+            onClick={handleExportCSV}
+            className="px-4 py-2 text-xs font-bold rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
+          >
+            ↓ Export CSV
+          </button>
+        )}
+        <button
+          onClick={() => {
+            fetchUsers();
+            loadMetrics();
+          }}
+          className={cx("px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.secondary)}
+        >
+          {t("admin.refresh")}
+        </button>
+      </div>
+
+      {/* Tab Navigation -- dikelompokkan jadi beberapa klaster berlabel,
+          meniru pola "Group: Akun / Preferensi / Privasi & Dukungan" di
+          SettingsMobileMenu (caption kecil uppercase di atas tiap kartu
+          grup). Tetap tombol tab (bukan Link) karena switch konten di
+          halaman yang sama, hanya dikelompokkan+diberi label kategori. */}
+      {([
+        {
+          captionKey: "admin.tab_group_data",
+          tabs: [
+            { key: "users",   label: t("admin.tab_users") },
+            { key: "premium", label: t("admin.tab_premium") },
+            { key: "voucher", label: t("admin.tab_voucher") },
+          ],
+        },
+        {
+          captionKey: "admin.tab_group_content",
+          tabs: [
+            { key: "categories",   label: t("admin.tab_categories") },
+            { key: "broadcast",    label: t("admin.tab_broadcast") },
+            { key: "support_chat", label: t("admin.tab_support_chat") },
+          ],
+        },
+        {
+          captionKey: "admin.tab_group_system",
+          tabs: [
+            { key: "ai_monitor",    label: t("admin.tab_ai_monitor") },
+            { key: "error_monitor", label: t("admin.tab_error_monitor") },
+            { key: "maintenance",   label: t("admin.tab_maintenance") },
+            { key: "backup",        label: t("admin.tab_backup") },
+          ],
+        },
+      ] as { captionKey: string; tabs: { key: AdminTab; label: string }[] }[]).map((group) => (
+        <div key={group.captionKey} className="space-y-2">
+          <span className="px-1 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest text-slate-500">
+            {t(group.captionKey)}
+          </span>
+          <div className={cx("px-4 py-3 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
+            <div className="flex gap-1 overflow-x-auto">
+              {group.tabs.map(tab => (
                 <button
-                  onClick={handleExportCSV}
-                  className="px-4 py-2 text-xs font-bold rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
+                  key={tab.key}
+                  onClick={() => {
+                    audioFeedback.playClick();
+                    setActiveTab(tab.key);
+                  }}
+                  className={`px-4 py-2.5 text-xs font-black whitespace-nowrap rounded-xl transition-all cursor-pointer border
+                    ${activeTab === tab.key
+                      ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20 light_sakura:bg-rose-100 light_sakura:text-rose-600 light_sakura:border-rose-200"
+                      : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500 light_sakura:hover:text-slate-800"}`}
                 >
-                  ↓ Export CSV
+                  {tab.label}
                 </button>
-              )}
-              <button 
-                onClick={() => {
-                  fetchUsers();
-                  loadMetrics();
-                }}
-                className={cx("px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.secondary)}
-              >
-                {t("admin.refresh")}
-              </button>
+              ))}
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Tab Navigation links */}
-      <div className={cx("px-4 py-3 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
-        <div className="flex gap-1 overflow-x-auto">
-          {([
-            { key: "users",       label: t("admin.tab_users") },
-            { key: "premium",     label: t("admin.tab_premium") },
-            { key: "voucher",     label: t("admin.tab_voucher") },
-            { key: "categories",  label: t("admin.tab_categories") },
-            { key: "broadcast",   label: t("admin.tab_broadcast") },
-            { key: "ai_monitor",  label: t("admin.tab_ai_monitor") },
-            { key: "error_monitor", label: t("admin.tab_error_monitor") },
-            { key: "support_chat", label: t("admin.tab_support_chat") },
-            { key: "maintenance", label: t("admin.tab_maintenance") },
-            { key: "backup",      label: t("admin.tab_backup") },
-          ] as { key: AdminTab; label: string }[]).map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => {
-                audioFeedback.playClick();
-                setActiveTab(tab.key);
-              }}
-              className={`px-4 py-2.5 text-xs font-black whitespace-nowrap rounded-xl transition-all cursor-pointer border
-                ${activeTab === tab.key
-                  ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20 light_sakura:bg-rose-100 light_sakura:text-rose-600 light_sakura:border-rose-200"
-                  : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500 light_sakura:hover:text-slate-800"}`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </div>
+      ))}
 
       {/* Tab Contents: Users List */}
       {activeTab === "users" && (
         <>
           {/* Metrics Cards Grid - Wrapped in One Card Container */}
-          <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
+          <div className={cx("p-5 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 shadow-sm light_sakura:bg-rose-100/10 light_sakura:border-rose-200 space-y-2">
                 <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
@@ -577,7 +601,7 @@ export const AdminPanel: React.FC = () => {
           </div>
 
           {/* Control panel (Search & filters) - Wrapped in One Card Container */}
-          <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
+          <div className={cx("p-5 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="relative">
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 light_sakura:text-rose-400" size={16} />
@@ -631,7 +655,7 @@ export const AdminPanel: React.FC = () => {
 
           {/* Bulk Action Bar */}
           {selectedIds.size > 0 && (
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-6 py-4 rounded-3xl border border-indigo-500/20 bg-indigo-500/5 light_sakura:bg-rose-50 light_sakura:border-rose-200">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-6 py-4 rounded-2xl border border-indigo-500/20 bg-indigo-500/5 light_sakura:bg-rose-50 light_sakura:border-rose-200">
               <span className="text-xs font-bold text-indigo-400 light_sakura:text-rose-600">
                 {t("admin.users_selected").replace("{count}", selectedIds.size.toString())}
               </span>
@@ -662,7 +686,7 @@ export const AdminPanel: React.FC = () => {
           )}
 
           {/* Main Users Table - Wrapped in One Card Container */}
-          <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
+          <div className={cx("p-5 rounded-2xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
             {loading ? (
               <div className="py-20 flex flex-col items-center justify-center space-y-3">
                 <Clock className={cx("animate-spin", tokens.icon.accent)} size={32} />

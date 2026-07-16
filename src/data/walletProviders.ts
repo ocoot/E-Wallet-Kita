@@ -3,6 +3,10 @@ import gopayLogo from "../assets/images/providers/gopay.png";
 import ovoLogo from "../assets/images/providers/ovo.jpg";
 import shopeepayLogo from "../assets/images/providers/shopeepay.jpg";
 import danaLogo from "../assets/images/providers/dana.webp";
+import mandiriLogo from "../assets/images/providers/mandiri.jpg";
+import bcaLogo from "../assets/images/providers/bca.jpg";
+import briLogo from "../assets/images/providers/bri.jpg";
+import bniLogo from "../assets/images/providers/bni.jpg";
 
 /**
  * Katalog provider E-Wallet & Bank untuk dropdown "Tambah Dompet" (Wallets.tsx)
@@ -13,8 +17,13 @@ import danaLogo from "../assets/images/providers/dana.webp";
  * bukan foreign key, jadi tidak perlu migrasi DB apa pun untuk fitur ini.
  *
  * `color` = warna brand utama (dipakai untuk tint kartu transparan/glass di
- * dashboard). `logo` hanya tersedia untuk e-wallet (asset diberikan user);
- * bank memakai inisial di badge berwarna karena belum ada logo resmi di aset.
+ * dashboard, dan sebagai fallback border/ProviderBadge). `logo` sekarang
+ * tersedia untuk E-WALLET MAUPUN BANK: untuk e-wallet asetnya adalah lockup
+ * resmi providernya, sedangkan untuk bank (Mandiri/BCA/BRI/BNI) asetnya
+ * adalah komposit background kartu elegan (gradient warna khas bank +
+ * sheen halus + logo resmi di tengah dalam plate kaca putih) yang dibuat
+ * khusus supaya konsisten dengan gaya "foto membungkus kartu" di
+ * DashboardWalletCarousel -- lihat REVISI 4 di komponen tsb.
  *
  * `logoBgColor` = warna solid PERSIS seperti warna latar yang sudah baked-in
  * di file logo itu sendiri (dicek manual per-piksel dari asetnya). Dipakai
@@ -25,7 +34,9 @@ import danaLogo from "../assets/images/providers/dana.webp";
  * "membungkus" seluruh kartu, bukan mengambang dengan garis pinggir yang
  * kentara. Beda dari `color` (warna brand resmi) karena beberapa aset logo
  * ternyata punya latar sendiri yang tidak 100% sama (mis. Gopay: latar
- * asetnya putih, walau warna brand resminya hijau).
+ * asetnya putih, walau warna brand resminya hijau; bank-bank di atas juga
+ * pakai warna sudut gradasi background kartunya masing-masing, bukan warna
+ * brand resmi solidnya).
  */
 export interface WalletProviderOption {
   id: string;
@@ -45,10 +56,10 @@ export const EWALLET_PROVIDERS: WalletProviderOption[] = [
 ];
 
 export const BANK_PROVIDERS: WalletProviderOption[] = [
-  { id: "mandiri", name: "Bank Mandiri", color: "#003D79" },
-  { id: "bca", name: "BCA", color: "#0058A3" },
-  { id: "bri", name: "BRI", color: "#00529C" },
-  { id: "bni", name: "BNI", color: "#F37021" },
+  { id: "mandiri", name: "Bank Mandiri", color: "#003D79", logo: mandiriLogo, logoBgColor: "#1f2430" },
+  { id: "bca", name: "BCA", color: "#0058A3", logo: bcaLogo, logoBgColor: "#bfe0f2" },
+  { id: "bri", name: "BRI", color: "#00529C", logo: briLogo, logoBgColor: "#bce8cd" },
+  { id: "bni", name: "BNI", color: "#F37021", logo: bniLogo, logoBgColor: "#e0551c" },
 ];
 
 export const PROVIDER_CATALOG: Record<"ewallet" | "bank", WalletProviderOption[]> = {
