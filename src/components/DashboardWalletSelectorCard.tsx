@@ -1,13 +1,12 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
-import { TrendingUp, TrendingDown, ChevronRight, Banknote, Layers, Eye, EyeOff, Wallet as WalletIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronRight, Eye, EyeOff, Wallet as WalletIcon } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useWallets } from "../hooks/useWallets";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useBalanceVisibility, maskCurrency } from "../contexts/BalanceVisibilityContext";
 import { audioFeedback } from "../lib/audio";
-import { ProviderBadge } from "./ProviderBadge";
 import { DropdownField, DropdownOption } from "./DropdownField";
 import { matchProvider, NEUTRAL_PROVIDER_COLOR } from "../data/walletProviders";
 import { Transaction, WalletWithBalance } from "../types";
@@ -216,22 +215,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
             {/* Header: identitas pos + dropdown pemilih pos */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2.5 min-w-0">
-                {!hasLogoBg && (
-                  selectedWallet.type === "ewallet" || selectedWallet.type === "bank" ? (
-                    <ProviderBadge type={selectedWallet.type} provider={selectedWallet.provider} size={38} />
-                  ) : (
-                    <span
-                      className="inline-flex items-center justify-center rounded-xl shrink-0 text-white"
-                      style={{ width: 38, height: 38, backgroundColor: `${color}CC` }}
-                    >
-                      {selectedWallet.type === "cash" ? <Banknote size={17} /> : <Layers size={17} />}
-                    </span>
-                  )
-                )}
                 <div className="min-w-0">
-                  <p className={cx("font-sans font-bold text-sm truncate drop-shadow-sm", primaryTextClass)}>
-                    {selectedWallet.name}
-                  </p>
                   <p className={cx("font-sans text-[10px] uppercase tracking-wide truncate", mutedTextClass)}>
                     {typeCaption(selectedWallet)}
                   </p>
@@ -264,7 +248,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
               <p className={cx("font-sans font-black text-3xl tabular-nums leading-tight drop-shadow-sm", primaryTextClass)}>
                 {balanceVisible ? formatIDR(selectedWallet.balance) : maskCurrency(formatIDR(selectedWallet.balance))}
               </p>
-              {contactValue ? (
+              {contactValue && (
                 <div
                   onClick={(e) => { e.stopPropagation(); setContactVisible((v) => !v); }}
                   className={cx(
@@ -276,62 +260,64 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   <span className="truncate">{contactVisible ? contactValue : maskContact(contactValue)}</span>
                   {contactVisible ? <EyeOff size={11} className="shrink-0" /> : <Eye size={11} className="shrink-0" />}
                 </div>
-              ) : (
-                <p className={cx("font-sans text-[11px] mt-1", mutedTextClass)}>
-                  {selectedWallet.type === "cash" ? t("wallet.card_caption_cash") : t("wallet.card_caption_general")}
-                </p>
               )}
             </div>
 
-            {/* Pemasukan & Pengeluaran bulan ini khusus pos ini */}
-            <div>
+            {/* Pemasukan & Pengeluaran bulan ini khusus pos ini -- masing-
+                masing sekarang jadi kotak terpisah (bukan satu kotak yang
+                dibagi 2 kolom), supaya kedua angka lebih jelas sebagai dua
+                metrik berbeda. */}
+            <div className="grid grid-cols-2 gap-2.5">
               <div
                 className={cx(
-                  "grid grid-cols-2 gap-2.5 rounded-2xl border p-3",
+                  "flex items-center gap-2 min-w-0 rounded-2xl border p-3",
                   hasLogoBg ? "border-white/10 bg-black/20" : cx("border-slate-800/60 light_sakura:border-rose-100/60", tokens.surface.sunken)
                 )}
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-400 shrink-0">
-                    <TrendingUp size={13} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className={cx("text-[9.5px] uppercase font-bold tracking-wide truncate", mutedTextClass)}>
-                      {t("dashboard.income")}
-                    </p>
-                    <p className="text-xs font-bold text-emerald-400 tabular-nums truncate">
-                      {balanceVisible ? formatIDR(income) : maskCurrency(formatIDR(income))}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-red-500/15 text-red-400 shrink-0">
-                    <TrendingDown size={13} />
-                  </span>
-                  <div className="min-w-0">
-                    <p className={cx("text-[9.5px] uppercase font-bold tracking-wide truncate", mutedTextClass)}>
-                      {t("dashboard.expense")}
-                    </p>
-                    <p className="text-xs font-bold text-red-400 tabular-nums truncate">
-                      {balanceVisible ? formatIDR(expense) : maskCurrency(formatIDR(expense))}
-                    </p>
-                  </div>
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-400 shrink-0">
+                  <TrendingUp size={13} />
+                </span>
+                <div className="min-w-0">
+                  <p className={cx("text-[9.5px] uppercase font-bold tracking-wide truncate", mutedTextClass)}>
+                    {t("dashboard.income")}
+                  </p>
+                  <p className="text-xs font-bold text-emerald-400 tabular-nums truncate">
+                    {balanceVisible ? formatIDR(income) : maskCurrency(formatIDR(income))}
+                  </p>
                 </div>
               </div>
-              <p className={cx("text-[10px] mt-1.5 px-0.5", mutedTextClass)}>
-                {t("wallet.selector_card_this_month")}
-              </p>
+              <div
+                className={cx(
+                  "flex items-center gap-2 min-w-0 rounded-2xl border p-3",
+                  hasLogoBg ? "border-white/10 bg-black/20" : cx("border-slate-800/60 light_sakura:border-rose-100/60", tokens.surface.sunken)
+                )}
+              >
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-red-500/15 text-red-400 shrink-0">
+                  <TrendingDown size={13} />
+                </span>
+                <div className="min-w-0">
+                  <p className={cx("text-[9.5px] uppercase font-bold tracking-wide truncate", mutedTextClass)}>
+                    {t("dashboard.expense")}
+                  </p>
+                  <p className="text-xs font-bold text-red-400 tabular-nums truncate">
+                    {balanceVisible ? formatIDR(expense) : maskCurrency(formatIDR(expense))}
+                  </p>
+                </div>
+              </div>
             </div>
 
             <button
               type="button"
-              onClick={() => { audioFeedback.playClick(); navigate("/wallets"); }}
+              onClick={() => {
+                audioFeedback.playClick();
+                navigate("/transactions", { state: { filterWalletId: selectedWallet.id } });
+              }}
               className={cx(
                 "flex items-center gap-1 text-[11px] font-semibold cursor-pointer transition-colors",
                 hasLogoBg ? "text-white/80 hover:text-white" : "text-indigo-400 hover:text-indigo-300 light_sakura:text-rose-500 light_sakura:hover:text-rose-600"
               )}
             >
-              <span>{t("wallet.selector_card_view_all")}</span>
+              <span>{t("nav.history")}</span>
               <ChevronRight size={12} />
             </button>
           </div>
