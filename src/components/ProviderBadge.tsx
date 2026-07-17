@@ -11,18 +11,18 @@ interface ProviderBadgeProps {
 }
 
 /**
- * Badge bulat kecil untuk logo provider (Gopay/OVO/ShopeePay/Dana -- dari
- * aset yang diberikan user) atau, kalau tidak match katalog (mis. "Lainnya",
- * bank belum ada logo, atau wallet lama), inisial/ikon generik sebagai
+ * Badge bulat kecil untuk logo provider (dari katalog di
+ * data/walletProviders.ts -- e-wallet maupun bank) atau, kalau tidak match
+ * katalog (mis. "Lainnya" atau wallet lama), inisial/ikon generik sebagai
  * fallback. Dipakai di Wallets.tsx (list pos) supaya identitas visual
  * provider tetap terlihat di baris pengelolaan pos.
  *
- * Aset logo yang ada berbentuk lockup/banner (rasio bukan 1:1, mis. OVO
- * 640x264) -- makanya dipakai `object-contain` + padding tipis (bukan
- * `object-cover`) supaya logo utuh terlihat letterboxed, tidak terpotong
- * aneh. Untuk versi "membungkus" seluruh kartu (background penuh), lihat
- * DashboardWalletCarousel.tsx yang me-render <img> langsung, bukan lewat
- * badge ini.
+ * Aset logo yang ada berbentuk lockup/banner (rasio bukan 1:1) -- makanya
+ * dipakai `object-contain` + padding tipis (bukan `object-cover`) supaya
+ * logo utuh terlihat letterboxed, tidak terpotong aneh. Untuk versi
+ * "membungkus" seluruh kartu (background penuh + logoBgColor per brand),
+ * lihat DashboardWalletCarousel.tsx yang me-render <img> langsung, bukan
+ * lewat badge ini.
  */
 export const ProviderBadge: React.FC<ProviderBadgeProps> = ({ type, provider, size = 36, className = "" }) => {
   const matched = matchProvider(type, provider);

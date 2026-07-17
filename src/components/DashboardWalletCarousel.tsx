@@ -64,8 +64,16 @@ interface DashboardWalletCarouselProps {
  * sendiri (lihat data/walletProviders.ts) -- jadi tepi logo menyatu mulus
  * dengan latar kartu, tidak ada garis pinggir/kotak yang kentara. Scrim
  * gradient gelap tetap ditambahkan tipis di atasnya supaya teks saldo
- * tetap kontras & terbaca. Kartu Bank/Cash/Saldo Umum/"Lainnya" (belum ada
- * aset logo) tetap pakai gradient warna brand transparan seperti sebelumnya.
+ * tetap kontras & terbaca. Kartu Cash/Saldo Umum/"Lainnya" (tidak ada aset
+ * logo untuk tipe ini) tetap pakai gradient warna brand transparan seperti
+ * sebelumnya.
+ *
+ * REVISI 6: bank (Mandiri/BCA/BRI/BNI) sebelumnya tidak punya logo,
+ * kartu-nya jatuh ke jalur badge-inisial + gradient di atas. Sekarang
+ * logo resmi tiap bank (PNG transparan) sudah ditambahkan, jadi ikut jalur
+ * yang sama dengan e-wallet -- bedanya `logoBgColor`-nya BUKAN hasil
+ * cocokkan piksel ke aset (asetnya transparan penuh), tapi warna pilihan
+ * desain per brand (lihat komentar di BANK_PROVIDERS).
  *
  * REVISI 5: lebar kartu tadinya dipaku ke 420px di layar >=640px (supaya
  * tidak ada sliver kartu berikutnya yang nongol) -- tapi ini membuat
@@ -133,7 +141,7 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
     return {
       color,
       hasLogoBg,
-      logo: matched?.logo,
+      logo: matched?.cardLogo || matched?.logo,
       logoBgColor,
       backgroundStyle: {
         background: isDark
@@ -223,12 +231,18 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
                       jadi hasil akhirnya tetap terlihat seperti foto yang
                       membungkus penuh kartu, bukan gambar mengambang
                       dengan pinggiran yang kentara. */}
+                  {/* p-9: logo asli lebar (banner, bukan 1:1) jadi kalau
+                      dibiarkan object-contain polos, dia menyentuh tepi
+                      kartu penuh secara horizontal dan terasa terlalu
+                      besar/dominan. Padding di sini membuatnya "mengambang"
+                      di tengah dengan jarak ke tepi, tanpa mengubah
+                      pusatnya (object-contain tetap otomatis center). */}
                   <div className="absolute inset-0" style={{ backgroundColor: logoBgColor }} />
                   <img
                     src={logo}
                     alt=""
                     aria-hidden="true"
-                    className="absolute inset-0 w-full h-full object-contain"
+                    className="absolute inset-0 w-full h-full object-contain p-9"
                   />
                   <div
                     className="absolute inset-0"

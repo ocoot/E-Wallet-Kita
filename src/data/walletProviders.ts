@@ -3,10 +3,11 @@ import gopayLogo from "../assets/images/providers/gopay.png";
 import ovoLogo from "../assets/images/providers/ovo.jpg";
 import shopeepayLogo from "../assets/images/providers/shopeepay.jpg";
 import danaLogo from "../assets/images/providers/dana.webp";
-import mandiriLogo from "../assets/images/providers/mandiri.jpg";
-import bcaLogo from "../assets/images/providers/bca.jpg";
-import briLogo from "../assets/images/providers/bri.jpg";
-import bniLogo from "../assets/images/providers/bni.jpg";
+import bniLogo from "../assets/images/providers/bni.png";
+import mandiriLogo from "../assets/images/providers/mandiri.png";
+import mandiriLogoWhite from "../assets/images/providers/mandiri-white.png";
+import bcaLogo from "../assets/images/providers/bca.png";
+import briLogo from "../assets/images/providers/bri.png";
 
 /**
  * Katalog provider E-Wallet & Bank untuk dropdown "Tambah Dompet" (Wallets.tsx)
@@ -17,26 +18,30 @@ import bniLogo from "../assets/images/providers/bni.jpg";
  * bukan foreign key, jadi tidak perlu migrasi DB apa pun untuk fitur ini.
  *
  * `color` = warna brand utama (dipakai untuk tint kartu transparan/glass di
- * dashboard, dan sebagai fallback border/ProviderBadge). `logo` sekarang
- * tersedia untuk E-WALLET MAUPUN BANK: untuk e-wallet asetnya adalah lockup
- * resmi providernya, sedangkan untuk bank (Mandiri/BCA/BRI/BNI) asetnya
- * adalah komposit background kartu elegan (gradient warna khas bank +
- * sheen halus + logo resmi di tengah dalam plate kaca putih) yang dibuat
- * khusus supaya konsisten dengan gaya "foto membungkus kartu" di
- * DashboardWalletCarousel -- lihat REVISI 4 di komponen tsb.
+ * dashboard, dan sebagai fallback `logoBgColor` kalau tidak diset manual).
+ * `logo` = aset PNG transparan (bank & e-wallet sama-sama punya).
  *
- * `logoBgColor` = warna solid PERSIS seperti warna latar yang sudah baked-in
- * di file logo itu sendiri (dicek manual per-piksel dari asetnya). Dipakai
+ * `logoBgColor` = warna solid latar kartu di belakang logo (dipakai
  * DashboardWalletCarousel sebagai warna dasar kartu supaya saat logo
- * ditampilkan penuh lewat object-contain (tidak pernah di-crop), area
- * letterbox kosong di kartu (kalau rasio logo tidak persis sama dengan
- * rasio kartu) menyatu mulus dengan warna aset -- kesannya foto benar-benar
- * "membungkus" seluruh kartu, bukan mengambang dengan garis pinggir yang
- * kentara. Beda dari `color` (warna brand resmi) karena beberapa aset logo
- * ternyata punya latar sendiri yang tidak 100% sama (mis. Gopay: latar
- * asetnya putih, walau warna brand resminya hijau; bank-bank di atas juga
- * pakai warna sudut gradasi background kartunya masing-masing, bukan warna
- * brand resmi solidnya).
+ * ditampilkan penuh lewat object-contain (tidak pernah di-crop, selalu
+ * center), area letterbox kosong di kartu (kalau rasio logo tidak persis
+ * sama dengan rasio kartu) terisi warna solid ini -- kesannya logo benar-
+ * benar "mengambang" di atas warna brand card, bukan mengambang dengan
+ * garis pinggir yang kentara. Untuk e-wallet, ini dicocokkan manual per-
+ * piksel dengan warna latar yang sudah baked-in di file logo itu sendiri
+ * (mis. Gopay: latar asetnya putih, walau warna brand resminya hijau).
+ * Untuk bank, logo asetnya transparan penuh, jadi `logoBgColor` di sini
+ * murni pilihan warna kartu (brief desain), bukan hasil cocokkan piksel.
+ *
+ * `cardLogo` (opsional) = varian logo KHUSUS untuk kartu dashboard yang
+ * latarnya gelap/solid (lihat DashboardWalletCarousel). Beberapa logo bank
+ * punya wordmark berwarna gelap yang menyatu/tenggelam kalau latar
+ * kartunya juga gelap (mis. Mandiri: teks "mandiri" navy di atas kartu
+ * hitam) -- `cardLogo` dipakai untuk kasus itu (mis. wordmark direcolor
+ * putih, pita tetap warna asli). Kalau tidak diset, fallback ke `logo`
+ * biasa. `ProviderBadge` (badge kecil di /wallets, latarnya SELALU putih)
+ * sengaja tetap pakai `logo` asli, bukan `cardLogo` -- supaya tidak
+ * kebalik jadi tak terbaca di latar putih.
  */
 export interface WalletProviderOption {
   id: string;
@@ -44,6 +49,7 @@ export interface WalletProviderOption {
   color: string;
   logo?: string;
   logoBgColor?: string;
+  cardLogo?: string;
 }
 
 export const OTHER_PROVIDER_ID = "lainnya";
@@ -56,10 +62,17 @@ export const EWALLET_PROVIDERS: WalletProviderOption[] = [
 ];
 
 export const BANK_PROVIDERS: WalletProviderOption[] = [
-  { id: "mandiri", name: "Bank Mandiri", color: "#003D79", logo: mandiriLogo, logoBgColor: "#1f2430" },
-  { id: "bca", name: "BCA", color: "#0058A3", logo: bcaLogo, logoBgColor: "#bfe0f2" },
-  { id: "bri", name: "BRI", color: "#00529C", logo: briLogo, logoBgColor: "#bce8cd" },
-  { id: "bni", name: "BNI", color: "#F37021", logo: bniLogo, logoBgColor: "#e0551c" },
+  // logoBgColor sesuai brief desain (bukan hasil cocokkan piksel, karena
+  // logo bank asetnya transparan penuh -- lihat catatan di atas):
+  //   Mandiri: hitam (sengaja BUKAN #000000 solid -- pakai charcoal gelap
+  //            #141414 supaya tetap ada kedalaman, tidak flat mati)
+  //   BNI:     oranye (samakan dengan warna brand resminya)
+  //   BCA:     biru muda
+  //   BRI:     biru tua
+  { id: "mandiri", name: "Bank Mandiri", color: "#003D79", logo: mandiriLogo, cardLogo: mandiriLogoWhite, logoBgColor: "#141414" },
+  { id: "bca", name: "BCA", color: "#0058A3", logo: bcaLogo, logoBgColor: "#4FA8E8" },
+  { id: "bri", name: "BRI", color: "#00529C", logo: briLogo, logoBgColor: "#00437A" },
+  { id: "bni", name: "BNI", color: "#F37021", logo: bniLogo, logoBgColor: "#F37021" },
 ];
 
 export const PROVIDER_CATALOG: Record<"ewallet" | "bank", WalletProviderOption[]> = {
