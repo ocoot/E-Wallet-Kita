@@ -20,6 +20,7 @@ import { DashboardInstallments } from "../components/DashboardInstallments";
 import { DashboardOverviewCard } from "../components/DashboardOverviewCard";
 import { ErrorState } from "../components/ErrorState";
 import { DashboardWalletCarousel } from "../components/DashboardWalletCarousel";
+import { DashboardWalletSelectorCard } from "../components/DashboardWalletSelectorCard";
 import { useCategories } from "../hooks/useCategories";
 
 interface DashboardProps {
@@ -229,24 +230,27 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="space-y-6 pb-24 relative">
-      {/* 1 + 1b. Welcome/weather card ("dashboard dinamis") DAN Pos Dompet
-          (kartu penuh per pos: E-Wallet/Rekening/Cash/Saldo Total) sekarang
-          digabung jadi SATU strip yang bisa digeser (swipe) horizontal,
-          snap satu kartu per satu -- bukan ditumpuk vertikal terpisah
-          seperti sebelumnya. Kartu welcome/weather dilempar lewat
-          `headerSlot` supaya jadi snap-item pertama di strip yang sama.
-          Kartu E-Wallet/Bank yang provider-nya cocok katalog (Gopay/OVO/
-          ShopeePay/Dana/Mandiri/BCA/BRI/BNI) pakai warna brand + logo
-          dengan background transparan (lihat data/walletProviders.ts).
-          Kelola penuh (nomor HP/rekening, saldo manual, arsip) ada di
-          /wallets. */}
+      {/* 1 + 1b. Welcome/weather card ("dashboard dinamis") DAN kartu Pos
+          Dompet selector digabung jadi SATU strip yang bisa digeser (swipe)
+          horizontal, snap satu kartu per satu -- sama seperti sebelumnya.
+          Bedanya kartu Pos Dompet SEKARANG cuma SATU kartu (selector
+          dropdown, lihat DashboardWalletSelectorCard.tsx) alih-alih satu
+          kartu per pos yang digeser satu-satu -- untuk pindah pos, user
+          pakai dropdown DI DALAM kartu itu, bukan swipe lagi. Swipe di
+          strip ini sekarang cuma untuk berpindah antara kartu dashboard
+          dinamis <-> kartu Pos Dompet. */}
       <DashboardWalletCarousel
-        formatIDR={formatIDR}
-        refreshTrigger={transactionsUpdatedTrigger}
         headerSlot={
           <DashboardHeader
             currentUser={currentUser}
             telegramStatus={telegramStatus}
+          />
+        }
+        walletSlot={
+          <DashboardWalletSelectorCard
+            formatIDR={formatIDR}
+            transactions={transactions}
+            refreshTrigger={transactionsUpdatedTrigger}
           />
         }
       />
