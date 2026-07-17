@@ -30,7 +30,7 @@ import { CHANGELOG_TABLE, type ChangelogEntry } from "../data/changelog";
 export const UpdatePrompt: React.FC = () => {
   const { t, locale } = useLanguage();
   const [visible, setVisible] = useState(false);
-  const [latestEntry, setLatestEntry] = useState<ChangelogEntry | null>(null);
+  const [changelogEntries, setChangelogEntries] = useState<ChangelogEntry[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
@@ -40,16 +40,20 @@ export const UpdatePrompt: React.FC = () => {
         .from(CHANGELOG_TABLE)
         .select("version, release_date, changes")
         .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle()
+        // Tampilkan beberapa versi terakhir sekaligus (riwayat singkat),
+        // bukan cuma versi paling baru -- supaya user yang sempat skip
+        // beberapa update tetap lihat ringkasan apa saja yang berubah.
+        .limit(5)
         .then(({ data, error }) => {
           if (error) throw error;
           if (data) {
-            setLatestEntry({
-              version: data.version,
-              date: data.release_date,
-              changes: data.changes,
-            });
+            setChangelogEntries(
+              data.map((row) => ({
+                version: row.version,
+                date: row.release_date,
+                changes: row.changes,
+              }))
+            );
           }
         })
         .catch((err) => {
@@ -146,20 +150,48 @@ export const UpdatePrompt: React.FC = () => {
                 </div>
               </div>
 
-              {!isUpdating && latestEntry && latestEntry.changes.length > 0 && (
-                <div className="rounded-xl bg-white/5 p-3.5 text-left light_sakura:bg-black/[0.03]">
+              {!isUpdating && changelogEntries.some((e) => e.changes.length > 0) && (
+                <div className="rounded-xl bg-white/5 p-3.5 text-left light_sakura:bg-black/[0.03] max-h-56 overflow-y-auto">
                   <p className="flex items-center gap-1.5 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase tracking-wider text-indigo-300 light_sakura:text-rose-500">
                     <Sparkles size={12} />
                     {t("pwa.whats_new")}
                   </p>
-                  <ul className="mt-2 space-y-1.5 text-xs sm:text-sm text-slate-300 light_sakura:text-slate-600">
-                    {latestEntry.changes.map((change, i) => (
-                      <li key={i} className="flex gap-2">
-                        <span className="text-indigo-400 light_sakura:text-rose-400">•</span>
-                        <span>{locale === "en" ? change.en : change.id}</span>
-                      </li>
+                  <div className="mt-2.5 space-y-3">
+                    {changelogEntries
+                      .filter((entry) => entry.changes.length > 0)
+                      .map((entry, idx) => (
+                      <div
+                        key={`${entry.version}-${idx}`}
+                        className={
+                          idx > 0
+                            ? "pt-3 border-t border-white/10 light_sakura:border-black/10"
+                            : ""
+                        }
+                      >
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <span className="text-xs sm:text-sm font-bold text-white light_sakura:text-slate-800">
+                            v{entry.version}
+                          </span>
+                          {idx === 0 && (
+                            <span className="px-1.5 py-0.5 rounded-full bg-indigo-500 text-white text-[9px] font-bold uppercase tracking-wide leading-none light_sakura:bg-rose-500">
+                              {t("pwa.badge_new")}
+                            </span>
+                          )}
+                          {entry.date && (
+                            <span className="text-[10px] text-slate-500 ml-auto shrink-0">{entry.date}</span>
+                          )}
+                        </div>
+                        <ul className="space-y-1.5 text-xs sm:text-sm text-slate-300 light_sakura:text-slate-600">
+                          {entry.changes.map((change, i) => (
+                            <li key={i} className="flex gap-2">
+                              <span className="text-indigo-400 light_sakura:text-rose-400">•</span>
+                              <span>{locale === "en" ? change.en : change.id}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
               )}
 

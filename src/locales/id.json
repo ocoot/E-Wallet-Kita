@@ -1200,7 +1200,8 @@
   "pwa": {
     "update_title": "Pembaruan Tersedia",
     "update_desc": "Versi terbaru E-Wallet Kita sudah siap.",
-    "whats_new": "Yang baru di versi ini:",
+    "whats_new": "Riwayat pembaruan:",
+    "badge_new": "Baru",
     "update_btn": "Perbarui Sekarang",
     "update_dismiss": "Nanti Saja",
     "updating": "Memperbarui...",
