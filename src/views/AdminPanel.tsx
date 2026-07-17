@@ -455,48 +455,56 @@ export const AdminPanel: React.FC = () => {
   return (
     <div className="space-y-5">
 
-      {/* Page title -- gaya polos sama seperti halaman Akun (SettingsMobileMenu):
-          judul + deskripsi langsung di atas background, TANPA kartu/border
-          pembungkus dan tanpa bar gradient di atasnya. */}
-      <div className="px-1">
-        <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
-          {t("nav.admin_panel")}
-        </h1>
-        <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500 font-medium">
-          {t("admin.panel_desc")}
-        </p>
-      </div>
+      {/* Hero card -- disamakan dengan pola kartu utama halaman Akun desktop
+          (lihat Settings.tsx: rounded-3xl + bar gradient tipis di atas +
+          judul/deskripsi dengan border-b di dalam kartu putih/slate), alih-
+          alih judul polos yang mengambang langsung di atas background
+          halaman seperti sebelumnya. Quick actions & navigasi tab ikut
+          masuk ke dalam kartu yang sama supaya seluruh "kepala" halaman
+          Admin Panel terasa sebagai satu kesatuan visual, konsisten dengan
+          kualitas halaman Akun. */}
+      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, "border-slate-800/60 light_sakura:border-rose-100/40")}>
+        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
+        <div className="p-6 md:p-8 space-y-6">
 
-      {/* Quick actions -- dipindah dari dalam hero card lama ke kartu ringan
-          rounded-2xl sendiri, gaya & radius disamakan dengan kartu-kartu di
-          halaman Akun (bandingkan profile summary card di SettingsMobileMenu). */}
-      <div className={cx("flex flex-wrap items-center gap-2 p-4 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
-        {activeTab === "users" && (
-          <button
-            onClick={handleExportCSV}
-            className="px-4 py-2 text-xs font-bold rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
-          >
-            ↓ Export CSV
-          </button>
-        )}
-        <button
-          onClick={() => {
-            fetchUsers();
-            loadMetrics();
-          }}
-          className={cx("px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.secondary)}
-        >
-          {t("admin.refresh")}
-        </button>
-      </div>
+          {/* Page title */}
+          <div className="flex flex-col border-b pb-6 border-slate-800/50 light_sakura:border-rose-100/30">
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+              {t("nav.admin_panel")}
+            </h1>
+            <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500 font-medium">
+              {t("admin.panel_desc")}
+            </p>
+          </div>
 
-      {/* Tab Navigation -- diubah dari pill tab horizontal menjadi daftar
-          menu vertikal (ikon + label + deskripsi + chevron), meniru persis
-          pola "Group: Akun / Preferensi / Privasi & Dukungan" di halaman
-          Akun (SettingsMobileMenu / MenuRow). Tetap <button> (bukan Link)
-          karena switch konten terjadi di halaman yang sama; baris tab yang
-          sedang aktif ditandai dengan aksen warna + ikon centang. */}
-      {([
+          {/* Quick actions */}
+          <div className={cx("flex flex-wrap items-center gap-2 p-4 rounded-2xl border", tokens.surface.sunken, "border-slate-800/60 light_sakura:border-rose-100/50")}>
+            {activeTab === "users" && (
+              <button
+                onClick={handleExportCSV}
+                className="px-4 py-2 text-xs font-bold rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
+              >
+                ↓ Export CSV
+              </button>
+            )}
+            <button
+              onClick={() => {
+                fetchUsers();
+                loadMetrics();
+              }}
+              className={cx("px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100 light_sakura:bg-white", tokens.text.secondary)}
+            >
+              {t("admin.refresh")}
+            </button>
+          </div>
+
+          {/* Tab Navigation -- daftar menu vertikal (ikon + label + deskripsi
+              + chevron), meniru persis pola "Group: Akun / Preferensi /
+              Privasi & Dukungan" di halaman Akun (SettingsMobileMenu /
+              MenuRow). Tetap <button> (bukan Link) karena switch konten
+              terjadi di halaman yang sama; baris tab yang sedang aktif
+              ditandai dengan aksen warna + ikon centang. */}
+          {([
         {
           captionKey: "admin.tab_group_data",
           tabs: [
@@ -522,62 +530,65 @@ export const AdminPanel: React.FC = () => {
             { key: "backup",        icon: <HardDrive size={16} />,     label: t("admin.tab_backup"),        desc: t("admin.tab_backup_desc") },
           ],
         },
-      ] as { captionKey: string; tabs: { key: AdminTab; icon: React.ReactNode; label: string; desc: string }[] }[]).map((group) => (
-        <div key={group.captionKey} className="space-y-2">
-          <span className="px-1 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest text-slate-500">
-            {t(group.captionKey)}
-          </span>
-          <div className={cx("rounded-2xl border divide-y shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default, "divide-slate-800/60 light_sakura:divide-rose-100/60")}>
-            {group.tabs.map(tab => {
-              const isActive = activeTab === tab.key;
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => {
-                    audioFeedback.playClick();
-                    setActiveTab(tab.key);
-                  }}
-                  className={cx(
-                    "w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors cursor-pointer",
-                    isActive
-                      ? "bg-indigo-500/10 light_sakura:bg-rose-100/60"
-                      : tokens.hover.sunken
-                  )}
-                >
-                  <span className={cx(
-                    "shrink-0 w-9 h-9 rounded-xl flex items-center justify-center",
-                    isActive
-                      ? "bg-indigo-500/20 text-indigo-400 light_sakura:bg-rose-200/70 light_sakura:text-rose-600"
-                      : cx("bg-slate-950/60 light_sakura:bg-rose-50", tokens.icon.accent)
-                  )}>
-                    {tab.icon}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className={cx(
-                      "block font-sans text-sm font-semibold truncate",
-                      isActive ? "text-indigo-400 light_sakura:text-rose-600" : tokens.text.label
-                    )}>
-                      {tab.label}
-                    </span>
-                    {tab.desc && (
-                      <span className="block font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 truncate mt-0.5">
-                        {tab.desc}
+          ] as { captionKey: string; tabs: { key: AdminTab; icon: React.ReactNode; label: string; desc: string }[] }[]).map((group) => (
+            <div key={group.captionKey} className="space-y-2">
+              <span className="px-1 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest text-slate-500">
+                {t(group.captionKey)}
+              </span>
+              <div className={cx("rounded-2xl border divide-y overflow-hidden", tokens.surface.sunken, "border-slate-800/60 light_sakura:border-rose-100/50", "divide-slate-800/60 light_sakura:divide-rose-100/60")}>
+                {group.tabs.map(tab => {
+                  const isActive = activeTab === tab.key;
+                  return (
+                    <button
+                      key={tab.key}
+                      onClick={() => {
+                        audioFeedback.playClick();
+                        setActiveTab(tab.key);
+                      }}
+                      className={cx(
+                        "w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors cursor-pointer",
+                        isActive
+                          ? "bg-indigo-500/10 light_sakura:bg-rose-100/60"
+                          : tokens.hover.sunken
+                      )}
+                    >
+                      <span className={cx(
+                        "shrink-0 w-9 h-9 rounded-xl flex items-center justify-center",
+                        isActive
+                          ? "bg-indigo-500/20 text-indigo-400 light_sakura:bg-rose-200/70 light_sakura:text-rose-600"
+                          : cx("bg-slate-900 light_sakura:bg-white", tokens.icon.accent)
+                      )}>
+                        {tab.icon}
                       </span>
-                    )}
-                  </span>
-                  <span className="shrink-0 flex items-center">
-                    {isActive ? (
-                      <CheckCircle size={16} className="text-indigo-400 light_sakura:text-rose-600" />
-                    ) : (
-                      <ChevronRight size={16} className="text-slate-600 light_sakura:text-slate-300" />
-                    )}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+                      <span className="min-w-0 flex-1">
+                        <span className={cx(
+                          "block font-sans text-sm font-semibold truncate",
+                          isActive ? "text-indigo-400 light_sakura:text-rose-600" : tokens.text.label
+                        )}>
+                          {tab.label}
+                        </span>
+                        {tab.desc && (
+                          <span className="block font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 truncate mt-0.5">
+                            {tab.desc}
+                          </span>
+                        )}
+                      </span>
+                      <span className="shrink-0 flex items-center">
+                        {isActive ? (
+                          <CheckCircle size={16} className="text-indigo-400 light_sakura:text-rose-600" />
+                        ) : (
+                          <ChevronRight size={16} className="text-slate-600 light_sakura:text-slate-300" />
+                        )}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
+
         </div>
-      ))}
+      </div>
 
       {/* Tab Contents: Users List */}
       {activeTab === "users" && (

@@ -199,7 +199,17 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
               />
             </>
           ) : (
-            <div className="absolute inset-0 backdrop-blur-xl" style={backgroundStyle} />
+            <>
+              {/* Lapisan dasar solid bertema (putih di light_sakura, slate
+                  gelap di dark_obsidian) -- WAJIB ada di bawah gradient tint
+                  transparan di bawah ini. Tanpa lapisan ini, kartu cuma
+                  mengandalkan warna apa pun yang kebetulan ada DI BELAKANG-
+                  nya (lewat backdrop-blur + gradient tipis yang berakhir
+                  "transparent"), yang menyebabkan kartu terlihat gelap
+                  walau tema aktif adalah Light Sakura. */}
+              <div className={cx("absolute inset-0", tokens.surface.card)} />
+              <div className="absolute inset-0 backdrop-blur-xl" style={backgroundStyle} />
+            </>
           )}
 
           <div className="relative z-10 p-5 sm:p-6 space-y-5">
@@ -278,7 +288,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
               <div
                 className={cx(
                   "grid grid-cols-2 gap-2.5 rounded-2xl border p-3",
-                  hasLogoBg ? "border-white/10 bg-black/20" : "border-slate-800/60 bg-slate-950/25 light_sakura:bg-white/30 light_sakura:border-rose-100/40"
+                  hasLogoBg ? "border-white/10 bg-black/20" : cx("border-slate-800/60 light_sakura:border-rose-100/60", tokens.surface.sunken)
                 )}
               >
                 <div className="flex items-center gap-2 min-w-0">
