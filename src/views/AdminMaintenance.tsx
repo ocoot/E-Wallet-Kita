@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { AdminBackBar } from "../components/AdminBackBar";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
@@ -151,6 +152,8 @@ export const AdminMaintenance: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <AdminBackBar />
+
       {/* ── Global Maintenance Toggle ── */}
       <div className={cx("p-8 rounded-3xl border shadow-sm space-y-6", tokens.surface.card, tokens.border.default)}>
         <div className={cx("border-b pb-5", tokens.border.default)}>

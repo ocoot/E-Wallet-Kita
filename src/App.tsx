@@ -59,6 +59,19 @@ const Installments = lazy(() => import("./views/Installments").then(m => ({ defa
 const Savings = lazy(() => import("./views/Savings").then(m => ({ default: m.Savings })));
 const GoldSavings = lazy(() => import("./views/GoldSavings").then(m => ({ default: m.GoldSavings })));
 const AdminPanel = lazy(() => import("./views/AdminPanel").then(m => ({ default: m.AdminPanel })));
+// Setiap menu di Admin Panel sekarang membuka route halaman detailnya
+// sendiri (lihat blok <Route path="/admin/..."> di bawah), alih-alih
+// merender kontennya langsung di halaman /admin yang sama seperti dulu.
+const AdminUserManager = lazy(() => import("./views/AdminUserManager").then(m => ({ default: m.AdminUserManager })));
+const AdminPremiumMonitor = lazy(() => import("./views/AdminPremiumMonitor").then(m => ({ default: m.AdminPremiumMonitor })));
+const AdminVoucherManager = lazy(() => import("./views/AdminVoucherManager").then(m => ({ default: m.AdminVoucherManager })));
+const AdminCategoryManager = lazy(() => import("./views/AdminCategoryManager").then(m => ({ default: m.AdminCategoryManager })));
+const AdminBroadcast = lazy(() => import("./views/AdminBroadcast").then(m => ({ default: m.AdminBroadcast })));
+const AdminSupportChat = lazy(() => import("./views/AdminSupportChat").then(m => ({ default: m.AdminSupportChat })));
+const AdminAiMonitor = lazy(() => import("./views/AdminAiMonitor").then(m => ({ default: m.AdminAiMonitor })));
+const AdminErrorMonitor = lazy(() => import("./views/AdminErrorMonitor").then(m => ({ default: m.AdminErrorMonitor })));
+const AdminMaintenance = lazy(() => import("./views/AdminMaintenance").then(m => ({ default: m.AdminMaintenance })));
+const AdminBackup = lazy(() => import("./views/AdminBackup").then(m => ({ default: m.AdminBackup })));
 
 // Halaman detail Profile/Akun (mobile-only redesign) -- setiap menu di
 // daftar /settings versi mobile membuka route sendiri di sini. Lihat
@@ -384,6 +397,40 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                       : isAdmin
                         ? <AdminPanel />
                         : <Navigate to="/dashboard" replace />
+                  } />
+                  {/* Setiap menu di /admin membuka halaman/route-nya sendiri
+                      di sini, alih-alih merender kontennya inline di halaman
+                      /admin yang sama -- supaya tidak perlu scroll panjang
+                      melewati daftar menu + konten sekaligus. */}
+                  <Route path="/admin/users" element={
+                    adminLoading ? <AdminSkeleton /> : isAdmin ? <AdminUserManager /> : <Navigate to="/dashboard" replace />
+                  } />
+                  <Route path="/admin/premium" element={
+                    adminLoading ? <AdminSkeleton /> : isAdmin ? <AdminPremiumMonitor /> : <Navigate to="/dashboard" replace />
+                  } />
+                  <Route path="/admin/voucher" element={
+                    adminLoading ? <AdminSkeleton /> : isAdmin ? <AdminVoucherManager /> : <Navigate to="/dashboard" replace />
+                  } />
+                  <Route path="/admin/categories" element={
+                    adminLoading ? <AdminSkeleton /> : isAdmin ? <AdminCategoryManager /> : <Navigate to="/dashboard" replace />
+                  } />
+                  <Route path="/admin/broadcast" element={
+                    adminLoading ? <AdminSkeleton /> : isAdmin ? <AdminBroadcast /> : <Navigate to="/dashboard" replace />
+                  } />
+                  <Route path="/admin/support-chat" element={
+                    adminLoading ? <AdminSkeleton /> : isAdmin ? <AdminSupportChat /> : <Navigate to="/dashboard" replace />
+                  } />
+                  <Route path="/admin/ai-monitor" element={
+                    adminLoading ? <AdminSkeleton /> : isAdmin ? <AdminAiMonitor /> : <Navigate to="/dashboard" replace />
+                  } />
+                  <Route path="/admin/error-monitor" element={
+                    adminLoading ? <AdminSkeleton /> : isAdmin ? <AdminErrorMonitor /> : <Navigate to="/dashboard" replace />
+                  } />
+                  <Route path="/admin/maintenance" element={
+                    adminLoading ? <AdminSkeleton /> : isAdmin ? <AdminMaintenance /> : <Navigate to="/dashboard" replace />
+                  } />
+                  <Route path="/admin/backup" element={
+                    adminLoading ? <AdminSkeleton /> : isAdmin ? <AdminBackup /> : <Navigate to="/dashboard" replace />
                   } />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>

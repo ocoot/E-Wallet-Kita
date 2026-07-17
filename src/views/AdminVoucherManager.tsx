@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { AdminBackBar } from "../components/AdminBackBar";
 import { supabase } from "../lib/supabase";
 import { PremiumVoucher } from "../types";
 import { useAuth } from "../contexts/AuthContext";
@@ -236,6 +237,8 @@ export const AdminVoucherManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <AdminBackBar />
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           {t: t("voucher.total"), v: stats.total, color: "text-indigo-500"},

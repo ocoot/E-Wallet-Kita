@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { AdminBackBar } from "../components/AdminBackBar";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
@@ -156,6 +157,8 @@ export const AdminCategoryManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <AdminBackBar />
+
       {/* Header Wrapped in One Card Container */}
       <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

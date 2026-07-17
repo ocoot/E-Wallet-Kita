@@ -1,28 +1,11 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useToast } from "../contexts/ToastContext";
-import { useAuth } from "../contexts/AuthContext";
-import { supabase } from "../lib/supabase";
 import { useAdmin } from "../hooks/useAdmin";
-import { UserProfile } from "../types";
 import { audioFeedback } from "../lib/audio";
-import { EmptyState } from "../components/EmptyState";
-import { ErrorState } from "../components/ErrorState";
-import { DropdownField } from "../components/DropdownField";
-import { 
-  Shield, 
-  User, 
-  Mail, 
-  ShieldCheck, 
-  ShieldX, 
-  Ban, 
-  UserCheck, 
-  Search, 
-  CheckCircle, 
-  XCircle,
-  Clock,
-  UserX,
-  ChevronDown,
+import {
+  User,
+  ShieldX,
   ChevronRight,
   Sparkles,
   Ticket,
@@ -34,409 +17,41 @@ import {
   Wrench,
   HardDrive
 } from "lucide-react";
-import { motion } from "motion/react";
-import { Modal } from "../components/Modal";
-import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { useThemeTokens } from "../hooks/useThemeTokens";
-import { LoadingOverlay } from "../components/LoadingOverlay";
-
-// Import other panel views and components
-import { AdminPremiumMonitor } from "./AdminPremiumMonitor";
-import { AdminCategoryManager } from "./AdminCategoryManager";
-import { AdminBroadcast } from "./AdminBroadcast";
-import { AdminAiMonitor } from "./AdminAiMonitor";
-import { AdminErrorMonitor } from "./AdminErrorMonitor";
-import { AdminMaintenance } from "./AdminMaintenance";
-import { AdminVoucherManager } from "./AdminVoucherManager";
-import { AdminSupportChat } from "./AdminSupportChat";
-import { AdminBackup } from "./AdminBackup";
-import { AdminUserDetailModal } from "../components/AdminUserDetailModal";
 
 type AdminTab = "users" | "premium" | "voucher" | "categories" | "broadcast" | "ai_monitor" | "error_monitor" | "maintenance" | "support_chat" | "backup";
 
+// Peta key tab -> segmen path route halaman detailnya (lihat App.tsx).
+// Sebagian besar sama persis dengan key tab, kecuali beberapa yang pakai
+// underscore diubah ke kebab-case supaya URL lebih rapi.
+const TAB_ROUTES: Record<AdminTab, string> = {
+  users: "users",
+  premium: "premium",
+  voucher: "voucher",
+  categories: "categories",
+  broadcast: "broadcast",
+  ai_monitor: "ai-monitor",
+  error_monitor: "error-monitor",
+  maintenance: "maintenance",
+  support_chat: "support-chat",
+  backup: "backup",
+};
+
+/**
+ * Admin Panel -- sekarang murni menjadi halaman "hub" berisi daftar menu.
+ * Sebelumnya, memilih salah satu menu di sini langsung merender konten
+ * menu tsb di halaman yang sama (di bawah daftar menu), sehingga makin
+ * banyak menu yang pernah dibuka makin panjang scroll-nya. Sekarang tiap
+ * menu membuka halaman/route barunya sendiri (mis. /admin/users,
+ * /admin/premium, dst -- lihat App.tsx), dan tiap halaman detail tsb
+ * punya tombol "Kembali ke Admin Panel" (lihat AdminBackBar.tsx) untuk
+ * kembali ke daftar menu ini.
+ */
 export const AdminPanel: React.FC = () => {
-  const { t, locale } = useLanguage();
-  const { showToast } = useToast();
-  const { user: currentUser } = useAuth();
-  const { isAdmin, isOwner } = useAdmin();
+  const { t } = useLanguage();
+  const { isAdmin } = useAdmin();
   const { tokens, cx } = useThemeTokens();
-
-  const [activeTab, setActiveTab] = useState<AdminTab>("users");
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [usersError, setUsersError] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<string>("all");
-  const [premiumFilter, setPremiumFilter] = useState<string>("all");
-  const [banFilter, setBanFilter] = useState<string>("all");
-
-  // Selection & detail states
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [bulkLoading, setBulkLoading] = useState(false);
-  const [detailUser, setDetailUser] = useState<UserProfile | null>(null);
-
-  // Metrics state
-  const [metrics, setMetrics] = useState({
-    totalUsers: 0,
-    premiumUsers: 0,
-    adminUsers: 0,
-    bannedUsers: 0,
-  });
-
-  // Pagination state
-  const [pageSize, setPageSize] = useState<number | "all">(20);
-  const [page, setPage] = useState(0);
-  const [totalUsers, setTotalUsers] = useState(0);
-
-  // Reset page to 0 when filters change to avoid empty-result confusion
-  useEffect(() => {
-    setPage(0);
-  }, [searchQuery, roleFilter, premiumFilter, banFilter]);
-
-  // Load metrics
-  const loadMetrics = useCallback(async () => {
-    try {
-      const { data, error } = await supabase.rpc("get_admin_metrics");
-
-      if (error) {
-        console.error(t("admin.metrics_error"), error);
-        return;
-      }
-
-      setMetrics({
-        totalUsers:   data?.totalUsers   ?? 0,
-        premiumUsers: data?.premiumUsers ?? 0,
-        adminUsers:   data?.adminUsers   ?? 0,
-        bannedUsers:  data?.bannedUsers  ?? 0,
-      });
-    } catch (err) {
-      console.error("Metrik exception:", err);
-    }
-  }, [t]);
-
-  // Confirmation Modal state
-  const [confirmModal, setConfirmModal] = useState<{
-    isOpen: boolean;
-    title: string;
-    description: string;
-    type: "warning" | "danger" | "info" | "success";
-    action: () => Promise<void>;
-  }>({
-    isOpen: false,
-    title: "",
-    description: "",
-    type: "info",
-    action: async () => {}
-  });
-
-  const [actionLoading, setActionLoading] = useState<{ isOpen: boolean; message: string }>({
-    isOpen: false,
-    message: ""
-  });
-
-  // Fetch users with search, filters, and pagination purely built into Supabase
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    setUsersError(false);
-    try {
-      let query = supabase
-        .from("users")
-        .select("id, email, display_name, is_premium, is_banned, role", {
-          count: "exact",
-        });
-
-      if (searchQuery.trim()) {
-        const cleanSearch = searchQuery.trim();
-        query = query.or(`display_name.ilike.%${cleanSearch}%,email.ilike.%${cleanSearch}%`);
-      }
-
-      if (roleFilter !== "all") {
-        query = query.eq("role", roleFilter);
-      }
-
-      if (premiumFilter !== "all") {
-        query = query.eq("is_premium", premiumFilter === "premium");
-      }
-
-      if (banFilter !== "all") {
-        query = query.eq("is_banned", banFilter === "banned");
-      }
-
-      const limitVal = pageSize === "all" ? 1000000 : pageSize;
-      const offsetVal = pageSize === "all" ? 0 : page * pageSize;
-
-      query = query
-        .order("created_at", { ascending: false })
-        .range(offsetVal, offsetVal + limitVal - 1);
-
-      const { data, count, error } = await query;
-
-      if (error) {
-        throw error;
-      }
-
-      // Cast returned rows properly to UserProfile
-      const typedUsers: UserProfile[] = (data || []).map((u: any) => ({
-        id: u.id,
-        email: u.email || "",
-        display_name: u.display_name || t("admin.guest_user"),
-        is_premium: !!u.is_premium,
-        is_banned: !!u.is_banned,
-        role: (u.role as "owner" | "admin" | "user") || "user"
-      }));
-
-      setUsers(typedUsers);
-      setTotalUsers(count || 0);
-    } catch (err: any) {
-      console.error(t("admin.fetch_error"), err);
-      showToast(t("admin.fetch_error"), "error");
-      setUsersError(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [t, showToast, page, pageSize, searchQuery, roleFilter, premiumFilter, banFilter]);
-
-  useEffect(() => {
-    if (isAdmin) {
-      fetchUsers();
-      loadMetrics();
-    }
-  }, [isAdmin, fetchUsers, loadMetrics, page, pageSize, searchQuery, roleFilter, premiumFilter, banFilter]);
-
-  // Handle premium changes
-  const handleTogglePremium = async (targetUser: UserProfile) => {
-    audioFeedback.playClick();
-    if (targetUser.role === "owner") {
-      showToast(t("admin.owner_no_premium_change"), "error");
-      return;
-    }
-
-    const nextPremium = !targetUser.is_premium;
-
-    setConfirmModal({
-      isOpen: true,
-      title: t("premium.unlock_now"),
-      description: t("admin.premium_success").replace("{name}", targetUser.display_name),
-      type: "info",
-      action: async () => {
-        setActionLoading({ isOpen: true, message: "Memperbarui status premium..." });
-        try {
-          const { error } = await supabase.rpc("admin_set_premium", {
-            p_target_user_id: targetUser.id,
-            p_is_premium: nextPremium,
-          });
-
-          if (error) throw error;
-
-          showToast(
-            t("admin.premium_success").replace("{name}", targetUser.display_name),
-            "success"
-          );
-          fetchUsers();
-          loadMetrics();
-        } catch (err: any) {
-          console.error(err);
-          showToast(err.message || "Failed to update", "error");
-        } finally {
-          setActionLoading({ isOpen: false, message: "" });
-        }
-      }
-    });
-  };
-
-  // Handle ban / unban
-  const handleToggleBan = async (targetUser: UserProfile) => {
-    audioFeedback.playClick();
-    if (targetUser.role === "owner") {
-      showToast(t("admin.owner_no_ban"), "error");
-      return;
-    }
-
-    if (targetUser.id === currentUser?.id) {
-      showToast(t("admin.self_no_ban"), "error");
-      return;
-    }
-
-    const nextBanned = !targetUser.is_banned;
-
-    setConfirmModal({
-      isOpen: true,
-      title: nextBanned ? t("admin.suspend_title") : t("admin.restore_title"),
-      description: t("admin.suspend_confirm")
-        .replace("{action}", nextBanned ? t("admin.suspend_action") : t("admin.restore_action"))
-        .replace("{name}", targetUser.display_name),
-      type: nextBanned ? "danger" : "success",
-      action: async () => {
-        setActionLoading({ isOpen: true, message: nextBanned ? "Menangguhkan pengguna..." : "Mengaktifkan kembali pengguna..." });
-        try {
-          const { error } = await supabase.rpc("admin_set_ban", {
-            p_target_user_id: targetUser.id,
-            p_is_banned: nextBanned,
-          });
-
-          if (error) throw error;
-
-          showToast(
-            t("admin.action_success")
-              .replace("{name}", targetUser.display_name)
-              .replace("{status}", nextBanned ? t("admin.status_suspended") : t("admin.status_restored")),
-            "success"
-          );
-          fetchUsers();
-          loadMetrics();
-        } catch (err: any) {
-          console.error(err);
-          showToast(err.message || "Failed", "error");
-        } finally {
-          setActionLoading({ isOpen: false, message: "" });
-        }
-      }
-    });
-  };
-
-  // Handle role promo / demote
-  const handleToggleRole = async (targetUser: UserProfile) => {
-    audioFeedback.playClick();
-    if (targetUser.role === "owner") {
-      showToast(t("admin.owner_no_role_change"), "error");
-      return;
-    }
-
-    if (targetUser.id === currentUser?.id) {
-      showToast(t("admin.self_no_role_change"), "error");
-      return;
-    }
-
-    const nextRole = targetUser.role === "admin" ? "user" : "admin";
-
-    setConfirmModal({
-      isOpen: true,
-      title: t("admin.role_title"),
-      description: t("admin.role_confirm")
-        .replace("{name}", targetUser.display_name)
-        .replace("{role}", nextRole.toUpperCase()),
-      type: "warning",
-      action: async () => {
-        setActionLoading({ isOpen: true, message: "Mengubah role pengguna..." });
-        try {
-          const { error } = await supabase.rpc("admin_set_role", {
-            p_target_user_id: targetUser.id,
-            p_new_role: nextRole,
-          });
-
-          if (error) throw error;
-
-          showToast(
-            t("admin.role_success")
-              .replace("{name}", targetUser.display_name)
-              .replace("{role}", nextRole.toUpperCase()),
-            "success"
-          );
-          fetchUsers();
-          loadMetrics();
-        } catch (err: any) {
-          console.error(err);
-          showToast(err.message || "Failed", "error");
-        } finally {
-          setActionLoading({ isOpen: false, message: "" });
-        }
-      }
-    });
-  };
-
-  // Selection Checkbox handlers
-  const toggleSelectUser = (id: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  };
-
-  const toggleSelectAll = () => {
-    const selectableUsers = users.filter(u => u.role !== "owner" && u.id !== currentUser?.id);
-    if (selectedIds.size === selectableUsers.length) {
-      setSelectedIds(new Set());
-    } else {
-      setSelectedIds(new Set(selectableUsers.map(u => u.id)));
-    }
-  };
-
-  // Bulk execution handler
-  const handleBulkAction = async (action: "ban" | "unban" | "grant_premium" | "revoke_premium") => {
-    if (selectedIds.size === 0) return;
-    setBulkLoading(true);
-    setActionLoading({ isOpen: true, message: `Memproses ${selectedIds.size} pengguna...` });
-    let successCount = 0;
-    try {
-      const rpcName = (action === "ban" || action === "unban")
-        ? "admin_set_ban"
-        : "admin_set_premium";
-
-      for (const id of Array.from(selectedIds)) {
-        const { error } = await supabase.rpc(rpcName, {
-          p_target_user_id: id,
-          ...(action === "ban"            ? { p_is_banned: true }    : {}),
-          ...(action === "unban"          ? { p_is_banned: false }   : {}),
-          ...(action === "grant_premium"  ? { p_is_premium: true }   : {}),
-          ...(action === "revoke_premium" ? { p_is_premium: false }  : {}),
-        });
-        if (!error) successCount++;
-      }
-
-      showToast(`${successCount} dari ${selectedIds.size} pengguna berhasil diperbarui.`, "success");
-      setSelectedIds(new Set());
-      fetchUsers();
-      loadMetrics();
-    } catch (err: any) {
-      showToast(err.message || "Bulk action gagal", "error");
-    } finally {
-      setBulkLoading(false);
-      setActionLoading({ isOpen: false, message: "" });
-    }
-  };
-
-  // Export CSV Handler
-  const handleExportCSV = async () => {
-    try {
-      const { data, error } = await supabase
-        .from("users")
-        .select("id, email, display_name, role, is_premium, is_banned, telegram_chat_id, created_at");
-
-      if (error) throw error;
-
-      const headers = ["ID", "Email", "Nama", "Role", "Premium", "Status", "Telegram Chat ID", "Tanggal Daftar"];
-      const rows = (data || []).map(u => [
-        u.id,
-        u.email || "",
-        u.display_name || "",
-        u.role || "user",
-        u.is_premium ? "Ya" : "Tidak",
-        u.is_banned ? "Suspended" : "Aktif",
-        u.telegram_chat_id || "",
-        u.created_at ? new Date(u.created_at).toLocaleString(locale === "id" ? "id-ID" : "en-US") : ""
-      ]);
-
-      const csvContent = [headers, ...rows]
-        .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
-        .join("\n");
-
-      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `ewallet-users-${new Date().toISOString().slice(0, 10)}.csv`;
-      link.click();
-      URL.revokeObjectURL(url);
-      showToast("Data pengguna berhasil diekspor ke CSV", "success");
-    } catch (err: any) {
-      showToast(err.message || "Gagal ekspor CSV", "error");
-    }
-  };
+  const navigate = useNavigate();
 
   if (!isAdmin) {
     return (
@@ -452,17 +67,17 @@ export const AdminPanel: React.FC = () => {
     );
   }
 
+  const handleSelectTab = (tab: AdminTab) => {
+    audioFeedback.playClick();
+    navigate(`/admin/${TAB_ROUTES[tab]}`);
+  };
+
   return (
     <div className="space-y-5">
 
       {/* Hero card -- disamakan dengan pola kartu utama halaman Akun desktop
           (lihat Settings.tsx: rounded-3xl + bar gradient tipis di atas +
-          judul/deskripsi dengan border-b di dalam kartu putih/slate), alih-
-          alih judul polos yang mengambang langsung di atas background
-          halaman seperti sebelumnya. Quick actions & navigasi tab ikut
-          masuk ke dalam kartu yang sama supaya seluruh "kepala" halaman
-          Admin Panel terasa sebagai satu kesatuan visual, konsisten dengan
-          kualitas halaman Akun. */}
+          judul/deskripsi dengan border-b di dalam kartu putih/slate). */}
       <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, "border-slate-800/60 light_sakura:border-rose-100/40")}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
@@ -477,33 +92,9 @@ export const AdminPanel: React.FC = () => {
             </p>
           </div>
 
-          {/* Quick actions */}
-          <div className={cx("flex flex-wrap items-center gap-2 p-4 rounded-2xl border", tokens.surface.sunken, "border-slate-800/60 light_sakura:border-rose-100/50")}>
-            {activeTab === "users" && (
-              <button
-                onClick={handleExportCSV}
-                className="px-4 py-2 text-xs font-bold rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors cursor-pointer"
-              >
-                ↓ Export CSV
-              </button>
-            )}
-            <button
-              onClick={() => {
-                fetchUsers();
-                loadMetrics();
-              }}
-              className={cx("px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100 light_sakura:bg-white", tokens.text.secondary)}
-            >
-              {t("admin.refresh")}
-            </button>
-          </div>
-
-          {/* Tab Navigation -- daftar menu vertikal (ikon + label + deskripsi
-              + chevron), meniru persis pola "Group: Akun / Preferensi /
-              Privasi & Dukungan" di halaman Akun (SettingsMobileMenu /
-              MenuRow). Tetap <button> (bukan Link) karena switch konten
-              terjadi di halaman yang sama; baris tab yang sedang aktif
-              ditandai dengan aksen warna + ikon centang. */}
+          {/* Menu list -- setiap baris membuka halaman/route barunya sendiri
+              (lihat handleSelectTab), bukan lagi merender konten inline di
+              halaman ini. */}
           {([
         {
           captionKey: "admin.tab_group_data",
@@ -536,495 +127,42 @@ export const AdminPanel: React.FC = () => {
                 {t(group.captionKey)}
               </span>
               <div className={cx("rounded-2xl border divide-y overflow-hidden", tokens.surface.sunken, "border-slate-800/60 light_sakura:border-rose-100/50", "divide-slate-800/60 light_sakura:divide-rose-100/60")}>
-                {group.tabs.map(tab => {
-                  const isActive = activeTab === tab.key;
-                  return (
-                    <button
-                      key={tab.key}
-                      onClick={() => {
-                        audioFeedback.playClick();
-                        setActiveTab(tab.key);
-                      }}
-                      className={cx(
-                        "w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors cursor-pointer",
-                        isActive
-                          ? "bg-indigo-500/10 light_sakura:bg-rose-100/60"
-                          : tokens.hover.sunken
-                      )}
-                    >
-                      <span className={cx(
-                        "shrink-0 w-9 h-9 rounded-xl flex items-center justify-center",
-                        isActive
-                          ? "bg-indigo-500/20 text-indigo-400 light_sakura:bg-rose-200/70 light_sakura:text-rose-600"
-                          : cx("bg-slate-900 light_sakura:bg-white", tokens.icon.accent)
-                      )}>
-                        {tab.icon}
+                {group.tabs.map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => handleSelectTab(tab.key)}
+                    className={cx(
+                      "w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors cursor-pointer",
+                      tokens.hover.sunken
+                    )}
+                  >
+                    <span className={cx(
+                      "shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-slate-900 light_sakura:bg-white",
+                      tokens.icon.accent
+                    )}>
+                      {tab.icon}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className={cx("block font-sans text-sm font-semibold truncate", tokens.text.label)}>
+                        {tab.label}
                       </span>
-                      <span className="min-w-0 flex-1">
-                        <span className={cx(
-                          "block font-sans text-sm font-semibold truncate",
-                          isActive ? "text-indigo-400 light_sakura:text-rose-600" : tokens.text.label
-                        )}>
-                          {tab.label}
+                      {tab.desc && (
+                        <span className="block font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 truncate mt-0.5">
+                          {tab.desc}
                         </span>
-                        {tab.desc && (
-                          <span className="block font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 truncate mt-0.5">
-                            {tab.desc}
-                          </span>
-                        )}
-                      </span>
-                      <span className="shrink-0 flex items-center">
-                        {isActive ? (
-                          <CheckCircle size={16} className="text-indigo-400 light_sakura:text-rose-600" />
-                        ) : (
-                          <ChevronRight size={16} className="text-slate-600 light_sakura:text-slate-300" />
-                        )}
-                      </span>
-                    </button>
-                  );
-                })}
+                      )}
+                    </span>
+                    <span className="shrink-0 flex items-center">
+                      <ChevronRight size={16} className="text-slate-600 light_sakura:text-slate-300" />
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
           ))}
 
         </div>
       </div>
-
-      {/* Tab Contents: Users List */}
-      {activeTab === "users" && (
-        <>
-          {/* Metrics Cards Grid - Wrapped in One Card Container */}
-          <div className={cx("p-5 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 shadow-sm light_sakura:bg-rose-100/10 light_sakura:border-rose-200 space-y-2">
-                <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
-                  {t("admin.metrics.total")}
-                </p>
-                <h2 className={cx("font-sans font-black text-2xl", tokens.text.heading)}>
-                  {metrics.totalUsers}
-                </h2>
-                <div className="h-1 rounded-full bg-slate-800 overflow-hidden light_sakura:bg-rose-100">
-                  <div className="h-full rounded-full bg-indigo-500" style={{ width: "100%" }} />
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm light_sakura:bg-amber-100/30 light_sakura:border-amber-200 space-y-2">
-                <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-amber-400/80 light_sakura:text-amber-600">
-                  {t("admin.metrics.premium")}
-                </p>
-                <h2 className={cx("font-sans font-black text-2xl", tokens.text.warning)}>
-                  {metrics.premiumUsers}
-                </h2>
-                <div className="h-1 rounded-full bg-amber-900/30 overflow-hidden light_sakura:bg-amber-100">
-                  <div className="h-full rounded-full bg-amber-500 transition-all duration-700"
-                    style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.premiumUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
-                </div>
-                <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-amber-400/60">
-                  {metrics.totalUsers > 0 ? `${Math.round((metrics.premiumUsers / metrics.totalUsers) * 100)}% dari total` : "—"}
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-4 shadow-sm light_sakura:bg-indigo-100/30 light_sakura:border-indigo-200 space-y-2">
-                <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-indigo-400/80 light_sakura:text-indigo-600">
-                  {t("admin.metrics.admin")}
-                </p>
-                <h2 className="font-sans font-black text-2xl text-indigo-400 light_sakura:text-indigo-600">
-                  {metrics.adminUsers}
-                </h2>
-                <div className="h-1 rounded-full bg-indigo-900/30 overflow-hidden light_sakura:bg-indigo-100">
-                  <div className="h-full rounded-full bg-indigo-500 transition-all duration-700"
-                    style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.adminUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 shadow-sm light_sakura:bg-red-100/30 light_sakura:border-red-200 space-y-2">
-                <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-red-400/80 light_sakura:text-red-600">
-                  {t("admin.metrics.suspended")}
-                </p>
-                <h2 className="font-sans font-black text-2xl text-red-400/80 light_sakura:text-red-600">
-                  {metrics.bannedUsers}
-                </h2>
-                <div className="h-1 rounded-full bg-red-900/30 overflow-hidden light_sakura:bg-red-100">
-                  <div className="h-full rounded-full bg-red-500 transition-all duration-700"
-                    style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.bannedUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Control panel (Search & filters) - Wrapped in One Card Container */}
-          <div className={cx("p-5 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 light_sakura:text-rose-400" size={16} />
-                <input
-                  type="text"
-                  placeholder={t("admin.search_placeholder")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className={cx("w-full pl-10 pr-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 placeholder-slate-500 focus:outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:placeholder-slate-400", tokens.text.onSurface)}
-                />
-              </div>
-              
-              <div>
-                <DropdownField
-                  value={roleFilter}
-                  onChange={setRoleFilter}
-                  options={[
-                    { value: "all", label: `${t("admin.filter_role")}: ${t("common.all")}` },
-                    { value: "owner", label: `${t("admin.filter_role")}: Owner` },
-                    { value: "admin", label: `${t("admin.filter_role")}: Admin` },
-                    { value: "user", label: `${t("admin.filter_role")}: User` },
-                  ]}
-                />
-              </div>
-
-              <div>
-                <DropdownField
-                  value={premiumFilter}
-                  onChange={setPremiumFilter}
-                  options={[
-                    { value: "all", label: `${t("admin.filter_premium")}: ${t("common.all")}` },
-                    { value: "premium", label: `${t("admin.filter_premium")}: ${t("admin.status_active")}` },
-                    { value: "normal", label: `${t("admin.filter_premium")}: ${t("admin.premium_lite")}` },
-                  ]}
-                />
-              </div>
-
-              <div>
-                <DropdownField
-                  value={banFilter}
-                  onChange={setBanFilter}
-                  options={[
-                    { value: "all", label: `${t("admin.filter_status")}: ${t("common.all")}` },
-                    { value: "normal", label: `${t("admin.filter_status")}: ${t("admin.status_active")}` },
-                    { value: "banned", label: `${t("admin.filter_status")}: ${t("admin.metrics.suspended")}` },
-                  ]}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Bulk Action Bar */}
-          {selectedIds.size > 0 && (
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-6 py-4 rounded-2xl border border-indigo-500/20 bg-indigo-500/5 light_sakura:bg-rose-50 light_sakura:border-rose-200">
-              <span className="text-xs font-bold text-indigo-400 light_sakura:text-rose-600">
-                {t("admin.users_selected").replace("{count}", selectedIds.size.toString())}
-              </span>
-              <div className="flex flex-wrap items-center gap-2">
-                {[
-                  { label: "Grant Premium",  action: "grant_premium"  as const, color: "text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 light_sakura:bg-amber-500/5" },
-                  { label: "Revoke Premium", action: "revoke_premium" as const, color: "text-slate-400 border-slate-700 bg-slate-800 hover:bg-slate-700 light_sakura:bg-white" },
-                  { label: "Ban Semua",      action: "ban"            as const, color: "text-red-400 border-red-500/30 bg-red-500/10 hover:bg-red-500/20" },
-                  { label: "Unban Semua",    action: "unban"          as const, color: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20" },
-                ].map(({ label, action, color }) => (
-                  <button
-                    key={action}
-                    disabled={bulkLoading}
-                    onClick={() => handleBulkAction(action)}
-                    className={`px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase rounded-xl border cursor-pointer transition-colors disabled:opacity-50 ${color}`}
-                  >
-                    {label}
-                  </button>
-                ))}
-                <button
-                  onClick={() => setSelectedIds(new Set())}
-                  className="px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200"
-                >
-                  {t("admin.clear_selection")}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Main Users Table - Wrapped in One Card Container */}
-          <div className={cx("p-5 rounded-2xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
-            {loading ? (
-              <div className="py-20 flex flex-col items-center justify-center space-y-3">
-                <Clock className={cx("animate-spin", tokens.icon.accent)} size={32} />
-                <p className="font-sans text-xs text-slate-400">
-                  {t("admin.loading")}
-                </p>
-              </div>
-            ) : usersError ? (
-              <ErrorState onRetry={fetchUsers} />
-            ) : users.length === 0 ? (
-              <EmptyState
-                icon={<User size={40} className="text-slate-600 light_sakura:text-slate-400" />}
-                title={t("admin.no_users")}
-                description={t("admin.no_users_desc")}
-              />
-            ) : (
-                <ScrollableTableWrapper>
-                <table className="w-full text-left border-collapse table-auto min-w-[900px]">
-                  <thead>
-                    <tr className={cx("border-b border-slate-800 bg-slate-800/60 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:border-rose-200", tokens.text.mutedAlt)}>
-                      <th className="px-4 py-4 w-10">
-                        <input
-                           type="checkbox"
-                           onChange={toggleSelectAll}
-                           checked={selectedIds.size > 0 && selectedIds.size === users.filter(u => u.role !== "owner" && u.id !== currentUser?.id).length}
-                           className="w-3.5 h-3.5 accent-teal-500 light_sakura:accent-rose-500 cursor-pointer"
-                        />
-                      </th>
-                      <th className="px-6 py-4">{t("admin.table_user")}</th>
-                      <th className="px-6 py-4">{t("admin.table_email")}</th>
-                      <th className="px-6 py-4">{t("admin.table_membership")}</th>
-                      <th className="px-6 py-4">{t("admin.table_role")}</th>
-                      <th className="px-6 py-4">{t("admin.table_access")}</th>
-                      <th className="px-6 py-4 text-right">{t("admin.table_actions")}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-800 light_sakura:divide-rose-100/20">
-                    {users.map((user) => {
-                      const isSelf = user.id === currentUser?.id;
-                      return (
-                        <tr 
-                          key={user.id} 
-                          className={`hover:bg-slate-800/50 transition-all duration-150 ${user.is_banned ? "bg-red-950/10" : ""} light_sakura:hover:bg-rose-50/50`}
-                        >
-                          {/* Checkbox column */}
-                          <td className="px-4 py-4">
-                            {user.role !== "owner" && !isSelf && (
-                              <input
-                                type="checkbox"
-                                checked={selectedIds.has(user.id)}
-                                onChange={() => toggleSelectUser(user.id)}
-                                className="w-3.5 h-3.5 accent-teal-500 light_sakura:accent-rose-500 cursor-pointer"
-                              />
-                            )}
-                          </td>
-
-                          {/* Name Card */}
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <div className={`w-8 h-8 rounded-xl font-bold flex items-center justify-center shrink-0 
-                                 ${user.is_banned ? "bg-red-500/20 text-red-400" : "bg-slate-800 text-indigo-400 light_sakura:bg-rose-100 light_sakura:text-rose-600"}`}>
-                                {user.display_name.charAt(0).toUpperCase()}
-                              </div>
-                              <div>
-                                <span className={cx("font-sans font-bold text-xs block", tokens.text.onSurface)}>
-                                  {user.display_name} {isSelf && t("admin.self_label")}
-                                </span>
-                                <span className="font-mono text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-400 block">
-                                  ID: {user.id.slice(0, 8)}...
-                                </span>
-                              </div>
-                            </div>
-                          </td>
-
-                          {/* Email */}
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className={cx("flex items-center gap-1.5 font-sans text-xs", tokens.text.label)}>
-                               <Mail size={12} className="text-slate-500 shrink-0" />
-                               <span>{user.email || t("admin.no_email")}</span>
-                            </div>
-                          </td>
-
-                          {/* Premium Toggle Column */}
-                          <td className="px-6 py-4">
-                            <button
-                              disabled={user.role === "owner"}
-                              onClick={() => handleTogglePremium(user)}
-                              className="focus:outline-none text-left cursor-pointer transition-transform active:scale-95 block disabled:opacity-50 disabled:cursor-not-allowed"
-                              title={t("admin.refresh")}
-                            >
-                              {user.is_premium ? (
-                                <span className="px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-lg flex items-center gap-1 inline-flex hover:bg-amber-500/25 light_sakura:bg-amber-100 light_sakura:text-amber-700 light_sakura:border-amber-200">
-                                 {t("admin.premium_active")}
-                                </span>
-                              ) : (
-                                <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700/50 inline-flex light_sakura:bg-slate-100 light_sakura:border-slate-200", tokens.text.mutedAlt)}>
-                                  {t("admin.premium_lite")}
-                                </span>
-                              )}
-                            </button>
-                          </td>
-
-                          {/* Role column */}
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-2">
-                              <span className={`px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider rounded-lg uppercase border
-                                ${user.role === "owner" ? "bg-red-500/10 text-red-400 border-red-500/20 light_sakura:bg-red-100 light_sakura:text-red-700 light_sakura:border-red-200" :
-                                  user.role === "admin" ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20 light_sakura:bg-indigo-100 light_sakura:text-indigo-700 light_sakura:border-indigo-200" : 
-                                  "bg-slate-800 text-slate-400 border-slate-700 light_sakura:bg-slate-100 light_sakura:text-slate-600 light_sakura:border-slate-200"}`}>
-                                {user.role}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Suspend Status */}
-                          <td className="px-6 py-4">
-                            {user.is_banned ? (
-                              <span className="px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-red-500/15 text-red-500 border border-red-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-red-100 light_sakura:text-red-700 light_sakura:border-red-200">
-                                <XCircle size={10} />
-                                {t("admin.status_suspended")}
-                              </span>
-                            ) : (
-                              <span className="px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-emerald-100 light_sakura:text-emerald-700 light_sakura:border-emerald-200">
-                                <CheckCircle size={10} />
-                                {t("admin.status_active")}
-                              </span>
-                            )}
-                          </td>
-
-                          {/* Actions */}
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              {/* Detail User button */}
-                              <button
-                                onClick={() => {
-                                  audioFeedback.playClick();
-                                  setDetailUser(user);
-                                }}
-                                className={cx("p-1 px-2.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.label)}
-                                title={t("admin.user_detail_title")}
-                              >
-                                <User size={10} />
-                                <span>Detail</span>
-                              </button>
-
-                              {/* Role Toggle Trigger */}
-                              <button
-                                disabled={isSelf || user.role === "owner" || !isOwner}
-                                onClick={() => handleToggleRole(user)}
-                                className={cx("p-1 px-2.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.label)}
-                                title={t("admin.role_title")}
-                              >
-                                <Shield size={10} />
-                                <span>{user.role === "admin" ? t("admin.demote") : t("admin.make_admin")}</span>
-                              </button>
-
-                              {/* Ban Toggle Trigger */}
-                              <button
-                                disabled={isSelf || user.role === "owner"}
-                                onClick={() => handleToggleBan(user)}
-                                className={`p-1.5 rounded-lg border transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer
-                                  ${user.is_banned 
-                                    ? "border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/10 light_sakura:border-emerald-200 light_sakura:text-emerald-600 light_sakura:hover:bg-emerald-50" 
-                                    : "border-red-500/20 text-red-400 hover:bg-red-500/10 light_sakura:border-red-200 light_sakura:text-red-600 light_sakura:hover:bg-red-50"}`}
-                                title={user.is_banned ? t("admin.restore_title") : t("admin.suspend_title")}
-                              >
-                                {user.is_banned ? <UserCheck size={12} /> : <UserX size={12} />}
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-                </ScrollableTableWrapper>
-            )}
-          </div>
-
-          {/* Pagination controls */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">
-            {/* Page Size Selector */}
-            <div className="flex items-center gap-2">
-              <span>{t("admin.rows_per_page")}</span>
-              <DropdownField
-                className="w-24"
-                value={String(pageSize)}
-                onChange={(v) => {
-                  setPageSize(v === "all" ? "all" : Number(v));
-                  setPage(0);
-                }}
-                options={[
-                  { value: "5", label: "5" },
-                  { value: "10", label: "10" },
-                  { value: "15", label: "15" },
-                  { value: "20", label: "20" },
-                  { value: "all", label: t("common.all") },
-                ]}
-              />
-            </div>
-
-            {/* Pagination Info & Buttons */}
-            {pageSize !== "all" && totalUsers > pageSize ? (
-              <div className="flex items-center gap-4">
-                <div>
-                  {t("admin.pagination_info")
-                    .replace("{start}", (page * pageSize + 1).toString())
-                    .replace("{end}", Math.min((page + 1) * pageSize, totalUsers).toString())
-                    .replace("{total}", totalUsers.toString())
-                  }
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    disabled={page === 0}
-                    onClick={() => {
-                      audioFeedback.playClick();
-                      setPage(p => Math.max(0, p - 1));
-                    }}
-                    className={cx("px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white", tokens.text.secondary)}
-                  >
-                    {t("admin.prev")}
-                  </button>
-                  <span className="px-3 py-1 bg-slate-950/40 rounded-md border border-slate-900 light_sakura:bg-rose-50/10">
-                    {page + 1} / {Math.ceil(totalUsers / pageSize)}
-                  </span>
-                  <button
-                    disabled={(page + 1) * pageSize >= totalUsers}
-                    onClick={() => {
-                      audioFeedback.playClick();
-                      setPage(p => p + 1);
-                    }}
-                    className={cx("px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white", tokens.text.secondary)}
-                  >
-                    {t("admin.next")}
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="text-slate-500">
-                {t("admin.showing_all_users").replace("{count}", totalUsers.toString())}
-              </div>
-            )}
-          </div>
-        </>
-      )}
-
-      {activeTab === "premium" && <AdminPremiumMonitor />}
-
-      {activeTab === "voucher" && <AdminVoucherManager />}
-
-      {activeTab === "categories" && <AdminCategoryManager />}
-
-      {activeTab === "broadcast" && <AdminBroadcast />}
-
-      {activeTab === "ai_monitor" && <AdminAiMonitor />}
-
-      {activeTab === "error_monitor" && <AdminErrorMonitor />}
-
-      {activeTab === "support_chat" && <AdminSupportChat />}
-
-      {activeTab === "maintenance" && <AdminMaintenance />}
-      {activeTab === "backup" && <AdminBackup />}
-
-      {/* Global detail user modal */}
-      <AdminUserDetailModal
-        user={detailUser}
-        onClose={() => setDetailUser(null)}
-      />
-
-      {/* Confirmation helper Modal */}
-      <Modal
-        isOpen={confirmModal.isOpen}
-        title={confirmModal.title}
-        description={confirmModal.description}
-        type={confirmModal.type}
-        confirmLabel={t("admin.proceed")}
-        cancelLabel={t("admin.cancel")}
-        onConfirm={async () => {
-          setConfirmModal(prev => ({ ...prev, isOpen: false }));
-          await confirmModal.action();
-        }}
-        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-      />
-
-      {/* Loading overlay for in-progress actions */}
-      <LoadingOverlay isOpen={actionLoading.isOpen} message={actionLoading.message} />
 
     </div>
   );

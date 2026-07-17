@@ -604,6 +604,7 @@
     "access_denied": "Akses Ditolak",
     "access_denied_desc": "Laman ini hanya dapat diakses oleh Administrator atau Pemilik utama. Silakan hubungi pengelola sistem bila ada kekeliruan.",
     "panel_desc": "Kelola hak istimewa pengguna, keanggotaan Premium Lifetime, dan status suspend secara seketika.",
+    "back_to_panel": "Kembali ke Admin Panel",
     "refresh": "Segarkan Data",
     "search_placeholder": "Cari nama atau email...",
     "loading": "Memuat data pengguna...",

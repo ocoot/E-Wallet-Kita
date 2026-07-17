@@ -604,6 +604,7 @@
     "access_denied": "Access Denied",
     "access_denied_desc": "This page is strictly reserved for Administrators or Owners. Please contact support if you think this is a mistake.",
     "panel_desc": "Manage user privileges, Premium Lifetime memberships, and suspension logs instantly.",
+    "back_to_panel": "Back to Admin Panel",
     "refresh": "Refresh Data",
     "search_placeholder": "Search name or email...",
     "loading": "Loading users list...",

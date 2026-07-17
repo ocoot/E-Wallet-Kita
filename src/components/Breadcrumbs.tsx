@@ -147,6 +147,35 @@ export const Breadcrumbs: React.FC = () => {
           icon: <Settings size={14} />
         });
       }
+    } else if (parts.length === 2 && parts[0] === "admin") {
+      // First intermediate level: Admin Panel
+      list.push({
+        label: t("nav.admin_panel"),
+        path: "/admin",
+        icon: <Shield size={14} />
+      });
+      // Second level: menu detail yang sedang dibuka (mis. Manajemen User,
+      // Monitor Premium, dst -- lihat AdminPanel.tsx untuk daftar menunya)
+      const adminSubLabels: Record<string, string> = {
+        users: t("admin.tab_users"),
+        premium: t("admin.tab_premium"),
+        voucher: t("admin.tab_voucher"),
+        categories: t("admin.tab_categories"),
+        broadcast: t("admin.tab_broadcast"),
+        "support-chat": t("admin.tab_support_chat"),
+        "ai-monitor": t("admin.tab_ai_monitor"),
+        "error-monitor": t("admin.tab_error_monitor"),
+        maintenance: t("admin.tab_maintenance"),
+        backup: t("admin.tab_backup"),
+      };
+      const adminSubLabel = adminSubLabels[parts[1]];
+      if (adminSubLabel) {
+        list.push({
+          label: adminSubLabel,
+          path: pathname,
+          icon: <Shield size={14} />
+        });
+      }
     }
 
     return list;
