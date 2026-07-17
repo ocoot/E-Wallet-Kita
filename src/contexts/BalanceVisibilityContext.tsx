@@ -77,12 +77,22 @@ export function useBalanceVisibility(): BalanceVisibilityContextType {
 }
 
 /**
- * Ganti tiap digit dalam string Rupiah terformat jadi bullet, sisanya
- * (prefix "Rp", pemisah ribuan/desimal) tetap tampil apa adanya supaya
- * lebar teks tidak "meloncat" saat di-toggle.
+ * Ganti tiap digit dalam string Rupiah terformat jadi bullet BESAR (●,
+ * BUKAN titik kecil "•"), sisanya (prefix "Rp", pemisah ribuan/desimal)
+ * tetap tampil apa adanya supaya lebar teks tidak "meloncat" saat
+ * di-toggle.
+ *
+ * REVISI: sebelumnya dipakai bullet kecil "•" (U+2022) yang ukurannya
+ * nyaris sama dengan titik pemisah ribuan "." -- akibatnya saat nominal
+ * disembunyikan, pemisah ribuan terlihat "ikut hilang" karena menyatu
+ * secara visual di antara deretan bullet lain yang bentuknya serupa (mis.
+ * "Rp•••.•••" terbaca seperti barisan titik seragam, bukan angka
+ * ter-mask + satu pemisah yang jelas). Bullet besar "●" (U+25CF) jauh
+ * lebih tebal/besar dari titik, jadi pemisah ribuan tetap terlihat jelas
+ * berbeda walau berdampingan dengannya.
  */
 export function maskCurrency(formatted: string): string {
-  return formatted.replace(/\d/g, "•");
+  return formatted.replace(/\d/g, "●");
 }
 
 /**

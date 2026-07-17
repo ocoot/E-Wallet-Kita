@@ -95,11 +95,6 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
   const selectedWallet: WalletWithBalance | null =
     activeWallets.find((w) => w.id === selectedId) || activeWallets[0] || null;
 
-  const typeCaption = (w: WalletWithBalance) =>
-    w.type === "ewallet" ? t("wallet.group_ewallet") :
-    w.type === "bank" ? t("wallet.group_bank") :
-    w.type === "cash" ? t("wallet.group_cash") : t("wallet.group_general");
-
   // Normalisasi & label dropdown pos sekarang datang dari helper bersama
   // di lib/walletLabel.ts (lihat komentar di sana) -- supaya konsisten
   // dengan WalletTransferModal.tsx dan tidak drift lagi.
@@ -215,14 +210,28 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
           )}
 
           <div className="relative z-10 p-5 sm:p-6 space-y-5">
-            {/* Header: identitas pos + dropdown pemilih pos */}
+            {/* Header: label "Saldo Anda" + toggle mata (menggantikan posisi
+                caption tipe pos "Saldo Umum"/"Dompet E-Wallet"/dst yang
+                dihapus -- info tipe pos itu sudah cukup terwakili lewat
+                dropdown/nama pos di sisi kanan, jadi tidak perlu baris
+                terpisah lagi) + dropdown pemilih pos di kanan. */}
             <div className="flex items-start justify-between gap-3">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="min-w-0">
-                  <p className={cx("font-sans text-[10px] uppercase tracking-wide truncate", mutedTextClass)}>
-                    {typeCaption(selectedWallet)}
-                  </p>
-                </div>
+              <div className="flex items-center gap-1.5 min-w-0">
+                <p className={cx("font-sans text-[10px] uppercase tracking-wider font-bold truncate", mutedTextClass)}>
+                  {t("wallet.your_balance")}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { audioFeedback.playClick(); toggleBalanceVisible(); }}
+                  aria-pressed={!balanceVisible}
+                  aria-label={balanceVisible ? t("common.hide_balance") : t("common.show_balance")}
+                  className={cx(
+                    "shrink-0 p-1 -m-1 rounded-md cursor-pointer transition-colors",
+                    hasLogoBg ? "text-white/70 hover:text-white" : cx(mutedTextClass, "hover:text-indigo-400 light_sakura:hover:text-rose-500")
+                  )}
+                >
+                  {balanceVisible ? <Eye size={12} /> : <EyeOff size={12} />}
+                </button>
               </div>
 
               {options.length > 1 ? (
@@ -243,25 +252,10 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
               )}
             </div>
 
-            {/* Saldo pos terpilih */}
+            {/* Nominal saldo pos terpilih -- label & toggle mata sudah
+                dipindah ke baris header di atas, jadi di sini cuma angka
+                besarnya saja. */}
             <div>
-              <div className="flex items-center gap-1.5">
-                <p className={cx("font-sans text-[10px] uppercase tracking-wider font-bold", mutedTextClass)}>
-                  {t("wallet.your_balance")}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => { audioFeedback.playClick(); toggleBalanceVisible(); }}
-                  aria-pressed={!balanceVisible}
-                  aria-label={balanceVisible ? t("common.hide_balance") : t("common.show_balance")}
-                  className={cx(
-                    "shrink-0 p-1 -m-1 rounded-md cursor-pointer transition-colors",
-                    hasLogoBg ? "text-white/70 hover:text-white" : cx(mutedTextClass, "hover:text-indigo-400 light_sakura:hover:text-rose-500")
-                  )}
-                >
-                  {balanceVisible ? <Eye size={12} /> : <EyeOff size={12} />}
-                </button>
-              </div>
               <p className={cx("font-sans font-black text-3xl tabular-nums leading-tight drop-shadow-sm", primaryTextClass)}>
                 {balanceVisible ? formatIDR(selectedWallet.balance) : maskCurrency(formatIDR(selectedWallet.balance))}
               </p>
@@ -331,13 +325,13 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   navigate("/transactions", { state: { filterWalletId: selectedWallet.id } });
                 }}
                 aria-label={t("wallet.action_history")}
-                title={t("wallet.action_history")}
                 className={cx(
-                  "inline-flex items-center justify-center w-9 h-9 rounded-xl cursor-pointer transition-colors",
+                  "flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer transition-colors",
                   hasLogoBg ? "bg-black/20 text-white/85 hover:bg-black/30" : cx("border border-slate-800/60 light_sakura:border-rose-100/60 hover:border-indigo-400/50 light_sakura:hover:border-rose-300", tokens.surface.sunken, mutedTextClass)
                 )}
               >
-                <History size={15} />
+                <History size={16} />
+                <span className="text-[10px] font-semibold leading-none whitespace-nowrap">{t("wallet.action_history_short")}</span>
               </button>
 
               <div className="flex items-center gap-2">
@@ -345,22 +339,22 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   type="button"
                   onClick={() => { audioFeedback.playClick(); setIsTopUpOpen(true); }}
                   aria-label={t("wallet.action_topup")}
-                  title={t("wallet.action_topup")}
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-xl cursor-pointer bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors"
+                  className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors"
                 >
                   <Plus size={16} />
+                  <span className="text-[10px] font-semibold leading-none whitespace-nowrap">{t("wallet.action_topup_short")}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => { audioFeedback.playClick(); setIsTransferOpen(true); }}
                   aria-label={t("wallet.action_transfer")}
-                  title={t("wallet.action_transfer")}
                   className={cx(
-                    "inline-flex items-center justify-center w-9 h-9 rounded-xl cursor-pointer transition-colors bg-indigo-500/15 hover:bg-indigo-500/25 light_sakura:bg-rose-500/15 light_sakura:hover:bg-rose-500/25",
+                    "flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer transition-colors bg-indigo-500/15 hover:bg-indigo-500/25 light_sakura:bg-rose-500/15 light_sakura:hover:bg-rose-500/25",
                     tokens.icon.accent
                   )}
                 >
                   <Send size={15} />
+                  <span className="text-[10px] font-semibold leading-none whitespace-nowrap">{t("wallet.action_transfer_short")}</span>
                 </button>
               </div>
             </div>

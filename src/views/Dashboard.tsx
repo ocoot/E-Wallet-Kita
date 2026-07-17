@@ -156,7 +156,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   // Helper currency formatter
   const formatIDR = (num: number) => {
-    return "Rp" + Math.round(num).toLocaleString("id-ID");
+    // Non-breaking space (\u00A0) antara "Rp" dan nominal -- bukan spasi
+    // biasa, supaya "Rp" dan angkanya tidak pernah terpisah ke baris
+    // berbeda saat teks wrap di layar sempit. Pola yang sama sudah dipakai
+    // di preview nominal NewTransaction.tsx.
+    return "Rp\u00A0" + Math.round(num).toLocaleString("id-ID");
   };
 
   // Helper date formatter compatible with custom component
