@@ -14,23 +14,33 @@ export function useWallets() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (options?: { silent?: boolean }) => {
     if (!user?.id) {
       setWallets([]);
       setIsLoading(false);
       return;
     }
-    setIsLoading(true);
+    // `silent` dipakai untuk refresh LATAR BELAKANG (mis. setelah Top Up /
+    // Transfer Saldo di Dashboard, atau setiap kali refreshTrigger global
+    // berubah karena transaksi dicatat di halaman lain) -- TIDAK mem-flip
+    // `isLoading`, supaya komponen pemanggil yang punya render skeleton
+    // saat isLoading=true (mis. DashboardWalletSelectorCard.tsx) TIDAK
+    // ikut unmount/remount di tengah aksi. Unmount di tengah aksi itulah
+    // yang sebelumnya membuat dialog Top Up/Transfer kembali ke form
+    // kosong alih-alih menampilkan layar "Berhasil!"/"Gagal" -- state
+    // internal dialog (berupa useState di WalletTopUpModal/
+    // WalletTransferModal) ikut hilang begitu parent-nya di-unmount.
+    if (!options?.silent) setIsLoading(true);
     setError(null);
     try {
       const data = await dbService.getWallets(user.id);
       setWallets(data);
     } catch (err) {
       console.error("useWallets error:", err);
-      setWallets([]);
+      if (!options?.silent) setWallets([]);
       setError(err);
     } finally {
-      setIsLoading(false);
+      if (!options?.silent) setIsLoading(false);
     }
   }, [user?.id]);
 

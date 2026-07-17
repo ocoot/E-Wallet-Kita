@@ -251,6 +251,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             formatIDR={formatIDR}
             transactions={transactions}
             refreshTrigger={transactionsUpdatedTrigger}
+            onTransactionAdded={onTransactionAdded}
           />
         }
       />

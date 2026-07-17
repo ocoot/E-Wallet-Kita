@@ -319,6 +319,66 @@ export const dbService = {
     }
   },
 
+  /**
+   * Top up saldo pos secara manual dari Dashboard -- SECARA FUNGSIONAL
+   * identik dengan mencatat transaksi pemasukan manual biasa (saveTransaction
+   * dgn type "income"), cuma dikategorikan "topup" (bukan salary/bonus/dst)
+   * supaya riwayat transaksi tetap jelas ini top up saldo, bukan pemasukan
+   * gaji/bisnis. Tidak ada RPC/endpoint baru -- tetap lewat insert ke tabel
+   * transactions yang sama, konsisten dengan model saldo pos yang SELALU
+   * dihitung dari SUM(transactions) per wallet_id (lihat get_wallets_with_balance).
+   */
+  async topUpWallet(
+    userId: string,
+    walletId: string,
+    amount: number,
+    note: string | null
+  ): Promise<Transaction> {
+    const today = new Date().toISOString().split('T')[0];
+    return dbService.saveTransaction(userId, 'income', 'topup', amount, note, 'manual', today, walletId);
+  },
+
+  /**
+   * Transfer saldo antar Pos Dompet -- dicatat sebagai SEPASANG transaksi
+   * (expense di pos asal, income di pos tujuan) karena saldo tiap pos di
+   * app ini murni hasil SUM(transactions) per wallet_id, BUKAN kolom
+   * balance terpisah (lihat migration wallets_pos_system.sql) -- jadi
+   * "memindahkan saldo" = mencatat sepasang transaksi berlawanan, sama
+   * seperti pencatatan transaksi manual lain, tanpa perlu RPC/endpoint baru.
+   *
+   * Tidak atomik lintas 2 row (2 insert terpisah, bukan 1 transaksi SQL) --
+   * kalau insert KEDUA (income di pos tujuan) gagal setelah insert PERTAMA
+   * (expense di pos asal) berhasil, baris pertama itu di-ROLLBACK MANUAL
+   * (dihapus) di sini supaya saldo tidak "bocor" hilang dari pos asal tanpa
+   * pernah masuk ke pos tujuan.
+   */
+  async transferBetweenWallets(
+    userId: string,
+    fromWalletId: string,
+    toWalletId: string,
+    amount: number,
+    outgoingNote: string,
+    incomingNote: string
+  ): Promise<{ outgoing: Transaction; incoming: Transaction }> {
+    const today = new Date().toISOString().split('T')[0];
+    const outgoing = await dbService.saveTransaction(
+      userId, 'expense', 'transfer_out', amount, outgoingNote, 'manual', today, fromWalletId
+    );
+    try {
+      const incoming = await dbService.saveTransaction(
+        userId, 'income', 'transfer_in', amount, incomingNote, 'manual', today, toWalletId
+      );
+      return { outgoing, incoming };
+    } catch (err) {
+      console.error('Error creating incoming transfer leg, rolling back outgoing leg:', err);
+      const rolledBack = await dbService.deleteTransaction(userId, outgoing.id);
+      if (!rolledBack) {
+        console.error('Failed to roll back outgoing transfer leg', outgoing.id);
+      }
+      throw err;
+    }
+  },
+
   async approveReceiptDraft(draftId: string): Promise<boolean> {
     const { error } = await supabase
       .from('receipt_drafts')

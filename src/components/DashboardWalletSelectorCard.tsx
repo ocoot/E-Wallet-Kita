@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useNavigate } from "react-router-dom";
-import { TrendingUp, TrendingDown, ChevronRight, Eye, EyeOff, Wallet as WalletIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronRight, Eye, EyeOff, Wallet as WalletIcon, Plus, Send, History } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useWallets } from "../hooks/useWallets";
 import { useThemeTokens } from "../hooks/useThemeTokens";
@@ -9,7 +9,10 @@ import { useBalanceVisibility, maskCurrency } from "../contexts/BalanceVisibilit
 import { audioFeedback } from "../lib/audio";
 import { DropdownField, DropdownOption } from "./DropdownField";
 import { matchProvider, NEUTRAL_PROVIDER_COLOR } from "../data/walletProviders";
+import { walletDisplayLabel } from "../lib/walletLabel";
 import { Transaction, WalletWithBalance } from "../types";
+import { WalletTopUpModal } from "./WalletTopUpModal";
+import { WalletTransferModal } from "./WalletTransferModal";
 
 const maskContact = (value: string) => {
   const v = value.trim();
@@ -29,6 +32,16 @@ interface DashboardWalletSelectorCardProps {
   transactions: Transaction[];
   /** Berubah setiap kali ada transaksi baru/diubah -- dipakai untuk trigger refetch saldo pos (lewat useWallets().refresh()). */
   refreshTrigger?: number;
+  /**
+   * Dipanggil setiap kali Top Up Saldo atau Transfer Saldo (lihat
+   * WalletTopUpModal / WalletTransferModal) berhasil menyimpan transaksi
+   * baru -- membubble ke Dashboard.tsx -> App.tsx `handleTransactionChange`,
+   * supaya `transactionsUpdatedTrigger` global naik dan SELURUH bagian
+   * dashboard (ringkasan bulan ini, riwayat transaksi terbaru, saldo pos
+   * lain) ikut refresh, bukan cuma kartu ini. Tanpa ini, transaksi baru
+   * dari 2 aksi ini akan "hilang" dari tampilan lain sampai user reload.
+   */
+  onTransactionAdded?: () => void;
 }
 
 /**
@@ -52,17 +65,20 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
   formatIDR,
   transactions,
   refreshTrigger,
+  onTransactionAdded,
 }) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const { activeWallets, generalWallet, isLoading, refresh } = useWallets();
   const { tokens, cx, theme } = useThemeTokens();
-  const { visible: balanceVisible } = useBalanceVisibility();
+  const { visible: balanceVisible, toggle: toggleBalanceVisible } = useBalanceVisibility();
   const [selectedId, setSelectedId] = useState<string>("");
   const [contactVisible, setContactVisible] = useState(false);
+  const [isTopUpOpen, setIsTopUpOpen] = useState(false);
+  const [isTransferOpen, setIsTransferOpen] = useState(false);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { if (refreshTrigger !== undefined) refresh(); }, [refreshTrigger]);
+  useEffect(() => { if (refreshTrigger !== undefined) refresh({ silent: true }); }, [refreshTrigger]);
 
   // Default pilihan: Saldo Umum kalau ada, kalau tidak pos pertama yang
   // ada. Cuma di-set SEKALI saat data pertama kali datang (atau kalau pos
@@ -84,22 +100,9 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
     w.type === "bank" ? t("wallet.group_bank") :
     w.type === "cash" ? t("wallet.group_cash") : t("wallet.group_general");
 
-  // Normalisasi longgar untuk bandingkan nama pos vs provider -- huruf
-  // kecil semua, buang spasi/simbol, dan buang prefix "bank " supaya
-  // "BCA" vs "BCA", atau "Bank Mandiri" (nama) vs "Mandiri" (provider),
-  // tetap dianggap "sama" walau penulisannya sedikit beda.
-  const normalizeForCompare = (s: string) =>
-    s.trim().toLowerCase().replace(/^bank\s+/, "").replace(/[^a-z0-9]/g, "");
-
-  // Label dropdown: provider CUMA ditambahkan kalau memang memberi info
-  // baru dibanding nama pos -- kalau user menamai pos-nya persis sama
-  // dengan provider (mis. nama "BCA" + provider "BCA"), tampilkan nama
-  // pos-nya saja supaya tidak muncul duplikat aneh seperti "BCA · BCA".
-  const walletDisplayLabel = (w: WalletWithBalance) => {
-    if (!w.provider) return w.name;
-    const sameAsName = normalizeForCompare(w.provider) === normalizeForCompare(w.name);
-    return sameAsName ? w.name : `${w.name} · ${w.provider}`;
-  };
+  // Normalisasi & label dropdown pos sekarang datang dari helper bersama
+  // di lib/walletLabel.ts (lihat komentar di sana) -- supaya konsisten
+  // dengan WalletTransferModal.tsx dan tidak drift lagi.
 
   const options: DropdownOption[] = useMemo(
     () =>
@@ -242,9 +245,23 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
 
             {/* Saldo pos terpilih */}
             <div>
-              <p className={cx("font-sans text-[10px] uppercase tracking-wider font-bold", mutedTextClass)}>
-                {t("wallet.label_pos")}
-              </p>
+              <div className="flex items-center gap-1.5">
+                <p className={cx("font-sans text-[10px] uppercase tracking-wider font-bold", mutedTextClass)}>
+                  {t("wallet.your_balance")}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { audioFeedback.playClick(); toggleBalanceVisible(); }}
+                  aria-pressed={!balanceVisible}
+                  aria-label={balanceVisible ? t("common.hide_balance") : t("common.show_balance")}
+                  className={cx(
+                    "shrink-0 p-1 -m-1 rounded-md cursor-pointer transition-colors",
+                    hasLogoBg ? "text-white/70 hover:text-white" : cx(mutedTextClass, "hover:text-indigo-400 light_sakura:hover:text-rose-500")
+                  )}
+                >
+                  {balanceVisible ? <Eye size={12} /> : <EyeOff size={12} />}
+                </button>
+              </div>
               <p className={cx("font-sans font-black text-3xl tabular-nums leading-tight drop-shadow-sm", primaryTextClass)}>
                 {balanceVisible ? formatIDR(selectedWallet.balance) : maskCurrency(formatIDR(selectedWallet.balance))}
               </p>
@@ -306,23 +323,87 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => {
-                audioFeedback.playClick();
-                navigate("/transactions", { state: { filterWalletId: selectedWallet.id } });
-              }}
-              className={cx(
-                "flex items-center gap-1 text-[11px] font-semibold cursor-pointer transition-colors",
-                hasLogoBg ? "text-white/80 hover:text-white" : "text-indigo-400 hover:text-indigo-300 light_sakura:text-rose-500 light_sakura:hover:text-rose-600"
-              )}
-            >
-              <span>{t("nav.history")}</span>
-              <ChevronRight size={12} />
-            </button>
+            <div className="flex items-center justify-between gap-2 pt-0.5">
+              <button
+                type="button"
+                onClick={() => {
+                  audioFeedback.playClick();
+                  navigate("/transactions", { state: { filterWalletId: selectedWallet.id } });
+                }}
+                aria-label={t("wallet.action_history")}
+                title={t("wallet.action_history")}
+                className={cx(
+                  "inline-flex items-center justify-center w-9 h-9 rounded-xl cursor-pointer transition-colors",
+                  hasLogoBg ? "bg-black/20 text-white/85 hover:bg-black/30" : cx("border border-slate-800/60 light_sakura:border-rose-100/60 hover:border-indigo-400/50 light_sakura:hover:border-rose-300", tokens.surface.sunken, mutedTextClass)
+                )}
+              >
+                <History size={15} />
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => { audioFeedback.playClick(); setIsTopUpOpen(true); }}
+                  aria-label={t("wallet.action_topup")}
+                  title={t("wallet.action_topup")}
+                  className="inline-flex items-center justify-center w-9 h-9 rounded-xl cursor-pointer bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors"
+                >
+                  <Plus size={16} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { audioFeedback.playClick(); setIsTransferOpen(true); }}
+                  aria-label={t("wallet.action_transfer")}
+                  title={t("wallet.action_transfer")}
+                  className={cx(
+                    "inline-flex items-center justify-center w-9 h-9 rounded-xl cursor-pointer transition-colors bg-indigo-500/15 hover:bg-indigo-500/25 light_sakura:bg-rose-500/15 light_sakura:hover:bg-rose-500/25",
+                    tokens.icon.accent
+                  )}
+                >
+                  <Send size={15} />
+                </button>
+              </div>
+            </div>
           </div>
         </motion.div>
       </AnimatePresence>
+
+      <WalletTopUpModal
+        isOpen={isTopUpOpen}
+        wallet={selectedWallet}
+        formatIDR={formatIDR}
+        onClose={() => setIsTopUpOpen(false)}
+        onSuccess={() => {
+          // JANGAN tutup dialog di sini -- WalletTopUpModal sendiri yang
+          // menampilkan layar "Top up berhasil!" begitu status jadi
+          // "success", dan baru tertutup saat user menekan tombol Selesai
+          // (yang memanggil onClose di atas). Kalau ditutup dari sini,
+          // dialog langsung hilang sebelum sempat menampilkan layar sukses.
+          //
+          // refresh({ silent: true }) -- BUKAN refresh() biasa -- supaya
+          // `isLoading` di useWallets() tidak sempat balik true, yang kalau
+          // terjadi akan membuat komponen ini return early (skeleton) dan
+          // meng-unmount WalletTopUpModal di tengah jalan, menghapus state
+          // "success" internalnya sebelum sempat terlihat oleh user.
+          refresh({ silent: true });
+          onTransactionAdded?.();
+        }}
+      />
+
+      <WalletTransferModal
+        isOpen={isTransferOpen}
+        sourceWallet={selectedWallet}
+        wallets={activeWallets}
+        formatIDR={formatIDR}
+        onClose={() => setIsTransferOpen(false)}
+        onSuccess={() => {
+          // Sama seperti WalletTopUpModal di atas -- biarkan dialog tetap
+          // terbuka menampilkan layar sukses/gagal miliknya sendiri, dan
+          // pakai refresh silent agar tidak memicu unmount di tengah jalan.
+          refresh({ silent: true });
+          onTransactionAdded?.();
+        }}
+      />
     </div>
   );
 };
