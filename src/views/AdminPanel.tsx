@@ -22,7 +22,17 @@ import {
   XCircle,
   Clock,
   UserX,
-  ChevronDown
+  ChevronDown,
+  ChevronRight,
+  Sparkles,
+  Ticket,
+  Tags,
+  Megaphone,
+  MessageCircle,
+  Bot,
+  AlertTriangle,
+  Wrench,
+  HardDrive
 } from "lucide-react";
 import { motion } from "motion/react";
 import { Modal } from "../components/Modal";
@@ -480,60 +490,91 @@ export const AdminPanel: React.FC = () => {
         </button>
       </div>
 
-      {/* Tab Navigation -- dikelompokkan jadi beberapa klaster berlabel,
-          meniru pola "Group: Akun / Preferensi / Privasi & Dukungan" di
-          SettingsMobileMenu (caption kecil uppercase di atas tiap kartu
-          grup). Tetap tombol tab (bukan Link) karena switch konten di
-          halaman yang sama, hanya dikelompokkan+diberi label kategori. */}
+      {/* Tab Navigation -- diubah dari pill tab horizontal menjadi daftar
+          menu vertikal (ikon + label + deskripsi + chevron), meniru persis
+          pola "Group: Akun / Preferensi / Privasi & Dukungan" di halaman
+          Akun (SettingsMobileMenu / MenuRow). Tetap <button> (bukan Link)
+          karena switch konten terjadi di halaman yang sama; baris tab yang
+          sedang aktif ditandai dengan aksen warna + ikon centang. */}
       {([
         {
           captionKey: "admin.tab_group_data",
           tabs: [
-            { key: "users",   label: t("admin.tab_users") },
-            { key: "premium", label: t("admin.tab_premium") },
-            { key: "voucher", label: t("admin.tab_voucher") },
+            { key: "users",   icon: <User size={16} />,     label: t("admin.tab_users"),   desc: t("admin.tab_users_desc") },
+            { key: "premium", icon: <Sparkles size={16} />, label: t("admin.tab_premium"), desc: t("admin.tab_premium_desc") },
+            { key: "voucher", icon: <Ticket size={16} />,   label: t("admin.tab_voucher"), desc: t("admin.tab_voucher_desc") },
           ],
         },
         {
           captionKey: "admin.tab_group_content",
           tabs: [
-            { key: "categories",   label: t("admin.tab_categories") },
-            { key: "broadcast",    label: t("admin.tab_broadcast") },
-            { key: "support_chat", label: t("admin.tab_support_chat") },
+            { key: "categories",   icon: <Tags size={16} />,          label: t("admin.tab_categories"),   desc: t("admin.tab_categories_desc") },
+            { key: "broadcast",    icon: <Megaphone size={16} />,     label: t("admin.tab_broadcast"),    desc: t("admin.tab_broadcast_desc") },
+            { key: "support_chat", icon: <MessageCircle size={16} />, label: t("admin.tab_support_chat"), desc: t("admin.tab_support_chat_desc") },
           ],
         },
         {
           captionKey: "admin.tab_group_system",
           tabs: [
-            { key: "ai_monitor",    label: t("admin.tab_ai_monitor") },
-            { key: "error_monitor", label: t("admin.tab_error_monitor") },
-            { key: "maintenance",   label: t("admin.tab_maintenance") },
-            { key: "backup",        label: t("admin.tab_backup") },
+            { key: "ai_monitor",    icon: <Bot size={16} />,           label: t("admin.tab_ai_monitor"),    desc: t("admin.tab_ai_monitor_desc") },
+            { key: "error_monitor", icon: <AlertTriangle size={16} />, label: t("admin.tab_error_monitor"), desc: t("admin.tab_error_monitor_desc") },
+            { key: "maintenance",   icon: <Wrench size={16} />,        label: t("admin.tab_maintenance"),   desc: t("admin.tab_maintenance_desc") },
+            { key: "backup",        icon: <HardDrive size={16} />,     label: t("admin.tab_backup"),        desc: t("admin.tab_backup_desc") },
           ],
         },
-      ] as { captionKey: string; tabs: { key: AdminTab; label: string }[] }[]).map((group) => (
+      ] as { captionKey: string; tabs: { key: AdminTab; icon: React.ReactNode; label: string; desc: string }[] }[]).map((group) => (
         <div key={group.captionKey} className="space-y-2">
           <span className="px-1 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest text-slate-500">
             {t(group.captionKey)}
           </span>
-          <div className={cx("px-4 py-3 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
-            <div className="flex gap-1 overflow-x-auto">
-              {group.tabs.map(tab => (
+          <div className={cx("rounded-2xl border divide-y shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default, "divide-slate-800/60 light_sakura:divide-rose-100/60")}>
+            {group.tabs.map(tab => {
+              const isActive = activeTab === tab.key;
+              return (
                 <button
                   key={tab.key}
                   onClick={() => {
                     audioFeedback.playClick();
                     setActiveTab(tab.key);
                   }}
-                  className={`px-4 py-2.5 text-xs font-black whitespace-nowrap rounded-xl transition-all cursor-pointer border
-                    ${activeTab === tab.key
-                      ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20 light_sakura:bg-rose-100 light_sakura:text-rose-600 light_sakura:border-rose-200"
-                      : "text-slate-400 hover:text-slate-200 light_sakura:text-slate-500 light_sakura:hover:text-slate-800"}`}
+                  className={cx(
+                    "w-full flex items-center gap-3 px-4 py-3.5 text-left transition-colors cursor-pointer",
+                    isActive
+                      ? "bg-indigo-500/10 light_sakura:bg-rose-100/60"
+                      : tokens.hover.sunken
+                  )}
                 >
-                  {tab.label}
+                  <span className={cx(
+                    "shrink-0 w-9 h-9 rounded-xl flex items-center justify-center",
+                    isActive
+                      ? "bg-indigo-500/20 text-indigo-400 light_sakura:bg-rose-200/70 light_sakura:text-rose-600"
+                      : cx("bg-slate-950/60 light_sakura:bg-rose-50", tokens.icon.accent)
+                  )}>
+                    {tab.icon}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className={cx(
+                      "block font-sans text-sm font-semibold truncate",
+                      isActive ? "text-indigo-400 light_sakura:text-rose-600" : tokens.text.label
+                    )}>
+                      {tab.label}
+                    </span>
+                    {tab.desc && (
+                      <span className="block font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 truncate mt-0.5">
+                        {tab.desc}
+                      </span>
+                    )}
+                  </span>
+                  <span className="shrink-0 flex items-center">
+                    {isActive ? (
+                      <CheckCircle size={16} className="text-indigo-400 light_sakura:text-rose-600" />
+                    ) : (
+                      <ChevronRight size={16} className="text-slate-600 light_sakura:text-slate-300" />
+                    )}
+                  </span>
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
         </div>
       ))}
