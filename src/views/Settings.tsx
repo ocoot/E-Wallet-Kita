@@ -533,6 +533,7 @@ export const Settings: React.FC<SettingsProps> = ({
           diubah sama sekali. */}
       <SettingsMobileMenu
         displayName={displayName}
+        email={user?.email || null}
         avatarUrl={avatarUrl}
         isGuest={isGuest}
         isPremium={isPremium}

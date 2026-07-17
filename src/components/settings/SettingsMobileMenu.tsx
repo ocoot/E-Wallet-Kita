@@ -19,6 +19,7 @@ import { audioFeedback } from "../../lib/audio";
 
 interface SettingsMobileMenuProps {
   displayName: string;
+  email: string | null;
   avatarUrl: string | null;
   isGuest: boolean;
   isPremium: boolean;
@@ -82,6 +83,7 @@ const MenuRow: React.FC<MenuRowDef> = ({ to, icon, label, desc, rightText, right
  */
 export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
   displayName,
+  email,
   avatarUrl,
   isGuest,
   isPremium,
@@ -121,8 +123,8 @@ export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
           <p className={cx("font-sans font-bold text-sm truncate", tokens.text.onSurface)}>
             {displayName || t("admin.guest_user")}
           </p>
-          <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">
-            {isGuest ? t("admin.guest_user") : (isPremium ? t("premium.badge_active") : t("premium.menu_label"))}
+          <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5 truncate">
+            {isGuest ? t("admin.guest_user") : (email || t("premium.menu_label"))}
           </p>
         </div>
         {!isGuest && (
