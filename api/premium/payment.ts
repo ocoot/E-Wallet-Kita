@@ -19,6 +19,19 @@ const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SE
  *           saat create (cocok dengan konvensi KlikQRIS webhook).
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // Trigger reconciliation dari GitHub Actions (lihat
+  // .github/workflows/premium-payment-reconcile.yml), bukan Vercel native
+  // cron. Workflow itu mengirim GET dengan header
+  // `Authorization: Bearer <CRON_SECRET>` -- CRON_SECRET harus di-set sama
+  // persis di env var Vercel & secret GitHub Actions. Dicegat di sini,
+  // sebelum switch method biasa, supaya tidak nambah endpoint baru
+  // (project ini sengaja digabung untuk tetap di bawah limit 12 function
+  // di Vercel Hobby plan).
+  const authHeader = req.headers.authorization;
+  if (process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`) {
+    return handleReconcile(req, res);
+  }
+
   switch (req.method) {
     case 'POST':
       return handleCreate(req, res);
@@ -346,47 +359,34 @@ async function handleWebhook(req: VercelRequest, res: VercelResponse) {
       return;
     }
 
-    const { data: localTx } = await supabase
-      .from('premium_transactions')
-      .select('*')
-      .eq('order_id', payload.order_id)
-      .single();
+    // Satu round-trip atomic: cek signature + idempotency + update tx/user
+    // semuanya dalam satu transaksi Postgres yang mengunci baris (FOR UPDATE).
+    // Ini menutup race condition antar webhook delivery yang nyaris
+    // bersamaan, dan meminimalkan risiko response lambat/timeout karena
+    // hanya 1 network round-trip ke DB, bukan 3 berurutan.
+    const { data, error } = await supabase.rpc('process_klikqris_webhook', {
+      p_order_id: payload.order_id,
+      p_signature: payload.signature,
+      p_status: payload.status ?? null,
+    });
 
-    if (!localTx) { res.status(200).json({ received: true }); return; }
+    if (error) {
+      console.error('process_klikqris_webhook rpc error', error);
+      await logError(supabase, {
+        source: 'premium/payment:webhook',
+        level: 'error',
+        message: error.message || 'RPC process_klikqris_webhook gagal',
+        context: { order_id: payload.order_id },
+      });
+      res.status(200).json({ received: true });
+      return;
+    }
 
-    // Validasi signature harus sama dengan saat create transaction
-    if (localTx.signature !== payload.signature) {
+    const outcome = data?.[0]?.outcome;
+    if (outcome === 'SIGNATURE_MISMATCH') {
       console.warn('Webhook signature mismatch, ignoring', payload.order_id);
-      res.status(200).json({ received: true });
-      return;
-    }
-
-    // Hindari pengiriman produk ganda
-    if (localTx.status === 'SUCCESS') {
-      res.status(200).json({ received: true });
-      return;
-    }
-
-    if (payload.status === 'PAID' || payload.status === 'SUCCESS') {
-      await supabase
-        .from('premium_transactions')
-        .update({
-          status: 'SUCCESS',
-          paid_at: new Date().toISOString(),
-          paid_amount: localTx.final_amount,
-          discount_amount: localTx.discount_amount,
-          voucher_id: localTx.voucher_id,
-        })
-        .eq('order_id', payload.order_id);
-      await supabase
-        .from('users')
-        .update({ is_premium: true, premium_paid_at: new Date().toISOString() })
-        .eq('id', localTx.user_id);
-    } else if (payload.status === 'EXPIRED') {
-      await supabase
-        .from('premium_transactions')
-        .update({ status: 'EXPIRED' })
-        .eq('order_id', payload.order_id);
+    } else if (outcome === 'NOT_FOUND') {
+      console.warn('Webhook for unknown order_id, ignoring', payload.order_id);
     }
 
     res.status(200).json({ received: true });
@@ -401,4 +401,112 @@ async function handleWebhook(req: VercelRequest, res: VercelResponse) {
     });
     res.status(200).json({ received: true }); // KlikQRIS butuh 200 walau ada error internal
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Reconciliation — jaring pengaman untuk webhook yang hilang/gagal
+// (previously: tidak ada — ini bagian baru)
+//
+// PUT /payment (webhook) SENGAJA selalu balas 200 ke KlikQRIS walau ada
+// error internal, supaya KlikQRIS tidak infinite-retry ke endpoint yang
+// error terus. Konsekuensinya: kalau proses di dalam webhook gagal
+// (network blip ke Supabase, dsb), TIDAK ADA retry otomatis dari provider.
+// Fungsi ini dipicu sebagai GET oleh workflow GitHub Actions
+// (.github/workflows/premium-payment-reconcile.yml), tiap 15 menit: cari
+// transaksi yang masih PENDING padahal sudah dibuat lama, cek ulang status
+// ASLI ke KlikQRIS, lalu selesaikan lewat RPC atomic yang sama dengan
+// webhook (`process_klikqris_webhook`) supaya tetap idempotent & konsisten.
+// ─────────────────────────────────────────────────────────────────────────────
+const RECONCILE_STUCK_AFTER_MS = 10 * 60 * 1000; // dianggap "macet" setelah 10 menit
+const RECONCILE_BATCH_SIZE = 25; // batasi per run supaya tidak melebihi maxDuration
+
+async function handleReconcile(req: VercelRequest, res: VercelResponse) {
+  const cutoff = new Date(Date.now() - RECONCILE_STUCK_AFTER_MS).toISOString();
+
+  // Sandbox dikecualikan: transaksi dummy diselesaikan sendiri oleh
+  // handleStatus (client-side polling), bukan lewat KlikQRIS asli.
+  const { data: stuckTx, error: fetchError } = await supabase
+    .from('premium_transactions')
+    .select('order_id, signature, created_at')
+    .eq('status', 'PENDING')
+    .eq('is_sandbox', false)
+    .lt('created_at', cutoff)
+    .order('created_at', { ascending: true })
+    .limit(RECONCILE_BATCH_SIZE);
+
+  if (fetchError) {
+    await logError(supabase, {
+      source: 'premium/payment:reconcile',
+      level: 'error',
+      message: fetchError.message || 'Gagal ambil daftar transaksi PENDING untuk reconciliation',
+    });
+    return res.status(200).json({ checked: 0, reconciled: 0, error: true });
+  }
+
+  let reconciled = 0;
+  let stillPending = 0;
+  let checkFailed = 0;
+
+  for (const tx of stuckTx ?? []) {
+    try {
+      const klikRes = await fetch(
+        `https://klikqris.com/api/qrisv2/status/${process.env.KLIKQRIS_MERCHANT_ID}/${tx.order_id}`,
+        {
+          headers: {
+            'x-api-key': process.env.KLIKQRIS_API_KEY!,
+            'id_merchant': process.env.KLIKQRIS_MERCHANT_ID!,
+          },
+        }
+      );
+      const klikJson = await klikRes.json();
+      const remoteStatus = klikJson?.data?.status;
+
+      if (remoteStatus === 'SUCCESS' || remoteStatus === 'EXPIRED') {
+        // Signature diambil dari row itu sendiri (bukan dari luar), jadi
+        // otomatis lolos pengecekan signature di dalam RPC — di sini RPC
+        // dipakai untuk atomicity & idempotency-nya, bukan untuk verifikasi
+        // keaslian pemanggil (itu sudah dijamin oleh CRON_SECRET di atas).
+        const { error: rpcError } = await supabase.rpc('process_klikqris_webhook', {
+          p_order_id: tx.order_id,
+          p_signature: tx.signature,
+          p_status: remoteStatus,
+        });
+        if (rpcError) {
+          checkFailed++;
+          await logError(supabase, {
+            source: 'premium/payment:reconcile',
+            level: 'error',
+            message: rpcError.message || 'RPC gagal saat reconcile',
+            context: { order_id: tx.order_id, remoteStatus },
+          });
+        } else {
+          reconciled++;
+        }
+      } else {
+        stillPending++;
+      }
+    } catch (e: any) {
+      checkFailed++;
+      await logError(supabase, {
+        source: 'premium/payment:reconcile',
+        level: 'warning',
+        message: e?.message ? String(e.message) : 'Gagal cek status KlikQRIS saat reconcile',
+        context: { order_id: tx.order_id },
+      });
+    }
+  }
+
+  await logError(supabase, {
+    source: 'premium/payment:reconcile',
+    level: 'info',
+    message: `Reconciliation selesai: ${stuckTx?.length ?? 0} dicek, ${reconciled} diperbaiki, ${stillPending} masih pending, ${checkFailed} gagal dicek.`,
+    context: { checked: stuckTx?.length ?? 0, reconciled, stillPending, checkFailed },
+  });
+
+  return res.status(200).json({
+    checked: stuckTx?.length ?? 0,
+    reconciled,
+    stillPending,
+    checkFailed,
+  });
 }
