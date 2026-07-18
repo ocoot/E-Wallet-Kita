@@ -382,6 +382,25 @@ export const SupportChatWidget: React.FC = () => {
                   {t("support.widget_status")}
                 </p>
               </div>
+              {/* Tombol tutup panel -- DIBUTUHKAN karena FAB toggle di pojok
+                  kanan-bawah layar (yang biasanya jadi tombol X saat panel
+                  terbuka) posisinya bertumpuk PERSIS dengan sudut kanan-bawah
+                  panel ini sendiri (z-index FAB lebih rendah dari panel &
+                  backdrop), jadi FAB itu jadi tertutup/tidak bisa dipencet
+                  selama panel terbuka. Tombol X di header ini jadi satu-nya
+                  cara yang selalu terlihat & terjangkau untuk menutup panel. */}
+              <button
+                type="button"
+                onClick={() => { audioFeedback.playClick(); setIsOpen(false); }}
+                aria-label={t("common.close")}
+                className={cx(
+                  "shrink-0 p-1.5 -m-1.5 rounded-lg cursor-pointer transition-colors",
+                  tokens.text.muted,
+                  "hover:bg-slate-800 hover:text-white light_sakura:hover:bg-rose-50 light_sakura:hover:text-slate-900"
+                )}
+              >
+                <X size={18} />
+              </button>
             </div>
 
             <div className={cx("flex gap-1.5 px-4 pt-3 pb-3 border-b", tokens.border.accent)}>
