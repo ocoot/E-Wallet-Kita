@@ -56,6 +56,8 @@ export const themeTokens = {
     successStrong: "text-emerald-500 light_sakura:text-rose-500",
     danger: "text-red-400 light_sakura:text-red-600",
     warning: "text-amber-400 light_sakura:text-amber-600",
+    /** Teks agak menonjol di atas surface gelap -- dipakai di Settings.tsx (2x) & AdminPremiumMonitor.tsx. */
+    strong: "text-slate-200 light_sakura:text-slate-800",
   },
 
   surface: {
@@ -76,6 +78,22 @@ export const themeTokens = {
     strong: "border-slate-700 light_sakura:border-slate-200",
     /** Border bertema aksen (dipakai Card.tsx untuk border rose di light mode). */
     accent: "border-slate-800 light_sakura:border-rose-100",
+    /**
+     * Border kartu redup (rose sangat tipis di light mode) -- exact match
+     * diverifikasi di 3 file: SettingsMobileMenu.tsx (3x, dipasang sesi
+     * ini), WalletTransferModal.tsx (2x) & AdminPanel.tsx (1x) -- 2 file
+     * terakhir belum dipasang karena di luar cakupan target sesi 46.
+     */
+    subtleRose: "border-slate-800/60 light_sakura:border-rose-100/50",
+  },
+
+  divide: {
+    /**
+     * Divider redup pasangan dari `border.subtleRose` -- exact match sama
+     * di SettingsMobileMenu.tsx (3x) & AdminPanel.tsx (1x, belum dipasang,
+     * di luar cakupan sesi 46).
+     */
+    subtleRose: "divide-slate-800/60 light_sakura:divide-rose-100/60",
   },
 
   hover: {
@@ -89,6 +107,12 @@ export const themeTokens = {
   icon: {
     accent: "text-indigo-400 light_sakura:text-rose-500",
     muted: "text-slate-400 light_sakura:text-slate-500",
+    /**
+     * Warna ikon paling redup (mis. ChevronRight navigasi list). Exact
+     * match di SettingsMobileMenu.tsx (1x) & AdminPanel.tsx (1x, belum
+     * dipasang, di luar cakupan sesi 46).
+     */
+    subtle: "text-slate-600 light_sakura:text-slate-300",
   },
 
   /**
@@ -106,6 +130,24 @@ export const themeTokens = {
       "bg-emerald-500/10 text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500",
   },
 
+  /**
+   * Sesi 47: warna per-tone untuk `ui/Badge.tsx`. Beda dari kasus token lain
+   * di file ini (yang butuh ≥2 file duplikat sebelum ditambahkan) -- 5 combo
+   * di bawah masing-masing HANYA dipakai 1x di source (`ui/Badge.tsx`), tapi
+   * dipindah ke sini tetap sesuai keputusan user karena `Badge.tsx` sendiri
+   * SUDAH jadi titik reuse tunggal (dipanggil lewat prop `tone` dari banyak
+   * halaman) -- bukan token generik baru, cuma memindahkan definisi warna
+   * yang sudah tersentralisasi supaya seluruh literal `light_sakura:` di app
+   * (termasuk primitif UI) tetap satu sumber di `tokens.ts`.
+   */
+  badge: {
+    neutral: "bg-slate-800 text-slate-300 border-slate-700 light_sakura:bg-slate-100 light_sakura:text-slate-600 light_sakura:border-slate-200",
+    info: "bg-indigo-500/15 text-indigo-400 border-indigo-500/30 light_sakura:bg-indigo-50 light_sakura:text-indigo-600 light_sakura:border-indigo-100",
+    success: "bg-emerald-500/15 text-emerald-400 border-emerald-500/30 light_sakura:bg-emerald-50 light_sakura:text-emerald-700 light_sakura:border-emerald-100",
+    warning: "bg-amber-500/15 text-amber-400 border-amber-500/30 light_sakura:bg-amber-50 light_sakura:text-amber-700 light_sakura:border-amber-100",
+    danger: "bg-red-500/15 text-red-400 border-red-500/30 light_sakura:bg-red-50 light_sakura:text-red-600 light_sakura:border-red-100",
+  },
+
   button: {
     /**
      * Tombol CTA solid emerald (dark) / rose (light) dengan teks putih di
@@ -118,6 +160,41 @@ export const themeTokens = {
      */
     accentEmerald:
       "bg-emerald-500 hover:bg-emerald-400 text-white light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400",
+    /**
+     * Tombol slate netral (batal/hapus/edit sekunder) dengan hover lebih
+     * terang. Exact match di AdminCategoryManager.tsx (1x, dipasang sesi
+     * ini) & AdminBroadcast.tsx (1x, kelas sama tapi diselingi `border` --
+     * belum dipasang, di luar cakupan target sesi 46).
+     */
+    cancelSlate: "bg-slate-800 light_sakura:bg-slate-100 hover:bg-slate-700 light_sakura:hover:bg-slate-200",
+  },
+
+  /**
+   * Sesi 47: varian warna `ui/Button.tsx`. Sama seperti `badge` di atas --
+   * masing-masing combo cuma dipakai 1x di source, dipindah ke sini karena
+   * `Button.tsx` sendiri sudah jadi titik reuse tunggal lewat prop `variant`.
+   * Beberapa file lain (Wallets.tsx, Settings.tsx, VoicePreview.tsx, dst)
+   * punya kelas MIRIP untuk tombol custom inline (bukan lewat komponen
+   * Button) tapi tidak exact-match (beda padding/shadow/font-weight) --
+   * TIDAK dipaksakan pakai token ini, tetap literal di tempatnya (lihat
+   * aturan sesi 11 poin 3).
+   */
+  buttonVariant: {
+    primary: "bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-500/20",
+    secondary: "bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold border border-slate-700 light_sakura:bg-white light_sakura:hover:bg-slate-50 light_sakura:text-slate-600 light_sakura:border-slate-200",
+    dangerGhost: "bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold light_sakura:bg-red-50 light_sakura:hover:bg-red-100 light_sakura:text-red-500",
+    ghost: "bg-transparent hover:bg-slate-800 text-slate-300 font-semibold light_sakura:hover:bg-rose-50 light_sakura:text-slate-600",
+  },
+
+  toggle: {
+    /**
+     * Track background untuk switch/toggle kondisi "off"/inactive.
+     * Exact match diverifikasi di 2 file: AdminMaintenance.tsx (3x --
+     * toggle maintenance global, sandbox bypass, feature lock) &
+     * AdminPremiumMonitor.tsx (1x, toggle sandbox QRIS -- belum dipasang
+     * di sesi ini karena file itu di luar cakupan target sesi 45).
+     */
+    inactiveTrack: "bg-slate-700 light_sakura:bg-slate-200",
   },
 
   form: {
@@ -299,6 +376,29 @@ export const themeTokens = {
     statusBadgePending: "bg-amber-500/10 border border-amber-500/30 text-amber-400 light_sakura:bg-amber-50 light_sakura:border-amber-200 light_sakura:text-amber-700",
     statusBadgeExpired: "bg-slate-700/40 border border-slate-600/40 text-slate-400 light_sakura:bg-slate-100 light_sakura:border-slate-200 light_sakura:text-slate-600",
     statusBadgeFailed: "bg-red-500/10 border border-red-500/30 text-red-400 light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:text-red-700",
+    /** Warna metrik amber (total revenue & status pending) -- dipakai 2x di kartu ringkasan. */
+    metricAmber: "text-amber-500 light_sakura:text-amber-600",
+    /** Divider baris tabel transaksi premium. */
+    tableDivide: "divide-slate-800 light_sakura:divide-slate-100",
+    /** Hover baris tabel transaksi premium. */
+    tableRowHover: "hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50",
+    /** Border tombol pagination (prev/next) -- dipakai 2x. */
+    paginationBorder: "border-slate-800 light_sakura:border-slate-200",
+    /** Background badge/kartu sandbox QRIS (ungu) -- dipakai 2x (kartu ringkasan & badge baris tabel). */
+    sandboxBadgeBg: "bg-purple-900/20 light_sakura:bg-purple-50",
+    /** Warna teks sandbox QRIS -- dipakai 2x. */
+    sandboxText: "text-purple-400 light_sakura:text-purple-600",
+  },
+  adminSupportChat: {
+    /** Warna spinner loading (list sesi & thread pesan) -- dipakai 2x. */
+    spinnerText: "text-indigo-400 light_sakura:text-rose-400",
+    /**
+     * Ikon ilustrasi empty-state (MessagesSquare, daftar sesi kosong).
+     * Exact match sama persis dengan ikon default di EmptyState.tsx --
+     * belum dipasang ke sana karena file itu di luar cakupan target
+     * sesi 45 (cuma 1 literal, bukan bagian roadmap saat ini).
+     */
+    emptyIcon: "text-slate-700 light_sakura:text-rose-200",
   },
   adminUserModal: {
     avatarContainer: "bg-indigo-500/10 border-indigo-500/20 light_sakura:bg-rose-200/50 light_sakura:border-rose-300",
@@ -344,11 +444,21 @@ export const themeTokens = {
     amountDisplayIncome: "text-emerald-400 light_sakura:text-emerald-600",
     categoryPillSelectedExpense: "bg-red-500/15 border-red-500/50 text-red-300 light_sakura:bg-rose-100 light_sakura:border-rose-400 light_sakura:text-rose-700",
     categoryPillSelectedIncome: "bg-emerald-500/15 border-emerald-500/50 text-emerald-300 light_sakura:bg-emerald-100 light_sakura:border-emerald-400 light_sakura:text-emerald-700",
+    /** Background segmented control (toggle jenis transaksi & wallet picker) -- dipakai 2x. */
+    segmentedControlBg: "bg-slate-950/60 border border-slate-800/50 light_sakura:bg-rose-50/30 light_sakura:border-rose-100",
+    /** Hover text tombol/pill tidak aktif -- dipakai 4x. */
+    inactiveHoverText: "hover:text-slate-300 light_sakura:hover:text-slate-600",
   },
   supportWidget: {
     fabButton: "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-900/40 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-900/20",
     chatBubbleUser: "bg-indigo-600 text-white light_sakura:bg-rose-500",
     closeBtn: "text-slate-400 hover:text-white light_sakura:text-slate-500 light_sakura:hover:text-slate-900",
+    /** Gradient avatar bot/agent -- dipakai 5x (header, bubble chat, avatar list, dsb). */
+    gradientAvatar: "bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300",
+    /** Ring highlight seleksi kategori/opsi -- dipakai 2x. */
+    ringHighlight: "ring-indigo-500/40 light_sakura:ring-rose-300/60",
+    /** Ring fokus input pesan -- dipakai 2x. */
+    inputFocusRing: "focus:ring-indigo-500 light_sakura:focus:ring-rose-400",
   },
   sidebar: {
     brandBg: "bg-slate-950/55 backdrop-blur-2xl backdrop-saturate-150 border-white/10 light_sakura:bg-white/70 light_sakura:backdrop-saturate-100 light_sakura:border-white/70",
@@ -357,12 +467,22 @@ export const themeTokens = {
     menuItemInactive: "hover:bg-slate-900 light_sakura:hover:bg-rose-100/70",
     footerAction: "border-slate-900 hover:bg-slate-900 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50",
     logoutBtn: "bg-slate-950/40 border-red-500/20 text-red-400 hover:bg-red-500/10 light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:hover:bg-red-100/70",
+    /**
+     * Sesi 48: tombol ikon bulat collapsed-state (bahasa/tema/mute) di
+     * footer sidebar. Exact match diverifikasi 3x dalam file yang sama
+     * (Sidebar.tsx) -- belum ditemukan duplikat di file lain.
+     */
+    collapsedIconBtn: "p-2 rounded-xl border border-slate-900 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50",
   },
   budget: {
     statusDanger: "bg-red-500/15 light_sakura:bg-red-50",
     statusWarning: "bg-amber-500/15 light_sakura:bg-amber-50",
     statusSafe: "bg-emerald-500/15 light_sakura:bg-emerald-50",
     addBtn: "bg-indigo-600 hover:bg-indigo-500 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400",
+    /** Ikon ilustrasi empty-state (mis. PiggyBank) -- dipakai 2x. */
+    emptyStateIcon: "text-slate-600 light_sakura:text-slate-400",
+    /** Hover tombol close/tutup modal -- dipakai 2x. */
+    closeBtnHover: "hover:bg-slate-800 hover:text-white light_sakura:hover:bg-rose-100",
   },
   history: {
     statExpense: "bg-red-500/8 border-red-500/15 light_sakura:bg-red-50/60 light_sakura:border-red-100",
@@ -377,10 +497,98 @@ export const themeTokens = {
     loadingOverlay: "bg-slate-950/85",
   },
 
+  /**
+   * Pola UI kartu Telegram (upsell terkunci, badge terhubung, kartu kode QR).
+   * Sama persis antara sisa literal lama di Settings.tsx dan komponen baru
+   * TelegramSettings.tsx (hasil ekstraksi) -- ditambahkan setelah kemunculan
+   * ke-2 di file berbeda ditemukan (sesi 42).
+   */
+  adminBroadcast: {
+    /** Border kartu ringkasan target broadcast (jumlah penerima) -- dipakai 3x. */
+    summaryCardBorder: "border-slate-700 light_sakura:border-slate-100",
+    /** Badge status kirim sukses (riwayat broadcast). */
+    statusSuccessBadge: "bg-emerald-900/20 light_sakura:bg-emerald-50 border-emerald-800/50 light_sakura:border-emerald-100 text-emerald-300 light_sakura:text-emerald-700",
+    /** Badge status kirim pending/gagal (riwayat broadcast). */
+    statusPendingBadge: "bg-amber-900/20 light_sakura:bg-amber-50 border-amber-800/50 light_sakura:border-amber-100 text-amber-300 light_sakura:text-amber-700",
+    /** Banner peringatan (mis. broadcast tidak bisa dibatalkan). */
+    warningBannerBg: "bg-amber-900/20 light_sakura:bg-amber-50 border-amber-800/50 light_sakura:border-amber-100",
+  },
+
+  telegramCard: {
+    lockedIconText: "text-amber-500 light_sakura:text-rose-500",
+    upsellBoxBorderBg: "border-amber-500/25 bg-amber-500/5 light_sakura:border-rose-300/30 light_sakura:bg-rose-50/50",
+    upsellIconChipBg: "bg-amber-500/10 text-amber-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500",
+    upsellCtaBtn: "bg-amber-500 hover:bg-amber-400 text-slate-950 shadow-amber-500/10 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:text-white",
+    linkedBadgeBg: "border-emerald-500/20 bg-emerald-500/5 light_sakura:border-emerald-250 light_sakura:bg-emerald-50/20 shadow-xs",
+    linkedAvatarRing: "border-slate-900 light_sakura:border-white",
+    linkedLabelText: "text-slate-200 light_sakura:text-slate-700",
+    qrBoxBorderBg: "border-indigo-500/30 bg-indigo-500/5 light_sakura:border-rose-200 light_sakura:bg-rose-50/40",
+    qrCodeBoxBg: "bg-slate-950 light_sakura:bg-white border-slate-800 light_sakura:border-rose-150",
+    divider: "bg-slate-800/50 light_sakura:bg-rose-100",
+  },
+
+  voicePreview: {
+    /**
+     * Tombol batal/tutup (slate netral) di modal preview suara -- dipakai
+     * 2x di file ini (state error & state konfirmasi). Exact match JUGA
+     * ditemukan di `ReceiptPreview.tsx` (1x) -- belum dipasang ke sana
+     * karena di luar cakupan target sesi 48, dicatat untuk sesi berikutnya.
+     */
+    cancelBtn: "bg-slate-800 hover:bg-slate-700/80 border-slate-800 light_sakura:bg-slate-100 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent",
+    /** Tombol konfirmasi/coba lagi (indigo/rose) -- dipakai 2x di file ini. */
+    confirmBtn: "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/15 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400",
+  },
+  premiumModal: {
+    modalBg: "bg-slate-900 light_sakura:bg-rose-50/90",
+    closeBtn: "text-slate-500 hover:text-white light_sakura:hover:text-slate-800 light_sakura:hover:bg-rose-100",
+    /** Kotak info (metode bayar / detail) di dalam modal -- dipakai 2x. */
+    infoBoxBg: "bg-slate-800/50 light_sakura:bg-white light_sakura:border light_sakura:border-rose-100",
+    qrWrapperBorder: "light_sakura:border light_sakura:border-rose-100",
+  },
   settings: {
     cardBorder: "border-slate-800/60 light_sakura:border-rose-100/40",
     sectionBorder: "border-slate-800/50 light_sakura:border-rose-100/30",
     profileCardBgBorder: "bg-slate-950/40 border border-slate-800/60 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50",
+    /** Heading "h3" section pengaturan (mis. "Nama Tampilan", "Keamanan Akun") -- dipakai 5x di Settings.tsx. */
+    sectionHeadingBorder:
+      "text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100",
+    /** Varian tanpa border, dipakai saat border dipindah ke wrapper div terpisah. */
+    sectionHeadingText: "text-slate-200 light_sakura:text-slate-800",
+    /** Divider bawah tanpa warna teks (border-nya saja), dipakai saat heading & border ada di elemen berbeda. */
+    sectionDivider: "border-b border-slate-800/10 pb-2.5 light_sakura:border-rose-100",
+    /** Kartu kecil di dalam section (mis. daftar sesi login, log admin) -- dipakai 5x di Settings.tsx. */
+    innerCardBgBorder:
+      "bg-slate-950 border border-slate-800 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50",
+    /** Background kotak input OTP 6-digit -- dipakai 3x (satu per digit group) di Settings.tsx. */
+    otpInputBg: "bg-slate-950 light_sakura:bg-slate-50",
+    /** Badge status "Telegram Terhubung" -- dipakai 2x (state aktif & preview) di Settings.tsx. */
+    telegramLinkedBadge:
+      "bg-indigo-600/10 border-indigo-500 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:border-rose-550 light_sakura:text-rose-600",
+    /** Divider antar baris di dalam innerCardBgBorder -- dipakai 2x (log admin). */
+    divideSubtle: "divide-slate-800/60 light_sakura:divide-rose-200/40",
+    /**
+     * Background avatar bulat inisial user. Exact match di 3 file:
+     * SettingsMobileMenu.tsx, ProfileSettings.tsx, Settings.tsx (masing-
+     * masing 1x) -- cuma dipasang di SettingsMobileMenu.tsx sesi ini,
+     * 2 file lain di luar cakupan target sesi 46.
+     */
+    avatarBg: "bg-indigo-600 light_sakura:bg-rose-500",
+    /**
+     * Badge kecil "Premium" di sebelah nama user. Exact match di 3 file
+     * yang sama dengan `avatarBg` di atas.
+     */
+    premiumBadge: "bg-amber-500/15 text-amber-400 light_sakura:bg-rose-100 light_sakura:text-rose-600",
+    /**
+     * Tombol kecil dismiss/aksi sekunder di sebelah badge premium. Exact
+     * match di SettingsMobileMenu.tsx & ProfileSettings.tsx.
+     */
+    premiumDismissBtn: "bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors light_sakura:bg-slate-100 light_sakura:text-slate-500",
+    /**
+     * Pill pilihan opsi (bahasa/tema) kondisi tidak dipilih. Exact match
+     * di LanguageSettings.tsx (2x, dipasang sesi ini) & ThemeSettings.tsx
+     * (2x, belum dipasang -- di luar cakupan target sesi 46).
+     */
+    optionInactive: "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500",
   },
 } as const;
 

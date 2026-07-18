@@ -252,9 +252,9 @@ export const AdminCategoryManager: React.FC = () => {
                   <th className="px-6 py-4 text-right">{t("admin.table_actions_col")}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
+              <tbody className={cx("divide-y", tokens.errorMonitor.tableDivide)}>
                 {(pageSize === "all" ? categories : categories.slice(page * pageSize, (page + 1) * pageSize)).map(cat => (
-                  <tr key={cat.key} className={`transition-colors ${!cat.is_active ? "opacity-60" : ""} hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50`}>
+                  <tr key={cat.key} className={`transition-colors ${!cat.is_active ? "opacity-60" : ""} ${tokens.errorMonitor.tableRowHover}`}>
                     <td className="px-6 py-4">
                       {editingKey === cat.key ? (
                         <input type="number" value={editForm.priority} onChange={e => setEditForm(f => ({ ...f, priority: Number(e.target.value) || 0 }))}
@@ -297,7 +297,7 @@ export const AdminCategoryManager: React.FC = () => {
                         </td>
                         <td className="px-6 py-4">
                           <button onClick={() => setEditForm(f => ({ ...f, is_active: !f.is_active }))}
-                            className={`text-sm font-semibold cursor-pointer ${editForm.is_active ? "text-emerald-400 light_sakura:text-emerald-600" : "text-slate-400 light_sakura:text-slate-500"}`}>
+                            className={`text-sm font-semibold cursor-pointer ${editForm.is_active ? tokens.text.success : tokens.text.muted}`}>
                             {editForm.is_active ? t("admin.status_active_col") : t("admin.status_inactive_col")}
                           </button>
                         </td>
@@ -308,7 +308,7 @@ export const AdminCategoryManager: React.FC = () => {
                               <Check size={16} />
                             </button>
                             <button onClick={() => setEditingKey(null)}
-                              className={cx("p-2 rounded-xl bg-slate-800 light_sakura:bg-slate-100 hover:bg-slate-700 light_sakura:hover:bg-slate-200 cursor-pointer", tokens.text.mutedAlt)}>
+                              className={cx("p-2 rounded-xl cursor-pointer", tokens.button.cancelSlate, tokens.text.mutedAlt)}>
                               <X size={16} />
                             </button>
                           </div>
@@ -322,12 +322,12 @@ export const AdminCategoryManager: React.FC = () => {
                           {cat.description_id || "—"}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={cx("px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 light_sakura:bg-slate-100 capitalize", tokens.text.mutedAlt)}>
+                          <span className={cx("px-3 py-1 rounded-full text-xs font-semibold capitalize", tokens.errorMonitor.progressBg, tokens.text.mutedAlt)}>
                             {cat.type}
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`text-sm font-semibold ${cat.is_active ? "text-emerald-400 light_sakura:text-emerald-600" : "text-slate-400 light_sakura:text-slate-500"}`}>
+                          <span className={`text-sm font-semibold ${cat.is_active ? tokens.text.success : tokens.text.muted}`}>
                             {cat.is_active ? t("admin.status_active_col") : t("admin.status_inactive_col")}
                           </span>
                         </td>
@@ -380,7 +380,7 @@ export const AdminCategoryManager: React.FC = () => {
                 <button
                   disabled={page === 0}
                   onClick={() => setPage(p => p - 1)}
-                  className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
+                  className={cx("p-2 rounded-xl border disabled:opacity-50 cursor-pointer", tokens.errorMonitor.paginationBtn, tokens.text.label, tokens.surface.card, tokens.hover.surface)}
                 >
                   <ChevronLeft size={14} />
                 </button>
@@ -388,7 +388,7 @@ export const AdminCategoryManager: React.FC = () => {
                 <button
                   disabled={(page + 1) * pageSize >= categories.length}
                   onClick={() => setPage(p => p + 1)}
-                  className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
+                  className={cx("p-2 rounded-xl border disabled:opacity-50 cursor-pointer", tokens.errorMonitor.paginationBtn, tokens.text.label, tokens.surface.card, tokens.hover.surface)}
                 >
                   <ChevronRight size={14} />
                 </button>

@@ -425,7 +425,7 @@ export const AdminBackup: React.FC = () => {
       {/* Riwayat backup */}
       <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
-          <h3 className="font-black text-sm text-slate-100 light_sakura:text-slate-800">
+          <h3 className={cx("font-black text-sm", tokens.adminBackup.heading)}>
             {t("admin.backup_history")}
           </h3>
           {selectedIds.size > 0 && (
@@ -448,7 +448,7 @@ export const AdminBackup: React.FC = () => {
           <ScrollableTableWrapper>
             <table className="w-full text-xs">
               <thead>
-                <tr className={cx("text-left text-[10px] uppercase font-black tracking-wider border-b border-slate-800 light_sakura:border-slate-200", tokens.text.mutedAlt)}>
+                <tr className={cx(tokens.adminBackup.tableHeader, tokens.text.mutedAlt)}>
                   <th className="py-2 pr-3 w-8">
                     <input
                       type="checkbox"
@@ -473,9 +473,7 @@ export const AdminBackup: React.FC = () => {
                   return (
                     <tr
                       key={row.id}
-                      className={`border-b border-slate-800/50 light_sakura:border-slate-100 last:border-0 ${
-                        row.deleted_at ? "opacity-40" : ""
-                      }`}
+                      className={cx(tokens.adminBackup.tableRow, row.deleted_at && "opacity-40")}
                     >
                       <td className="py-2.5 pr-3">
                         <input
@@ -533,7 +531,7 @@ export const AdminBackup: React.FC = () => {
 
       {/* Riwayat restore */}
       <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
-        <h3 className="font-black text-sm text-slate-100 light_sakura:text-slate-800 mb-4">
+        <h3 className={cx("font-black text-sm mb-4", tokens.adminBackup.heading)}>
           {t("admin.backup_restore_history")}
         </h3>
 
@@ -546,7 +544,7 @@ export const AdminBackup: React.FC = () => {
           <ScrollableTableWrapper>
             <table className="w-full text-xs">
               <thead>
-                <tr className={cx("text-left text-[10px] uppercase font-black tracking-wider border-b border-slate-800 light_sakura:border-slate-200", tokens.text.mutedAlt)}>
+                <tr className={cx(tokens.adminBackup.tableHeader, tokens.text.mutedAlt)}>
                   <th className="py-2 pr-4">{t("admin.backup_col_time")}</th>
                   <th className="py-2 pr-4">{t("admin.backup_col_status")}</th>
                   <th className="py-2 pr-4">{t("admin.backup_restore_col_scope")}</th>
@@ -557,7 +555,7 @@ export const AdminBackup: React.FC = () => {
                 {restoreHistory.map(row => (
                   <tr
                     key={row.id}
-                    className="border-b border-slate-800/50 light_sakura:border-slate-100 last:border-0"
+                    className={tokens.adminBackup.tableRow}
                   >
                     <td className={cx("py-2.5 pr-4 whitespace-nowrap", tokens.text.secondary)}>
                       {new Date(row.started_at).toLocaleString(locale === "id" ? "id-ID" : "en-US")}
@@ -598,7 +596,7 @@ export const AdminBackup: React.FC = () => {
                 <div className="rounded-full p-2.5 bg-amber-500/15 text-amber-400 shrink-0">
                   <AlertTriangle size={20} />
                 </div>
-                <h3 className="font-black text-sm text-slate-100 light_sakura:text-slate-800">
+                <h3 className={cx("font-black text-sm", tokens.adminBackup.heading)}>
                   {t("admin.backup_restore_confirm_title")}
                 </h3>
               </div>
@@ -616,7 +614,7 @@ export const AdminBackup: React.FC = () => {
 
             {/* Pilihan scope */}
             <div className="space-y-2 mb-4">
-              <label className="flex items-start gap-2 p-3 rounded-xl border border-slate-800 light_sakura:border-slate-200 cursor-pointer">
+              <label className={tokens.adminBackup.label}>
                 <input
                   type="radio"
                   name="restore_scope"
@@ -625,7 +623,7 @@ export const AdminBackup: React.FC = () => {
                   className="mt-0.5 accent-amber-500"
                 />
                 <span>
-                  <span className="block text-xs font-bold text-slate-200 light_sakura:text-slate-800">
+                  <span className={tokens.adminBackup.labelSpan}>
                     {t("admin.backup_restore_scope_full")}
                   </span>
                   <span className="block text-[11px] text-slate-500 mt-0.5">
@@ -634,7 +632,7 @@ export const AdminBackup: React.FC = () => {
                 </span>
               </label>
 
-              <label className="flex items-start gap-2 p-3 rounded-xl border border-slate-800 light_sakura:border-slate-200 cursor-pointer">
+              <label className={tokens.adminBackup.label}>
                 <input
                   type="radio"
                   name="restore_scope"
@@ -643,7 +641,7 @@ export const AdminBackup: React.FC = () => {
                   className="mt-0.5 accent-amber-500"
                 />
                 <span>
-                  <span className="block text-xs font-bold text-slate-200 light_sakura:text-slate-800">
+                  <span className={tokens.adminBackup.labelSpan}>
                     {t("admin.backup_restore_scope_table")}
                   </span>
                   <span className="block text-[11px] text-slate-500 mt-0.5">
@@ -734,7 +732,7 @@ export const AdminBackup: React.FC = () => {
               <div className="rounded-full p-2.5 bg-red-500/15 text-red-400 shrink-0">
                 <Trash2 size={20} />
               </div>
-              <h3 className="font-black text-sm text-slate-100 light_sakura:text-slate-800">
+              <h3 className={cx("font-black text-sm", tokens.adminBackup.heading)}>
                 {t("admin.backup_delete_confirm_title")}
               </h3>
             </div>

@@ -13,8 +13,8 @@ export const LanguageSettings: React.FC = () => {
 
   return (
     <MobileSettingsDetailPage title={t("settings.menu_language")}>
-      <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
-        <h3 className={cx("font-sans font-bold text-sm border-b border-slate-800/10 pb-2.5 light_sakura:border-rose-100 flex items-center gap-2", tokens.text.label)}>
+      <div className={cx("p-5 rounded-2xl shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}>
+        <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.text.label, tokens.settings.sectionDivider)}>
           <Globe size={14} className={cx(tokens.icon.accent)} />
           <span>{t("settings.language")}</span>
         </h3>
@@ -26,8 +26,8 @@ export const LanguageSettings: React.FC = () => {
             onClick={() => { audioFeedback.playClick(); setLocale("id"); }}
             className={`py-3.5 rounded-xl font-sans text-sm font-bold border transition-all cursor-pointer text-left px-4
               ${locale === "id"
-                ? "bg-indigo-600/10 border-indigo-500 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:border-rose-550 light_sakura:text-rose-600"
-                : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
+                ? tokens.settings.telegramLinkedBadge
+                : tokens.settings.optionInactive
               }`}
           >
             Bahasa Indonesia (ID)
@@ -38,8 +38,8 @@ export const LanguageSettings: React.FC = () => {
             onClick={() => { audioFeedback.playClick(); setLocale("en"); }}
             className={`py-3.5 rounded-xl font-sans text-sm font-bold border transition-all cursor-pointer text-left px-4
               ${locale === "en"
-                ? "bg-indigo-600/10 border-indigo-500 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:border-rose-550 light_sakura:text-rose-600"
-                : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
+                ? tokens.settings.telegramLinkedBadge
+                : tokens.settings.optionInactive
               }`}
           >
             English (EN)

@@ -374,10 +374,10 @@ export const SupportChatWidget: React.FC = () => {
             <div className={cx("px-4 py-3.5 border-b flex items-center gap-3", tokens.border.accent)}>
               <div className={cx(
                 "relative w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-lg",
-                "bg-gradient-to-br from-indigo-600 to-indigo-400 shadow-indigo-600/20 light_sakura:from-rose-500 light_sakura:to-rose-300 light_sakura:shadow-rose-500/20"
+                cx("shadow-indigo-600/20 light_sakura:shadow-rose-500/20", tokens.supportWidget.gradientAvatar)
               )}>
                 <Bot size={18} className="text-white" />
-                <span className={cx("absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2", tokens.surface.card === "bg-slate-900 light_sakura:bg-white" ? "border-slate-900 light_sakura:border-white" : "border-slate-900")} />
+                <span className={cx("absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2", "border-slate-900 light_sakura:border-white")} />
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>
@@ -419,7 +419,7 @@ export const SupportChatWidget: React.FC = () => {
                 {tab === "faq" && (
                   <motion.span
                     layoutId="supportTabPill"
-                    className={cx("absolute inset-0 rounded-lg ring-1 ring-inset ring-indigo-500/40 light_sakura:ring-rose-300/60", tokens.surface.subtle)}
+                    className={cx("absolute inset-0 rounded-lg ring-1 ring-inset", tokens.supportWidget.ringHighlight, tokens.surface.subtle)}
                     transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                   />
                 )}
@@ -435,7 +435,7 @@ export const SupportChatWidget: React.FC = () => {
                 {tab === "admin" && (
                   <motion.span
                     layoutId="supportTabPill"
-                    className={cx("absolute inset-0 rounded-lg ring-1 ring-inset ring-indigo-500/40 light_sakura:ring-rose-300/60", tokens.surface.subtle)}
+                    className={cx("absolute inset-0 rounded-lg ring-1 ring-inset", tokens.supportWidget.ringHighlight, tokens.surface.subtle)}
                     transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                   />
                 )}
@@ -453,7 +453,7 @@ export const SupportChatWidget: React.FC = () => {
                   <div className="flex items-start gap-2">
                     <div className={cx(
                       "w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
-                      "bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300"
+                      tokens.supportWidget.gradientAvatar
                     )}>
                       <Bot size={12} className="text-white" />
                     </div>
@@ -530,7 +530,7 @@ export const SupportChatWidget: React.FC = () => {
                         <div key={bubble.id} className="flex items-start gap-2 self-start max-w-[85%]">
                           <div className={cx(
                             "w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
-                            "bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300"
+                            tokens.supportWidget.gradientAvatar
                           )}>
                             <Bot size={12} className="text-white" />
                           </div>
@@ -552,7 +552,7 @@ export const SupportChatWidget: React.FC = () => {
                       <div className="flex items-start gap-2">
                         <div className={cx(
                           "w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
-                          "bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300"
+                          tokens.supportWidget.gradientAvatar
                         )}>
                           <Bot size={12} className="text-white" />
                         </div>
@@ -567,7 +567,7 @@ export const SupportChatWidget: React.FC = () => {
                         <div className="flex items-center gap-3 px-3.5 py-3">
                           <div className={cx(
                             "relative w-10 h-10 rounded-full flex items-center justify-center shrink-0",
-                            "bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300"
+                            tokens.supportWidget.gradientAvatar
                           )}>
                             <UserRound size={18} className="text-white" />
                             <span className={cx("absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2", tokens.border.accent)} />
@@ -590,7 +590,7 @@ export const SupportChatWidget: React.FC = () => {
                           disabled={isStarting}
                           className={cx(
                             "w-full py-3 text-white text-xs font-bold transition-colors duration-200 disabled:opacity-60 flex items-center justify-center gap-2",
-                            "bg-indigo-600 hover:bg-indigo-500 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                            tokens.budget.addBtn
                           )}
                         >
                           {isStarting ? (
@@ -643,7 +643,7 @@ export const SupportChatWidget: React.FC = () => {
                               <div
                                 className={`px-3 py-2 rounded-2xl text-xs leading-relaxed ${
                                   msg.sender === "user"
-                                    ? "rounded-br-md bg-indigo-600 text-white light_sakura:bg-rose-500"
+                                    ? cx("rounded-br-md", tokens.supportWidget.chatBubbleUser)
                                     : cx("rounded-tl-md", tokens.surface.subtle, tokens.text.secondary)
                                 }`}
                               >
@@ -672,7 +672,7 @@ export const SupportChatWidget: React.FC = () => {
                               <div
                                 className={`px-3 py-2 rounded-2xl text-xs leading-relaxed ${
                                   msg.sender === "user"
-                                    ? "rounded-br-md bg-indigo-600 text-white light_sakura:bg-rose-500"
+                                    ? cx("rounded-br-md", tokens.supportWidget.chatBubbleUser)
                                     : cx("rounded-tl-md", tokens.surface.subtle, tokens.text.secondary)
                                 }`}
                               >
@@ -701,7 +701,7 @@ export const SupportChatWidget: React.FC = () => {
                   onKeyDown={(e) => e.key === "Enter" && handleFaqAsk()}
                   placeholder={t("support.faq.ask_placeholder")}
                   className={cx(
-                    "flex-1 px-3 py-2 rounded-full text-xs outline-none focus:ring-2 focus:ring-indigo-500 light_sakura:focus:ring-rose-400",
+                    cx("flex-1 px-3 py-2 rounded-full text-xs outline-none focus:ring-2", tokens.supportWidget.inputFocusRing),
                     tokens.surface.subtle,
                     tokens.text.primary
                   )}
@@ -711,7 +711,7 @@ export const SupportChatWidget: React.FC = () => {
                   onClick={handleFaqAsk}
                   className={cx(
                     "w-9 h-9 flex items-center justify-center rounded-full text-white transition-colors duration-200",
-                    "bg-indigo-600 hover:bg-indigo-500 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                    tokens.budget.addBtn
                   )}
                 >
                   <Send size={16} />
@@ -728,7 +728,7 @@ export const SupportChatWidget: React.FC = () => {
                   placeholder={t("support.admin_chat.placeholder")}
                   disabled={isSending}
                   className={cx(
-                    "flex-1 px-3 py-2 rounded-full text-xs outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 light_sakura:focus:ring-rose-400",
+                    cx("flex-1 px-3 py-2 rounded-full text-xs outline-none focus:ring-2 disabled:opacity-60", tokens.supportWidget.inputFocusRing),
                     tokens.surface.subtle,
                     tokens.text.primary
                   )}
@@ -739,7 +739,7 @@ export const SupportChatWidget: React.FC = () => {
                   disabled={isSending}
                   className={cx(
                     "w-9 h-9 flex items-center justify-center rounded-full text-white transition-colors duration-200 disabled:opacity-60",
-                    "bg-indigo-600 hover:bg-indigo-500 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                    tokens.budget.addBtn
                   )}
                 >
                   {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}

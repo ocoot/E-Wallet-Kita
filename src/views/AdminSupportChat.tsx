@@ -274,18 +274,18 @@ export const AdminSupportChat: React.FC = () => {
         <div className={cx("rounded-3xl border shadow-sm overflow-hidden flex flex-col", tokens.surface.card, tokens.border.default)}>
           {listLoading ? (
             <div className="py-16 flex items-center justify-center">
-              <Loader2 className="animate-spin text-indigo-400 light_sakura:text-rose-400" size={26} />
+              <Loader2 className={cx("animate-spin", tokens.adminSupportChat.spinnerText)} size={26} />
             </div>
           ) : listError ? (
             <ErrorState onRetry={loadSessions} />
           ) : sessions.length === 0 ? (
             <EmptyState
-              icon={<MessagesSquare size={40} className="text-slate-700 light_sakura:text-rose-200" />}
+              icon={<MessagesSquare size={40} className={tokens.adminSupportChat.emptyIcon} />}
               title={t("admin_support_chat.list_empty_title")}
               description={t("admin_support_chat.list_empty_desc")}
             />
           ) : (
-            <div className="divide-y divide-slate-800 light_sakura:divide-slate-100 overflow-y-auto max-h-[600px]">
+            <div className={cx("divide-y overflow-y-auto max-h-[600px]", tokens.errorMonitor.tableDivide)}>
               {sessions.map((s) => {
                 const isSelected = s.id === selectedId;
                 const label = s.user_display_name || t("admin_support_chat.unknown_user");
@@ -303,7 +303,7 @@ export const AdminSupportChat: React.FC = () => {
                         : "hover:bg-slate-800/50 light_sakura:hover:bg-slate-50"
                     }`}
                   >
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300 flex items-center justify-center shrink-0">
+                    <div className={cx("w-9 h-9 rounded-full flex items-center justify-center shrink-0", tokens.supportWidget.gradientAvatar)}>
                       <UserRound size={16} className="text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
@@ -370,7 +370,7 @@ export const AdminSupportChat: React.FC = () => {
               <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-1.5 max-h-[460px]">
                 {messagesLoading ? (
                   <div className="flex-1 flex items-center justify-center">
-                    <Loader2 className="animate-spin text-indigo-400 light_sakura:text-rose-400" size={22} />
+                    <Loader2 className={cx("animate-spin", tokens.adminSupportChat.spinnerText)} size={22} />
                   </div>
                 ) : messages.length === 0 ? (
                   <div className="flex-1 flex items-center justify-center">
@@ -385,13 +385,13 @@ export const AdminSupportChat: React.FC = () => {
                       <div
                         className={`px-3.5 py-2 rounded-2xl text-xs leading-relaxed ${
                           msg.sender === "admin"
-                            ? "rounded-br-md bg-indigo-600 text-white light_sakura:bg-rose-500"
+                            ? cx("rounded-br-md", tokens.supportWidget.chatBubbleUser)
                             : "rounded-tl-md bg-slate-800 text-slate-100 light_sakura:bg-slate-100 light_sakura:text-slate-700"
                         }`}
                       >
                         {msg.content}
                       </div>
-                      <span className="text-[10px] text-slate-600 light_sakura:text-slate-400 mt-0.5 px-1">
+                      <span className={cx("text-[10px] mt-0.5 px-1", tokens.budget.emptyStateIcon)}>
                         {formatMsgTime(msg.created_at, locale)}
                       </span>
                     </div>
@@ -408,13 +408,13 @@ export const AdminSupportChat: React.FC = () => {
                   onKeyDown={(e) => e.key === "Enter" && handleSendReply()}
                   placeholder={t("admin_support_chat.reply_placeholder")}
                   disabled={isSending}
-                  className={cx("flex-1 px-3.5 py-2.5 rounded-full text-xs text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 light_sakura:text-slate-800 light_sakura:focus:ring-rose-400", tokens.surface.subtle)}
+                  className={cx("flex-1 px-3.5 py-2.5 rounded-full text-xs text-slate-100 outline-none focus:ring-2 disabled:opacity-60 light_sakura:text-slate-800", tokens.surface.subtle, tokens.supportWidget.inputFocusRing)}
                 />
                 <button
                   type="button"
                   onClick={handleSendReply}
                   disabled={isSending || !replyInput.trim()}
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-indigo-600 text-white hover:bg-indigo-500 transition-colors duration-200 disabled:opacity-50 shrink-0 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                  className={cx("w-10 h-10 flex items-center justify-center rounded-full text-white transition-colors duration-200 disabled:opacity-50 shrink-0", tokens.budget.addBtn)}
                 >
                   {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
                 </button>

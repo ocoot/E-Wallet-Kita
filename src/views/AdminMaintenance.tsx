@@ -192,7 +192,7 @@ export const AdminMaintenance: React.FC = () => {
           <button
             onClick={() => setIsActive(v => !v)}
             className={`btn-exact relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0
-              ${isActive ? "bg-amber-600" : "bg-slate-700 light_sakura:bg-slate-200"}`}
+              ${isActive ? "bg-amber-600" : tokens.toggle.inactiveTrack}`}
             aria-pressed={isActive}
           >
             <span
@@ -267,7 +267,7 @@ export const AdminMaintenance: React.FC = () => {
           </div>
         </div>
 
-        <div className="divide-y divide-slate-800 light_sakura:divide-slate-100">
+        <div className={cx("divide-y", tokens.errorMonitor.tableDivide)}>
           {features.map(feature => (
             <div key={feature.feature_key} className="flex items-center gap-6 px-8 py-5">
               {/* Icon + label */}
@@ -309,7 +309,7 @@ export const AdminMaintenance: React.FC = () => {
                     }
                     disabled={!feature.is_locked}
                     className={`btn-exact relative w-10 h-5 rounded-full transition-colors cursor-pointer shrink-0
-                      ${feature.bypass_in_sandbox ? "bg-violet-600" : "bg-slate-700 light_sakura:bg-slate-200"}`}
+                      ${feature.bypass_in_sandbox ? "bg-violet-600" : tokens.toggle.inactiveTrack}`}
                     aria-pressed={feature.bypass_in_sandbox}
                     aria-label={`Sandbox bypass ${feature.feature_key}`}
                   >
@@ -324,7 +324,7 @@ export const AdminMaintenance: React.FC = () => {
                 <button
                   onClick={() => handleToggleFeature(feature.feature_key, !feature.is_locked)}
                   className={`btn-exact relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0
-                    ${feature.is_locked ? "bg-red-600" : "bg-slate-700 light_sakura:bg-slate-200"}`}
+                    ${feature.is_locked ? "bg-red-600" : tokens.toggle.inactiveTrack}`}
                   aria-pressed={feature.is_locked}
                   aria-label={`Lock ${feature.feature_key}`}
                 >

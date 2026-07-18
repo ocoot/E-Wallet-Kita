@@ -264,7 +264,7 @@ export const History: React.FC<HistoryProps> = ({
     <div className="space-y-5">
 
       {/* ── Header card ─────────────────────────────────────────────── */}
-      <div className={cx("rounded-3xl border border-slate-800/60 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}>
+      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
         {/* Accent stripe */}
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">
@@ -282,7 +282,7 @@ export const History: React.FC<HistoryProps> = ({
           {/* ── Stat bar ────────────────────────────────────────────── */}
           {transactions.length > 0 && (
             <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-2xl bg-red-500/8 border border-red-500/15 px-3 py-3 light_sakura:bg-red-50/60 light_sakura:border-red-100">
+              <div className={cx("rounded-2xl border px-3 py-3", tokens.history.statExpense)}>
                 <div className="flex items-start gap-1.5 mb-1 min-h-[1.9rem]">
                   <span className={cx("text-[10px] font-bold uppercase tracking-wider leading-tight break-words", tokens.text.faint)}>
                     {t("dashboard.expense")}
@@ -292,7 +292,7 @@ export const History: React.FC<HistoryProps> = ({
                   −{formatIDR(stats.expense)}
                 </p>
               </div>
-              <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-3 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
+              <div className={cx("rounded-2xl border px-3 py-3", tokens.history.statIncome)}>
                 <div className="flex items-start gap-1.5 mb-1 min-h-[1.9rem]">
                   <span className={cx("text-[10px] font-bold uppercase tracking-wider leading-tight break-words", tokens.text.faint)}>
                     {t("dashboard.income")}
@@ -304,8 +304,8 @@ export const History: React.FC<HistoryProps> = ({
               </div>
               <div className={`rounded-2xl px-3 py-3 border ${
                 stats.net >= 0
-                  ? "bg-indigo-500/8 border-indigo-500/15 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100"
-                  : "bg-orange-500/8 border-orange-500/15 light_sakura:bg-orange-50/60 light_sakura:border-orange-100"
+                  ? tokens.history.statBalancePositive
+                  : tokens.history.statBalanceNegative
               }`}>
                 <div className="flex items-start gap-1.5 mb-1 min-h-[1.9rem]">
                   <span className={cx("text-[10px] font-bold uppercase tracking-wider leading-tight break-words", tokens.text.faint)}>
@@ -313,7 +313,7 @@ export const History: React.FC<HistoryProps> = ({
                   </span>
                 </div>
                 <p className={`font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight ${
-                  stats.net >= 0 ? "text-indigo-400 light_sakura:text-indigo-600" : "text-orange-400 light_sakura:text-orange-600"
+                  stats.net >= 0 ? tokens.text.accentStrong : "text-orange-400 light_sakura:text-orange-600"
                 }`}>
                   {stats.net >= 0 ? "+" : ""}{formatIDR(stats.net)}
                 </p>
@@ -331,11 +331,11 @@ export const History: React.FC<HistoryProps> = ({
                 className={`px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                   filterType === ft
                     ? ft === "expense"
-                      ? "bg-red-500/15 border-red-500/50 text-red-400 light_sakura:bg-red-50 light_sakura:border-red-300 light_sakura:text-red-600"
+                      ? tokens.history.typeFilterActiveExpense
                       : ft === "income"
-                      ? "bg-emerald-500/15 border-emerald-500/50 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:border-emerald-300 light_sakura:text-emerald-600"
-                      : "bg-indigo-500/15 border-indigo-500/50 text-indigo-400 light_sakura:bg-indigo-50 light_sakura:border-indigo-300 light_sakura:text-indigo-600"
-                    : "bg-slate-800/40 border-slate-700/40 text-slate-500 hover:text-slate-300 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-400 light_sakura:hover:text-slate-600"
+                      ? tokens.history.typeFilterActiveIncome
+                      : tokens.history.typeFilterActiveAll
+                    : cx("hover:text-slate-300", tokens.history.typeFilterInactive)
                 }`}
               >
                 {ft === "all" ? t("history.filter_all") ?? "Semua" : ft === "expense" ? t("transaction.expense") : t("transaction.income")}
@@ -344,7 +344,7 @@ export const History: React.FC<HistoryProps> = ({
           </div>
 
           {filterWalletId && (
-            <div className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-sans font-semibold light_sakura:bg-rose-50 light_sakura:border-rose-200 light_sakura:text-rose-600">
+            <div className={cx("flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-sans font-semibold", tokens.history.walletFilter)}>
               <span>{t("wallet.label_pos")}: {filteredWalletName || "-"}</span>
               <button
                 onClick={() => setFilterWalletId(null)}

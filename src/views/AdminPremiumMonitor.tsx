@@ -226,7 +226,7 @@ export const AdminPremiumMonitor: React.FC = () => {
       <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-2xl border ${dummyQrisEnabled ? "bg-purple-900/20 light_sakura:bg-purple-50 border-purple-800/50 light_sakura:border-purple-100 text-purple-400 light_sakura:text-purple-600" : "bg-slate-800 light_sakura:bg-slate-50 border-slate-700 light_sakura:border-slate-100 text-slate-500"}`}>
+            <div className={`p-3 rounded-2xl border ${dummyQrisEnabled ? cx("border-purple-800/50 light_sakura:border-purple-100", tokens.adminPremium.sandboxBadgeBg, tokens.adminPremium.sandboxText) : cx("border-slate-700 light_sakura:border-slate-100 text-slate-500", tokens.surface.subtle)}`}>
               <FlaskConical size={20} />
             </div>
             <div>
@@ -236,7 +236,7 @@ export const AdminPremiumMonitor: React.FC = () => {
               <p className={cx("text-xs mt-0.5 max-w-md", tokens.text.muted)}>
                 {t("admin.dummy_qris_desc")}
               </p>
-              <p className="text-xs mt-1.5 font-medium text-purple-400 light_sakura:text-purple-600">
+              <p className={cx("text-xs mt-1.5 font-medium", tokens.adminPremium.sandboxText)}>
                 {dummyQrisEnabled ? t("admin.dummy_qris_status_on") : t("admin.dummy_qris_status_off")}
               </p>
               {metrics && metrics.sandboxCount > 0 && (
@@ -277,12 +277,12 @@ export const AdminPremiumMonitor: React.FC = () => {
       {metrics && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
           {[
-            { label: t("admin.total_revenue"), val: formatIDR(metrics.totalRevenue), color: "text-amber-500 light_sakura:text-amber-600" },
+            { label: t("admin.total_revenue"), val: formatIDR(metrics.totalRevenue), color: tokens.adminPremium.metricAmber },
             { label: t("admin.status_success"), val: metrics.successCount, color: "text-emerald-500 light_sakura:text-emerald-600" },
-            { label: t("admin.status_pending"), val: metrics.pendingCount, color: "text-amber-500 light_sakura:text-amber-600" },
-            { label: t("admin.status_expired"), val: metrics.expiredCount, color: "text-slate-400 light_sakura:text-slate-600" },
+            { label: t("admin.status_pending"), val: metrics.pendingCount, color: tokens.adminPremium.metricAmber },
+            { label: t("admin.status_expired"), val: metrics.expiredCount, color: tokens.text.mutedAlt },
             { label: t("admin.status_failed"), val: metrics.failedCount, color: "text-red-500 light_sakura:text-red-600" },
-            { label: t("admin.metrics.total"), val: metrics.totalTransactions, color: "text-slate-200 light_sakura:text-slate-800" },
+            { label: t("admin.metrics.total"), val: metrics.totalTransactions, color: tokens.text.strong },
           ].map((m, i) => (
             <div key={i} className={cx("p-6 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
               <p className={cx("text-sm font-medium", tokens.text.muted)}>{m.label}</p>
@@ -303,7 +303,7 @@ export const AdminPremiumMonitor: React.FC = () => {
             className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all
               ${statusFilter === s
                 ? "bg-slate-700 light_sakura:bg-white text-white light_sakura:text-indigo-600 shadow-sm"
-                : "text-slate-400 light_sakura:text-slate-500 hover:text-slate-200 light_sakura:hover:text-slate-700"}`}
+                : cx("hover:text-slate-200 light_sakura:hover:text-slate-700", tokens.text.muted)}`}
           >
             {s === "all" ? t("admin.status_all") : s}
           </button>
@@ -334,12 +334,12 @@ export const AdminPremiumMonitor: React.FC = () => {
                   <th className="px-6 py-4">{t("admin.create_time_col")}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
+              <tbody className={cx("divide-y", tokens.adminPremium.tableDivide)}>
                 {transactions.map((tx) => {
                   const cfg = statusConfig[tx.status] || statusConfig.FAILED;
                   const StatusIcon = cfg.icon;
                   return (
-                    <tr key={tx.id} className="hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50">
+                    <tr key={tx.id} className={tokens.adminPremium.tableRowHover}>
                       <td className="px-6 py-4">
                         <p className={cx("font-semibold", tokens.text.primary)}>{tx.display_name || "—"}</p>
                         <p className={cx("text-xs", tokens.text.muted)}>{tx.email || "—"}</p>
@@ -362,7 +362,7 @@ export const AdminPremiumMonitor: React.FC = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tx.is_sandbox ? "bg-purple-900/20 light_sakura:bg-purple-50 text-purple-300 light_sakura:text-purple-600" : "bg-indigo-900/20 light_sakura:bg-indigo-50 text-indigo-300 light_sakura:text-indigo-600"}`}>
+                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tx.is_sandbox ? cx("text-purple-300 light_sakura:text-purple-600", tokens.adminPremium.sandboxBadgeBg) : "bg-indigo-900/20 light_sakura:bg-indigo-50 text-indigo-300 light_sakura:text-indigo-600"}`}>
                           {tx.is_sandbox ? t("admin.sandbox_badge") : t("admin.live_badge")}
                         </span>
                       </td>
@@ -409,7 +409,7 @@ export const AdminPremiumMonitor: React.FC = () => {
               <button
                 disabled={page === 0}
                 onClick={() => setPage(p => p - 1)}
-                className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
+                className={cx("p-2 rounded-xl border disabled:opacity-50 cursor-pointer", tokens.adminPremium.paginationBorder, tokens.text.label, tokens.surface.card, tokens.hover.surface)}
               >
                 <ChevronLeft size={14} />
               </button>
@@ -417,7 +417,7 @@ export const AdminPremiumMonitor: React.FC = () => {
               <button
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage(p => p + 1)}
-                className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
+                className={cx("p-2 rounded-xl border disabled:opacity-50 cursor-pointer", tokens.adminPremium.paginationBorder, tokens.text.label, tokens.surface.card, tokens.hover.surface)}
               >
                 <ChevronRight size={14} />
               </button>

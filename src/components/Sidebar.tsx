@@ -173,8 +173,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               : cx("p-3 backdrop-blur-sm gap-2.5", tokens.sidebar.profileWidget)
           )}>
             <div className={cx(
-              "w-8 h-8 shrink-0 rounded-full flex items-center justify-center overflow-hidden bg-slate-900 text-xs font-bold shadow-xs transition-all duration-300",
-              "light_sakura:bg-rose-200",
+              "w-8 h-8 shrink-0 rounded-full flex items-center justify-center overflow-hidden text-xs font-bold shadow-xs transition-all duration-300",
+              tokens.mobileBottomNav.profileBg,
               tokens.text.accent
             )}>
               {avatarUrl ? (
@@ -264,21 +264,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={toggleLanguage}
                 title={t("settings.language")}
-                className={cx("p-2 rounded-xl border border-slate-900 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50", tokens.text.secondary)}
+                className={cx(tokens.sidebar.collapsedIconBtn, tokens.text.secondary)}
               >
                 <Globe size={14} />
               </button>
               <button
                 onClick={toggleTheme}
                 title={t("settings.theme")}
-                className={cx("p-2 rounded-xl border border-slate-900 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50", tokens.text.secondary)}
+                className={cx(tokens.sidebar.collapsedIconBtn, tokens.text.secondary)}
               >
                 <SunMoon size={14} />
               </button>
               <button
                 onClick={toggleMute}
                 title="Mute / Unmute"
-                className={cx("p-2 rounded-xl border border-slate-900 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50", tokens.text.secondary)}
+                className={cx(tokens.sidebar.collapsedIconBtn, tokens.text.secondary)}
               >
                 {isMuted ? (
                   <VolumeX size={14} className={cx(tokens.text.danger)} />

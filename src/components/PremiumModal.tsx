@@ -216,10 +216,10 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
           role="dialog"
           aria-modal="true"
           tabIndex={-1}
-          className={cx("bg-slate-900 border rounded-3xl w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none p-6 relative light_sakura:bg-rose-50/90", tokens.text.onSurface, tokens.border.accent)}
+          className={cx("border rounded-3xl w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none p-6 relative", tokens.premiumModal.modalBg, tokens.text.onSurface, tokens.border.accent)}
         >
           {(step === "terms" || step === "expired" || step === "failed") && (
-            <button onClick={onClose} aria-label="Tutup" className="absolute top-4 right-4 text-slate-500 hover:text-white light_sakura:hover:text-slate-800 light_sakura:hover:bg-rose-100 rounded-lg p-0.5">
+            <button onClick={onClose} aria-label="Tutup" className={cx("absolute top-4 right-4 rounded-lg p-0.5", tokens.premiumModal.closeBtn)}>
               <X size={18} />
             </button>
           )}
@@ -244,7 +244,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                 </div>
               )}
 
-              <div className="mt-4 p-4 bg-slate-800/50 rounded-xl text-xs space-y-1 light_sakura:bg-white light_sakura:border light_sakura:border-rose-100">
+              <div className={cx("mt-4 p-4 rounded-xl text-xs space-y-1", tokens.premiumModal.infoBoxBg)}>
                 <p className={cx("flex justify-between", tokens.text.label)}>
                   <span>{t("voucher.price_before")}</span> 
                   <span className={cx("font-semibold", tokens.text.onSurface)}>Rp {pricing.basePrice.toLocaleString("id-ID")}</span>
@@ -261,7 +261,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                 </p>
               </div>
 
-              <ul className={cx("text-left text-xs mt-4 space-y-1.5 bg-slate-800/50 rounded-xl p-4 light_sakura:bg-white light_sakura:border light_sakura:border-rose-100", tokens.text.mutedAlt)}>
+              <ul className={cx("text-left text-xs mt-4 space-y-1.5 rounded-xl p-4", tokens.premiumModal.infoBoxBg, tokens.text.mutedAlt)}>
                 <li>• {t("premium.terms_point_1")}</li>
                 <li>• {t("premium.terms_point_2")}</li>
                 <li>• {t("premium.terms_point_3")}</li>
@@ -284,7 +284,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
           {step === "qris" && tx && (
             <div className="text-center">
               <h3 className={cx("text-base font-bold", tokens.text.onSurface)}>{t("premium.qris_title")}</h3>
-              <div className="bg-white rounded-2xl p-4 mt-4 inline-block light_sakura:border light_sakura:border-rose-100">
+              <div className={cx("bg-white rounded-2xl p-4 mt-4 inline-block", tokens.premiumModal.qrWrapperBorder)}>
                 <img src={tx.qris_url} alt="QRIS" className="w-48 h-48" />
               </div>
               <p className={cx("text-2xl font-bold mt-4", tokens.text.onSurface)}>Rp {tx.total_amount.toLocaleString("id-ID")}</p>

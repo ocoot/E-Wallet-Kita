@@ -150,12 +150,12 @@ export const TelegramSettings: React.FC = () => {
 
   return (
     <MobileSettingsDetailPage title={t("settings.menu_telegram")} description={t("settings.telegram_desc")}>
-      <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
-        <div className="flex items-center justify-between border-b border-slate-800/10 pb-2.5 light_sakura:border-rose-100">
-          <h3 className="font-sans font-bold text-sm text-slate-200 light_sakura:text-slate-800 flex items-center gap-2">
+      <div className={cx("p-5 rounded-2xl shadow-sm space-y-5", tokens.settings.profileCardBgBorder)}>
+        <div className={cx("flex items-center justify-between", tokens.settings.sectionDivider)}>
+          <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.text.strong)}>
             <Send size={14} className="text-indigo-400" />
             <span>{t("settings.telegram_sec")}</span>
-            {isTelegramLocked && <Lock size={12} className="text-amber-500 light_sakura:text-rose-500" />}
+            {isTelegramLocked && <Lock size={12} className={tokens.telegramCard.lockedIconText} />}
           </h3>
           {isTelegramLinked && !isTelegramLocked && (
             <span className="px-2 py-0.5 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/30">
@@ -165,8 +165,8 @@ export const TelegramSettings: React.FC = () => {
         </div>
 
         {isTelegramLocked ? (
-          <div className="flex flex-col items-center justify-center py-6 px-4 text-center space-y-4 border border-dashed border-amber-500/25 bg-amber-500/5 rounded-2xl light_sakura:border-rose-300/30 light_sakura:bg-rose-50/50">
-            <div className="p-3 bg-amber-500/10 rounded-xl text-amber-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+          <div className={cx("flex flex-col items-center justify-center py-6 px-4 text-center space-y-4 border border-dashed rounded-2xl", tokens.telegramCard.upsellBoxBorderBg)}>
+            <div className={cx("p-3 rounded-xl", tokens.telegramCard.upsellIconChipBg)}>
               <Lock size={24} className="animate-pulse" />
             </div>
             <div className="space-y-1">
@@ -182,7 +182,7 @@ export const TelegramSettings: React.FC = () => {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => { audioFeedback.playClick(); setIsPremiumOpen(true); }}
-                className="cursor-pointer px-4 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl shadow-lg shadow-amber-500/10 flex items-center gap-1.5 transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:text-white"
+                className={cx("cursor-pointer px-4 py-2 text-xs font-bold rounded-xl shadow-lg flex items-center gap-1.5 transition-colors", tokens.telegramCard.upsellCtaBtn)}
               >
                 <Sparkles size={13} />
                 <span>{t("premium.menu_label")}</span>
@@ -191,11 +191,11 @@ export const TelegramSettings: React.FC = () => {
           </div>
         ) : isTelegramLinked ? (
           <div className="space-y-4">
-            <div className="flex items-center justify-between gap-4 p-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 light_sakura:border-emerald-250 light_sakura:bg-emerald-50/20 shadow-xs">
+            <div className={cx("flex items-center justify-between gap-4 p-5 rounded-2xl border", tokens.telegramCard.linkedBadgeBg)}>
               <div className="flex items-center gap-3.5">
                 <div className="w-10 h-10 rounded-full bg-[#0088cc] text-white flex items-center justify-center shadow-md relative shrink-0">
                   <Send size={18} className="-translate-x-0.5 translate-y-0.5 rotate-45" />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 light_sakura:border-white rounded-full flex items-center justify-center">
+                  <span className={cx("absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 rounded-full flex items-center justify-center", tokens.telegramCard.linkedAvatarRing)}>
                     <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                   </span>
                 </div>
@@ -203,7 +203,7 @@ export const TelegramSettings: React.FC = () => {
                   <h4 className={cx("font-sans font-bold text-xs", tokens.text.onSurface)}>
                     {t("settings.telegram_sync_status")}
                   </h4>
-                  <div className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 mt-0.5 light_sakura:text-slate-500">
+                  <div className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] mt-0.5", tokens.text.muted)}>
                     {t("settings.telegram_linked", { id: telegramChatId })}
                   </div>
                 </div>
@@ -240,7 +240,7 @@ export const TelegramSettings: React.FC = () => {
             <div className="relative space-y-4">
               <div className="flex items-center gap-2 mb-1">
                 <Info size={14} className="text-indigo-400" />
-                <h4 className="font-sans font-bold text-xs text-slate-200 light_sakura:text-slate-700">
+                <h4 className={cx("font-sans font-bold text-xs", tokens.telegramCard.linkedLabelText)}>
                   {t("settings.telegram_steps_title")}
                 </h4>
               </div>
@@ -264,17 +264,17 @@ export const TelegramSettings: React.FC = () => {
                 whileTap={{ scale: 0.98 }}
                 type="button"
                 onClick={handleGenerateLinkingCode}
-                className="w-full cursor-pointer py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                className={cx("w-full cursor-pointer py-3.5 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all", tokens.budget.addBtn)}
               >
                 {t("settings.btn_generate_code")}
               </motion.button>
             ) : (
-              <div className="p-5 rounded-2xl border-2 border-dashed border-indigo-500/30 bg-indigo-500/5 light_sakura:border-rose-200 light_sakura:bg-rose-50/40 space-y-4 flex flex-col items-center w-full">
+              <div className={cx("p-5 rounded-2xl border-2 border-dashed space-y-4 flex flex-col items-center w-full", tokens.telegramCard.qrBoxBorderBg)}>
                 <div className="text-center space-y-1">
                   <span className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-widest">
                     {t("settings.btn_copy_link")}
                   </span>
-                  <div className="px-6 py-4 rounded-2xl bg-slate-950 shadow-xl font-mono font-bold text-2xl tracking-[0.2em] text-indigo-400 light_sakura:bg-white light_sakura:text-rose-500 border border-slate-800 light_sakura:border-rose-150 flex items-center justify-center gap-3">
+                  <div className={cx("px-6 py-4 rounded-2xl shadow-xl font-mono font-bold text-2xl tracking-[0.2em] border flex items-center justify-center gap-3", tokens.telegramCard.qrCodeBoxBg, tokens.text.accent)}>
                     <span>{linkingCode}</span>
                     <motion.button
                       whileHover={{ scale: 1.1 }}
@@ -287,7 +287,7 @@ export const TelegramSettings: React.FC = () => {
                     </motion.button>
                   </div>
                 </div>
-                <div className="w-full h-px bg-slate-800/50 light_sakura:bg-rose-100" />
+                <div className={cx("w-full h-px", tokens.telegramCard.divider)} />
                 <div className="flex flex-col items-center gap-2">
                   <div className={cx("flex items-center gap-2 font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold uppercase tracking-wider", tokens.text.muted)}>
                     <RefreshCw size={13} className="animate-spin text-indigo-400" />

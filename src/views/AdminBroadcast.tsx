@@ -183,7 +183,7 @@ export const AdminBroadcast: React.FC = () => {
                 className={`flex-1 flex flex-col items-center gap-1 px-4 py-3 rounded-2xl text-sm font-semibold transition-all cursor-pointer
                   ${channel === ch
                     ? "bg-indigo-600 text-white shadow-md"
-                    : "bg-slate-800 light_sakura:bg-slate-100 text-slate-300 light_sakura:text-slate-600 border border-slate-700 light_sakura:border-slate-200 hover:bg-slate-700 light_sakura:hover:bg-slate-200"
+                    : cx("bg-slate-800 light_sakura:bg-slate-100 border hover:bg-slate-700 light_sakura:hover:bg-slate-200", tokens.text.label, tokens.border.strong)
                   }`}
               >
                 <span>{t(`admin.${ch}_channel_label`)}</span>
@@ -230,7 +230,7 @@ export const AdminBroadcast: React.FC = () => {
 
         {/* Recipient count indicators */}
         <div className="flex flex-col sm:flex-row gap-4">
-          <div className={cx("flex-1 flex items-center gap-3 px-6 py-4 rounded-2xl border border-slate-700 light_sakura:border-slate-100", tokens.surface.subtle)}>
+          <div className={cx("flex-1 flex items-center gap-3 px-6 py-4 rounded-2xl border", tokens.adminBroadcast.summaryCardBorder, tokens.surface.subtle)}>
             <Users className="text-indigo-500 shrink-0" size={24} />
             <div>
               <p className={cx("text-sm font-semibold", tokens.text.onSurface)}>
@@ -243,7 +243,7 @@ export const AdminBroadcast: React.FC = () => {
               </p>
             </div>
           </div>
-          <div className={cx("flex-1 flex items-center gap-3 px-6 py-4 rounded-2xl border border-slate-700 light_sakura:border-slate-100", tokens.surface.subtle)}>
+          <div className={cx("flex-1 flex items-center gap-3 px-6 py-4 rounded-2xl border", tokens.adminBroadcast.summaryCardBorder, tokens.surface.subtle)}>
             <Bell className="text-indigo-500 shrink-0" size={24} />
             <div>
               <p className={cx("text-sm font-semibold", tokens.text.onSurface)}>
@@ -259,7 +259,7 @@ export const AdminBroadcast: React.FC = () => {
         </div>
 
         {/* Warnings */}
-        <div className="flex items-start gap-3 px-6 py-4 rounded-2xl bg-amber-900/20 light_sakura:bg-amber-50 border border-amber-800/50 light_sakura:border-amber-100">
+        <div className={cx("flex items-start gap-3 px-6 py-4 rounded-2xl border", tokens.adminBroadcast.warningBannerBg)}>
           <AlertTriangle className="text-amber-500 shrink-0 mt-0.5" size={18} />
           <p className="text-xs text-amber-200 light_sakura:text-amber-700">
             {t("admin.broadcast_warning")}
@@ -299,7 +299,7 @@ export const AdminBroadcast: React.FC = () => {
             <p className={cx("text-xs", tokens.text.muted)}>
               {t("admin.markdown_hint")}
             </p>
-            <p className={`text-xs font-semibold ${charCount > maxChar * 0.9 ? "text-amber-500 light_sakura:text-amber-600" : "text-slate-400 light_sakura:text-slate-500"}`}>
+            <p className={`text-xs font-semibold ${charCount > maxChar * 0.9 ? "text-amber-500 light_sakura:text-amber-600" : tokens.text.muted}`}>
               {charCount}/{maxChar}
             </p>
           </div>
@@ -307,9 +307,9 @@ export const AdminBroadcast: React.FC = () => {
 
         {/* Live Preview */}
         {message.trim().length > 0 && (
-          <div className={cx("rounded-2xl border border-slate-700 light_sakura:border-slate-100 p-6", tokens.surface.subtle)}>
+          <div className={cx("rounded-2xl border p-6", tokens.adminBroadcast.summaryCardBorder, tokens.surface.subtle)}>
             <p className={cx("text-xs font-semibold mb-3 uppercase tracking-wider", tokens.text.muted)}>{t("admin.preview_label")}</p>
-            <div className="text-sm text-slate-200 light_sakura:text-slate-700 whitespace-pre-wrap leading-relaxed font-mono">
+            <div className={cx("text-sm whitespace-pre-wrap leading-relaxed font-mono", tokens.telegramCard.linkedLabelText)}>
              <strong>Pesan dari Admin E-Wallet Kita</strong>{"\n\n"}
               {message.trim()}{"\n\n"}
               <em>— Tim E-Wallet Kita</em>
@@ -339,16 +339,16 @@ export const AdminBroadcast: React.FC = () => {
             {lastResult.telegram && (
               <div className={`rounded-2xl border px-6 py-4 text-sm font-semibold
                 ${lastResult.telegram.failCount === 0
-                  ? "bg-emerald-900/20 light_sakura:bg-emerald-50 border-emerald-800/50 light_sakura:border-emerald-100 text-emerald-300 light_sakura:text-emerald-700"
-                  : "bg-amber-900/20 light_sakura:bg-amber-50 border-amber-800/50 light_sakura:border-amber-100 text-amber-300 light_sakura:text-amber-700"}`}>
+                  ? tokens.adminBroadcast.statusSuccessBadge
+                  : tokens.adminBroadcast.statusPendingBadge}`}>
                Telegram → {t("admin.broadcast_success_report", { success: lastResult.telegram.successCount, failed: lastResult.telegram.failCount })}
               </div>
             )}
             {lastResult.push && (
               <div className={`rounded-2xl border px-6 py-4 text-sm font-semibold
                 ${lastResult.push.failCount === 0
-                  ? "bg-emerald-900/20 light_sakura:bg-emerald-50 border-emerald-800/50 light_sakura:border-emerald-100 text-emerald-300 light_sakura:text-emerald-700"
-                  : "bg-amber-900/20 light_sakura:bg-amber-50 border-amber-800/50 light_sakura:border-amber-100 text-amber-300 light_sakura:text-amber-700"}`}>
+                  ? tokens.adminBroadcast.statusSuccessBadge
+                  : tokens.adminBroadcast.statusPendingBadge}`}>
                Push → {t("admin.push_broadcast_result", { success: lastResult.push.successCount, failed: lastResult.push.failCount })}
               </div>
             )}

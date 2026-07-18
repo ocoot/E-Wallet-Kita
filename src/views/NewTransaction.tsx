@@ -320,7 +320,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
-          className={cx("rounded-3xl border border-slate-800/60 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}
+          className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}
         >
           {/* ── Colour stripe header ─────────────────────────────────── */}
           <div
@@ -351,7 +351,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
             </div>
 
             {/* ── Formasi tab: pilih satu metode input ──────────────────── */}
-            <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-slate-950/60 border border-slate-800/50 light_sakura:bg-rose-50/30 light_sakura:border-rose-100">
+            <div className={cx("grid grid-cols-3 gap-1 p-1 rounded-2xl", tokens.newTransaction.segmentedControlBg)}>
               {([
                 { key: "receipt", label: "Struk", icon: "" },
                 { key: "voice", label: "Suara", icon: "" },
@@ -364,7 +364,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                   className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-sans text-xs font-bold transition-colors cursor-pointer ${
                     activeInputTab === tab.key
                       ? "bg-indigo-600 text-white shadow-sm light_sakura:bg-rose-500"
-                      : "text-slate-500 hover:text-slate-300 light_sakura:text-slate-400 light_sakura:hover:text-slate-600"
+                      : cx(tokens.newTransaction.inactiveHoverText, tokens.text.faint)
                   }`}
                 >
                   <span className="text-sm leading-none">{tab.icon}</span>
@@ -393,11 +393,11 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                   <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                     {t("transaction.label_type")}
                   </label>
-                  <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-slate-950/60 border border-slate-800/50 light_sakura:bg-rose-50/30 light_sakura:border-rose-100">
+                  <div className={cx("grid grid-cols-2 gap-2 p-1 rounded-2xl", tokens.newTransaction.segmentedControlBg)}>
                     <button
                       type="button"
                       onClick={() => { audioFeedback.playClick(); setType("expense"); }}
-                      className={cx("py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2", isExpense ? tokens.newTransaction.typeToggleActiveExpense : "text-slate-500 hover:text-slate-300 light_sakura:text-slate-400 light_sakura:hover:text-slate-600")}
+                      className={cx("py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2", isExpense ? tokens.newTransaction.typeToggleActiveExpense : cx(tokens.newTransaction.inactiveHoverText, tokens.text.faint))}
                     >
                       <span className="text-base leading-none"> </span>
                       {t("transaction.expense")}
@@ -405,7 +405,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                     <button
                       type="button"
                       onClick={() => { audioFeedback.playClick(); setType("income"); }}
-                      className={cx("py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2", !isExpense ? tokens.newTransaction.typeToggleActiveIncome : "text-slate-500 hover:text-slate-300 light_sakura:text-slate-400 light_sakura:hover:text-slate-600")}
+                      className={cx("py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2", !isExpense ? tokens.newTransaction.typeToggleActiveIncome : cx(tokens.newTransaction.inactiveHoverText, tokens.text.faint))}
                     >
                       <span className="text-base leading-none"> </span>
                       {t("transaction.income")}
@@ -473,7 +473,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                             audioFeedback.playClick();
                             setCategory(cat.key);
                           }}
-                          className={cx(isSelected ? (isExpense ? tokens.newTransaction.categoryPillSelectedExpense : tokens.newTransaction.categoryPillSelectedIncome) : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:text-slate-300 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-500 light_sakura:hover:bg-rose-50")}
+                          className={cx(isSelected ? (isExpense ? tokens.newTransaction.categoryPillSelectedExpense : tokens.newTransaction.categoryPillSelectedIncome) : cx("bg-slate-800/50 border-slate-700/50 hover:border-slate-600 hover:text-slate-300 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:hover:bg-rose-50", tokens.text.muted))}
                         >
                           <span className="text-sm leading-none">{getCategoryEmoji(cat.key)}</span>
                           <span>{locale === "id" ? cat.label_id || cat.key : cat.label_en || cat.key}</span>
@@ -514,7 +514,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                       value={date}
                       max={new Date().toISOString().split("T")[0]}
                       onChange={(e) => setDate(e.target.value)}
-                      className={cx("w-full px-4 py-3 bg-slate-950 border rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors light_sakura:bg-slate-50", tokens.text.onSurface, tokens.border.accent)}
+                      className={cx("w-full px-4 py-3 border rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors", tokens.settings.otpInputBg, tokens.text.onSurface, tokens.border.accent)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -527,7 +527,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                       disabled={isLoading}
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
-                      className={cx("w-full px-4 py-3 bg-slate-950 border rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors placeholder:text-slate-600 light_sakura:bg-slate-50", tokens.text.onSurface, tokens.border.accent)}
+                      className={cx("w-full px-4 py-3 border rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors placeholder:text-slate-600", tokens.settings.otpInputBg, tokens.text.onSurface, tokens.border.accent)}
                     />
                   </div>
                 </div>

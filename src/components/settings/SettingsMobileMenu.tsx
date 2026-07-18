@@ -66,9 +66,9 @@ const MenuRow: React.FC<MenuRowDef> = ({ to, icon, label, desc, rightText, right
       <span className="shrink-0 flex items-center gap-1.5">
         {rightBadge}
         {rightText && (
-          <span className="font-sans text-xs text-slate-500 light_sakura:text-slate-400">{rightText}</span>
+          <span className={cx("font-sans text-xs", tokens.text.faint)}>{rightText}</span>
         )}
-        <ChevronRight size={16} className="text-slate-600 light_sakura:text-slate-300" />
+        <ChevronRight size={16} className={tokens.icon.subtle} />
       </span>
     </Link>
   );
@@ -105,14 +105,14 @@ export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
         <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
           {t("nav.settings")}
         </h1>
-        <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500 font-medium">
+        <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.muted)}>
           {t("settings.desc")}
         </p>
       </div>
 
       {/* Profile summary card */}
-      <div className={cx("flex items-center gap-3.5 p-4 rounded-2xl border border-slate-800/60 light_sakura:border-rose-100/50 shadow-sm", tokens.surface.card)}>
-        <div className="relative w-12 h-12 shrink-0 rounded-full overflow-hidden bg-indigo-600 light_sakura:bg-rose-500 text-white flex items-center justify-center font-sans font-bold text-lg">
+      <div className={cx("flex items-center gap-3.5 p-4 rounded-2xl border shadow-sm", tokens.border.subtleRose, tokens.surface.card)}>
+        <div className={cx("relative w-12 h-12 shrink-0 rounded-full overflow-hidden text-white flex items-center justify-center font-sans font-bold text-lg", tokens.settings.avatarBg)}>
           {avatarUrl ? (
             <img src={avatarUrl} alt={displayName || "avatar"} className="w-full h-full object-cover" />
           ) : (
@@ -129,13 +129,13 @@ export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
         </div>
         {!isGuest && (
           isPremium ? (
-            <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold bg-amber-500/15 text-amber-400 light_sakura:bg-rose-100 light_sakura:text-rose-600">
+            <span className={cx("shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold", tokens.settings.premiumBadge)}>
               <Sparkles size={11} /> {t("premium.badge_active")}
             </span>
           ) : (
             <button
               onClick={onOpenPremium}
-              className="shrink-0 cursor-pointer px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors light_sakura:bg-slate-100 light_sakura:text-slate-500"
+              className={cx("shrink-0 cursor-pointer px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold", tokens.settings.premiumDismissBtn)}
             >
               {t("premium.menu_label")}
             </button>
@@ -148,7 +148,7 @@ export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
         <span className="px-1 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest text-slate-500">
           {t("settings.menu_group_account")}
         </span>
-        <div className={cx("rounded-2xl border border-slate-800/60 light_sakura:border-rose-100/50 divide-y divide-slate-800/60 light_sakura:divide-rose-100/60 shadow-sm overflow-hidden", tokens.surface.card)}>
+        <div className={cx("rounded-2xl border divide-y shadow-sm overflow-hidden", tokens.border.subtleRose, tokens.divide.subtleRose, tokens.surface.card)}>
           <MenuRow
             to="/settings/profile"
             icon={<UserIcon size={16} />}
@@ -183,7 +183,7 @@ export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
         <span className="px-1 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest text-slate-500">
           {t("settings.menu_group_preferences")}
         </span>
-        <div className={cx("rounded-2xl border border-slate-800/60 light_sakura:border-rose-100/50 divide-y divide-slate-800/60 light_sakura:divide-rose-100/60 shadow-sm overflow-hidden", tokens.surface.card)}>
+        <div className={cx("rounded-2xl border divide-y shadow-sm overflow-hidden", tokens.border.subtleRose, tokens.divide.subtleRose, tokens.surface.card)}>
           <MenuRow
             to="/settings/theme"
             icon={<SunMoon size={16} />}
@@ -216,7 +216,7 @@ export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
         <span className="px-1 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest text-slate-500">
           {t("settings.menu_group_other")}
         </span>
-        <div className={cx("rounded-2xl border border-slate-800/60 light_sakura:border-rose-100/50 divide-y divide-slate-800/60 light_sakura:divide-rose-100/60 shadow-sm overflow-hidden", tokens.surface.card)}>
+        <div className={cx("rounded-2xl border divide-y shadow-sm overflow-hidden", tokens.border.subtleRose, tokens.divide.subtleRose, tokens.surface.card)}>
           <MenuRow
             to="/settings/privacy"
             icon={<ShieldQuestion size={16} />}

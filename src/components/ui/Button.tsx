@@ -51,24 +51,16 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const variantClasses: Record<ButtonVariant, string> = {
-      primary: cx(
-        "bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-500/20"
-      ),
-      secondary: cx(
-        "bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold border border-slate-700 light_sakura:bg-white light_sakura:hover:bg-slate-50 light_sakura:text-slate-600 light_sakura:border-slate-200"
-      ),
+      primary: cx(tokens.buttonVariant.primary),
+      secondary: cx(tokens.buttonVariant.secondary),
       danger: cx(
         "bg-red-600 hover:bg-red-500 text-white font-bold shadow-lg shadow-red-600/10"
       ),
-      "danger-ghost": cx(
-        "bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold light_sakura:bg-red-50 light_sakura:hover:bg-red-100 light_sakura:text-red-500"
-      ),
+      "danger-ghost": cx(tokens.buttonVariant.dangerGhost),
       success: cx(
         "bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-600/20"
       ),
-      ghost: cx(
-        "bg-transparent hover:bg-slate-800 text-slate-300 font-semibold light_sakura:hover:bg-rose-50 light_sakura:text-slate-600"
-      ),
+      ghost: cx(tokens.buttonVariant.ghost),
     };
 
     return (

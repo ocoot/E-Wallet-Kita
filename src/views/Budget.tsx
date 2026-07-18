@@ -192,20 +192,20 @@ export const Budget: React.FC = () => {
   const statusBadge = (status: "safe" | "warning" | "danger") => {
     if (status === "danger") {
       return (
-        <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-red-500/15 light_sakura:bg-red-50", tokens.text.danger)}>
+        <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold", tokens.budget.statusDanger, tokens.text.danger)}>
           <AlertTriangle size={12} /> {t("budget.status_danger")}
         </span>
       );
     }
     if (status === "warning") {
       return (
-        <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-amber-500/15 light_sakura:bg-amber-50", tokens.text.warning)}>
+        <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold", tokens.budget.statusWarning, tokens.text.warning)}>
           <AlertTriangle size={12} /> {t("budget.status_warning")}
         </span>
       );
     }
     return (
-      <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold bg-emerald-500/15 light_sakura:bg-emerald-50", tokens.text.success)}>
+      <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold", tokens.budget.statusSafe, tokens.text.success)}>
         <CheckCircle2 size={12} /> {t("budget.status_safe")}
       </span>
     );
@@ -222,13 +222,13 @@ export const Budget: React.FC = () => {
           border-slate-900 (identik dgn bg-slate-900 sehingga border tidak
           kelihatan sama sekali) dan tanpa accent stripe -- beda sendiri dari
           semua halaman list lainnya. */}
-      <div className={cx("rounded-3xl border border-slate-800/60 transition-colors duration-300 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}>
+      <div className={cx("rounded-3xl border transition-colors duration-300 shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
       {/* Accent stripe */}
       <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
       <div className="p-6 md:p-8 space-y-6">
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-3.5 flex-wrap border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
+      <div className={cx("flex items-start justify-between gap-3.5 flex-wrap border-b pb-6", tokens.settings.sectionBorder)}>
         <div className="flex items-center gap-3.5">
           <div className={cx("w-11 h-11 rounded-2xl bg-indigo-500/10 flex items-center justify-center light_sakura:bg-rose-500/10 shrink-0", tokens.icon.accent)}>
             <PiggyBank size={22} />
@@ -248,7 +248,7 @@ export const Budget: React.FC = () => {
             onClick={openAddModal}
             disabled={availableCategories.length === 0}
             title={availableCategories.length === 0 ? t("budget.all_categories_budgeted") : undefined}
-            className="flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 cursor-pointer shrink-0"
+            className={cx("flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-xs font-bold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0", tokens.budget.addBtn)}
           >
             <Plus size={15} />
             {t("budget.add_budget_cta")}
@@ -262,21 +262,21 @@ export const Budget: React.FC = () => {
         <ErrorState onRetry={refresh} />
       ) : expenseCategories.length === 0 ? (
         <EmptyState
-          icon={<PiggyBank size={40} className="text-slate-600 light_sakura:text-slate-400" />}
+          icon={<PiggyBank size={40} className={tokens.budget.emptyStateIcon} />}
           title={t("budget.empty_state_title")}
           description={t("budget.empty_state_desc")}
         />
       ) : budgets.length === 0 ? (
         <div className="space-y-4">
           <EmptyState
-            icon={<PiggyBank size={40} className="text-slate-600 light_sakura:text-slate-400" />}
+            icon={<PiggyBank size={40} className={tokens.budget.emptyStateIcon} />}
             title={t("budget.no_budgets_yet_title")}
             description={t("budget.no_budgets_yet_desc")}
           />
           <div className="flex justify-center">
             <button
               onClick={openAddModal}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 cursor-pointer"
+              className={cx("flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-colors cursor-pointer", tokens.budget.addBtn)}
             >
               <Plus size={15} />
               {t("budget.add_budget_cta")}
@@ -313,7 +313,7 @@ export const Budget: React.FC = () => {
                 <button
                   onClick={() => handleSave(catKey)}
                   disabled={savingKey === catKey}
-                  className="w-full py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white transition-colors disabled:opacity-50 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 cursor-pointer"
+                  className={cx("w-full py-2 rounded-xl text-xs font-bold text-white transition-colors disabled:opacity-50 cursor-pointer", tokens.budget.addBtn)}
                 >
                   {savingKey === catKey ? "…" : t("budget.edit_budget")}
                 </button>
@@ -370,7 +370,7 @@ export const Budget: React.FC = () => {
                 </div>
                 <button
                   onClick={closeAddModal}
-                  className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer light_sakura:hover:bg-rose-100"
+                  className={cx("p-1.5 rounded-lg text-slate-400 cursor-pointer", tokens.budget.closeBtnHover)}
                 >
                   <X size={16} />
                 </button>
@@ -415,14 +415,14 @@ export const Budget: React.FC = () => {
                 <div className="flex items-center justify-end gap-3 pt-2">
                   <button
                     onClick={closeAddModal}
-                    className="rounded-xl px-4 py-2 font-sans text-sm font-medium hover:bg-slate-800 hover:text-white cursor-pointer light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                    className={cx("rounded-xl px-4 py-2 font-sans text-sm font-medium cursor-pointer light_sakura:text-slate-600", tokens.budget.closeBtnHover)}
                   >
                     {t("common.cancel")}
                   </button>
                   <button
                     onClick={handleAddSave}
                     disabled={isAdding}
-                    className="rounded-xl px-4.5 py-2 font-sans text-sm font-semibold text-white shadow-lg bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                    className={cx("rounded-xl px-4.5 py-2 font-sans text-sm font-semibold text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer", tokens.budget.addBtn)}
                   >
                     {t("budget.save")}
                   </button>

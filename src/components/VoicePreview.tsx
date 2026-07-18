@@ -143,7 +143,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               )}
             >
               <div className="flex flex-col items-center text-center space-y-4">
-                <div className={cx("p-3.5 rounded-full bg-red-500/15 light_sakura:bg-red-50", tokens.text.danger)}>
+                <div className={cx("p-3.5 rounded-full", tokens.budget.statusDanger, tokens.text.danger)}>
                   <ShieldAlert size={26} />
                 </div>
                 <div className="space-y-1.5">
@@ -159,7 +159,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               <div className="flex gap-3 mt-6">
                 <button
                   onClick={handleDismiss}
-                  className={cx("flex-1 cursor-pointer py-3 px-4 bg-slate-800 hover:bg-slate-700/80 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border border-slate-800 light_sakura:bg-slate-100 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent", tokens.text.secondary)}
+                  className={cx("flex-1 cursor-pointer py-3 px-4 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border", tokens.voicePreview.cancelBtn, tokens.text.secondary)}
                 >
                   <X size={14} />
                   <span>{t("dashboard.voice_close")}</span>
@@ -169,7 +169,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
                     audioFeedback.playClick();
                     onRetry();
                   }}
-                  className="flex-1 cursor-pointer py-3 px-4 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/15 flex items-center justify-center gap-2 transition-all light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                  className={cx("flex-1 cursor-pointer py-3 px-4 text-white rounded-xl font-sans text-xs font-bold shadow-lg flex items-center justify-center gap-2 transition-all", tokens.voicePreview.confirmBtn)}
                 >
                   <RotateCcw size={14} />
                   <span>{t("dashboard.voice_try_again")}</span>
@@ -312,7 +312,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
                   onClick={handleDismiss}
                   className={cx(
                     "flex-1 cursor-pointer py-3.5 px-4 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border",
-                    "bg-slate-800 hover:bg-slate-700/80 border-slate-800 light_sakura:bg-slate-100 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent",
+                    tokens.voicePreview.cancelBtn,
                     tokens.text.secondary
                   )}
                 >
@@ -324,7 +324,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
                   disabled={!canConfirm}
                   className={cx(
                     "flex-2 cursor-pointer py-3.5 px-6 text-white rounded-xl font-sans text-xs font-bold shadow-lg flex items-center justify-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none",
-                    "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/15 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                    tokens.voicePreview.confirmBtn
                   )}
                 >
                   <Check size={14} />

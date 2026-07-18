@@ -282,10 +282,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <BookOpen size={20} />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-white light_sakura:text-slate-800">
+              <h4 className={cx("text-sm font-bold", tokens.text.onSurface)}>
                 {t("onboarding.dashboard_banner_title")}
               </h4>
-              <p className="text-xs text-slate-400 light_sakura:text-slate-600 mt-0.5 leading-relaxed max-w-2xl">
+              <p className={cx("text-xs mt-0.5 leading-relaxed max-w-2xl", tokens.text.mutedAlt)}>
                 {t("onboarding.dashboard_banner_desc")}
               </p>
             </div>

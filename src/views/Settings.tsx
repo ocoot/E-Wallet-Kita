@@ -558,7 +558,7 @@ export const Settings: React.FC<SettingsProps> = ({
           <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
             {t("settings.title")}
           </h1>
-          <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500 font-medium">
+          <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.muted)}>
             {t("settings.desc")}
           </p>
         </div>
@@ -597,7 +597,7 @@ export const Settings: React.FC<SettingsProps> = ({
             />
           )}
           <div className="min-w-0 flex-1">
-            <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">{displayName || t("admin.guest_user")}</p>
+            <p className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>{displayName || t("admin.guest_user")}</p>
             <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">
               {isGuest ? t("admin.guest_user") : isUploadingAvatar ? t("settings.avatar_uploading") : t("settings.avatar_change_hint")}
             </p>
@@ -609,7 +609,7 @@ export const Settings: React.FC<SettingsProps> = ({
               </span>
             ) : (
               <button onClick={() => { audioFeedback.playClick(); setIsPremiumOpen(true); }}
-                className="shrink-0 cursor-pointer px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors light_sakura:bg-slate-100 light_sakura:text-slate-500">
+                className={cx("shrink-0 cursor-pointer px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold bg-slate-800 hover:text-slate-200 transition-colors light_sakura:bg-slate-100", tokens.text.muted)}>
                 {t("premium.menu_label")}
               </button>
             )
@@ -624,8 +624,8 @@ export const Settings: React.FC<SettingsProps> = ({
           <div className="space-y-6">
             
             {/* Section 1: Profiles Name edit */}
-            <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
-            <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100">
+            <div className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}>
+            <h3 className={cx("font-sans font-bold text-sm", tokens.settings.sectionHeadingBorder)}>
               {t("settings.profile_section")}
             </h3>
 
@@ -638,7 +638,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className={cx("w-full bg-slate-950 border rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:text-slate-800", tokens.border.accent)}
+                className={cx("w-full border rounded-xl px-4 py-2 text-xs outline-none focus:border-indigo-500", tokens.settings.otpInputBg, tokens.text.onSurface, tokens.border.accent)}
               />
             </div>
 
@@ -657,14 +657,14 @@ export const Settings: React.FC<SettingsProps> = ({
           {canChangePassword && (
             <form
               onSubmit={handleChangePassword}
-              className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4"
+              className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}
             >
-              <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
+              <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.settings.sectionHeadingBorder)}>
                 <ShieldCheck size={14} className={cx(tokens.icon.accent)} />
                 <span>{t("settings.security_section")}</span>
               </h3>
 
-              <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
+              <p className={cx("font-sans text-xs leading-relaxed", tokens.text.muted)}>
                 {t("settings.security_section_desc")}
               </p>
 
@@ -677,7 +677,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
                 leftIcon={<Lock size={14} />}
-                className={cx("bg-slate-950 text-xs light_sakura:bg-slate-50", tokens.border.accent)}
+                className={cx("text-xs", tokens.settings.otpInputBg, tokens.border.accent)}
                 rightElement={
                   <button
                     type="button"
@@ -701,7 +701,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 leftIcon={<Key size={14} />}
-                className={cx("bg-slate-950 text-xs light_sakura:bg-slate-50", tokens.border.accent)}
+                className={cx("text-xs", tokens.settings.otpInputBg, tokens.border.accent)}
                 rightElement={
                   <button
                     type="button"
@@ -725,7 +725,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 value={confirmNewPassword}
                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                 leftIcon={<Key size={14} />}
-                className={cx("bg-slate-950 text-xs light_sakura:bg-slate-50", tokens.border.accent)}
+                className={cx("text-xs", tokens.settings.otpInputBg, tokens.border.accent)}
                 rightElement={
                   <button
                     type="button"
@@ -755,8 +755,8 @@ export const Settings: React.FC<SettingsProps> = ({
           )}
 
           {/* Section 2: Quick instant Switcher controls */}
-          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
-            <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100">
+          <div className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-5", tokens.settings.profileCardBgBorder)}>
+            <h3 className={cx("font-sans font-bold text-sm", tokens.settings.sectionHeadingBorder)}>
               {t("settings.preferences")}
             </h3>
 
@@ -777,8 +777,8 @@ export const Settings: React.FC<SettingsProps> = ({
                   }}
                   className={`py-3 rounded-xl font-sans text-xs font-bold border transition-all cursor-pointer
                     ${locale === "id" 
-                      ? "bg-indigo-600/10 border-indigo-500 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:border-rose-550 light_sakura:text-rose-600" 
-                      : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
+                      ? tokens.settings.telegramLinkedBadge 
+                      : cx("hover:bg-slate-900", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
                     }`}
                 >
                   Bahasa Indonesia (ID)
@@ -792,8 +792,8 @@ export const Settings: React.FC<SettingsProps> = ({
                   }}
                   className={`py-3 rounded-xl font-sans text-xs font-bold border transition-all cursor-pointer
                     ${locale === "en" 
-                      ? "bg-indigo-600/10 border-indigo-500 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:border-rose-550 light_sakura:text-rose-600" 
-                      : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
+                      ? tokens.settings.telegramLinkedBadge 
+                      : cx("hover:bg-slate-900", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
                     }`}
                 >
                   English (EN)
@@ -819,7 +819,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   className={`py-3 rounded-xl font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-bold border transition-all cursor-pointer
                     ${theme === "dark_obsidian" 
                       ? "bg-indigo-600/10 border-indigo-500 text-indigo-400" 
-                      : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
+                      : cx("hover:bg-slate-900", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
                     }`}
                 >
                   {t("settings.theme_dark_obsidian")}
@@ -834,7 +834,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   className={`py-3 rounded-xl font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-bold border transition-all cursor-pointer
                     ${theme === "light_sakura" 
                       ? "bg-rose-500/10 border-rose-500 text-rose-600" 
-                      : "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500"
+                      : cx("hover:bg-slate-900", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
                     }`}
                 >
                   {t("settings.theme_light_sakura")}
@@ -845,13 +845,13 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
 
           {/* Section 3: PWA Installation Block */}
-          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
-            <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
+          <div className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}>
+            <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.settings.sectionHeadingBorder)}>
               <Smartphone size={14} className={cx(tokens.icon.accent)} />
               <span>{t("settings.pwa_section")}</span>
             </h3>
 
-            <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
+            <p className={cx("font-sans text-xs leading-relaxed", tokens.text.muted)}>
               {t("settings.pwa_desc")}
             </p>
 
@@ -872,7 +872,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 <span>{t("settings.pwa_btn_install")}</span>
               </motion.button>
             ) : (
-              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-slate-400 text-xs leading-relaxed light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 light_sakura:text-slate-600">
+              <div className={cx("p-3 rounded-xl text-xs leading-relaxed", tokens.settings.innerCardBgBorder, tokens.text.mutedAlt)}>
                 <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)]">
                   {t("settings.pwa_not_supported")}
                 </p>
@@ -881,22 +881,22 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
 
             {/* Section 4: Privacy & Data controls (self-service export & account deletion) */}
-            <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
-              <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
+            <div className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}>
+              <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.settings.sectionHeadingBorder)}>
                 <ShieldQuestion size={14} className={cx(tokens.icon.accent)} />
                 <span>{t("settings.privacy_section")}</span>
               </h3>
 
-              <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
+              <p className={cx("font-sans text-xs leading-relaxed", tokens.text.muted)}>
                 {t("settings.privacy_section_desc")}
               </p>
 
               {/* Export my data */}
-              <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 space-y-2.5">
+              <div className={cx("p-3.5 rounded-xl space-y-2.5", tokens.settings.innerCardBgBorder)}>
                 <div className="flex items-start gap-2.5">
                   <Download size={14} className={cx("mt-0.5 shrink-0", tokens.icon.accent)} />
                   <div>
-                    <p className="font-sans text-xs font-semibold text-slate-200 light_sakura:text-slate-800">
+                    <p className={cx("font-sans text-xs font-semibold", tokens.settings.sectionHeadingText)}>
                       {t("settings.privacy_export_title")}
                     </p>
                     <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 leading-relaxed mt-0.5">
@@ -910,7 +910,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   type="button"
                   onClick={handleExportMyData}
                   disabled={isExportingData}
-                  className={cx("w-full cursor-pointer border border-slate-700 hover:bg-slate-800 py-2.5 rounded-xl font-sans text-xs font-semibold text-slate-200 tracking-tight transition-all disabled:opacity-50 flex items-center justify-center gap-2 light_sakura:border-rose-200 light_sakura:text-slate-700", tokens.surface.card)}
+                  className={cx("w-full cursor-pointer border border-slate-700 hover:bg-slate-800 py-2.5 rounded-xl font-sans text-xs font-semibold tracking-tight transition-all disabled:opacity-50 flex items-center justify-center gap-2 light_sakura:border-rose-200", tokens.telegramCard.linkedLabelText, tokens.surface.card)}
                 >
                   <Download size={13} />
                   <span>{isExportingData ? t("common.loading") : t("settings.privacy_export_button")}</span>
@@ -950,12 +950,12 @@ export const Settings: React.FC<SettingsProps> = ({
         <div className="space-y-6">
           
           {/* Section 3: Telegram Bot Integration block */}
-          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-800/10 pb-2.5 light_sakura:border-rose-100">
-              <h3 className="font-sans font-bold text-sm text-slate-200 light_sakura:text-slate-800 flex items-center gap-2">
+          <div className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-5", tokens.settings.profileCardBgBorder)}>
+            <div className={cx("flex items-center justify-between", tokens.settings.sectionDivider)}>
+              <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.settings.sectionHeadingText)}>
                 <Send size={14} className="text-indigo-400" />
                 <span>{t("settings.telegram_sec")}</span>
-                {isTelegramLocked && <Lock size={12} className="text-amber-500 light_sakura:text-rose-500" />}
+                {isTelegramLocked && <Lock size={12} className={tokens.telegramCard.lockedIconText} />}
               </h3>
               {isTelegramLinked && !isTelegramLocked && (
                 <span className="px-2 py-0.5 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/30">
@@ -964,14 +964,14 @@ export const Settings: React.FC<SettingsProps> = ({
               )}
             </div>
 
-            <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
+            <p className={cx("font-sans text-xs leading-relaxed", tokens.text.muted)}>
               {t("settings.telegram_desc")}
             </p>
 
             {/* Connection Status indicator info */}
             {isTelegramLocked ? (
-              <div className="flex flex-col items-center justify-center py-6 px-4 text-center space-y-4 border border-dashed border-amber-500/25 bg-amber-500/5 rounded-2xl light_sakura:border-rose-300/30 light_sakura:bg-rose-50/50">
-                <div className="p-3 bg-amber-500/10 rounded-xl text-amber-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+              <div className={cx("flex flex-col items-center justify-center py-6 px-4 text-center space-y-4 border border-dashed rounded-2xl", tokens.telegramCard.upsellBoxBorderBg)}>
+                <div className={cx("p-3 rounded-xl", tokens.telegramCard.upsellIconChipBg)}>
                   <Lock size={24} className="animate-pulse" />
                 </div>
                 <div className="space-y-1">
@@ -993,7 +993,7 @@ export const Settings: React.FC<SettingsProps> = ({
                       audioFeedback.playClick();
                       setIsPremiumOpen(true);
                     }}
-                    className="cursor-pointer px-4 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl shadow-lg shadow-amber-500/10 flex items-center gap-1.5 transition-colors light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:text-white"
+                    className={cx("cursor-pointer px-4 py-2 text-xs font-bold rounded-xl shadow-lg flex items-center gap-1.5 transition-colors", tokens.telegramCard.upsellCtaBtn)}
                   >
                     <Sparkles size={13} />
                     <span>{t("premium.menu_label")}</span>
@@ -1002,11 +1002,11 @@ export const Settings: React.FC<SettingsProps> = ({
               </div>
             ) : isTelegramLinked ? (
               <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 dark:bg-emerald-500/5 light_sakura:border-emerald-250 light_sakura:bg-emerald-50/20 shadow-xs">
+                <div className={cx("flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border dark:bg-emerald-500/5", tokens.telegramCard.linkedBadgeBg)}>
                   <div className="flex items-center gap-3.5">
                     <div className="w-10 h-10 rounded-full bg-[#0088cc] text-white flex items-center justify-center shadow-md relative shrink-0">
                       <Send size={18} className="-translate-x-0.5 translate-y-0.5 rotate-45" />
-                      <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-900 light_sakura:border-white rounded-full flex items-center justify-center">
+                      <span className={cx("absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 rounded-full flex items-center justify-center", tokens.telegramCard.linkedAvatarRing)}>
                         <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
                       </span>
                     </div>
@@ -1015,7 +1015,7 @@ export const Settings: React.FC<SettingsProps> = ({
                       <h4 className={cx("font-sans font-bold text-xs", tokens.text.onSurface)}>
                         {t("settings.telegram_sync_status")}
                       </h4>
-                      <div className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 mt-0.5 light_sakura:text-slate-500">
+                      <div className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] mt-0.5", tokens.text.muted)}>
                         {t("settings.telegram_linked", { id: telegramChatId })}
                       </div>
                     </div>
@@ -1058,7 +1058,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 <div className="relative space-y-4">
                   <div className="flex items-center gap-2 mb-1">
                     <Info size={14} className="text-indigo-400" />
-                    <h4 className="font-sans font-bold text-xs text-slate-200 light_sakura:text-slate-700">
+                    <h4 className={cx("font-sans font-bold text-xs", tokens.telegramCard.linkedLabelText)}>
                       {t("settings.telegram_steps_title")}
                     </h4>
                   </div>
@@ -1083,17 +1083,17 @@ export const Settings: React.FC<SettingsProps> = ({
                     whileTap={{ scale: 0.98 }}
                     type="button"
                     onClick={handleGenerateLinkingCode}
-                    className="w-full cursor-pointer py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                    className={cx("w-full cursor-pointer py-3.5 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all", tokens.budget.addBtn)}
                   >
                     {t("settings.btn_generate_code")}
                   </motion.button>
                 ) : (
-                  <div className="p-5 rounded-2xl border-2 border-dashed border-indigo-500/30 bg-indigo-500/5 light_sakura:border-rose-200 light_sakura:bg-rose-50/40 space-y-4 flex flex-col items-center w-full">
+                  <div className={cx("p-5 rounded-2xl border-2 border-dashed space-y-4 flex flex-col items-center w-full", tokens.telegramCard.qrBoxBorderBg)}>
                     <div className="text-center space-y-1">
                       <span className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-widest">
                         {t("settings.btn_copy_link")}
                       </span>
-                      <div className="px-8 py-4 rounded-2xl bg-slate-950 shadow-xl font-mono font-bold text-3xl tracking-[0.2em] text-indigo-400 light_sakura:bg-white light_sakura:text-rose-500 border border-slate-800 light_sakura:border-rose-150 flex items-center justify-center gap-4">
+                      <div className={cx("px-8 py-4 rounded-2xl shadow-xl font-mono font-bold text-3xl tracking-[0.2em] border flex items-center justify-center gap-4", tokens.telegramCard.qrCodeBoxBg, tokens.text.accent)}>
                         <span>{linkingCode}</span>
                         <motion.button
                           whileHover={{ scale: 1.1 }}
@@ -1107,7 +1107,7 @@ export const Settings: React.FC<SettingsProps> = ({
                       </div>
                     </div>
 
-                    <div className="w-full h-px bg-slate-800/50 light_sakura:bg-rose-100" />
+                    <div className={cx("w-full h-px", tokens.telegramCard.divider)} />
 
                     <div className="flex flex-col items-center gap-2">
                        <div className={cx("flex items-center gap-2 font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold uppercase tracking-wider", tokens.text.muted)}>
@@ -1127,13 +1127,13 @@ export const Settings: React.FC<SettingsProps> = ({
           {/* Section: Notification Preferences (push & Telegram, per kategori).
               SENGAJA tidak ada toggle untuk "Balasan Admin Support Chat" --
               channel itu dikecualikan dan tetap selalu ON. */}
-          <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
-            <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
+          <div className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}>
+            <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.settings.sectionHeadingBorder)}>
               <Bell size={14} className={cx(tokens.icon.accent)} />
               <span>{t("settings.notif_section")}</span>
             </h3>
 
-            <p className="font-sans text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
+            <p className={cx("font-sans text-xs leading-relaxed", tokens.text.muted)}>
               {t("settings.notif_section_desc")}
             </p>
 
@@ -1148,7 +1148,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   <span className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-wider">
                     {t("settings.notif_group_push")}
                   </span>
-                  <div className="rounded-xl bg-slate-950 border border-slate-800 px-3.5 divide-y divide-slate-800/60 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 light_sakura:divide-rose-200/40">
+                  <div className={cx("rounded-xl px-3.5 divide-y", tokens.settings.divideSubtle, tokens.settings.innerCardBgBorder)}>
                     <ToggleSwitch
                       label={t("settings.notif_push_transaction")}
                       description={t("settings.notif_push_transaction_desc")}
@@ -1179,12 +1179,12 @@ export const Settings: React.FC<SettingsProps> = ({
                     {t("settings.notif_group_telegram")}
                   </span>
                   {isTelegramLocked || !isTelegramLinked ? (
-                    <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-500 text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed flex items-center gap-2 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50">
+                    <div className={cx("p-3 rounded-xl text-slate-500 text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed flex items-center gap-2", tokens.settings.innerCardBgBorder)}>
                       <BellOff size={13} className="shrink-0" />
                       <span>{t("settings.notif_telegram_locked")}</span>
                     </div>
                   ) : (
-                    <div className="rounded-xl bg-slate-950 border border-slate-800 px-3.5 divide-y divide-slate-800/60 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 light_sakura:divide-rose-200/40">
+                    <div className={cx("rounded-xl px-3.5 divide-y", tokens.settings.divideSubtle, tokens.settings.innerCardBgBorder)}>
                       <ToggleSwitch
                         label={t("settings.notif_telegram_budget_alert")}
                         description={t("settings.notif_telegram_budget_alert_desc")}
