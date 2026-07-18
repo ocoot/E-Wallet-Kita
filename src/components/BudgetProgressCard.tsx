@@ -104,7 +104,11 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", duration: 0.45 }}
-      className="rounded-2xl border bg-slate-950/60 border-slate-800/60 light_sakura:bg-white light_sakura:border-rose-100/50 overflow-hidden"
+      className={cx(
+        "rounded-2xl border overflow-hidden",
+        tokens.surface.sunken,
+        tokens.border.accent
+      )}
     >
       {/* Top accent stripe */}
       <div
@@ -119,7 +123,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
             <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest mb-0.5", tokens.text.faint)}>
               {t("budget.page_title")}
             </p>
-            <h3 className="font-semibold text-sm text-slate-100 light_sakura:text-slate-800 truncate leading-snug">
+            <h3 className={cx("font-semibold text-sm truncate leading-snug", tokens.text.primary)}>
               {label}
             </h3>
           </div>
@@ -192,7 +196,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
                 <span>Rp0</span>
                 <span>{formatIDR(budget.monthly_limit)}</span>
               </div>
-              <div className="relative h-3 rounded-full bg-slate-800/80 light_sakura:bg-rose-100 overflow-hidden">
+              <div className={cx("relative h-3 rounded-full overflow-hidden", tokens.surface.sunken)}>
                 {/* Threshold marker */}
                 {budget.alert_threshold_percent < 100 && (
                   <div
@@ -235,7 +239,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
 
             {/* Spent / Remaining */}
             <div className="grid grid-cols-2 gap-2">
-              <div className="rounded-xl bg-slate-900/60 light_sakura:bg-rose-50/60 px-3 py-2">
+              <div className={cx("rounded-xl px-3 py-2", tokens.surface.card)}>
                 <p className={cx("text-[clamp(0.5062rem,2.34vw,0.5625rem)] uppercase tracking-wider font-bold mb-0.5", tokens.text.faint)}>
                   Terpakai
                 </p>
@@ -246,7 +250,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
                   {formatIDR(budget.spent)}
                 </p>
               </div>
-              <div className="rounded-xl bg-slate-900/60 light_sakura:bg-rose-50/60 px-3 py-2">
+              <div className={cx("rounded-xl px-3 py-2", tokens.surface.card)}>
                 <p className={cx("text-[clamp(0.5062rem,2.34vw,0.5625rem)] uppercase tracking-wider font-bold mb-0.5", tokens.text.faint)}>
                   {overBudget ? "Melebihi" : "Sisa"}
                 </p>
@@ -261,7 +265,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
         </div>
 
         {/* Edit / Delete slot */}
-        <div className="border-t border-slate-800/40 light_sakura:border-rose-100/30 pt-4 space-y-3">
+        <div className={cx("border-t pt-4 space-y-3", tokens.border.accent)}>
           <div className="flex items-center gap-2">
             <TrendingUp size={11} className="text-slate-500 shrink-0" />
             <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.text.faint)}>
@@ -273,7 +277,10 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
           <div className="flex justify-end">
             <button
               onClick={onDelete}
-              className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-medium text-red-400/70 hover:text-red-400 transition-colors cursor-pointer light_sakura:text-red-400/60 light_sakura:hover:text-red-500"
+              className={cx(
+                "text-[clamp(0.5625rem,2.6vw,0.625rem)] font-medium transition-colors cursor-pointer",
+                "text-red-400/70 hover:text-red-500 light_sakura:text-red-500/80 light_sakura:hover:text-red-600"
+              )}
             >
               Hapus anggaran ini
             </button>

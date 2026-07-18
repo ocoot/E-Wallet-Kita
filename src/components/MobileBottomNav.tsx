@@ -121,12 +121,12 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
              menu, bukan langsung tampil statis di semua item seperti
              sebelumnya. */}
       <nav
-        className="md:hidden fixed inset-x-4 z-40 flex items-stretch justify-around
-          max-w-md mx-auto px-2
-          bg-slate-950/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 text-white
-          rounded-full shadow-[0_12px_32px_rgba(0,0,0,0.45)]
-          dark_obsidian:bg-slate-950/70 dark_obsidian:border-white/10
-          light_sakura:bg-white/85 light_sakura:backdrop-saturate-100 light_sakura:border-white/60 light_sakura:text-slate-800 light_sakura:shadow-[0_12px_32px_rgba(244,63,94,0.18)]"
+        className={cx(
+          "md:hidden fixed inset-x-4 z-40 flex items-stretch justify-around max-w-md mx-auto px-2",
+          "bg-slate-950/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 shadow-[0_12px_32px_rgba(0,0,0,0.45)] rounded-full",
+          "light_sakura:bg-white/85 light_sakura:backdrop-saturate-100 light_sakura:border-white/60 light_sakura:shadow-[0_12px_32px_rgba(244,63,94,0.18)]",
+          tokens.text.onSurface
+        )}
         style={{ bottom: "calc(1.1rem + env(safe-area-inset-bottom))" }}
       >
         {primaryItems.map((item) => {
@@ -160,7 +160,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   {locked && (
                     <Lock
                       size={11}
-                      className="absolute -right-0.5 -top-0.5 text-amber-400 bg-slate-950 light_sakura:bg-white rounded-full p-0.5"
+                      className={cx("absolute -right-0.5 -top-0.5 text-amber-400 rounded-full p-0.5", tokens.surface.card)}
                     />
                   )}
                 </div>
@@ -179,10 +179,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   size={20}
                   className={
                     isActive
-                      ? "text-indigo-400 light_sakura:text-rose-500"
+                      ? tokens.text.accent
                       : locked
-                        ? "text-slate-600 light_sakura:text-slate-300"
-                        : "text-slate-400 light_sakura:text-slate-500"
+                        ? tokens.text.faint
+                        : tokens.text.muted
                   }
                 />
                 {locked && (
@@ -197,8 +197,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     animate={{ opacity: 1, height: "auto" }}
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="font-sans text-[10px] font-medium truncate max-w-full px-0.5
-                      overflow-hidden text-indigo-400 light_sakura:text-rose-500"
+                    className={cx(
+                      "font-sans text-[10px] font-medium truncate max-w-full px-0.5 overflow-hidden",
+                      tokens.text.accent
+                    )}
                   >
                     {item.label}
                   </motion.span>
@@ -264,12 +266,12 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 260 }}
-              className="relative flex flex-col w-full max-h-[85vh] mt-auto rounded-t-3xl
-                bg-slate-900/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-white/10 text-white
-                shadow-[0_-8px_40px_rgba(0,0,0,0.4)]
-                dark_obsidian:bg-slate-900/70 dark_obsidian:border-white/10
-                light_sakura:bg-rose-50/85 light_sakura:backdrop-saturate-100 light_sakura:text-slate-800 light_sakura:border-white/70
-                outline-none"
+              className={cx(
+                "relative flex flex-col w-full max-h-[85vh] mt-auto rounded-t-3xl outline-none",
+                "bg-slate-900/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-white/10 shadow-[0_-8px_40px_rgba(0,0,0,0.4)]",
+                "light_sakura:bg-rose-50/85 light_sakura:backdrop-saturate-100 light_sakura:border-white/70",
+                tokens.text.onSurface
+              )}
             >
               {/* Grip handle */}
               <div className="flex justify-center pt-3 pb-1 shrink-0">
@@ -277,13 +279,17 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               </div>
 
               {/* Header */}
-              <div className="flex items-center justify-between px-6 py-3 shrink-0 border-b border-slate-800/60 light_sakura:border-rose-100">
-                <span className="font-sans font-bold text-base tracking-tight text-white dark_obsidian:text-white light_sakura:text-slate-900">
+              <div className={cx("flex items-center justify-between px-6 py-3 shrink-0 border-b", tokens.border.accent)}>
+                <span className={cx("font-sans font-bold text-base tracking-tight", tokens.text.primary)}>
                   {t("nav.more")}
                 </span>
                 <button
                   onClick={closeSheet}
-                  className="p-1 rounded-lg hover:bg-white/10 light_sakura:hover:bg-slate-200 cursor-pointer text-white dark_obsidian:text-white light_sakura:text-slate-800"
+                  className={cx(
+                    "p-1 rounded-lg cursor-pointer transition-colors",
+                    "hover:bg-white/10 light_sakura:hover:bg-slate-200",
+                    tokens.text.primary
+                  )}
                 >
                   <X size={20} />
                 </button>
@@ -292,13 +298,17 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               {/* Konten scrollable */}
               <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-5 space-y-5">
                 {/* Profil ringkas */}
-                <div className="p-4 rounded-xl border bg-slate-950/40 border-slate-800 light_sakura:bg-rose-100/50 light_sakura:border-rose-200">
+                <div className={cx("p-4 rounded-xl border", tokens.surface.sunken, tokens.border.accent)}>
                   <div className="flex items-center gap-3">
                     {/* Avatar bulat -- render foto profil kalau ada (sinkron
                         dari App.tsx via prop `userAvatarUrl`, sama seperti
                         di Sidebar desktop), fallback ke inisial huruf kalau
                         belum pasang foto. */}
-                    <div className="w-10 h-10 shrink-0 rounded-full flex items-center justify-center overflow-hidden bg-slate-900 text-indigo-400 light_sakura:bg-rose-200 light_sakura:text-rose-600 text-sm font-bold">
+                    <div className={cx(
+                      "w-10 h-10 shrink-0 rounded-full flex items-center justify-center overflow-hidden text-sm font-bold",
+                      "bg-slate-900 light_sakura:bg-rose-200",
+                      tokens.text.accent
+                    )}>
                       {userAvatarUrl ? (
                         <img src={userAvatarUrl} alt={displayName} className="w-full h-full object-cover" />
                       ) : (
@@ -306,7 +316,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-mono text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-400 light_sakura:text-rose-600 uppercase tracking-widest">
+                      <p className={cx("font-mono text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest", tokens.text.accent)}>
                         {isGuest ? t("history.status_guest") : t("history.status_verified")}
                       </p>
                       <div className="flex items-center gap-2.5 mt-1">
@@ -315,7 +325,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                         ) : (
                           <ShieldCheck size={16} className={cx("shrink-0", tokens.text.success)} />
                         )}
-                        <span className="font-sans font-semibold text-sm truncate max-w-[220px] dark_obsidian:text-slate-200 light_sakura:text-slate-900">
+                        <span className={cx("font-sans font-semibold text-sm truncate max-w-[220px]", tokens.text.primary)}>
                           {displayName}
                         </span>
                       </div>
@@ -336,10 +346,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                         onClick={() => setIsMoreOpen(false)}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-sans text-sm font-medium transition-all duration-150 cursor-pointer
                           ${isActive
-                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 light_sakura:bg-rose-500 light_sakura:text-white"
+                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 light_sakura:bg-rose-500"
                             : locked
-                              ? "text-slate-500 light_sakura:text-slate-400"
-                              : "text-slate-300 hover:bg-slate-800 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+                              ? tokens.text.faint
+                              : cx(tokens.text.label, "hover:bg-slate-800 light_sakura:hover:bg-rose-100")
                           }`}
                       >
                         <IconComp size={18} />
@@ -352,31 +362,43 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               </div>
 
               {/* Footer -- kontrol bahasa/tema/suara + keluar */}
-              <div className="shrink-0 px-6 py-4 space-y-4 border-t border-slate-800 light_sakura:border-rose-100"
+              <div className={cx("shrink-0 px-6 py-4 space-y-4 border-t", tokens.border.accent)}
                 style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
               >
                 <div className="grid grid-cols-3 gap-1.5">
                   <button
                     onClick={toggleLanguage}
-                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                    className={cx(
+                      "flex flex-col items-center justify-center py-2 rounded-xl border font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-semibold cursor-pointer transition-colors",
+                      "border-slate-800 hover:bg-slate-800 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50",
+                      tokens.text.secondary
+                    )}
                   >
                     <Globe size={13} className="mb-0.5" />
                     <span>{locale.toUpperCase()}</span>
                   </button>
                   <button
                     onClick={toggleTheme}
-                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                    className={cx(
+                      "flex flex-col items-center justify-center py-2 rounded-xl border font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-semibold cursor-pointer transition-colors",
+                      "border-slate-800 hover:bg-slate-800 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50",
+                      tokens.text.secondary
+                    )}
                   >
                     <SunMoon size={13} className="mb-0.5" />
                     <span>{theme === "dark_obsidian" ? t("common.dark") : t("common.light")}</span>
                   </button>
                   <button
                     onClick={toggleMute}
-                    className="flex flex-col items-center justify-center py-2 rounded-xl border border-slate-800 hover:bg-slate-800 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-semibold cursor-pointer text-slate-300 light_sakura:border-rose-200 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100"
+                    className={cx(
+                      "flex flex-col items-center justify-center py-2 rounded-xl border font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-semibold cursor-pointer transition-colors",
+                      "border-slate-800 hover:bg-slate-800 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50",
+                      tokens.text.secondary
+                    )}
                     title="Mute / Unmute"
                   >
                     {isMuted ? (
-                      <VolumeX size={13} className="text-red-400 light_sakura:text-red-500 mb-0.5" />
+                      <VolumeX size={13} className={cx("mb-0.5", tokens.text.danger)} />
                     ) : (
                       <Volume2 size={13} className={cx(tokens.icon.accent, "mb-0.5")} />
                     )}

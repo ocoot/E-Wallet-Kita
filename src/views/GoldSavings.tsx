@@ -356,7 +356,12 @@ export const GoldSavings: React.FC = () => {
                 kartu ini tetap di atas backdrop selama terbuka. */}
             <div
               onKeyDown={(e) => { if (e.key === "Escape") { toggleFlip(p.id); } }}
-              className={`absolute inset-0 rounded-2xl p-2.5 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-slate-900 border border-amber-500/20 light_sakura:bg-white light_sakura:border-amber-200 shadow-lg ${!isFlipped ? "pointer-events-none" : ""}`}
+              className={cx(
+                "absolute inset-0 rounded-2xl p-2.5 [backface-visibility:hidden] [transform:rotateY(180deg)] border shadow-lg",
+                tokens.surface.card,
+                tokens.border.accent,
+                !isFlipped && "pointer-events-none"
+              )}
             >
               <div className="grid grid-cols-2 gap-1.5 h-full content-center">
                 <button onClick={(e) => { e.stopPropagation(); openMove(p, "buy"); }} disabled={busyId === p.id || p.is_archived} tabIndex={isFlipped ? 0 : -1}
@@ -365,7 +370,11 @@ export const GoldSavings: React.FC = () => {
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); openMove(p, "sell"); }} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0 || !price?.buyback_price_per_gram} tabIndex={isFlipped ? 0 : -1}
                   title={!price?.buyback_price_per_gram ? t("gold.buyback_unavailable_hint") : undefined}
-                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
+                  className={cx(
+                    "flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 hover:bg-indigo-500/25 light_sakura:bg-rose-50",
+                    tokens.text.accent
+                  )}
+                >
                   <ArrowUpCircle size={12} /> {t("gold.sell_button")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); openMove(p, "manual_add"); }} disabled={busyId === p.id || p.is_archived} tabIndex={isFlipped ? 0 : -1}
@@ -385,7 +394,11 @@ export const GoldSavings: React.FC = () => {
                   {p.is_archived ? <ArchiveRestore size={12} /> : <Archive size={12} />} {t(p.is_archived ? "gold.unarchive_button" : "gold.archive_button")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); audioFeedback.playClick(); setDeleteTarget(p); }} tabIndex={isFlipped ? 0 : -1}
-                  className="col-span-2 flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer bg-red-500/10 text-red-500 hover:bg-red-500/20 light_sakura:bg-red-50 light_sakura:text-red-400">
+                  className={cx(
+                    "col-span-2 flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer bg-red-500/10 hover:bg-red-500/20 light_sakura:bg-red-50",
+                    tokens.text.danger
+                  )}
+                >
                   <Trash2 size={12} /> {t("common.delete")}
                 </button>
               </div>
@@ -418,7 +431,7 @@ export const GoldSavings: React.FC = () => {
         />
       )}
 
-      <div className={cx("rounded-3xl border border-slate-800/60 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}>
+      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.border.accent, tokens.surface.card)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -451,9 +464,9 @@ export const GoldSavings: React.FC = () => {
                   penjelasan lebih lengkap di modal beli/jual. */}
               <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-slate-500 mt-0.5 leading-snug">{t("gold.stat_market_value_note")}</p>
             </div>
-            <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-3 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
+            <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.subtle, tokens.border.strong)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_cash_locked")}</span>
-              <p className="font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight text-slate-200 light_sakura:text-slate-700">{formatIDR(summary.total_cash_locked)}</p>
+              <p className={cx("font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.secondary)}>{formatIDR(summary.total_cash_locked)}</p>
               {/* Sejak migration 20260814000000_decouple_gold_simulation_from_balance.sql,
                   angka ini TIDAK LAGI berarti "uang yang terpotong dari
                   Saldo Tersedia" -- murni basis hitung Untung/Rugi. Footnote
@@ -465,7 +478,10 @@ export const GoldSavings: React.FC = () => {
               ? "bg-emerald-500/8 border-emerald-500/15 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100"
               : "bg-red-500/8 border-red-500/15 light_sakura:bg-red-50/60 light_sakura:border-red-100"}`}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_gain_loss")}</span>
-              <p className={`font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight ${summary.unrealized_gain_loss >= 0 ? "text-emerald-400 light_sakura:text-emerald-600" : "text-red-400 light_sakura:text-red-500"}`}>
+              <p className={cx(
+                "font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight",
+                summary.unrealized_gain_loss >= 0 ? tokens.text.success : tokens.text.danger
+              )}>
                 {summary.unrealized_gain_loss >= 0 ? "+" : ""}{formatIDR(summary.unrealized_gain_loss)}
               </p>
             </div>
@@ -479,7 +495,7 @@ export const GoldSavings: React.FC = () => {
           )}
 
           <div className="flex items-start gap-2.5 rounded-2xl border border-indigo-500/15 bg-indigo-500/5 px-4 py-3 light_sakura:bg-indigo-50/40 light_sakura:border-indigo-100">
-            <Info size={14} className="text-indigo-400 light_sakura:text-indigo-500 shrink-0 mt-0.5" />
+            <Info size={14} className={cx("shrink-0 mt-0.5", tokens.text.accent)} />
             <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed", tokens.text.mutedAlt)}>{t("gold.info_banner_text")}</p>
           </div>
 
@@ -488,12 +504,12 @@ export const GoldSavings: React.FC = () => {
               Konten di-duplikasi 2x supaya loop-nya mulus (lihat .gold-marquee-track). */}
           {prices.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold text-slate-500 light_sakura:text-slate-500 px-1">
+              <p className={cx("text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold px-1", tokens.text.faint)}>
                 {t(priceDatesMismatch ? "gold.prices_updated_mismatch" : "gold.prices_updated_as_of", {
                   date: formatPriceDateLong(latestPriceDate as string, locale),
                 })}
               </p>
-              <div className="gold-marquee-viewport overflow-hidden rounded-xl border border-slate-800 bg-slate-950/40 light_sakura:bg-slate-50 light_sakura:border-slate-200 py-2">
+              <div className={cx("gold-marquee-viewport overflow-hidden rounded-xl border py-2", tokens.surface.sunken, tokens.border.default)}>
                 <div className="gold-marquee-track">
                   {[...prices, ...prices].map((pr, idx) => {
                     const isStaleVsOthers = priceDatesMismatch && pr.price_date !== latestPriceDate;
@@ -501,7 +517,11 @@ export const GoldSavings: React.FC = () => {
                       <div
                         key={`${pr.brand}-${idx}`}
                         title={isStaleVsOthers ? t("gold.price_stale_brand_hint") : undefined}
-                        className={`shrink-0 px-4 py-0.5 border-r border-slate-800/60 light_sakura:border-slate-200 ${isStaleVsOthers ? "bg-amber-500/5" : ""}`}
+                        className={cx(
+                          "shrink-0 px-4 py-0.5 border-r",
+                          tokens.border.default,
+                          isStaleVsOthers ? "bg-amber-500/5" : ""
+                        )}
                       >
                         <p className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap">{t(`gold.brand_${pr.brand}`)}</p>
                         <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold flex items-center gap-1 whitespace-nowrap", tokens.text.warning)}>
@@ -528,7 +548,7 @@ export const GoldSavings: React.FC = () => {
           ) : pocketsError ? (
             <ErrorState onRetry={refresh} />
           ) : pockets.length === 0 ? (
-            <EmptyState icon={<Coins size={40} className="text-slate-600 light_sakura:text-slate-400" />} title={t("gold.empty_title")} description={t("gold.empty_desc")} />
+            <EmptyState icon={<Coins size={40} className={cx(tokens.icon.muted)} />} title={t("gold.empty_title")} description={t("gold.empty_desc")} />
           ) : (
             <AnimatePresence>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
@@ -551,7 +571,7 @@ export const GoldSavings: React.FC = () => {
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl", tokens.surface.card)}>
+              className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border shadow-2xl", tokens.border.strong, tokens.surface.card)}>
               <div className="h-1 w-full bg-gradient-to-r from-amber-500 to-yellow-500" />
               <div className="p-6 space-y-4">
                 <h2 className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
@@ -620,7 +640,7 @@ export const GoldSavings: React.FC = () => {
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className={cx("w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl", tokens.surface.card)}>
+              className={cx("w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border shadow-2xl", tokens.border.strong, tokens.surface.card)}>
               <div className={`h-1 w-full ${copy.barClass}`} />
               <div className="p-6 space-y-4">
                 <div>

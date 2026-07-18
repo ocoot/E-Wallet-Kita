@@ -29,21 +29,27 @@ export const SplashScreen: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.25 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center
-                 bg-[#faf9fb] light_sakura:bg-[#fff5f6]"
+      className={cx(
+        "fixed inset-0 z-[100] flex items-center justify-center",
+        tokens.surface.canvas
+      )}
     >
       <div className="flex flex-col items-center gap-5">
         {/* Logo + spinning ring */}
         <div className="relative w-[104px] h-[104px] flex items-center justify-center">
           <div
-            className="absolute inset-0 rounded-full border-2
-                       border-indigo-100 light_sakura:border-rose-100"
+            className={cx(
+              "absolute inset-0 rounded-full border-2",
+              tokens.border.accent
+            )}
           />
           {!shouldReduceMotion && (
             <div
-              className="absolute inset-0 rounded-full border-2 border-transparent
-                         border-t-indigo-600 border-r-violet-500 animate-spin
-                         light_sakura:border-t-rose-50 light_sakura:border-r-rose-300"
+              className={cx(
+                "absolute inset-0 rounded-full border-2 border-transparent animate-spin",
+                tokens.text.accent.replace(/text-/g, "border-t-"),
+                tokens.text.accent.replace(/text-/g, "border-r-").replace(/indigo-400/g, "indigo-400/30").replace(/rose-500/g, "rose-500/30")
+              )}
               style={{ animationDuration: "1.4s" }}
             />
           )}
@@ -56,10 +62,10 @@ export const SplashScreen: React.FC = () => {
 
         {/* Brand */}
         <div className="flex flex-col items-center gap-1.5">
-          <p className="font-sans font-extrabold text-base tracking-tight text-slate-900 light_sakura:text-slate-800">
-            E-Wallet <span className="text-indigo-600 light_sakura:text-rose-500">Kita</span>
+          <p className={cx("font-sans font-extrabold text-base tracking-tight", tokens.text.primary)}>
+            E-Wallet <span className={cx(tokens.text.accent)}>Kita</span>
           </p>
-          <p className="font-mono text-[10.5px] tracking-wider uppercase text-slate-400 light_sakura:text-rose-400">
+          <p className={cx("font-mono text-[10.5px] tracking-wider uppercase", tokens.text.muted)}>
             {t("auth.loading_app_desc")}
           </p>
         </div>

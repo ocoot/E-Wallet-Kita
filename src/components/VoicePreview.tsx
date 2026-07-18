@@ -108,9 +108,14 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               transition={{ type: "spring", duration: 0.3 }}
-              className={cx("relative z-10 w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-8 shadow-2xl border-indigo-500/20 light_sakura:border-rose-100 flex flex-col items-center text-center space-y-4", tokens.text.onSurface, tokens.surface.card)}
+              className={cx(
+                "relative z-10 w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-8 shadow-2xl flex flex-col items-center text-center space-y-4",
+                tokens.text.onSurface,
+                tokens.surface.card,
+                tokens.border.accent
+              )}
             >
-              <div className={cx("p-3.5 rounded-full bg-indigo-500/10 light_sakura:bg-rose-50", tokens.icon.accent)}>
+              <div className={cx("p-3.5 rounded-full", tokens.surface.sunken, tokens.icon.accent)}>
                 <Loader2 className="animate-spin" size={28} />
               </div>
               <div className="space-y-1.5">
@@ -131,10 +136,14 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               transition={{ type: "spring", duration: 0.3 }}
-              className={cx("relative z-10 w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl border-red-500/30 light_sakura:border-red-200", tokens.text.onSurface, tokens.surface.card)}
+              className={cx(
+                "relative z-10 w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl border-red-500/30 light_sakura:border-red-200",
+                tokens.text.onSurface,
+                tokens.surface.card
+              )}
             >
               <div className="flex flex-col items-center text-center space-y-4">
-                <div className="p-3.5 rounded-full bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500">
+                <div className={cx("p-3.5 rounded-full bg-red-500/15 light_sakura:bg-red-50", tokens.text.danger)}>
                   <ShieldAlert size={26} />
                 </div>
                 <div className="space-y-1.5">
@@ -176,12 +185,17 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               transition={{ type: "spring", duration: 0.3 }}
-              className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl border-indigo-500/20 light_sakura:border-rose-100", tokens.text.onSurface, tokens.surface.card)}
+              className={cx(
+                "relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl",
+                tokens.text.onSurface,
+                tokens.surface.card,
+                tokens.border.accent
+              )}
             >
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-4 mb-5 light_sakura:border-rose-100/50">
+              <div className={cx("flex items-center justify-between border-b pb-4 mb-5", tokens.border.accent)}>
                 <div className="flex items-center gap-3">
-                  <div className={cx("p-2.5 bg-indigo-500/10 rounded-xl light_sakura:bg-rose-50", tokens.icon.accent)}>
+                  <div className={cx("p-2.5 rounded-xl", tokens.surface.sunken, tokens.icon.accent)}>
                     <Mic size={20} />
                   </div>
                   <div>
@@ -195,14 +209,14 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
                 </div>
                 <button
                   onClick={handleDismiss}
-                  className="p-2 opacity-60 hover:opacity-100 rounded-xl hover:bg-slate-800/50 cursor-pointer transition-all light_sakura:hover:bg-slate-100"
+                  className={cx("p-2 opacity-60 hover:opacity-100 rounded-xl cursor-pointer transition-all", tokens.hover.surface)}
                 >
                   <X size={18} />
                 </button>
               </div>
 
               {/* Transkrip asli dari suara pengguna */}
-              <div className="mb-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/60 light_sakura:bg-rose-50/40 light_sakura:border-rose-100/50">
+              <div className={cx("mb-4 p-3 rounded-xl border", tokens.surface.sunken, tokens.border.accent)}>
                 <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest font-bold opacity-50 mb-1">
                   {t("dashboard.voice_transcript_label")}
                 </p>
@@ -252,7 +266,11 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
                     type="number"
                     value={amount}
                     onChange={(e) => setAmount(Number(e.target.value) || 0)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 font-bold text-emerald-400 focus:border-indigo-500 outline-none light_sakura:bg-white light_sakura:border-rose-200/60"
+                    className={cx(
+                      "w-full rounded-lg px-2.5 py-2 font-bold text-emerald-400 focus:border-indigo-500 outline-none border",
+                      tokens.surface.sunken,
+                      tokens.border.accent
+                    )}
                   />
                   <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] opacity-50 font-mono">{formatIDR(amount)}</p>
                 </div>
@@ -280,7 +298,11 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
                   type="text"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-2 focus:border-indigo-500 outline-none light_sakura:bg-white light_sakura:border-rose-200/60"
+                  className={cx(
+                    "w-full rounded-lg px-2.5 py-2 focus:border-indigo-500 outline-none border",
+                    tokens.surface.sunken,
+                    tokens.border.accent
+                  )}
                 />
               </div>
 
@@ -288,7 +310,11 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               <div className="flex gap-3">
                 <button
                   onClick={handleDismiss}
-                  className={cx("flex-1 cursor-pointer py-3.5 px-4 bg-slate-800 hover:bg-slate-700/80 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border border-slate-800 light_sakura:bg-slate-100 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent", tokens.text.secondary)}
+                  className={cx(
+                    "flex-1 cursor-pointer py-3.5 px-4 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border",
+                    "bg-slate-800 hover:bg-slate-700/80 border-slate-800 light_sakura:bg-slate-100 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent",
+                    tokens.text.secondary
+                  )}
                 >
                   <X size={14} />
                   <span>{t("dashboard.voice_not_correct")}</span>
@@ -296,7 +322,10 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
                 <button
                   onClick={handleConfirm}
                   disabled={!canConfirm}
-                  className="flex-2 cursor-pointer py-3.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/15 flex items-center justify-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                  className={cx(
+                    "flex-2 cursor-pointer py-3.5 px-6 text-white rounded-xl font-sans text-xs font-bold shadow-lg flex items-center justify-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none",
+                    "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/15 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                  )}
                 >
                   <Check size={14} />
                   <span>{t("dashboard.voice_confirm_correct")}</span>

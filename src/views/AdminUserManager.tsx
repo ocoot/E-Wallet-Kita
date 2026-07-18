@@ -425,16 +425,16 @@ export const AdminUserManager: React.FC = () => {
 
       {/* Header + quick actions -- Wrapped in One Card Container, konsisten
           dengan pola header di halaman Admin* lainnya (mis. AdminPremiumMonitor). */}
-      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, "border-slate-800/60 light_sakura:border-rose-100/40")}>
+      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.border.accent)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6 border-slate-800/50 light_sakura:border-rose-100/30">
+          <div className={cx("flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6", tokens.border.default)}>
             <div>
               <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
-                <User className="text-indigo-400 light_sakura:text-rose-500" size={24} />
+                <User className={cx(tokens.text.accent)} size={24} />
                 {t("admin.tab_users")}
               </h1>
-              <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500 font-medium">
+              <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.mutedAlt)}>
                 {t("admin.tab_users_desc")}
               </p>
             </div>
@@ -450,7 +450,7 @@ export const AdminUserManager: React.FC = () => {
                   fetchUsers();
                   loadMetrics();
                 }}
-                className={cx("px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100 light_sakura:bg-white", tokens.text.secondary)}
+                className={cx("px-4 py-2 text-xs font-bold rounded-xl border transition-colors cursor-pointer", tokens.border.default, tokens.hover.surface, tokens.surface.card, tokens.text.secondary)}
               >
                 {t("admin.refresh")}
               </button>
@@ -459,26 +459,26 @@ export const AdminUserManager: React.FC = () => {
 
           {/* Metrics Cards Grid */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 shadow-sm light_sakura:bg-rose-100/10 light_sakura:border-rose-200 space-y-2">
+            <div className={cx("rounded-2xl border p-4 shadow-sm space-y-2", tokens.surface.sunken, tokens.border.default)}>
               <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
                 {t("admin.metrics.total")}
               </p>
               <h2 className={cx("font-sans font-black text-2xl", tokens.text.heading)}>
                 {metrics.totalUsers}
               </h2>
-              <div className="h-1 rounded-full bg-slate-800 overflow-hidden light_sakura:bg-rose-100">
+              <div className={cx("h-1 rounded-full overflow-hidden", tokens.surface.subtle)}>
                 <div className="h-full rounded-full bg-indigo-500" style={{ width: "100%" }} />
               </div>
             </div>
 
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm light_sakura:bg-amber-100/30 light_sakura:border-amber-200 space-y-2">
-              <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-amber-400/80 light_sakura:text-amber-600">
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm space-y-2">
+              <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.warning)}>
                 {t("admin.metrics.premium")}
               </p>
               <h2 className={cx("font-sans font-black text-2xl", tokens.text.warning)}>
                 {metrics.premiumUsers}
               </h2>
-              <div className="h-1 rounded-full bg-amber-900/30 overflow-hidden light_sakura:bg-amber-100">
+              <div className="h-1 rounded-full bg-amber-900/30 overflow-hidden bg-amber-500/10">
                 <div className="h-full rounded-full bg-amber-500 transition-all duration-700"
                   style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.premiumUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
               </div>
@@ -487,27 +487,27 @@ export const AdminUserManager: React.FC = () => {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-4 shadow-sm light_sakura:bg-indigo-100/30 light_sakura:border-indigo-200 space-y-2">
-              <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-indigo-400/80 light_sakura:text-indigo-600">
+            <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-4 shadow-sm light_sakura:bg-rose-500/5 light_sakura:border-rose-500/20 space-y-2">
+              <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.accent)}>
                 {t("admin.metrics.admin")}
               </p>
-              <h2 className="font-sans font-black text-2xl text-indigo-400 light_sakura:text-indigo-600">
+              <h2 className={cx("font-sans font-black text-2xl", tokens.text.accent)}>
                 {metrics.adminUsers}
               </h2>
-              <div className="h-1 rounded-full bg-indigo-900/30 overflow-hidden light_sakura:bg-indigo-100">
+              <div className="h-1 rounded-full bg-indigo-900/30 overflow-hidden bg-indigo-500/10">
                 <div className="h-full rounded-full bg-indigo-500 transition-all duration-700"
                   style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.adminUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
               </div>
             </div>
 
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 shadow-sm light_sakura:bg-red-100/30 light_sakura:border-red-200 space-y-2">
-              <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-red-400/80 light_sakura:text-red-600">
+            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 shadow-sm light_sakura:bg-red-500/5 light_sakura:border-red-500/20 space-y-2">
+              <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.danger)}>
                 {t("admin.metrics.suspended")}
               </p>
-              <h2 className="font-sans font-black text-2xl text-red-400/80 light_sakura:text-red-600">
+              <h2 className={cx("font-sans font-black text-2xl", tokens.text.danger)}>
                 {metrics.bannedUsers}
               </h2>
-              <div className="h-1 rounded-full bg-red-900/30 overflow-hidden light_sakura:bg-red-100">
+              <div className="h-1 rounded-full bg-red-900/30 overflow-hidden bg-red-500/10">
                 <div className="h-full rounded-full bg-red-500 transition-all duration-700"
                   style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.bannedUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
               </div>
@@ -520,13 +520,13 @@ export const AdminUserManager: React.FC = () => {
       <div className={cx("p-5 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 light_sakura:text-rose-400" size={16} />
+            <Search className={cx("absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500", tokens.text.accent)} size={16} />
             <input
               type="text"
               placeholder={t("admin.search_placeholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={cx("w-full pl-10 pr-4 py-2.5 rounded-xl font-sans text-xs bg-slate-900 border border-slate-800 placeholder-slate-500 focus:outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-200 light_sakura:placeholder-slate-400", tokens.text.onSurface)}
+              className={cx("w-full pl-10 pr-4 py-2.5 rounded-xl font-sans text-xs focus:outline-none", tokens.form.input)}
             />
           </div>
 
@@ -571,14 +571,14 @@ export const AdminUserManager: React.FC = () => {
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-6 py-4 rounded-2xl border border-indigo-500/20 bg-indigo-500/5 light_sakura:bg-rose-50 light_sakura:border-rose-200">
-          <span className="text-xs font-bold text-indigo-400 light_sakura:text-rose-600">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-6 py-4 rounded-2xl border border-indigo-500/20 bg-indigo-500/5 light_sakura:bg-rose-500/5 light_sakura:border-rose-500/20">
+          <span className={cx("text-xs font-bold", tokens.text.accent)}>
             {t("admin.users_selected").replace("{count}", selectedIds.size.toString())}
           </span>
           <div className="flex flex-wrap items-center gap-2">
             {[
-              { label: "Grant Premium",  action: "grant_premium"  as const, color: "text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 light_sakura:bg-amber-500/5" },
-              { label: "Revoke Premium", action: "revoke_premium" as const, color: "text-slate-400 border-slate-700 bg-slate-800 hover:bg-slate-700 light_sakura:bg-white" },
+              { label: "Grant Premium",  action: "grant_premium"  as const, color: "text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 light_sakura:bg-amber-500/10" },
+              { label: "Revoke Premium", action: "revoke_premium" as const, color: cx("border text-slate-400 hover:text-white transition-colors", tokens.border.default, tokens.hover.surface, tokens.surface.card) },
               { label: "Ban Semua",      action: "ban"            as const, color: "text-red-400 border-red-500/30 bg-red-500/10 hover:bg-red-500/20" },
               { label: "Unban Semua",    action: "unban"          as const, color: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20" },
             ].map(({ label, action, color }) => (
@@ -593,7 +593,7 @@ export const AdminUserManager: React.FC = () => {
             ))}
             <button
               onClick={() => setSelectedIds(new Set())}
-              className="px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase rounded-xl border border-slate-800 text-slate-400 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200"
+              className={cx("px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase rounded-xl border hover:text-white cursor-pointer transition-colors", tokens.border.default, tokens.hover.surface, tokens.text.secondary)}
             >
               {t("admin.clear_selection")}
             </button>
@@ -614,7 +614,7 @@ export const AdminUserManager: React.FC = () => {
           <ErrorState onRetry={fetchUsers} />
         ) : users.length === 0 ? (
           <EmptyState
-            icon={<User size={40} className="text-slate-600 light_sakura:text-slate-400" />}
+            icon={<User size={40} className={cx(tokens.text.faint)} />}
             title={t("admin.no_users")}
             description={t("admin.no_users_desc")}
           />
@@ -622,7 +622,7 @@ export const AdminUserManager: React.FC = () => {
             <ScrollableTableWrapper>
             <table className="w-full text-left border-collapse table-auto min-w-[900px]">
               <thead>
-                <tr className={cx("border-b border-slate-800 bg-slate-800/60 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider light_sakura:bg-rose-100/30 light_sakura:border-rose-200", tokens.text.mutedAlt)}>
+                <tr className={cx("border-b text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider", tokens.border.default, tokens.surface.subtle, tokens.text.mutedAlt)}>
                   <th className="px-4 py-4 w-10">
                     <input
                        type="checkbox"
@@ -639,13 +639,13 @@ export const AdminUserManager: React.FC = () => {
                   <th className="px-6 py-4 text-right">{t("admin.table_actions")}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 light_sakura:divide-rose-100/20">
+              <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-200/40">
                 {users.map((user) => {
                   const isSelf = user.id === currentUser?.id;
                   return (
                     <tr
                       key={user.id}
-                      className={`hover:bg-slate-800/50 transition-all duration-150 ${user.is_banned ? "bg-red-950/10" : ""} light_sakura:hover:bg-rose-50/50`}
+                      className={cx("transition-all duration-150", tokens.hover.surface, user.is_banned ? "bg-red-950/10" : "")}
                     >
                       {/* Checkbox column */}
                       <td className="px-4 py-4">
@@ -662,8 +662,8 @@ export const AdminUserManager: React.FC = () => {
                       {/* Name Card */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-xl font-bold flex items-center justify-center shrink-0 
-                             ${user.is_banned ? "bg-red-500/20 text-red-400" : "bg-slate-800 text-indigo-400 light_sakura:bg-rose-100 light_sakura:text-rose-600"}`}>
+                          <div className={cx("w-8 h-8 rounded-xl font-bold flex items-center justify-center shrink-0", 
+                             user.is_banned ? "bg-red-500/20 text-red-400" : cx(tokens.surface.subtle, tokens.text.accent))}>
                             {user.display_name.charAt(0).toUpperCase()}
                           </div>
                           <div>
@@ -694,11 +694,11 @@ export const AdminUserManager: React.FC = () => {
                           title={t("admin.refresh")}
                         >
                           {user.is_premium ? (
-                            <span className="px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-lg flex items-center gap-1 inline-flex hover:bg-amber-500/25 light_sakura:bg-amber-100 light_sakura:text-amber-700 light_sakura:border-amber-200">
+                            <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider border rounded-lg flex items-center gap-1 inline-flex transition-colors bg-amber-500/15 border-amber-500/30 hover:bg-amber-500/25", tokens.text.warning)}>
                              {t("admin.premium_active")}
                             </span>
                           ) : (
-                            <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-slate-800 border border-slate-700 rounded-lg hover:bg-slate-700/50 inline-flex light_sakura:bg-slate-100 light_sakura:border-slate-200", tokens.text.mutedAlt)}>
+                            <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider border rounded-lg inline-flex transition-colors", tokens.surface.subtle, tokens.border.strong, tokens.text.mutedAlt)}>
                               {t("admin.premium_lite")}
                             </span>
                           )}
@@ -708,10 +708,10 @@ export const AdminUserManager: React.FC = () => {
                       {/* Role column */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider rounded-lg uppercase border
-                            ${user.role === "owner" ? "bg-red-500/10 text-red-400 border-red-500/20 light_sakura:bg-red-100 light_sakura:text-red-700 light_sakura:border-red-200" :
-                              user.role === "admin" ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20 light_sakura:bg-indigo-100 light_sakura:text-indigo-700 light_sakura:border-indigo-200" :
-                              "bg-slate-800 text-slate-400 border-slate-700 light_sakura:bg-slate-100 light_sakura:text-slate-600 light_sakura:border-slate-200"}`}>
+                          <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider rounded-lg uppercase border",
+                            user.role === "owner" ? cx("bg-red-500/10 border-red-500/20 light_sakura:bg-red-50 light_sakura:border-red-100", tokens.text.danger) :
+                              user.role === "admin" ? cx("bg-indigo-500/10 border-indigo-500/20 light_sakura:bg-rose-50 light_sakura:border-rose-100", tokens.text.accent) :
+                              cx(tokens.surface.subtle, tokens.border.strong, tokens.text.muted))}>
                             {user.role}
                           </span>
                         </div>
@@ -720,12 +720,12 @@ export const AdminUserManager: React.FC = () => {
                       {/* Suspend Status */}
                       <td className="px-6 py-4">
                         {user.is_banned ? (
-                          <span className="px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-red-500/15 text-red-500 border border-red-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-red-100 light_sakura:text-red-700 light_sakura:border-red-200">
+                          <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-red-500/15 border border-red-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-red-50 light_sakura:border-red-100", tokens.text.danger)}>
                             <XCircle size={10} />
                             {t("admin.status_suspended")}
                           </span>
                         ) : (
-                          <span className="px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-emerald-100 light_sakura:text-emerald-700 light_sakura:border-emerald-200">
+                          <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-emerald-500/15 border border-emerald-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-emerald-50 light_sakura:border-emerald-100", tokens.text.success)}>
                             <CheckCircle size={10} />
                             {t("admin.status_active")}
                           </span>
@@ -741,7 +741,7 @@ export const AdminUserManager: React.FC = () => {
                               audioFeedback.playClick();
                               setDetailUser(user);
                             }}
-                            className={cx("p-1 px-2.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.label)}
+                            className={cx("p-1 px-2.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold border rounded-lg transition-all focus:outline-none cursor-pointer flex items-center gap-1", tokens.border.default, tokens.hover.surface, tokens.surface.card, tokens.text.label)}
                             title={t("admin.user_detail_title")}
                           >
                             <User size={10} />
@@ -752,7 +752,7 @@ export const AdminUserManager: React.FC = () => {
                           <button
                             disabled={isSelf || user.role === "owner" || !isOwner}
                             onClick={() => handleToggleRole(user)}
-                            className={cx("p-1 px-2.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold border border-slate-800 hover:bg-slate-900 hover:text-white hover:border-slate-700 rounded-lg transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.label)}
+                            className={cx("p-1 px-2.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold border rounded-lg transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1", tokens.border.default, tokens.hover.surface, tokens.surface.card, tokens.text.label)}
                             title={t("admin.role_title")}
                           >
                             <Shield size={10} />
@@ -763,10 +763,10 @@ export const AdminUserManager: React.FC = () => {
                           <button
                             disabled={isSelf || user.role === "owner"}
                             onClick={() => handleToggleBan(user)}
-                            className={`p-1.5 rounded-lg border transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer
-                              ${user.is_banned
-                                ? "border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/10 light_sakura:border-emerald-200 light_sakura:text-emerald-600 light_sakura:hover:bg-emerald-50"
-                                : "border-red-500/20 text-red-400 hover:bg-red-500/10 light_sakura:border-red-200 light_sakura:text-red-600 light_sakura:hover:bg-red-50"}`}
+                            className={cx("p-1.5 rounded-lg border transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer",
+                              user.is_banned
+                                ? cx("border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20", tokens.text.success)
+                                : cx("border-red-500/20 bg-red-500/10 hover:bg-red-500/20", tokens.text.danger))}
                             title={user.is_banned ? t("admin.restore_title") : t("admin.suspend_title")}
                           >
                             {user.is_banned ? <UserCheck size={12} /> : <UserX size={12} />}
@@ -821,11 +821,11 @@ export const AdminUserManager: React.FC = () => {
                   audioFeedback.playClick();
                   setPage(p => Math.max(0, p - 1));
                 }}
-                className={cx("px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white", tokens.text.secondary)}
+                className={cx("px-3 py-1.5 rounded-lg border disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors", tokens.border.default, tokens.hover.surface, tokens.surface.card, tokens.text.secondary)}
               >
                 {t("admin.prev")}
               </button>
-              <span className="px-3 py-1 bg-slate-950/40 rounded-md border border-slate-900 light_sakura:bg-rose-50/10">
+              <span className={cx("px-3 py-1 rounded-md border", tokens.surface.sunken, tokens.border.default)}>
                 {page + 1} / {Math.ceil(totalUsers / pageSize)}
               </span>
               <button
@@ -834,7 +834,7 @@ export const AdminUserManager: React.FC = () => {
                   audioFeedback.playClick();
                   setPage(p => p + 1);
                 }}
-                className={cx("px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/60 hover:bg-slate-900 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors light_sakura:border-rose-200 light_sakura:bg-white", tokens.text.secondary)}
+                className={cx("px-3 py-1.5 rounded-lg border disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors", tokens.border.default, tokens.hover.surface, tokens.surface.card, tokens.text.secondary)}
               >
                 {t("admin.next")}
               </button>

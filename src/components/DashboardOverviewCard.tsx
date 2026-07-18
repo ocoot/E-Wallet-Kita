@@ -116,7 +116,11 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
     <motion.div
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="relative overflow-hidden rounded-3xl border border-indigo-500/20 bg-gradient-to-br from-indigo-500/10 via-slate-900 to-slate-900 shadow-xl shadow-indigo-900/10 light_sakura:from-rose-100/60 light_sakura:via-white light_sakura:to-white light_sakura:border-rose-200/50"
+      className={cx(
+        "relative overflow-hidden rounded-3xl border shadow-xl",
+        "border-indigo-500/20 bg-gradient-to-br from-indigo-500/10 via-slate-900 to-slate-900 shadow-indigo-900/10",
+        "light_sakura:from-rose-100/60 light_sakura:via-white light_sakura:to-white light_sakura:border-rose-200/50"
+      )}
     >
       {/* Total Kekayaan -- sekarang jadi angka utama kartu ini, karena
           "Saldo Tersedia" tunggal sudah dipindah jadi kartu-kartu Pos Dompet
@@ -129,7 +133,11 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
           </h3>
         </div>
         <div className="flex items-center gap-3.5">
-          <div className={cx("w-11 h-11 rounded-2xl bg-indigo-500/15 flex items-center justify-center shrink-0 light_sakura:bg-rose-500/15", tokens.icon.accent)}>
+          <div className={cx(
+            "w-11 h-11 rounded-2xl flex items-center justify-center shrink-0",
+            "bg-indigo-500/15 light_sakura:bg-rose-500/15",
+            tokens.icon.accent
+          )}>
             <Layers size={20} />
           </div>
           <div className="min-w-0">
@@ -146,7 +154,11 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
 
       {/* Strip Bulan Ini */}
       <div className="px-5 sm:px-6 pb-4">
-        <div className="rounded-2xl border border-slate-800/60 bg-slate-950/30 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30 px-4 py-3 flex items-center justify-between gap-2">
+        <div className={cx(
+          "rounded-2xl border px-4 py-3 flex items-center justify-between gap-2",
+          tokens.surface.sunken,
+          tokens.border.accent
+        )}>
           <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 shrink-0">
             {t("dashboard.this_month")}
           </span>
@@ -201,7 +213,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                           {t("dashboard.total_savings_label")}
                           <InfoTooltip text={t("dashboard.earmarked_note_tooltip")} align="right" />
                         </p>
-                        <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{balanceVisible ? formatIDR(savedAmount) : maskCurrency(formatIDR(savedAmount))}</p>
+                        <p className={cx("text-xs font-bold whitespace-nowrap tabular-nums tracking-tight", tokens.text.primary)}>{balanceVisible ? formatIDR(savedAmount) : maskCurrency(formatIDR(savedAmount))}</p>
                       </div>
                     </div>
                   )}
@@ -215,29 +227,29 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                           {t("dashboard.total_gold_label")}
                           <InfoTooltip text={t("dashboard.total_gold_tooltip")} align="right" />
                         </p>
-                        <p className="text-xs font-bold text-slate-100 light_sakura:text-slate-800 whitespace-nowrap tabular-nums tracking-tight">{balanceVisible ? formatIDR(goldMarketValue) : maskCurrency(formatIDR(goldMarketValue))}</p>
+                        <p className={cx("text-xs font-bold whitespace-nowrap tabular-nums tracking-tight", tokens.text.primary)}>{balanceVisible ? formatIDR(goldMarketValue) : maskCurrency(formatIDR(goldMarketValue))}</p>
                         <p className={`text-[clamp(0.5344rem,2.47vw,0.5938rem)] font-semibold ${goldGainLoss >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                           {goldGainLoss >= 0 ? "▲" : "▼"} {balanceVisible ? formatIDR(Math.abs(goldGainLoss)) : maskCurrency(formatIDR(Math.abs(goldGainLoss)))}
                         </p>
                       </div>
                     </div>
                   )}
-                  <div className="flex items-center gap-2.5 rounded-2xl border border-slate-800/60 bg-slate-950/20 px-3.5 py-2.5 light_sakura:bg-slate-50 light_sakura:border-slate-200">
+                  <div className={cx("flex items-center gap-2.5 rounded-2xl border px-3.5 py-2.5", tokens.surface.sunken, tokens.border.accent)}>
                     <div className="w-7 h-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 shrink-0">
                       <TrendingUp size={13} />
                     </div>
                     <div className="min-w-0">
                       <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_income_label")}</p>
-                      <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 whitespace-nowrap tabular-nums tracking-tight">{balanceVisible ? formatIDR(data.income_total) : maskCurrency(formatIDR(data.income_total))}</p>
+                      <p className={cx("text-xs font-bold whitespace-nowrap tabular-nums tracking-tight", tokens.text.primary)}>{balanceVisible ? formatIDR(data.income_total) : maskCurrency(formatIDR(data.income_total))}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2.5 rounded-2xl border border-slate-800/60 bg-slate-950/20 px-3.5 py-2.5 light_sakura:bg-slate-50 light_sakura:border-slate-200">
+                  <div className={cx("flex items-center gap-2.5 rounded-2xl border px-3.5 py-2.5", tokens.surface.sunken, tokens.border.accent)}>
                     <div className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 shrink-0">
                       <TrendingDown size={13} />
                     </div>
                     <div className="min-w-0">
                       <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_expense_label")}</p>
-                      <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 whitespace-nowrap tabular-nums tracking-tight">{balanceVisible ? formatIDR(data.expense_total) : maskCurrency(formatIDR(data.expense_total))}</p>
+                      <p className={cx("text-xs font-bold whitespace-nowrap tabular-nums tracking-tight", tokens.text.primary)}>{balanceVisible ? formatIDR(data.expense_total) : maskCurrency(formatIDR(data.expense_total))}</p>
                     </div>
                   </div>
                 </div>

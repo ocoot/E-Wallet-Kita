@@ -153,8 +153,8 @@ export const UpdatePrompt: React.FC = () => {
               </div>
 
               {!isUpdating && changelogEntries.some((e) => e.changes.length > 0) && (
-                <div className="rounded-xl bg-white/5 p-3.5 text-left light_sakura:bg-black/[0.03] max-h-56 overflow-y-auto">
-                  <p className="flex items-center gap-1.5 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase tracking-wider text-indigo-300 light_sakura:text-rose-500">
+                <div className={cx("rounded-xl p-3.5 text-left max-h-56 overflow-y-auto", tokens.surface.sunken)}>
+                  <p className={cx("flex items-center gap-1.5 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase tracking-wider", tokens.text.accent)}>
                     <Sparkles size={12} />
                     {t("pwa.whats_new")}
                   </p>
@@ -166,7 +166,7 @@ export const UpdatePrompt: React.FC = () => {
                         key={`${entry.version}-${idx}`}
                         className={
                           idx > 0
-                            ? "pt-3 border-t border-white/10 light_sakura:border-black/10"
+                            ? cx("pt-3 border-t", tokens.border.default)
                             : ""
                         }
                       >
@@ -186,7 +186,7 @@ export const UpdatePrompt: React.FC = () => {
                         <ul className={cx("space-y-1.5 text-xs sm:text-sm", tokens.text.label)}>
                           {entry.changes.map((change, i) => (
                             <li key={i} className="flex gap-2">
-                              <span className="text-indigo-400 light_sakura:text-rose-400">•</span>
+                              <span className={cx(tokens.text.accent)}>•</span>
                               <span>{locale === "en" ? change.en : change.id}</span>
                             </li>
                           ))}

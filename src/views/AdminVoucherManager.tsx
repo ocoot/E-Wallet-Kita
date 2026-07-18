@@ -243,7 +243,7 @@ export const AdminVoucherManager: React.FC = () => {
         {[
           {t: t("voucher.total"), v: stats.total, color: "text-indigo-500"},
           {t: t("voucher.active_vouchers"), v: stats.active, color: "text-emerald-500"},
-          {t: t("voucher.inactive_vouchers"), v: stats.inactive, color: "text-slate-400 light_sakura:text-slate-500"}
+          {t: t("voucher.inactive_vouchers"), v: stats.inactive, color: tokens.text.muted}
         ].map(s=>(
           <div key={s.t} className={cx("p-6 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
             <p className={cx("text-sm font-medium", tokens.text.muted)}>{s.t}</p>
@@ -321,20 +321,20 @@ export const AdminVoucherManager: React.FC = () => {
                 <th className="p-6 text-right">{t("voucher.actions")}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
+            <tbody className={cx("divide-y", tokens.border.default)}>
               {(pageSize === "all" ? vouchers : vouchers.slice(page * pageSize, (page + 1) * pageSize)).map(v => {
                 const usageCount = v.usage_count || 0;
                 return (
-                  <tr key={v.id} className="hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50">
+                  <tr key={v.id} className={cx("transition-colors", tokens.hover.surface)}>
                     <td className={cx("p-6 font-semibold", tokens.text.primary)}>{v.code}</td>
                     <td className="p-6">{v.discount_percent}%</td>
                     <td className="p-6">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${v.is_active ? "bg-emerald-900/20 light_sakura:bg-emerald-50 text-emerald-400 light_sakura:text-emerald-600" : "bg-slate-800 light_sakura:bg-slate-100 text-slate-400 light_sakura:text-slate-600"}`}>
+                      <span className={cx("px-3 py-1 rounded-full text-xs font-semibold", v.is_active ? cx("bg-emerald-500/10", tokens.text.success) : cx(tokens.surface.sunken, tokens.text.muted))}>
                         {v.is_active ? t("voucher.active") : t("voucher.inactive_vouchers")}
                       </span>
                     </td>
                     <td className="p-6">
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${usageCount === 0 ? "bg-slate-800 light_sakura:bg-slate-100 text-slate-400 light_sakura:text-slate-600" : "bg-indigo-900/20 light_sakura:bg-indigo-50 text-indigo-400 light_sakura:text-indigo-600"}`}>
+                      <span className={cx("px-3 py-1 rounded-full text-xs font-semibold", usageCount === 0 ? cx(tokens.surface.sunken, tokens.text.muted) : cx("bg-indigo-500/10", tokens.text.accent))}>
                         {usageCount === 0 ? t("voucher.never_used") : t("voucher.used_times", { count: usageCount }).replace("{count}", String(usageCount))}
                       </span>
                     </td>
@@ -393,7 +393,7 @@ export const AdminVoucherManager: React.FC = () => {
               <button
                 disabled={page === 0}
                 onClick={() => setPage(p => p - 1)}
-                className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
+                className={cx("p-2 rounded-xl border disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.border.default, tokens.surface.card, tokens.hover.surface)}
               >
                 <ChevronLeft size={14} />
               </button>
@@ -401,7 +401,7 @@ export const AdminVoucherManager: React.FC = () => {
               <button
                 disabled={(page + 1) * pageSize >= vouchers.length}
                 onClick={() => setPage(p => p + 1)}
-                className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
+                className={cx("p-2 rounded-xl border disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.border.default, tokens.surface.card, tokens.hover.surface)}
               >
                 <ChevronRight size={14} />
               </button>

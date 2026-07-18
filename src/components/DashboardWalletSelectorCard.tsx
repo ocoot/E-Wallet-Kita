@@ -131,7 +131,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
         className={cx(
           "w-full h-[19rem] rounded-3xl border animate-pulse",
           tokens.surface.card,
-          "border-slate-800/60 light_sakura:border-rose-100/40"
+          tokens.border.accent
         )}
       />
     );
@@ -143,10 +143,10 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
         className={cx(
           "w-full rounded-3xl border p-6 flex items-center gap-3.5",
           tokens.surface.card,
-          "border-slate-800/60 light_sakura:border-rose-100/40"
+          tokens.border.accent
         )}
       >
-        <span className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-indigo-500/15 text-indigo-400 shrink-0 light_sakura:bg-rose-500/15 light_sakura:text-rose-500">
+        <span className={cx("inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-indigo-500/15 shrink-0 light_sakura:bg-rose-500/15", tokens.icon.accent)}>
           <WalletIcon size={20} />
         </span>
         <p className={cx("text-xs leading-relaxed", tokens.text.muted)}>{t("wallet.selector_card_empty")}</p>
@@ -282,7 +282,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
               <div
                 className={cx(
                   "flex items-center gap-2 min-w-0 rounded-2xl border p-3",
-                  hasLogoBg ? "border-white/10 bg-black/20" : cx("border-slate-800/60 light_sakura:border-rose-100/60", tokens.surface.sunken)
+                  hasLogoBg ? "border-white/10 bg-black/20" : cx(tokens.border.accent, tokens.surface.sunken)
                 )}
               >
                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-400 shrink-0">
@@ -300,7 +300,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
               <div
                 className={cx(
                   "flex items-center gap-2 min-w-0 rounded-2xl border p-3",
-                  hasLogoBg ? "border-white/10 bg-black/20" : cx("border-slate-800/60 light_sakura:border-rose-100/60", tokens.surface.sunken)
+                  hasLogoBg ? "border-white/10 bg-black/20" : cx(tokens.border.accent, tokens.surface.sunken)
                 )}
               >
                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-red-500/15 text-red-400 shrink-0">
@@ -327,7 +327,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                 aria-label={t("wallet.action_history")}
                 className={cx(
                   "flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer transition-colors",
-                  hasLogoBg ? "bg-black/20 text-white/85 hover:bg-black/30" : cx("border border-slate-800/60 light_sakura:border-rose-100/60 hover:border-indigo-400/50 light_sakura:hover:border-rose-300", tokens.surface.sunken, mutedTextClass)
+                  hasLogoBg ? "bg-black/20 text-white/85 hover:bg-black/30" : cx("border hover:border-indigo-400/50 light_sakura:hover:border-rose-300", tokens.border.accent, tokens.surface.sunken, mutedTextClass)
                 )}
               >
                 <History size={16} />

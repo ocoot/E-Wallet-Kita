@@ -159,16 +159,17 @@ export const AdminAiMonitor: React.FC = () => {
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             {/* Period selector */}
-            <div className={cx("flex rounded-xl border border-slate-800 light_sakura:border-slate-200 p-1", tokens.surface.subtle)}>
+            <div className={cx("flex rounded-xl border p-1", tokens.border.default, tokens.surface.subtle)}>
               {PERIOD_OPTIONS.map((d) => (
                 <button
                   key={d}
                   onClick={() => setPeriod(d)}
-                  className={`px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer transition-colors
-                    ${period === d
-                      ? "bg-slate-700 light_sakura:bg-white shadow-sm text-indigo-400 light_sakura:text-indigo-600"
-                      : "text-slate-400 light_sakura:text-slate-500 hover:text-slate-200 light_sakura:hover:text-slate-700"
-                    }`}
+                  className={cx(
+                    "px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer transition-colors",
+                    period === d
+                      ? cx("shadow-sm", tokens.surface.card, tokens.text.accent)
+                      : cx("hover:text-indigo-400 light_sakura:hover:text-rose-500", tokens.text.muted)
+                  )}
                 >
                   {d}{t("ai_monitor.days_suffix")}
                 </button>
@@ -178,7 +179,7 @@ export const AdminAiMonitor: React.FC = () => {
             <button
               onClick={() => load(true)}
               disabled={refreshing}
-              className={cx("flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-slate-800 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-white hover:bg-slate-700 light_sakura:hover:bg-slate-50 cursor-pointer transition-colors disabled:opacity-50", tokens.text.label)}
+              className={cx("flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border cursor-pointer transition-colors disabled:opacity-50", tokens.border.default, tokens.surface.subtle, tokens.hover.surface, tokens.text.label)}
             >
               <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
               {t("ai_monitor.refresh")}
@@ -210,10 +211,10 @@ export const AdminAiMonitor: React.FC = () => {
                 return (
                   <div
                     key={p.provider}
-                    className={cx("rounded-3xl border border-slate-700 light_sakura:border-slate-100 p-6 shadow-sm space-y-4", tokens.surface.card)}
+                    className={cx("rounded-3xl border p-6 shadow-sm space-y-4", tokens.surface.card, tokens.border.default)}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-900/50 light_sakura:bg-indigo-50 text-indigo-300 light_sakura:text-indigo-600 uppercase">
+                      <span className={cx("px-3 py-1 rounded-full text-xs font-semibold uppercase", tokens.surface.sunken, tokens.text.accent)}>
                         {p.provider}
                       </span>
                       <span className={cx("text-xs", tokens.text.muted)}>{sharePercent}% {t("ai_monitor.share_of_total")}</span>
@@ -235,9 +236,9 @@ export const AdminAiMonitor: React.FC = () => {
                         </span>
                         <span className={cx("font-semibold", tokens.text.success)}>{sRate}%</span>
                       </div>
-                      <div className="h-2 rounded-full bg-slate-700 light_sakura:bg-slate-100 overflow-hidden">
+                      <div className={cx("h-2 rounded-full overflow-hidden", tokens.surface.subtle)}>
                         <div
-                          className="h-full rounded-full bg-indigo-500 transition-all duration-500"
+                          className="h-full rounded-full bg-indigo-500 light_sakura:bg-rose-500 transition-all duration-500"
                           style={{ width: `${sRate}%` }}
                         />
                       </div>
@@ -245,7 +246,7 @@ export const AdminAiMonitor: React.FC = () => {
 
                     {/* Quota exceeded */}
                     {qRate > 0 && (
-                      <div className="flex items-center gap-2 text-xs text-amber-500 light_sakura:text-amber-600 font-medium">
+                      <div className={cx("flex items-center gap-2 text-xs font-medium", tokens.text.warning)}>
                         <AlertTriangle size={14} />
                         {qRate}% {t("ai_monitor.quota_exceeded")}
                       </div>
@@ -289,7 +290,7 @@ export const AdminAiMonitor: React.FC = () => {
                       <th className="px-6 py-4">{t("ai_monitor.col_last_used")}</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
+                  <tbody className={cx("divide-y", tokens.border.default)}>
                     {(pageSize === "all" ? byKey : byKey.slice(page * pageSize, (page + 1) * pageSize)).map((k) => {
                       const sRate   = successRate(k.success_calls, k.total_calls);
                       const qRate   = quotaRate(k.quota_exceeded_calls, k.total_calls);
@@ -298,13 +299,13 @@ export const AdminAiMonitor: React.FC = () => {
                       return (
                         <tr
                           key={`${k.provider}-${k.key_alias}-${k.model}`}
-                          className="hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50 transition-colors"
+                          className={cx("transition-colors", tokens.hover.surface)}
                         >
                           <td className="px-6 py-4">
-                            <span className="px-2 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold bg-indigo-950/50 light_sakura:bg-indigo-50 text-indigo-300 light_sakura:text-indigo-600 uppercase mr-2">
+                            <span className={cx("px-2 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold uppercase mr-2", tokens.surface.sunken, tokens.text.accent)}>
                               {k.provider}
                             </span>
-                            <span className="font-mono text-xs text-slate-200 light_sakura:text-slate-700">
+                            <span className={cx("font-mono text-xs", tokens.text.primary)}>
                               {k.key_alias}
                             </span>
                           </td>
@@ -316,13 +317,13 @@ export const AdminAiMonitor: React.FC = () => {
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3 min-w-[120px]">
-                              <div className="flex-1 h-2 rounded-full bg-slate-700 light_sakura:bg-slate-100 overflow-hidden">
+                              <div className={cx("flex-1 h-2 rounded-full overflow-hidden", tokens.surface.subtle)}>
                                 <div
                                   className={`h-full rounded-full transition-all ${sRate >= 80 ? "bg-emerald-500" : sRate >= 50 ? "bg-amber-500" : "bg-red-500"}`}
                                   style={{ width: `${sRate}%` }}
                                 />
                               </div>
-                              <span className={`text-xs font-semibold w-8 ${sRate >= 80 ? "text-emerald-400 light_sakura:text-emerald-600" : sRate >= 50 ? "text-amber-400 light_sakura:text-amber-600" : "text-red-400 light_sakura:text-red-600"}`}>
+                              <span className={cx("text-xs font-semibold w-8", sRate >= 80 ? tokens.text.success : sRate >= 50 ? tokens.text.warning : tokens.text.danger)}>
                                 {sRate}%
                               </span>
                             </div>
@@ -359,7 +360,7 @@ export const AdminAiMonitor: React.FC = () => {
               </ScrollableTableWrapper>
 
               {/* Pagination Controls */}
-              <div className={cx("flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t font-sans text-xs text-slate-400 bg-slate-900/50 light_sakura:bg-slate-50/50", tokens.border.default)}>
+              <div className={cx("flex flex-col sm:flex-row items-center justify-between gap-4 px-6 py-4 border-t font-sans text-xs text-slate-400", tokens.surface.subtle, tokens.border.default)}>
                 {/* Page Size Selector */}
                 <div className="flex items-center gap-2">
                   <span>{t("admin.rows_per_page")}</span>
@@ -390,7 +391,7 @@ export const AdminAiMonitor: React.FC = () => {
                       <button
                         disabled={page === 0}
                         onClick={() => setPage(p => p - 1)}
-                        className={cx("p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.border.strong)}
+                        className={cx("p-1.5 rounded-lg border disabled:opacity-50 cursor-pointer", tokens.surface.card, tokens.border.strong, tokens.hover.surface, tokens.text.label)}
                       >
                         <ChevronLeft size={14} />
                       </button>
@@ -398,7 +399,7 @@ export const AdminAiMonitor: React.FC = () => {
                       <button
                         disabled={(page + 1) * pageSize >= byKey.length}
                         onClick={() => setPage(p => p + 1)}
-                        className={cx("p-1.5 rounded-lg bg-slate-800 light_sakura:bg-white border hover:bg-slate-700 light_sakura:hover:bg-slate-50 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.border.strong)}
+                        className={cx("p-1.5 rounded-lg border disabled:opacity-50 cursor-pointer", tokens.surface.card, tokens.border.strong, tokens.hover.surface, tokens.text.label)}
                       >
                         <ChevronRight size={14} />
                       </button>
@@ -415,11 +416,11 @@ export const AdminAiMonitor: React.FC = () => {
 
           {/* Failed / Quota Warning notice */}
           {byKey.some((k) => quotaRate(k.quota_exceeded_calls, k.total_calls) > 20) && (
-            <div className="flex items-start gap-4 rounded-3xl border border-amber-800/50 light_sakura:border-amber-100 bg-amber-950/20 light_sakura:bg-amber-50 p-6">
-              <AlertTriangle size={20} className="text-amber-500 mt-0.5 shrink-0" />
+            <div className={cx("flex items-start gap-4 rounded-3xl border p-6 bg-amber-500/5", tokens.border.accent)}>
+              <AlertTriangle size={20} className={cx("mt-0.5 shrink-0", tokens.text.warning)} />
               <div>
-                <p className="text-sm font-semibold text-amber-200 light_sakura:text-amber-800">{t("ai_monitor.high_quota_warning_title")}</p>
-                <p className="text-xs text-amber-300 light_sakura:text-amber-700 mt-1">{t("ai_monitor.high_quota_warning_desc")}</p>
+                <p className={cx("text-sm font-semibold", tokens.text.warning)}>{t("ai_monitor.high_quota_warning_title")}</p>
+                <p className={cx("text-xs mt-1", tokens.text.mutedAlt)}>{t("ai_monitor.high_quota_warning_desc")}</p>
               </div>
             </div>
           )}

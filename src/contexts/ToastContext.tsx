@@ -119,6 +119,13 @@ const ToastItem: React.FC<{ toast: Toast; onDismiss: (id: string) => void }> = (
     startTimer(remainingRef.current);
   };
 
+  const iconColorClass = {
+    success: tokens.text.success,
+    error: tokens.text.danger,
+    warning: tokens.text.warning,
+    info: tokens.text.accentStrong,
+  }[toast.type];
+
   return (
     <motion.div
       layout
@@ -143,7 +150,7 @@ const ToastItem: React.FC<{ toast: Toast; onDismiss: (id: string) => void }> = (
           transition={{ delay: 0.08, type: "spring", stiffness: 400, damping: 15 }}
           className={`shrink-0 w-9 h-9 rounded-full flex items-center justify-center ${config.iconChip}`}
         >
-          <Icon size={18} className={config.iconColor} />
+          <Icon size={18} className={iconColorClass} />
         </motion.div>
 
         <div className="flex-1 font-sans text-sm font-medium pr-1 pt-1.5">

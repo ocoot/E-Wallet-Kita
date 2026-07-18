@@ -108,12 +108,12 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
         role="dialog"
         aria-modal="true"
         tabIndex={-1}
-        className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] flex flex-col bg-slate-950 border rounded-3xl shadow-2xl overflow-hidden outline-none light_sakura:bg-rose-50/95", tokens.border.accent)}>
+        className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] flex flex-col border rounded-3xl shadow-2xl overflow-hidden outline-none", tokens.surface.card, tokens.border.accent)}>
 
         {/* Header */}
-        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-800/60 bg-slate-900/50 light_sakura:border-rose-100/60 light_sakura:bg-rose-100/20">
+        <div className={cx("shrink-0 flex items-center justify-between px-6 py-4 border-b", tokens.border.accent, tokens.surface.sunken)}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center font-black text-indigo-400 text-lg light_sakura:bg-rose-200/50 light_sakura:border-rose-300 light_sakura:text-rose-600">
+            <div className={cx("w-10 h-10 rounded-2xl border flex items-center justify-center font-black text-lg bg-indigo-500/10 border-indigo-500/20 light_sakura:bg-rose-200/50 light_sakura:border-rose-300", tokens.text.accent)}>
               {user.display_name.charAt(0).toUpperCase()}
             </div>
             <div>
@@ -124,7 +124,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
           <button
             onClick={onClose}
             aria-label="Tutup"
-            className={cx("p-2 rounded-xl hover:bg-slate-800 cursor-pointer transition-colors light_sakura:hover:bg-rose-200/40", tokens.text.muted)}
+            className={cx("p-2 rounded-xl cursor-pointer transition-colors", tokens.hover.surface, tokens.text.muted)}
           >
             <X size={16} />
           </button>
@@ -132,7 +132,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
 
         {/* Body Content */}
         {loading ? (
-          <div className="py-16 text-center text-slate-500 text-sm light_sakura:text-rose-600/70">
+          <div className={cx("py-16 text-center text-sm", tokens.text.muted)}>
             {t("admin.loading_user_detail")}
           </div>
         ) : loadError ? (
@@ -144,10 +144,12 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
 
             {/* Status Badges */}
             <div className="flex flex-wrap gap-2">
-              <span className={`px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase border flex items-center gap-1
-                ${detail.role === "owner" ? "bg-red-500/10 border-red-500/20 text-red-400"
-                  : detail.role === "admin" ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-400 light_sakura:bg-rose-200/40 light_sakura:text-rose-600 light_sakura:border-rose-300"
-                  : "bg-slate-800 border-slate-700 text-slate-400 light_sakura:bg-slate-200 light_sakura:border-slate-300 light_sakura:text-slate-600"}`}>
+              <span className={cx(
+                "px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase border flex items-center gap-1",
+                detail.role === "owner" && "bg-red-500/10 border-red-500/20 text-red-400",
+                detail.role === "admin" && "bg-indigo-500/10 border-indigo-500/20 text-indigo-400 light_sakura:bg-rose-200/40 light_sakura:border-rose-300 light_sakura:text-rose-600",
+                detail.role === "user" && "bg-slate-800 border-slate-700 text-slate-400 light_sakura:bg-slate-200 light_sakura:border-slate-300 light_sakura:text-slate-600"
+              )}>
                 <Shield size={9} />
                 {detail.role}
               </span>
@@ -166,7 +168,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
             </div>
 
             {/* General Fields */}
-            <div className="space-y-3 rounded-2xl bg-slate-900/40 border border-slate-800/50 p-4 light_sakura:bg-rose-100/20 light_sakura:border-rose-100/50">
+            <div className={cx("space-y-3 rounded-2xl border p-4", tokens.surface.sunken, tokens.border.accent)}>
               <InfoRow icon={<Mail size={13} />}   label="Email" value={detail.email || "—"} />
               <InfoRow icon={<Hash size={13} />}   label={t("admin.user_id_label")} value={detail.id} mono />
               <InfoRow icon={<MessageCircle size={13} />} label={t("admin.telegram_chat_id_label")} value={detail.telegram_chat_id ? String(detail.telegram_chat_id) : t("admin.not_connected")} />
@@ -186,7 +188,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
                   icon={<Wallet size={14} className={cx(tokens.text.muted)} />}
                   label={t("admin.stats_count")}
                   value={String(detail.totalTransactions)}
-                  color="text-slate-300 light_sakura:text-slate-700"
+                  color={tokens.text.secondary}
                 />
                 <StatCard
                   icon={<TrendingUp size={14} className="text-emerald-400" />}
@@ -204,11 +206,11 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
             </div>
 
             {/* Net Savings Panel */}
-            <div className="rounded-2xl bg-indigo-500/5 border border-indigo-500/20 p-4 text-center light_sakura:bg-rose-200/10 light_sakura:border-rose-200">
-              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase tracking-wider text-indigo-400/70 mb-1 light_sakura:text-rose-600/70">
+            <div className={cx("rounded-2xl border p-4 text-center", tokens.surface.sunken, tokens.border.accent)}>
+              <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase tracking-wider mb-1", tokens.text.muted)}>
                 {t("admin.net_balance_lifetime")}
               </p>
-              <p className="font-black text-xl text-indigo-400 light_sakura:text-rose-600">
+              <p className={cx("font-black text-xl", tokens.text.accent)}>
                 {formatIDR((detail.totalIncome ?? 0) - (detail.totalExpense ?? 0))}
               </p>
             </div>
@@ -230,7 +232,7 @@ const InfoRow: React.FC<{ icon: React.ReactNode; label: string; value: string; m
     <div className={cx("flex items-center gap-1.5 shrink-0 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mt-0.5", tokens.text.faint)}>
       {icon} {label}
     </div>
-    <span className={`text-xs text-slate-300 text-right break-all light_sakura:text-slate-700 ${mono ? "font-mono text-[clamp(0.5625rem,2.6vw,0.625rem)]" : ""}`}>
+    <span className={cx("text-xs text-right break-all", tokens.text.secondary, mono && "font-mono text-[clamp(0.5625rem,2.6vw,0.625rem)]")}>
       {value}
     </span>
   </div>

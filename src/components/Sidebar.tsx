@@ -117,11 +117,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Desktop Persistent and Collapsible Sidebar (tampilan handphone kini
           memakai navbar bawah -- lihat MobileBottomNav.tsx) */}
       <aside 
-        className={`hidden md:flex flex-col h-screen fixed top-0 left-0 border-r transition-all duration-300 z-30
-          bg-slate-950/55 backdrop-blur-2xl backdrop-saturate-150 border-white/10 text-white shadow-[8px_0_32px_rgba(0,0,0,0.35)]
-          dark_obsidian:bg-slate-950/55 dark_obsidian:border-white/10
-          light_sakura:bg-white/70 light_sakura:backdrop-saturate-100 light_sakura:text-slate-800 light_sakura:border-white/70 light_sakura:shadow-[8px_0_32px_rgba(244,63,94,0.08)]
-          ${isCollapsed ? "w-20" : "w-64"}`}
+        className={cx(
+          "hidden md:flex flex-col h-screen fixed top-0 left-0 border-r transition-all duration-300 z-30 shadow-[8px_0_32px_rgba(0,0,0,0.35)] light_sakura:shadow-[8px_0_32px_rgba(244,63,94,0.08)]",
+          "bg-slate-950/55 backdrop-blur-2xl backdrop-saturate-150 border-white/10",
+          "light_sakura:bg-white/70 light_sakura:backdrop-saturate-100 light_sakura:border-white/70",
+          tokens.text.onSurface,
+          isCollapsed ? "w-20" : "w-64"
+        )}
       >
         {/* Sidebar Brand header */}
         <div className="flex items-center justify-between p-6">
@@ -152,7 +154,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {isCollapsed && (
             <button
               onClick={() => onToggle(false)}
-              className="absolute -right-3 top-8 p-1.5 rounded-full border bg-slate-950 border-slate-800 text-slate-400 hover:text-white hover:scale-105 active:scale-95 transition-all duration-205 cursor-pointer light_sakura:bg-slate-100 light_sakura:border-slate-200 light_sakura:text-slate-800"
+              className={cx(
+                "absolute -right-3 top-8 p-1.5 rounded-full border hover:scale-105 active:scale-95 transition-all duration-205 cursor-pointer",
+                "bg-slate-950 border-slate-800 hover:text-white light_sakura:bg-slate-100 light_sakura:border-slate-200",
+                tokens.text.mutedAlt
+              )}
             >
               <ChevronRight size={14} />
             </button>
@@ -161,8 +167,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Profile widget summary and state */}
         <div className="px-4 mb-6">
-          <div className={`transition-all duration-300 rounded-xl border flex items-center ${isCollapsed ? "bg-transparent border-transparent p-0 justify-center" : "p-3 bg-white/5 backdrop-blur-sm border-white/10 light_sakura:bg-rose-50/60 light_sakura:border-white/70 gap-2.5"}`}>
-            <div className="w-8 h-8 shrink-0 rounded-full flex items-center justify-center overflow-hidden bg-slate-900 text-indigo-400 light_sakura:bg-rose-200 light_sakura:text-rose-600 text-xs font-bold shadow-xs transition-all duration-300">
+          <div className={cx(
+            "transition-all duration-300 rounded-xl border flex items-center",
+            isCollapsed 
+              ? "bg-transparent border-transparent p-0 justify-center" 
+              : cx("p-3 backdrop-blur-sm gap-2.5", tokens.surface.sunken, tokens.border.accent)
+          )}>
+            <div className={cx(
+              "w-8 h-8 shrink-0 rounded-full flex items-center justify-center overflow-hidden bg-slate-900 text-xs font-bold shadow-xs transition-all duration-300",
+              "light_sakura:bg-rose-200",
+              tokens.text.accent
+            )}>
               {avatarUrl ? (
                 <img src={avatarUrl} alt={displayName} className="w-full h-full object-cover" />
               ) : (
@@ -171,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
             
             <div className={`transition-all duration-300 flex flex-col min-w-0 overflow-hidden ${isCollapsed ? "w-0 opacity-0 -translate-x-4" : "w-full opacity-100 translate-x-0"}`}>
-              <p className="font-mono text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-400 light_sakura:text-rose-500 uppercase tracking-widest leading-none whitespace-nowrap">
+              <p className={cx("font-mono text-[clamp(0.5062rem,2.34vw,0.5625rem)] uppercase tracking-widest leading-none whitespace-nowrap", tokens.text.accent)}>
                 {isGuest ? t("history.status_guest") : t("history.status_verified")}
               </p>
               <div className="flex items-center gap-1.5 mt-1">
@@ -180,7 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 ) : (
                   <ShieldCheck size={12} className={cx("shrink-0", tokens.text.success)} />
                 )}
-                <span className="font-sans font-semibold text-xs truncate text-slate-200 light_sakura:text-slate-800 whitespace-nowrap">
+                <span className={cx("font-sans font-semibold text-xs truncate whitespace-nowrap", tokens.text.onSurface)}>
                   {displayName}
                 </span>
               </div>
@@ -202,10 +217,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={`w-full flex items-center px-4 py-3 rounded-xl font-sans text-sm font-medium transition-all duration-300 cursor-pointer
                   ${isCollapsed ? "gap-0 justify-center" : "gap-3"}
                   ${isActive 
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 light_sakura:bg-rose-500 light_sakura:text-white" 
+                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 light_sakura:bg-rose-500" 
                     : locked
-                      ? "text-slate-500 light_sakura:text-slate-400"
-                      : "text-slate-300 hover:bg-slate-900 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100/70"
+                      ? tokens.text.faint
+                      : cx(tokens.text.label, "hover:bg-slate-900 light_sakura:hover:bg-rose-100/70")
                   }`}
               >
                 <IconComp size={18} className="shrink-0 transition-transform duration-300 hover:scale-105" />
@@ -219,14 +234,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </nav>
 
         {/* Footer controls */}
-        <div className="p-4 border-t border-white/10 light_sakura:border-white/50 space-y-3">
+        <div className={cx("p-4 border-t space-y-3", tokens.border.accent)}>
           {/* Theme, Language, and Sound inline switcher controls */}
           <div className="relative min-h-[36px]">
             <div className={`transition-all duration-300 ${isCollapsed ? "opacity-0 scale-75 pointer-events-none absolute inset-x-0 top-0" : "opacity-100 scale-100 grid grid-cols-3 gap-1"}`}>
               <button
                 onClick={toggleLanguage}
                 title={t("settings.language")}
-                className={cx("flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.secondary)}
+                className={cx("flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50", tokens.text.secondary)}
               >
                 <Globe size={11} className="mb-0.5" />
                 <span>{locale.toUpperCase()}</span>
@@ -234,7 +249,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={toggleTheme}
                 title={t("settings.theme")}
-                className={cx("flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.secondary)}
+                className={cx("flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50", tokens.text.secondary)}
               >
                 <SunMoon size={11} className="mb-0.5" />
                 <span>{theme === "dark_obsidian" ? t("common.dark") : t("common.light")}</span>
@@ -242,10 +257,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={toggleMute}
                 title="Toggle Effects Sound"
-                className={cx("flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.secondary)}
+                className={cx("flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50", tokens.text.secondary)}
               >
                 {isMuted ? (
-                  <VolumeX size={11} className="text-red-400 light_sakura:text-red-500 mb-0.5" />
+                  <VolumeX size={11} className={cx("mb-0.5", tokens.text.danger)} />
                 ) : (
                   <Volume2 size={11} className={cx("mb-0.5", tokens.icon.accent)} />
                 )}
@@ -257,24 +272,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={toggleLanguage}
                 title={t("settings.language")}
-                className={cx("p-2 rounded-xl border border-slate-900 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.secondary)}
+                className={cx("p-2 rounded-xl border border-slate-900 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50", tokens.text.secondary)}
               >
                 <Globe size={14} />
               </button>
               <button
                 onClick={toggleTheme}
                 title={t("settings.theme")}
-                className={cx("p-2 rounded-xl border border-slate-900 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.secondary)}
+                className={cx("p-2 rounded-xl border border-slate-900 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50", tokens.text.secondary)}
               >
                 <SunMoon size={14} />
               </button>
               <button
                 onClick={toggleMute}
                 title="Mute / Unmute"
-                className={cx("p-2 rounded-xl border border-slate-900 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.secondary)}
+                className={cx("p-2 rounded-xl border border-slate-900 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50", tokens.text.secondary)}
               >
                 {isMuted ? (
-                  <VolumeX size={14} className="text-red-400 light_sakura:text-red-500" />
+                  <VolumeX size={14} className={cx(tokens.text.danger)} />
                 ) : (
                   <Volume2 size={14} className={cx(tokens.icon.accent)} />
                 )}
@@ -285,7 +300,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {/* Log out actions */}
           <button
             onClick={onLogoutClick}
-            className={`w-full flex items-center justify-center rounded-xl border bg-slate-950/40 border-red-500/20 text-red-400 hover:bg-red-500/10 font-sans text-xs font-semibold transition-all duration-300 cursor-pointer light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:text-red-600 light_sakura:hover:bg-red-100/70 py-2.5
+            className={`w-full flex items-center justify-center rounded-xl border bg-slate-950/40 border-red-500/20 text-red-400 hover:bg-red-500/10 font-sans text-xs font-semibold transition-all duration-300 cursor-pointer light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:hover:bg-red-100/70 py-2.5
               ${isCollapsed ? "px-0 gap-0 justify-center" : "px-3 gap-2"}`}
           >
             <LogOut size={14} className="shrink-0" />

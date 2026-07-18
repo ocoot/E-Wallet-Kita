@@ -136,9 +136,9 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
       className={cx("p-6 md:p-8 rounded-3xl border shadow-xl space-y-6 max-w-xl mx-auto", tokens.surface.card, tokens.border.accent)}
     >
       {/* Receipt Header Badge */}
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-4 light_sakura:border-rose-100/50">
+      <div className={cx("flex items-center justify-between border-b pb-4", tokens.border.accent)}>
         <div className="flex items-center gap-3">
-          <div className={cx("p-2.5 bg-indigo-500/10 rounded-xl light_sakura:bg-rose-50", tokens.icon.accent)}>
+          <div className={cx("p-2.5 rounded-xl", tokens.surface.sunken, tokens.icon.accent)}>
             <Receipt size={20} />
           </div>
           <div>
@@ -155,7 +155,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
             audioFeedback.playDullPluck();
             onCancel();
           }}
-          className="p-2 text-slate-500 hover:text-white rounded-xl hover:bg-slate-800/50 cursor-pointer transition-all light_sakura:hover:bg-slate-100"
+          className={cx("p-2 text-slate-500 rounded-xl cursor-pointer transition-all", tokens.hover.surface)}
           aria-label="Tutup"
         >
           <X size={18} />
@@ -163,7 +163,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
       </div>
 
       {/* Structured Mock Cashier Struk */}
-      <div className="relative p-5 rounded-2xl bg-slate-950 border border-slate-800/60 light_sakura:bg-slate-50/50 light_sakura:border-rose-100/40 font-mono text-xs space-y-4">
+      <div className={cx("relative p-5 rounded-2xl border font-mono text-xs space-y-4", tokens.surface.sunken, tokens.border.accent)}>
         {/* Merchant Info Edit */}
         <div className="space-y-3">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -177,7 +177,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                 type="text"
                 value={merchantName}
                 onChange={(e) => setMerchantName(e.target.value)}
-                className={cx("w-full border border-slate-800 rounded-lg px-2.5 py-1.5 focus:border-indigo-500 outline-none light_sakura:border-rose-200/60", tokens.text.onSurface, tokens.surface.card)}
+                className={cx("w-full rounded-lg px-2.5 py-1.5 focus:border-indigo-500 outline-none border", tokens.text.onSurface, tokens.surface.card, tokens.border.accent)}
               />
             </div>
 
@@ -191,7 +191,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className={cx("w-full border border-slate-800 rounded-lg px-2.5 py-1.5 focus:border-indigo-500 outline-none light_sakura:border-rose-200/60", tokens.text.onSurface, tokens.surface.card)}
+                className={cx("w-full rounded-lg px-2.5 py-1.5 focus:border-indigo-500 outline-none border", tokens.text.onSurface, tokens.surface.card, tokens.border.accent)}
               />
             </div>
           </div>
@@ -223,7 +223,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value) || 0)}
-                className={cx("w-full border border-slate-800 rounded-lg px-2.5 py-1.5 focus:border-indigo-500 outline-none font-bold text-emerald-400 light_sakura:border-rose-200/60", tokens.text.onSurface, tokens.surface.card)}
+                className={cx("w-full rounded-lg px-2.5 py-1.5 focus:border-indigo-500 outline-none font-bold text-emerald-400 border", tokens.text.onSurface, tokens.surface.card, tokens.border.accent)}
               />
             </div>
           </div>
@@ -238,13 +238,13 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
               value={note}
               onChange={(e) => setNote(e.target.value)}
               placeholder="Indomaret 5 item..."
-              className={cx("w-full border border-slate-800 rounded-lg px-2.5 py-1.5 focus:border-indigo-500 outline-none light_sakura:border-rose-200/60", tokens.text.onSurface, tokens.surface.card)}
+              className={cx("w-full rounded-lg px-2.5 py-1.5 focus:border-indigo-500 outline-none border", tokens.text.onSurface, tokens.surface.card, tokens.border.accent)}
             />
           </div>
         </div>
 
         {/* Dash divider */}
-        <div className="border-t border-dashed border-slate-800 my-4 light_sakura:border-rose-200/70" />
+        <div className={cx("border-t border-dashed my-4", tokens.border.accent)} />
 
         {/* Item Roster heading */}
         <div className={cx("flex items-center justify-between text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-bold tracking-wider mb-2", tokens.text.muted)}>
@@ -269,7 +269,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
             </p>
           ) : (
             items.map((item, idx) => (
-              <div key={idx} className="flex flex-col space-y-1 p-2 rounded-lg bg-slate-900/40 border border-slate-900 light_sakura:bg-white light_sakura:border-rose-100">
+              <div key={idx} className={cx("flex flex-col space-y-1 p-2 rounded-lg border", tokens.surface.card, tokens.border.accent)}>
                 {isEditingItems ? (
                   <div className="space-y-1.5">
                     {/* Item Name */}
@@ -277,7 +277,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                       type="text"
                       value={item.name}
                       onChange={(e) => handleUpdateItem(idx, "name", e.target.value)}
-                      className={cx("w-full bg-slate-950 border rounded px-2 py-1 outline-none light_sakura:bg-slate-50 text-[clamp(0.6188rem,2.86vw,0.6875rem)]", tokens.text.onSurface, tokens.border.accent)}
+                      className={cx("w-full rounded px-2 py-1 outline-none text-[clamp(0.6188rem,2.86vw,0.6875rem)] border", tokens.surface.sunken, tokens.border.accent, tokens.text.onSurface)}
                     />
                     {/* Item Math details */}
                     <div className="flex items-center gap-2">
@@ -287,7 +287,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                           type="number"
                           value={item.qty}
                           onChange={(e) => handleUpdateItem(idx, "qty", parseInt(e.target.value) || 1)}
-                          className="w-full bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-white outline-none text-center text-[clamp(0.6188rem,2.86vw,0.6875rem)] light_sakura:bg-slate-50"
+                          className={cx("w-full rounded px-1.5 py-0.5 text-white outline-none text-center text-[clamp(0.6188rem,2.86vw,0.6875rem)] border", tokens.surface.sunken, tokens.border.accent)}
                         />
                       </div>
                       <div className="flex items-center gap-1 w-3/5">
@@ -296,7 +296,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                           type="number"
                           value={item.unit_price}
                           onChange={(e) => handleUpdateItem(idx, "unit_price", parseInt(e.target.value) || 0)}
-                          className="w-full bg-slate-950 border border-slate-800 rounded px-1.5 py-0.5 text-white outline-none text-right text-[clamp(0.6188rem,2.86vw,0.6875rem)] light_sakura:bg-slate-50"
+                          className={cx("w-full rounded px-1.5 py-0.5 text-white outline-none text-right text-[clamp(0.6188rem,2.86vw,0.6875rem)] border", tokens.surface.sunken, tokens.border.accent)}
                         />
                       </div>
                       <button
@@ -311,7 +311,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                 ) : (
                   <div className="flex items-start justify-between text-[clamp(0.6188rem,2.86vw,0.6875rem)]">
                     <div className="space-y-0.5 max-w-[70%]">
-                      <p className="text-slate-200 light_sakura:text-slate-800 font-bold truncate">
+                      <p className={cx("font-bold truncate", tokens.text.onSurface)}>
                         {item.name}
                       </p>
                       <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.text.faint)}>
@@ -329,7 +329,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
         </div>
 
         {/* Paper tearing bottom effect deco */}
-        <div className={cx("pt-2 border-t border-dashed border-slate-800 flex justify-between font-bold light_sakura:border-rose-200", tokens.text.onSurface)}>
+        <div className={cx("pt-2 border-t border-dashed flex justify-between font-bold", tokens.border.accent, tokens.text.onSurface)}>
           <span>{t("transaction.sum_label")}</span>
           <span className="text-emerald-400">{formatIDR(amount)}</span>
         </div>
@@ -342,7 +342,11 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
             audioFeedback.playDullPluck();
             onCancel();
           }}
-          className={cx("flex-1 cursor-pointer py-3.5 px-4 bg-slate-800 hover:bg-slate-700/80 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border border-slate-800 light_sakura:bg-slate-100 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent", tokens.text.secondary)}
+          className={cx(
+            "flex-1 cursor-pointer py-3.5 px-4 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border",
+            "bg-slate-800 hover:bg-slate-700/80 border-slate-800 light_sakura:bg-slate-100 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent",
+            tokens.text.secondary
+          )}
         >
           <X size={14} />
           <span>{t("transaction.discard")}</span>
@@ -351,7 +355,10 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
         <button
           onClick={handleSave}
           disabled={amount <= 0 || !merchantName}
-          className="flex-2 cursor-pointer py-3.5 px-6 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/15 flex items-center justify-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+          className={cx(
+            "flex-2 cursor-pointer py-3.5 px-6 text-white rounded-xl font-sans text-xs font-bold shadow-lg flex items-center justify-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none",
+            "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/15 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+          )}
         >
           <Check size={14} />
           <span>{t("transaction.save")}</span>

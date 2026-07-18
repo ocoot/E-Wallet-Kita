@@ -308,7 +308,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   return (
     <div className={cx(
       "relative min-h-screen flex flex-col md:flex-row transition-colors duration-300",
-      "bg-slate-950 text-white light_sakura:bg-rose-50/20 light_sakura:text-slate-800"
+      tokens.surface.canvas,
+      tokens.text.onSurface
     )}>
 
       {/* Ambient background orbs -- lapisan dekoratif statis (blur besar,
@@ -318,9 +319,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
           "melebur" di baliknya alih-alih menyamar dengan warna solid datar.
           Murni dekoratif -- aria-hidden & pointer-events-none. */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-32 -left-24 w-[28rem] h-[28rem] rounded-full bg-indigo-600/25 blur-[110px] light_sakura:bg-rose-300/30" />
-        <div className="absolute top-1/3 -right-32 w-[26rem] h-[26rem] rounded-full bg-violet-600/20 blur-[110px] light_sakura:bg-sky-200/25" />
-        <div className="absolute bottom-0 left-1/4 w-[24rem] h-[24rem] rounded-full bg-indigo-500/15 blur-[110px] light_sakura:bg-violet-200/20" />
+        <div className={cx("absolute -top-32 -left-24 w-[28rem] h-[28rem] rounded-full blur-[110px] opacity-30", tokens.border.accent)} />
+        <div className={cx("absolute top-1/3 -right-32 w-[26rem] h-[26rem] rounded-full blur-[110px] opacity-25", tokens.border.accent)} />
+        <div className={cx("absolute bottom-0 left-1/4 w-[24rem] h-[24rem] rounded-full blur-[110px] opacity-20", tokens.border.accent)} />
       </div>
 
       {/*Subtle noise/grain overlay for surface texture */}
@@ -452,7 +453,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                   rel="noopener noreferrer"
                   className={cx(
                     "transition-colors duration-200 underline inline-flex items-center gap-1",
-                    "hover:text-emerald-500 light_sakura:hover:text-rose-500"
+                    "hover:text-indigo-400 light_sakura:hover:text-rose-500"
                   )}
                 >
                   Github: @ocoot
@@ -502,12 +503,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
             >
               <div className="relative w-14 h-14 flex items-center justify-center mb-4">
                 <div className={cx(
-                  "absolute inset-0 border-[3px] rounded-full",
-                  "border-indigo-600/20 light_sakura:border-rose-400/20"
+                  "absolute inset-0 border-[3px] rounded-full opacity-25",
+                  tokens.border.accent
                 )} />
                 <div className={cx(
                   "absolute inset-0 border-[3px] rounded-full animate-spin",
-                  "border-t-indigo-500 light_sakura:border-t-rose-500"
+                  tokens.text.accent.replace(/text-/g, "border-t-")
                 )} />
                 <img
                   src={logoUrl}

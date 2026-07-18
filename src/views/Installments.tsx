@@ -192,7 +192,7 @@ export const Installments: React.FC = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
-      <div className={cx("rounded-3xl border border-slate-800/60 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}>
+      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.border.accent)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -207,7 +207,11 @@ export const Installments: React.FC = () => {
               </p>
             </div>
             <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/20 shrink-0 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-500/20 cursor-pointer">
+              className={cx(
+                "flex items-center gap-2 px-5 py-2.5 rounded-2xl text-white font-semibold text-sm transition-colors shadow-lg shrink-0 cursor-pointer",
+                "shadow-indigo-600/20 light_sakura:shadow-rose-500/20",
+                tokens.button.accentEmerald
+              )}>
               <Plus size={16} /> {t("installments.add_button")}
             </button>
           </div>
@@ -215,17 +219,17 @@ export const Installments: React.FC = () => {
           {/* Summary */}
           {installments.length > 0 && (
             <div className="grid grid-cols-3 gap-2">
-              <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-3 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
+              <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
                 <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_active")}</span>
                 <p className={cx("font-bold text-2xl", tokens.text.accentStrong)}>{activeCount}</p>
               </div>
-              <div className="rounded-2xl bg-emerald-500/8 border border-emerald-500/15 px-3 py-3 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
+              <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
                 <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_completed")}</span>
                 <p className={cx("font-bold text-2xl", tokens.text.success)}>{completedCount}</p>
               </div>
-              <div className="rounded-2xl bg-slate-800/40 border border-slate-700/40 px-3 py-3 light_sakura:bg-slate-100/60 light_sakura:border-slate-200">
+              <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
                 <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_monthly_commitment")}</span>
-                <p className="font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight text-slate-200 light_sakura:text-slate-700">{formatIDR(totalMonthlyCommitment)}</p>
+                <p className={cx("font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.onSurface)}>{formatIDR(totalMonthlyCommitment)}</p>
               </div>
             </div>
           )}
@@ -238,7 +242,7 @@ export const Installments: React.FC = () => {
           ) : installmentsError ? (
             <ErrorState onRetry={refresh} />
           ) : installments.length === 0 ? (
-            <EmptyState icon={<Landmark size={40} className="text-slate-600 light_sakura:text-slate-400" />} title={t("installments.empty_title")} description={t("installments.empty_desc")} />
+            <EmptyState icon={<Landmark size={40} className={cx(tokens.text.faint)} />} title={t("installments.empty_title")} description={t("installments.empty_desc")} />
           ) : (
             <div className="space-y-4">
               {/* ── Formasi carousel: geser kartu, ketuk untuk pilih ─────── */}
@@ -249,11 +253,15 @@ export const Installments: React.FC = () => {
                     return (
                       <motion.button key={i.id} type="button" onClick={() => { audioFeedback.playClick(); setActiveInstallmentId(i.id); }}
                         initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}
-                        className={`shrink-0 w-56 snap-start text-left rounded-2xl p-4 cursor-pointer transition-all ${
+                        className={cx(
+                          "shrink-0 w-56 snap-start text-left rounded-2xl p-4 cursor-pointer transition-all",
                           i.is_completed
                             ? "bg-gradient-to-br from-emerald-600 to-emerald-800 text-white"
-                            : "bg-gradient-to-br from-indigo-600 to-violet-800 text-white light_sakura:from-rose-500 light_sakura:to-rose-700"
-                        } ${isActive ? "ring-2 ring-offset-2 ring-offset-slate-900 ring-white/70 light_sakura:ring-offset-white" : "opacity-80"}`}>
+                            : "bg-gradient-to-br from-indigo-600 to-violet-800 text-white light_sakura:from-rose-500 light_sakura:to-rose-700",
+                          isActive
+                            ? "ring-2 ring-offset-2 ring-offset-slate-900 ring-white/70 light_sakura:ring-offset-white"
+                            : "opacity-80"
+                        )}>
                         <div className="flex items-center justify-between text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider opacity-80">
                           <span className="truncate">{getCategoryLabel(i.category_key)}</span>
                           <span>{i.progressPercent}%</span>
@@ -269,10 +277,9 @@ export const Installments: React.FC = () => {
                   })}
                 </ScrollableTableWrapper>
               </AnimatePresence>
-
               {/* ── Panel detail kartu terpilih ───────────────────────────── */}
               {activeInstallment && (() => { const i = activeInstallment; return (
-                <div className="rounded-2xl border border-slate-800/50 bg-slate-950/40 overflow-hidden light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30">
+                <div className={cx("rounded-2xl border overflow-hidden", tokens.surface.sunken, tokens.border.default)}>
                   <div className="p-4 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
@@ -280,7 +287,7 @@ export const Installments: React.FC = () => {
                         <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">{getCategoryLabel(i.category_key)}</p>
                       </div>
                       {i.is_completed && (
-                        <span className={cx("inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold shrink-0 bg-emerald-500/15 light_sakura:bg-emerald-50", tokens.text.success)}>
+                        <span className={cx("inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold shrink-0 bg-emerald-500/15 light_sakura:bg-emerald-500/10", tokens.text.success)}>
                           <PartyPopper size={11} />{t("installments.status_completed")}
                         </span>
                       )}
@@ -291,25 +298,30 @@ export const Installments: React.FC = () => {
                         <span className="text-slate-400 font-semibold">
                           {t("installments.progress_label", { paid: i.months_paid, total: i.total_months })}
                         </span>
-                        <span className={`font-bold ${i.is_completed ? "text-emerald-400" : "text-indigo-400 light_sakura:text-rose-500"}`}>
+                        <span className={cx("font-bold", i.is_completed ? tokens.text.success : tokens.text.accent)}>
                           {i.progressPercent}%
                         </span>
                       </div>
-                      <div className="h-2 w-full rounded-full bg-slate-800/70 light_sakura:bg-slate-200/70 overflow-hidden">
+                      <div className={cx("h-2 w-full rounded-full overflow-hidden", tokens.surface.subtle)}>
                         <motion.div initial={{ width: 0 }} animate={{ width: `${i.progressPercent}%` }} transition={{ duration: 0.5, ease: "easeOut" }}
-                          className={`h-full rounded-full ${i.is_completed ? "bg-emerald-500" : "bg-gradient-to-r from-indigo-500 to-violet-500 light_sakura:from-rose-500 light_sakura:to-rose-400"}`} />
+                          className={cx(
+                            "h-full rounded-full",
+                            i.is_completed
+                              ? "bg-emerald-500"
+                              : "bg-gradient-to-r from-indigo-500 to-violet-500 light_sakura:from-rose-500 light_sakura:to-rose-400"
+                          )} />
                       </div>
                     </div>
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-slate-500">{t("installments.monthly_amount_label")}</span>
-                        <span className="font-semibold text-slate-200 light_sakura:text-slate-700">{formatIDR(i.monthly_amount)}</span>
+                        <span className={cx("font-semibold", tokens.text.onSurface)}>{formatIDR(i.monthly_amount)}</span>
                       </div>
                       {i.principal_amount != null && (
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-slate-500">{t("installments.principal_label")}</span>
-                          <span className="font-semibold text-slate-200 light_sakura:text-slate-700">{formatIDR(i.principal_amount)}</span>
+                          <span className={cx("font-semibold", tokens.text.onSurface)}>{formatIDR(i.principal_amount)}</span>
                         </div>
                       )}
                       {!i.is_completed && (
@@ -324,19 +336,23 @@ export const Installments: React.FC = () => {
                     <div className="flex items-center gap-2 pt-1">
                       {!i.is_completed && (
                         <button onClick={() => requestMarkPaid(i)} disabled={busyId === i.id}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 text-indigo-400 hover:bg-indigo-500/25 light_sakura:bg-rose-50 light_sakura:text-rose-600">
+                          className={cx(
+                            "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50",
+                            "bg-indigo-500/15 hover:bg-indigo-500/25 light_sakura:bg-rose-500/10",
+                            tokens.text.accent
+                          )}>
                           {busyId === i.id ? <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" /> : <><CheckCircle2 size={12} /> {t("installments.mark_month_paid")}</>}
                         </button>
                       )}
                       {i.months_paid > 0 && (
                         <button onClick={() => requestUndoPaid(i)} disabled={busyId === i.id}
                           title={t("installments.undo_last_payment")}
-                          className="p-2 rounded-xl bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 transition-colors cursor-pointer light_sakura:bg-amber-50 light_sakura:text-amber-500">
+                          className={cx("p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 transition-colors cursor-pointer", tokens.text.warning)}>
                           <RotateCcw size={13} />
                         </button>
                       )}
-                      <button onClick={() => { audioFeedback.playClick(); openEditForm(i); }} className={cx("p-2 rounded-xl bg-slate-700/50 hover:text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer light_sakura:bg-slate-100", tokens.text.muted)}><Edit2 size={13} /></button>
-                      <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(i); }} className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors cursor-pointer light_sakura:bg-red-50 light_sakura:text-red-400"><Trash2 size={13} /></button>
+                      <button onClick={() => { audioFeedback.playClick(); openEditForm(i); }} className={cx("p-2 rounded-xl transition-colors cursor-pointer", tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)}><Edit2 size={13} /></button>
+                      <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(i); }} className={cx("p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer", tokens.text.danger)}><Trash2 size={13} /></button>
                     </div>
                   </div>
                 </div>
@@ -357,7 +373,7 @@ export const Installments: React.FC = () => {
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl", tokens.surface.card)}>
+              className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border shadow-2xl", tokens.surface.card, tokens.border.default)}>
               <div className="h-1 w-full bg-gradient-to-r from-indigo-500 to-violet-500" />
               <div className="p-6 space-y-4">
                 <h2 className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
@@ -429,8 +445,8 @@ export const Installments: React.FC = () => {
                   placeholder={t("installments.form_notes_placeholder")}
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeForm} className={cx("flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer", tokens.text.label)}>{t("common.cancel")}</button>
-                  <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 text-white font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/20 disabled:opacity-50 cursor-pointer">{isSaving ? t("common.loading") : t("common.save")}</button>
+                  <button onClick={closeForm} className={cx("flex-1 py-3 rounded-2xl font-semibold text-sm transition-colors cursor-pointer", tokens.surface.subtle, tokens.hover.surface, tokens.text.label)}>{t("common.cancel")}</button>
+                  <button onClick={handleSave} disabled={isSaving} className={cx("flex-1 py-3 rounded-2xl text-white font-semibold text-sm transition-colors disabled:opacity-50 cursor-pointer", tokens.button.accentEmerald)}>{isSaving ? t("common.loading") : t("common.save")}</button>
                 </div>
               </div>
             </motion.div>

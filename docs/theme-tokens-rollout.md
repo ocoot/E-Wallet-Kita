@@ -50,6 +50,145 @@ manapun untuk migrasi, WAJIB cek dulu apakah file itu benar-benar diimpor
 (`grep -rln "import.*<NamaKomponen>" src`) supaya tidak buang waktu migrasi
 token di dead code lagi.
 
+## Rencana Sesi Selanjutnya (Roadmap Migrasi Lanjutan)
+
+Berikut adalah rencana pembagian sesi migrasi lanjutan untuk merapikan sisa file-file yang masih memiliki inline `light_sakura:` agar sepenuhnya menggunakan abstraksi `useThemeTokens()` secara bertahap dan aman:
+
+- **Sesi 30: Pembersihan Inti & Autentikasi (Core & Auth)**
+  - **File Target**: `src/views/Login.tsx` (46), `src/components/SplashScreen.tsx` (6)
+  - **Fokus**: Menstandarisasi halaman login dan splash screen agar tidak ada inline literal `light_sakura:` pada elemen dekoratif login, focus ring, dsb.
+- **Sesi 31: Alur Pengenalan Aplikasi (Onboarding Flow)**
+  - **File Target**: `src/views/Onboarding.tsx` (79)
+  - **Fokus**: Standardisasi komprehensif pada halaman onboarding (form pendaftaran, pemilihan profil awal, setup awal dompet) agar selaras penuh dengan palet warna semantik global.
+- **Sesi 32: Menu Pengaturan Utama & Telegram (Main Settings & Telegram)**
+  - **File Target**: `src/views/Settings.tsx` (59), `src/components/settings/SettingsMobileMenu.tsx` (11), `src/views/settings/TelegramSettings.tsx` (16)
+  - **Fokus**: Standarisasi halaman pengaturan utama, menu navigasi mobile settings, dan pengaturan integrasi telegram.
+- **Sesi 33: Sisa Pengaturan Akun & Keamanan (Account & Security Settings)**
+  - **File Target**: `src/views/settings/ProfileSettings.tsx` (6), `src/views/settings/PrivacySettings.tsx` (6), `src/views/settings/LanguageSettings.tsx` (6), `src/views/settings/SecuritySettings.tsx` (5), `src/views/settings/ThemeSettings.tsx` (4), `src/views/settings/PwaSettings.tsx` (3), `src/views/settings/NotificationSettings.tsx` (3)
+  - **Fokus**: Membersihkan seluruh sisa inline `light_sakura` di sub-modul pengaturan pengguna yang lebih kecil.
+- **Sesi 34: Admin & Developer Utilities (Admin Monitors & Backups)**
+  - **File Target**: `src/views/AdminErrorMonitor.tsx` (22), `src/views/AdminBackup.tsx` (21), `src/views/AdminPremiumMonitor.tsx` (18)
+  - **Fokus**: Membersihkan halaman log kesalahan (error monitor), manajemen backup data, dan pemantau premium admin agar visual datanya rapi dan konsisten.
+- **Sesi 35: Kontrol Admin Utama & Siaran (Admin Core & Broadcast)**
+  - **File Target**: `src/views/AdminSupportChat.tsx` (13), `src/views/AdminMaintenance.tsx` (12), `src/views/AdminBroadcast.tsx` (12), `src/views/AdminCategoryManager.tsx` (9), `src/views/AdminPanel.tsx` (6)
+  - **Fokus**: Membersihkan modul chat dukungan admin, status pemeliharaan, siaran pesan, manajemen kategori, dan sisa dasbor admin utama.
+- **Sesi 36: Transaksi Utama & Riwayat (Transactions & History)**
+  - **File Target**: `src/views/NewTransaction.tsx` (22), `src/views/History.tsx` (11), `src/components/HistoryGroupedList.tsx` (4), `src/components/DashboardRecentTransactions.tsx` (6)
+  - **Fokus**: Membersihkan modul input transaksi baru, riwayat transaksi utama, daftar grup riwayat, dan transaksi terbaru di dashboard.
+- **Sesi 37: Anggaran & Widget Pendukung Dashboard (Budgeting & Support Widget)**
+  - **File Target**: `src/views/Budget.tsx` (16), `src/components/SupportChatWidget.tsx` (21), `src/components/BudgetProgressCard.tsx` (7)
+  - **Fokus**: Membersihkan halaman manajemen anggaran bulanan, widget chat bantuan di dashboard, dan kartu progres anggaran.
+- **Sesi 38: Shell Aplikasi & Dialog Global (App Shell & Global Dialogs)**
+  - **File Target**: `src/components/Sidebar.tsx` (14), `src/components/MobileBottomNav.tsx` (12), `src/components/UpdatePrompt.tsx` (6), `src/components/Modal.tsx` (6), `src/components/PremiumModal.tsx` (6)
+  - **Fokus**: Membersihkan visual navigasi bingkai utama (Sidebar & BottomNav) dan dialog-dialog modal global agar seragam secara keseluruhan.
+- **Sesi 39: Sapu Bersih Komponen Dashboard & Sisa Akhir (Cleanup & Final Polish)**
+  - **File Target**: Sisa file-file kecil dengan 1-5 inline `light_sakura:` (seperti `DashboardOverviewCard.tsx` (5), `WalletTransferModal.tsx` (5), `ConfirmTransactionModal.tsx` (4), `SkeletonLoader.tsx` (4), dsb.)
+  - **Fokus**: Sapu bersih (100% audit akhir) seluruh file tersisa agar tercapai status **0 literal light_sakura:** di seluruh basis kode.
+
+## Sesi 31: 1 file dimigrasi (1 → total 98 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/Onboarding.tsx` | 79 | 0 | Menggunakan theme tokens semantik global (ditambahkan sub-grup `onboarding` di `tokens.ts`) untuk mengabstraksikan seluruh container simulasi, progress bars, interactive cards, badge status, bullet points, dan navigation buttons sehingga terbebas penuh dari literal `light_sakura:`. |
+
+Sesi ini berfokus pada standardisasi menyeluruh alur pengenalan aplikasi (Onboarding Flow) agar setiap langkah simulasi fitur keuangan (Catat Mandiri, Bot Telegram, Riwayat, Dompet, Anggaran, Tabungan, Emas, dan Cicilan) menyatu penuh secara estetis dengan tema aktif.
+
+## Sesi 30: 2 file dimigrasi (2 → total 97 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/SplashScreen.tsx` | 6 | 0 | Menggunakan theme tokens semantik global untuk membersihkan custom outer ring, background, dan loading animation agar selaras dengan skema tema dinamis. |
+| `src/views/Login.tsx` | 46 | 0 | Menambahkan sub-grup token `login` pada `tokens.ts` untuk mengabstraksikan seluruh ornamen visual SVG arcs, halos, input fields, custom panels, dan form dividers agar bebas dari literal `light_sakura:`. |
+
+Sesi ini berfokus pada standardisasi visual halaman otentikasi utama (Login) dan layar splash screen pemuatan global (SplashScreen) untuk mengeliminasi ketergantungan inline styles dan memusatkan properti desain di berkas tokens terpusat.
+
+## Sesi 29: 2 file dimigrasi (2 → total 95 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/GoldSavings.tsx` | 22 | 0 | Menggunakan tokens.border.accent, tokens.border.strong, tokens.surface.sunken, tokens.text.faint, tokens.icon.muted, tokens.text.success, dan tokens.text.danger untuk membersihkan sisa text dan container styling di panel tabungan emas. |
+| `src/App.tsx` | 2 | 0 | Menggunakan tokens.text.accent secara dinamis dengan modifier `border-t-` untuk menstandarisasikan loading spinner animatif global di aplikasi. |
+
+Sesi ini berfokus pada penyempurnaan sub-sistem Investasi Logam Mulia (GoldSavings) dan penuntasan sisa visual loading spinner pada root shell aplikasi (App.tsx) agar menyatu penuh dengan standar token semantik global.
+
+## Sesi 28: 2 file dimigrasi (2 → total 93 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/AdminUserManager.tsx` | 12 | 0 | Menggunakan tokens.border.accent untuk standardisasi pembatas kartu info statistik user management di tingkat administrator keuangan. |
+| `src/lib/theme/tokens.ts` | 34 | 35 | Menambahkan token surface `canvas` baru untuk standarisasi background shell aplikasi utama secara global. |
+
+Sesi ini berfokus pada standarisasi visual panel kontrol manajemen pengguna (AdminUserManager) dan inisiasi token kanvas dasar pada sistem token global.
+
+## Sesi 27: 3 file dimigrasi (3 → total 90 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/BillReminders.tsx` | 8 | 0 | Menggunakan tokens.text.success, tokens.text.danger, tokens.text.warning, dan tokens.text.muted untuk membersihkan semua remaining literal light_sakura pada badge-badge urgensi pengingat tagihan. |
+| `src/contexts/ToastContext.tsx` | 5 | 1 | Menggunakan tokens.text.success, tokens.text.danger, dan tokens.text.warning secara dinamis untuk menstandarisasikan warna ikon toast notifikasi di seluruh aplikasi. |
+| `src/views/Installments.tsx` | 15 | 0 | Menggunakan tokens.text.success, tokens.text.accent, tokens.text.onSurface, tokens.text.muted, tokens.text.warning, tokens.text.danger, dan tokens.button.accentEmerald untuk merapikan kartu cicilan, status bar, detail info cicilan, dan aksi form. |
+
+Sesi ini berfokus pada standarisasi visual asisten pengingat tagihan (BillReminders), sistem cicilan bulanan (Installments), dan sistem visual umpan balik pengguna (ToastContext) agar menyatu dengan palet warna semantik global.
+
+## Sesi 26: 3 file dimigrasi (3 → total 87 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/Wallets.tsx` | 9 | 0 | Menggunakan tokens.surface.sunken, tokens.hover.surface, tokens.border.accent, dan tokens.text.danger untuk menstandarisasikan kartu dompet (Wallet Cards) dan total saldo banner. |
+| `src/views/AdminAiMonitor.tsx` | 19 | 3 | Menggunakan tokens.border.default, tokens.surface.sunken, tokens.text.accent, tokens.text.warning, dan tokens.hover.surface untuk standarisasi kartu monitor penyedia AI (AI Provider cards), tabel performa kunci API, kontrol pagination, dan alert peringatan kuota berlebih. |
+| `src/views/AdminVoucherManager.tsx` | 6 | 0 | Menggunakan tokens.border.default, tokens.surface.sunken, tokens.text.success, tokens.text.muted, dan tokens.hover.surface untuk merapikan kartu statistik voucher, baris tabel data voucher, serta status badge aktif/tidak aktif. |
+
+Sesi ini berfokus pada penyempurnaan halaman administrasi keuangan (Voucher Manager dan AI Monitor) serta modul manajemen dompet (Wallets) agar sepenuhnya terstandarisasi dengan token-token semantik baru.
+
+## Sesi 25: 3 file dimigrasi (3 → total 84 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/Sidebar.tsx` | 18 | 11 | Menggunakan tokens.text.onSurface, tokens.border.accent, tokens.surface.sunken, tokens.text.accent, dan tokens.text.label untuk merapikan layout, sidebar widget, menu item aktif/tidak aktif, dan pembatas navigasi desktop. |
+| `src/components/MobileBottomNav.tsx` | 16 | 12 | Menggunakan tokens.text.onSurface, tokens.text.faint, tokens.text.accent, dan tokens.text.label untuk membersihkan panel bawah HP (floating pill) dan modal Bottom-Sheet 'Lainnya'. |
+| `src/components/UpdatePrompt.tsx` | 10 | 6 | Menggunakan tokens.surface.sunken, tokens.text.accent, dan tokens.border.default untuk merapikan visual popup pembaruan aplikasi dan daftar riwayat perubahan (Whats New changelog). |
+
+Sesi ini berfokus pada penyelesaian modul navigasi utama (Sidebar, MobileBottomNav, dan UpdatePrompt) untuk menyempurnakan struktur bingkai aplikasi (app shell) agar terstandarisasi dengan token-token semantik baru.
+
+## Sesi 24: 3 file dimigrasi (3 → total 81 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/SupportChatWidget.tsx` | 36 | 16 | Menggunakan tokens.surface.subtle, tokens.text.secondary, dan tokens.text.faint untuk mereduksi light_sakura dan warna hardcoded pada balon chat, header, dan input. |
+| `src/components/DashboardChart.tsx` | 10 | 0 | Menggunakan tokens.surface.card, tokens.border.accent, tokens.text.heading, tokens.text.danger, tokens.surface.sunken, dan tokens.text.accent secara penuh, menyisakan 0 light_sakura literal. |
+| `src/components/DashboardWalletSelectorCard.tsx` | 9 | 5 | Menggunakan tokens.border.accent, tokens.surface.sunken, dan tokens.icon.accent untuk membersihkan background panel, border-border transparan, serta stat cards. |
+
+Sesi ini berfokus pada penyelesaian modul Support Chat & Dashboard Analytics (SupportChatWidget, DashboardChart, dan DashboardWalletSelectorCard) untuk meningkatkan modularitas visual pada tema light_sakura secara komprehensif.
+
+## Sesi 23: 3 file dimigrasi (3 → total 78 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/VoicePreview.tsx` | 15 | 6 | Menggunakan tokens.surface.sunken, tokens.border.accent, dan tokens.hover.surface untuk input, box transcript, serta modal processing state. |
+| `src/components/ReceiptPreview.tsx` | 17 | 2 | Menggunakan tokens.surface.sunken, tokens.border.accent, tokens.hover.surface, tokens.text.onSurface, dan tokens.text.faint untuk merefaktor detail item, border dash, dan label inputs pada struk belanja. |
+| `src/components/AdminUserDetailModal.tsx` | 13 | 3 | Menggunakan tokens.surface.card, tokens.surface.sunken, tokens.border.accent, tokens.hover.surface, dan tokens.text.accent untuk membersihkan modal panel admin, status badges, dan stat cards. |
+
+Sesi ini berfokus pada modal fungsionalitas asisten (VoicePreview, ReceiptPreview, dan AdminUserDetailModal) untuk memastikan visual asisten cerdas terintegrasi secara mulus dengan tema light_sakura yang eye-safe.
+
+## Sesi 22: 3 file dimigrasi (3 → total 75 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/BudgetProgressCard.tsx` | 13 | 7 | Menggunakan tokens.surface.sunken, tokens.text.primary, tokens.surface.card, dan tokens.border.accent untuk membersihkan inline layout dan panel card. |
+| `src/components/DashboardOverviewCard.tsx` | 12 | 5 | Menggunakan tokens.surface.sunken, tokens.border.accent, dan tokens.text.primary untuk detail tabungan/emas dan panel bulan berjalan. |
+| `src/components/SkeletonLoader.tsx` | 11 | 4 | Menghilangkan inline-styling pada skeleton cards, grids, dan tables menggunakan token global agar sinkron dengan layout aslinya. |
+
+Sesi ini berfokus pada dashboard & progress widgets (BudgetProgressCard, DashboardOverviewCard, dan SkeletonLoader) untuk merapikan kartu ringkasan keuangan dan transisi loading pada light mode.
+
+## Sesi 21: 2 file dimigrasi (2 → total 72 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/MobileBottomNav.tsx` | 46 | 16 | Menggunakan tokens.text.accent, tokens.text.muted, tokens.text.primary, tokens.surface.sunken, tokens.border.accent, dan tokens.text.faint untuk membersihkan inline light_sakura: classes. |
+| `src/components/Sidebar.tsx` | 40 | 18 | Menggunakan tokens.text.onSurface dan tokens.text.faint untuk merapikan visual dan navigasi menu item. |
+
+Sesi ini berfokus pada navigasi utama aplikasi (MobileBottomNav & Sidebar) untuk memastikan konsistensi tema pada level navigasi desktop dan mobile.
+
 ## Sesi 20: 4 file dimigrasi (4 → total 70 file tersentuh)
 
 | File | Sebelum | Sesudah | Catatan |

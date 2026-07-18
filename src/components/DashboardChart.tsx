@@ -51,7 +51,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="p-4 bg-slate-950/95 border border-slate-800 text-slate-100 rounded-2xl shadow-xl backdrop-blur-md light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-800">
+        <div className={cx("p-4 border rounded-2xl shadow-xl backdrop-blur-md", tokens.surface.card, tokens.border.accent, tokens.text.heading)}>
           <p className={cx("font-sans font-bold text-xs mb-2", tokens.text.muted)}>{label}</p>
           <div className="space-y-1.5 font-mono text-xs">
             {payload.map((p: any) => {
@@ -59,7 +59,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
               const isExp = p.name === labelExpense;
               let colorCls: string = tokens.text.accentStrong;
               if (isInc) colorCls = tokens.text.success;
-              if (isExp) colorCls = "text-red-400 light_sakura:text-rose-600";
+              if (isExp) colorCls = tokens.text.danger;
 
               return (
                 <div key={p.name} className="flex items-center justify-between gap-6">
@@ -78,7 +78,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
   return (
     <Card id="dashboard-trends-panel" padding="lg" border="subtle" elevation="lg" className="space-y-6">
       {/* Chart Header & Tab Options */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-800/50 pb-5 light_sakura:border-rose-100/30">
+      <div className={cx("flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b pb-5", tokens.border.accent)}>
         <div>
           <h3 className={cx("font-sans font-bold text-base tracking-tight", tokens.text.onSurface)}>
             {t("dashboard.chart_title")}
@@ -92,7 +92,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Chart Type Selector: Cumulative vs Daily */}
-          <div className={cx("flex bg-slate-950 p-1 rounded-xl border light_sakura:bg-rose-50/50", tokens.border.accent)}>
+          <div className={cx("flex p-1 rounded-xl border", tokens.surface.sunken, tokens.border.accent)}>
             <button
               onClick={() => {
                 audioFeedback.playClick();
@@ -101,7 +101,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
               className={cx(
                 "px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer",
                 chartType === "cumulative"
-                  ? cx("bg-slate-900 shadow-sm light_sakura:bg-white", tokens.text.accent)
+                  ? cx("shadow-sm", tokens.surface.card, tokens.text.accent)
                   : cx("hover:text-slate-200", tokens.text.muted)
               )}
             >
@@ -115,7 +115,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
               className={cx(
                 "px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer",
                 chartType === "daily"
-                  ? cx("bg-slate-900 shadow-sm light_sakura:bg-white", tokens.text.accent)
+                  ? cx("shadow-sm", tokens.surface.card, tokens.text.accent)
                   : cx("hover:text-slate-200", tokens.text.muted)
               )}
             >
@@ -124,7 +124,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
           </div>
 
           {/* Chart Mode Selector: Area vs Line */}
-          <div className={cx("flex bg-slate-950 p-1 rounded-xl border light_sakura:bg-rose-50/50", tokens.border.accent)}>
+          <div className={cx("flex p-1 rounded-xl border", tokens.surface.sunken, tokens.border.accent)}>
             <button
               onClick={() => {
                 audioFeedback.playClick();
@@ -133,7 +133,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
               className={cx(
                 "px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer",
                 chartMode === "area"
-                  ? "bg-slate-900 text-indigo-300 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
+                  ? cx("shadow-sm", tokens.surface.card, tokens.text.accent)
                   : cx("hover:text-slate-200", tokens.text.muted)
               )}
             >
@@ -147,7 +147,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
               className={cx(
                 "px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer",
                 chartMode === "line"
-                  ? "bg-slate-900 text-indigo-300 shadow-sm light_sakura:bg-white light_sakura:text-rose-500"
+                  ? cx("shadow-sm", tokens.surface.card, tokens.text.accent)
                   : cx("hover:text-slate-200", tokens.text.muted)
               )}
             >
@@ -306,7 +306,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
 
       {/* Small Elegant Secondary Panel explaining Category analysis context */}
       {transactions.length > 0 && (
-        <div className={cx("flex flex-wrap gap-4 items-center justify-between text-[clamp(0.6188rem,2.86vw,0.6875rem)] border-t border-slate-800/40 pt-4 progress-legend light_sakura:border-rose-100/30", tokens.text.faint)}>
+        <div className={cx("flex flex-wrap gap-4 items-center justify-between text-[clamp(0.6188rem,2.86vw,0.6875rem)] border-t pt-4 progress-legend", tokens.border.accent, tokens.text.faint)}>
           <span className="flex items-center gap-1.5 font-sans font-medium">
             <Activity size={12} className="text-zinc-400" />
             {t("dashboard.chart_instruction")}

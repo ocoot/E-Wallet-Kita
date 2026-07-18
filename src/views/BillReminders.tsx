@@ -170,10 +170,10 @@ export const BillReminders: React.FC = () => {
   const paidCount = reminders.filter(r => r.is_paid).length;
 
   const urgencyConfig = (r: BillReminderWithUrgency) => {
-    if (r.is_paid) return { stripe: "bg-emerald-500", badge: "bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-600", icon: <CheckCircle2 size={11} />, label: t("bill_reminders.status_paid") };
-    if (r.urgency === "overdue") return { stripe: "bg-red-500", badge: "bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-600", icon: <AlertCircle size={11} />, label: t("bill_reminders.status_overdue") };
-    if (r.urgency === "due_soon") return { stripe: "bg-amber-500", badge: "bg-amber-500/15 text-amber-400 light_sakura:bg-amber-50 light_sakura:text-amber-600", icon: <Clock size={11} />, label: t("bill_reminders.status_due_soon") };
-    return { stripe: "bg-slate-600", badge: "bg-slate-700/50 text-slate-400 light_sakura:bg-slate-100 light_sakura:text-slate-500", icon: <CalendarDays size={11} />, label: t("bill_reminders.status_upcoming") };
+    if (r.is_paid) return { stripe: "bg-emerald-500", badge: cx("bg-emerald-500/15 light_sakura:bg-emerald-500/10", tokens.text.success), icon: <CheckCircle2 size={11} />, label: t("bill_reminders.status_paid") };
+    if (r.urgency === "overdue") return { stripe: "bg-red-500", badge: cx("bg-red-500/15 light_sakura:bg-red-500/10", tokens.text.danger), icon: <AlertCircle size={11} />, label: t("bill_reminders.status_overdue") };
+    if (r.urgency === "due_soon") return { stripe: "bg-amber-500", badge: cx("bg-amber-500/15 light_sakura:bg-amber-500/10", tokens.text.warning), icon: <Clock size={11} />, label: t("bill_reminders.status_due_soon") };
+    return { stripe: "bg-slate-600", badge: cx("bg-slate-700/50 light_sakura:bg-slate-50", tokens.text.muted), icon: <CalendarDays size={11} />, label: t("bill_reminders.status_upcoming") };
   };
 
   const dueDateLabel = (r: BillReminderWithUrgency) => {
@@ -192,7 +192,7 @@ export const BillReminders: React.FC = () => {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
       {/* ── Main card ──────────────────────────────────────────────── */}
-      <div className={cx("rounded-3xl border border-slate-800/60 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}>
+      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.border.default)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -207,7 +207,7 @@ export const BillReminders: React.FC = () => {
               </p>
             </div>
             <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              className={cx("flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold text-sm transition-colors shadow-lg shadow-emerald-500/20 shrink-0 light_sakura:shadow-rose-500/20 cursor-pointer", tokens.button.accentEmerald)}>
+              className={cx("flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold text-sm transition-colors shrink-0 shadow-md cursor-pointer", tokens.button.accentEmerald)}>
               <Plus size={16} /> {t("bill_reminders.add_button")}
             </button>
           </div>
@@ -215,27 +215,27 @@ export const BillReminders: React.FC = () => {
           {/* ── Counter stats: formasi strip chip horizontal ─────────── */}
           {reminders.length > 0 && (
             <div className="flex items-center gap-2.5 overflow-x-auto pb-1 -mx-1 px-1">
-              <div className="shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl bg-red-500/8 border border-red-500/15 light_sakura:bg-red-50/60 light_sakura:border-red-100">
-                <AlertCircle size={13} className="text-red-400" />
+              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl border bg-red-500/5", tokens.border.default)}>
+                <AlertCircle size={13} className={cx(tokens.text.danger)} />
                 <span className={cx("font-bold text-lg leading-none", tokens.text.danger)}>{overdueCount}</span>
-                <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 leading-none">Terlambat</span>
+                <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider leading-none", tokens.text.muted)}>Terlambat</span>
               </div>
-              <div className="shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl bg-amber-500/8 border border-amber-500/15 light_sakura:bg-amber-50/60 light_sakura:border-amber-100">
-                <AlertTriangle size={13} className="text-amber-400" />
+              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl border bg-amber-500/5", tokens.border.default)}>
+                <AlertTriangle size={13} className={cx(tokens.text.warning)} />
                 <span className={cx("font-bold text-lg leading-none", tokens.text.warning)}>{dueSoonCount}</span>
-                <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 leading-none">Segera</span>
+                <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider leading-none", tokens.text.muted)}>Segera</span>
               </div>
-              <div className="shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl bg-emerald-500/8 border border-emerald-500/15 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100">
-                <CheckCircle2 size={13} className="text-emerald-400" />
+              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl border bg-emerald-500/5", tokens.border.default)}>
+                <CheckCircle2 size={13} className={cx(tokens.text.success)} />
                 <span className={cx("font-bold text-lg leading-none", tokens.text.success)}>{paidCount}</span>
-                <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 leading-none">Lunas</span>
+                <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider leading-none", tokens.text.muted)}>Lunas</span>
               </div>
             </div>
           )}
 
           {/* Telegram reminder hour */}
           {isTelegramLinked ? (
-            <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30 space-y-3">
+            <div className={cx("p-4 rounded-2xl border space-y-3", tokens.surface.sunken, tokens.border.default)}>
               <h4 className="font-sans font-bold text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                 <Send size={12} className="text-indigo-400 -translate-x-0.5 rotate-45" />
                 {t("settings.reminder_hour_title")}
@@ -245,14 +245,19 @@ export const BillReminders: React.FC = () => {
                 {REMINDER_HOUR_OPTIONS.map(hour => (
                   <motion.button key={hour} whileTap={{ scale: 0.95 }} type="button" disabled={isSavingReminderHour}
                     onClick={() => handleSelectReminderHour(hour)}
-                    className={`cursor-pointer px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-colors disabled:opacity-50 ${billReminderHour === hour ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/20 light_sakura:bg-rose-500" : "bg-slate-800/60 text-slate-400 hover:bg-slate-700/60 light_sakura:bg-rose-50/60 light_sakura:text-slate-500"}`}>
+                    className={cx(
+                      "cursor-pointer px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-colors disabled:opacity-50",
+                      billReminderHour === hour
+                        ? cx("text-white shadow-sm", tokens.button.accentEmerald)
+                        : cx(tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)
+                    )}>
                     {String(hour).padStart(2, "0")}.00
                   </motion.button>
                 ))}
               </div>
             </div>
           ) : (
-            <div className="flex items-start gap-2.5 p-4 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30">
+            <div className={cx("flex items-start gap-2.5 p-4 rounded-2xl border", tokens.surface.sunken, tokens.border.default)}>
               <Info size={14} className="text-indigo-400 shrink-0 mt-0.5" />
               <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)]", tokens.text.mutedAlt)}>{t("bill_reminders.connect_telegram_hint")}</p>
             </div>
@@ -266,11 +271,11 @@ export const BillReminders: React.FC = () => {
           ) : remindersError ? (
             <ErrorState onRetry={refresh} />
           ) : reminders.length === 0 ? (
-            <EmptyState icon={<Bell size={40} className="text-slate-600 light_sakura:text-slate-400" />} title={t("bill_reminders.empty_title")} description={t("bill_reminders.empty_desc")} />
+            <EmptyState icon={<Bell size={40} className={cx(tokens.text.muted)} />} title={t("bill_reminders.empty_title")} description={t("bill_reminders.empty_desc")} />
           ) : (
             <AnimatePresence>
               {/* ── Formasi timeline: diurutkan dari yang paling mendesak ── */}
-              <div className="relative pl-5 before:content-[''] before:absolute before:left-[7px] before:top-1.5 before:bottom-1.5 before:w-px before:bg-slate-800 light_sakura:before:bg-rose-100">
+              <div className={cx("relative pl-5 before:content-[''] before:absolute before:left-[7px] before:top-1.5 before:bottom-1.5 before:w-px before:bg-slate-800 light_sakura:before:bg-slate-100")}>
                 {[...reminders]
                   .sort((a, b) => {
                     const rank = (r: BillReminderWithUrgency) => r.is_paid ? 3 : r.urgency === "overdue" ? 0 : r.urgency === "due_soon" ? 1 : 2;
@@ -290,8 +295,8 @@ export const BillReminders: React.FC = () => {
                         <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }}
                           className="relative mb-3">
                           {/* Timeline dot */}
-                          <span className={`absolute -left-5 top-4 w-2.5 h-2.5 rounded-full ring-4 ring-slate-900 light_sakura:ring-white ${cfg.stripe}`} />
-                          <div className="rounded-2xl border border-slate-800/50 bg-slate-950/40 overflow-hidden light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30">
+                          <span className={cx("absolute -left-5 top-4 w-2.5 h-2.5 rounded-full ring-4 ring-slate-950 light_sakura:ring-white", cfg.stripe)} />
+                          <div className={cx("rounded-2xl border overflow-hidden", tokens.surface.sunken, tokens.border.default)}>
                             <div className="p-4 space-y-3">
                               {/* Top row */}
                               <div className="flex items-start justify-between gap-2">
@@ -299,7 +304,7 @@ export const BillReminders: React.FC = () => {
                                   <p className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>{r.name}</p>
                                   <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">{getCategoryLabel(r.category_key)} · {recurrenceLabel(r.recurrence_type)} · {dueDateLabel(r)}</p>
                                 </div>
-                                <span className="font-mono font-bold text-sm text-slate-200 light_sakura:text-slate-700 shrink-0">{formatIDR(r.amount)}</span>
+                                <span className={cx("font-mono font-bold text-sm shrink-0", tokens.text.primary)}>{formatIDR(r.amount)}</span>
                               </div>
 
                               {/* Status + days left */}
@@ -314,11 +319,16 @@ export const BillReminders: React.FC = () => {
                               {/* Actions */}
                               <div className="flex items-center gap-2 pt-1">
                                 <button onClick={() => requestTogglePaid(r)} disabled={togglingId === r.id}
-                                  className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 ${r.is_paid ? "bg-slate-700/60 text-slate-400 hover:bg-slate-700 light_sakura:bg-slate-100 light_sakura:text-slate-500" : "bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 light_sakura:bg-emerald-50 light_sakura:text-emerald-600"}`}>
+                                  className={cx(
+                                    "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50",
+                                    r.is_paid
+                                      ? cx(tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)
+                                      : cx("bg-emerald-500/10 hover:bg-emerald-500/20", tokens.text.success)
+                                  )}>
                                   {togglingId === r.id ? <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" /> : r.is_paid ? <><Circle size={12} /> {t("bill_reminders.mark_unpaid")}</> : <><CheckCircle2 size={12} /> {t("bill_reminders.mark_paid")}</>}
                                 </button>
-                                <button onClick={() => { audioFeedback.playClick(); openEditForm(r); }} className={cx("p-2 rounded-xl bg-slate-700/50 hover:text-slate-200 hover:bg-slate-700 transition-colors cursor-pointer light_sakura:bg-slate-100", tokens.text.muted)}><Edit2 size={13} /></button>
-                                <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(r); }} className="p-2 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors cursor-pointer light_sakura:bg-red-50 light_sakura:text-red-400"><Trash2 size={13} /></button>
+                                <button onClick={() => { audioFeedback.playClick(); openEditForm(r); }} className={cx("p-2 rounded-xl transition-colors cursor-pointer", tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)}><Edit2 size={13} /></button>
+                                <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(r); }} className={cx("p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer", tokens.text.danger)}><Trash2 size={13} /></button>
                               </div>
                             </div>
                           </div>
@@ -343,7 +353,7 @@ export const BillReminders: React.FC = () => {
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border border-slate-800 light_sakura:border-slate-200 shadow-2xl", tokens.surface.card)}>
+              className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border shadow-2xl", tokens.surface.card, tokens.border.default)}>
               <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-teal-400" />
               <div className="p-6 space-y-4">
                 <h2 className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
@@ -380,7 +390,13 @@ export const BillReminders: React.FC = () => {
                   <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_recurrence")}</label>
                   <div className="flex gap-2">
                     {(["monthly", "yearly", "one_time"] as RecurrenceType[]).map(type => (
-                      <button key={type} onClick={() => setForm(f => ({ ...f, recurrence_type: type }))} className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${form.recurrence_type === type ? "bg-emerald-500 text-white light_sakura:bg-rose-500" : "bg-slate-800 text-slate-400 hover:bg-slate-700 light_sakura:bg-slate-100 light_sakura:text-slate-600"}`}>
+                      <button key={type} onClick={() => setForm(f => ({ ...f, recurrence_type: type }))}
+                        className={cx(
+                          "flex-1 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer",
+                          form.recurrence_type === type
+                            ? tokens.button.accentEmerald
+                            : cx(tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)
+                        )}>
                         {type === "monthly" ? t("bill_reminders.recurrence_monthly") : type === "yearly" ? t("bill_reminders.recurrence_yearly") : t("bill_reminders.recurrence_one_time")}
                       </button>
                     ))}
@@ -426,8 +442,8 @@ export const BillReminders: React.FC = () => {
                 />
                 {/* Actions */}
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeForm} className={cx("flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer", tokens.text.label)}>{t("common.cancel")}</button>
-                  <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 text-white font-semibold text-sm transition-colors shadow-lg shadow-emerald-500/20 disabled:opacity-50 cursor-pointer">{isSaving ? t("common.loading") : t("common.save")}</button>
+                  <button onClick={closeForm} className={cx("flex-1 py-3 rounded-2xl font-semibold text-sm transition-colors cursor-pointer", tokens.surface.subtle, tokens.hover.surface, tokens.text.label)}>{t("common.cancel")}</button>
+                  <button onClick={handleSave} disabled={isSaving} className={cx("flex-1 py-3 rounded-2xl text-white font-semibold text-sm transition-colors disabled:opacity-50 cursor-pointer", tokens.button.accentEmerald)}>{isSaving ? t("common.loading") : t("common.save")}</button>
                 </div>
               </div>
             </motion.div>
