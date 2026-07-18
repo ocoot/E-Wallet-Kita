@@ -297,7 +297,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 setShowOnboardingBanner(false);
                 localStorage.setItem("ewallet_onboarding_completed", "true");
               }}
-              className="px-3.5 py-1.5 text-xs font-semibold text-slate-400 hover:text-slate-300 hover:bg-slate-800/50 rounded-xl transition-colors light_sakura:text-slate-500 light_sakura:hover:text-slate-700 light_sakura:hover:bg-rose-50"
+              className={cx("px-3.5 py-1.5 text-xs font-semibold hover:text-slate-300 hover:bg-slate-800/50 rounded-xl transition-colors light_sakura:hover:text-slate-700 light_sakura:hover:bg-rose-50", tokens.text.muted)}
             >
               {t("onboarding.dashboard_banner_btn_dismiss")}
             </button>

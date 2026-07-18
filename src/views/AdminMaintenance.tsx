@@ -176,7 +176,7 @@ export const AdminMaintenance: React.FC = () => {
 
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-2xl border ${isActive ? "bg-amber-900/20 light_sakura:bg-amber-50 border-amber-800/50 light_sakura:border-amber-100 text-amber-500 light_sakura:text-amber-600" : "bg-slate-800 light_sakura:bg-slate-50 border-slate-700 light_sakura:border-slate-100 text-slate-500"}`}>
+            <div className={`p-3 rounded-2xl border ${isActive ? "bg-amber-900/20 light_sakura:bg-amber-50 border-amber-800/50 light_sakura:border-amber-100 text-amber-500 light_sakura:text-amber-600" : cx(tokens.surface.subtle, tokens.toggle.inactiveIconBorder)}`}>
               <Power size={20} />
             </div>
             <div>

@@ -328,7 +328,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
               className="flex flex-col items-center space-y-2"
             >
               {isOcrLocked ? (
-                <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-amber-500 light_sakura:bg-rose-500/10 light_sakura:border-rose-500/20 light_sakura:text-rose-500">
+                <div className={cx("p-3 rounded-xl", tokens.chip.accentAmberRose)}>
                   <Lock size={24} className="animate-pulse" />
                 </div>
               ) : (

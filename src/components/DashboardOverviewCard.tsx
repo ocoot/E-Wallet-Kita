@@ -135,7 +135,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
         <div className="flex items-center gap-3.5">
           <div className={cx(
             "w-11 h-11 rounded-2xl flex items-center justify-center shrink-0",
-            "bg-indigo-500/15 light_sakura:bg-rose-500/15",
+            tokens.chip.accentIndigo,
             tokens.icon.accent
           )}>
             <Layers size={20} />

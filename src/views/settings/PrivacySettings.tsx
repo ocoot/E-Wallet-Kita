@@ -46,17 +46,17 @@ export const PrivacySettings: React.FC = () => {
 
   return (
     <MobileSettingsDetailPage title={t("settings.menu_privacy")} description={t("settings.privacy_section_desc")}>
-      <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
-        <h3 className={cx("font-sans font-bold text-sm border-b border-slate-800/10 pb-2.5 light_sakura:border-rose-100 flex items-center gap-2", tokens.text.label)}>
+      <div className={cx("p-5 rounded-2xl shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}>
+        <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.settings.sectionDivider, tokens.text.label)}>
           <ShieldQuestion size={14} className={cx(tokens.icon.accent)} />
           <span>{t("settings.privacy_section")}</span>
         </h3>
 
-        <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 space-y-2.5">
+        <div className={cx("p-3.5 rounded-xl space-y-2.5", tokens.settings.innerCardBgBorder)}>
           <div className="flex items-start gap-2.5">
             <Download size={14} className={cx("mt-0.5 shrink-0", tokens.icon.accent)} />
             <div>
-              <p className="font-sans text-xs font-semibold text-slate-200 light_sakura:text-slate-800">
+              <p className={cx("font-sans text-xs font-semibold", tokens.text.strong)}>
                 {t("settings.privacy_export_title")}
               </p>
               <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 leading-relaxed mt-0.5">

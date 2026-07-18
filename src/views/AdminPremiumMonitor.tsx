@@ -226,7 +226,7 @@ export const AdminPremiumMonitor: React.FC = () => {
       <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-2xl border ${dummyQrisEnabled ? cx("border-purple-800/50 light_sakura:border-purple-100", tokens.adminPremium.sandboxBadgeBg, tokens.adminPremium.sandboxText) : cx("border-slate-700 light_sakura:border-slate-100 text-slate-500", tokens.surface.subtle)}`}>
+            <div className={`p-3 rounded-2xl border ${dummyQrisEnabled ? cx("border-purple-800/50 light_sakura:border-purple-100", tokens.adminPremium.sandboxBadgeBg, tokens.adminPremium.sandboxText) : cx(tokens.toggle.inactiveIconBorder, tokens.surface.subtle)}`}>
               <FlaskConical size={20} />
             </div>
             <div>
@@ -252,7 +252,7 @@ export const AdminPremiumMonitor: React.FC = () => {
             disabled={!dummyQrisLoaded}
             onClick={() => requestToggleDummyQris(!dummyQrisEnabled)}
             className={`btn-exact relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0 disabled:opacity-50
-              ${dummyQrisEnabled ? "bg-purple-600" : "bg-slate-700 light_sakura:bg-slate-200"}`}
+              ${dummyQrisEnabled ? "bg-purple-600" : tokens.toggle.inactiveTrack}`}
             aria-pressed={dummyQrisEnabled}
           >
             <span

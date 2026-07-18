@@ -131,7 +131,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onUserPrefUpda
           onClick={handleAvatarClick}
           disabled={isGuest || isUploadingAvatar}
           aria-label={t("settings.avatar_change_label")}
-          className={`relative group w-20 h-20 shrink-0 rounded-full overflow-hidden bg-indigo-600 light_sakura:bg-rose-500 text-white flex items-center justify-center font-sans font-bold text-3xl ${!isGuest ? "cursor-pointer" : "cursor-default"}`}
+          className={cx(`relative group w-20 h-20 shrink-0 rounded-full overflow-hidden text-white flex items-center justify-center font-sans font-bold text-3xl ${!isGuest ? "cursor-pointer" : "cursor-default"}`, tokens.settings.avatarBg)}
         >
           {avatarUrl ? (
             <img src={avatarUrl} alt={displayName || "avatar"} className="w-full h-full object-cover" />
@@ -159,13 +159,13 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onUserPrefUpda
 
         {!isGuest && (
           isPremium ? (
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold bg-amber-500/15 text-amber-400 light_sakura:bg-rose-100 light_sakura:text-rose-600">
+            <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold", tokens.settings.premiumBadge)}>
               <Sparkles size={11} /> {t("premium.badge_active")}
             </span>
           ) : (
             <button
               onClick={() => { audioFeedback.playClick(); setIsPremiumOpen(true); }}
-              className="cursor-pointer px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold bg-slate-800 text-slate-400 hover:text-slate-200 transition-colors light_sakura:bg-slate-100 light_sakura:text-slate-500"
+              className={cx("cursor-pointer px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold", tokens.settings.premiumDismissBtn)}
             >
               {t("premium.menu_label")}
             </button>
@@ -173,8 +173,8 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onUserPrefUpda
         )}
       </div>
 
-      <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
-        <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100">
+      <div className={cx("p-5 rounded-2xl shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}>
+        <h3 className={cx("font-sans font-bold text-sm", tokens.settings.sectionHeadingBorder)}>
           {t("settings.profile_section")}
         </h3>
         <div className="space-y-1.5">
@@ -185,7 +185,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onUserPrefUpda
             type="text"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className={cx("w-full bg-slate-950 border rounded-xl px-4 py-2 text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:text-slate-800", tokens.border.accent)}
+            className={cx("w-full border rounded-xl px-4 py-2 text-xs outline-none focus:border-indigo-500", tokens.settings.otpInputBg, tokens.text.onSurface, tokens.border.accent)}
           />
         </div>
         <motion.button

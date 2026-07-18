@@ -9,13 +9,82 @@
 > sudah ditulis ulang berdasarkan audit ulang `grep` terhadap kode aktual
 > (bukan cuma catatan sesi lama). Lihat juga bagian **"Bug ditemukan saat
 > audit"** dan **"Rencana Sesi Selanjutnya (revisi 2026-07-18)"** di bawah.
+>
+> **Update 2026-07-18 (setelah sesi 40-44)**: Sesi 40-44 sudah dieksekusi
+> (`Settings.tsx`, `AdminPremiumMonitor.tsx`, `SupportChatWidget.tsx`,
+> `TelegramSettings.tsx`, `History.tsx`, `AdminBroadcast.tsx`,
+> `NewTransaction.tsx`, `Budget.tsx`). Lihat log masing-masing sesi di
+> bawah untuk detail token baru yang ditambahkan. Total literal turun dari
+> 690 → **455** (67 file, jumlah file tidak berubah karena semua 8 file
+> yang disentuh masih menyisakan >0 literal, lihat rincian per-file di log
+> sesi). Roadmap "Sesi 45+" di bagian bawah SUDAH diperbarui.
+>
+> **Update 2026-07-18 (setelah sesi 45-46)**: Sesi 45 (`AdminMaintenance.tsx`,
+> `AdminSupportChat.tsx`) & sesi 46 (`SettingsMobileMenu.tsx`,
+> `LanguageSettings.tsx`, `Dashboard.tsx`, `AdminCategoryManager.tsx`) sudah
+> dieksekusi. Total literal turun dari 455 → **397** (66 file --
+> `LanguageSettings.tsx` mencapai 0 literal penuh sehingga keluar dari
+> hitungan file). Lihat log Sesi 45 & 46 di bawah. Sesi ini juga menambahkan
+> beberapa token cross-file baru (`toggle.inactiveTrack`, `border.subtleRose`,
+> `divide.subtleRose`, `icon.subtle`, `settings.avatarBg`,
+> `settings.premiumBadge`, `settings.premiumDismissBtn`,
+> `settings.optionInactive`, `button.cancelSlate`, `adminSupportChat.*`) --
+> file lain yang punya pola sama (`AdminPremiumMonitor.tsx`,
+> `WalletTransferModal.tsx`, `AdminPanel.tsx`, `ProfileSettings.tsx`,
+> `ThemeSettings.tsx`, `AdminBroadcast.tsx`, `EmptyState.tsx`) BELUM ikut
+> dipasangi karena di luar cakupan target sesi 45-46 -- dicatat sebagai
+> peluang reuse di komentar token terkait `tokens.ts` untuk sesi berikutnya.
+> **Sesi 47 (Badge.tsx/Button.tsx) BELUM dieksekusi** -- perlu konfirmasi
+> user dulu soal status pengecualian "Tidak termasuk cakupan refactor ini"
+> (lihat roadmap Sesi 47 & bagian akhir dokumen).
+>
+> **Update 2026-07-18 (setelah sesi 47-48)**: User mengonfirmasi pengecualian
+> `Badge.tsx`/`Button.tsx` DIREVISI -- kedua file boleh dimigrasi. Sesi 47
+> (`ui/Badge.tsx`, `ui/Button.tsx`) & sesi 48 (`AdminBackup.tsx`,
+> `Sidebar.tsx`, `VoicePreview.tsx`, `PremiumModal.tsx`) sudah dieksekusi.
+> Total literal turun dari 397 → **329** (63 file -- `Badge.tsx`, `Button.tsx`,
+> `AdminBackup.tsx` mencapai 0 literal penuh sehingga keluar dari hitungan
+> file). Lihat log Sesi 47 & 48 di bawah. **Koreksi metodologi**: paragraf
+> status sebelumnya (setelah sesi 45-46) sempat memverifikasi ulang jumlah
+> `Badge.tsx`/`Button.tsx` pakai `grep -c` (hitung BARIS yang match), bukan
+> `grep -o | wc -l` (hitung KEMUNCULAN) yang dipakai konsisten di seluruh
+> dokumen ini -- sempat salah lapor 5/4 padahal aktualnya 15/12 (cocok
+> dengan angka roadmap lama). Sudah diverifikasi ulang & tidak berulang di
+> sesi 48. Token baru yang ditambahkan sesi ini: `badge.*` (5 tone),
+> `buttonVariant.*` (4 varian), `sidebar.collapsedIconBtn`,
+> `voicePreview.cancelBtn`/`confirmBtn`, `premiumModal.*` (4 key) -- reuse
+> cross-file juga dipasang: `Sidebar.tsx` avatar bg → `mobileBottomNav.profileBg`,
+> `VoicePreview.tsx` icon chip → `budget.statusDanger`. Detail lengkap di
+> log Sesi 47 & 48.
+>
+> **Update 2026-07-18 (setelah sesi 49)**: Sesi 49 (`AdminMaintenance.tsx`,
+> `AdminPremiumMonitor.tsx`, `ProfileSettings.tsx`, `Dashboard.tsx`,
+> `NewTransaction.tsx`, `ReceiptUploader.tsx`, `DashboardOverviewCard.tsx`,
+> `ThemeSettings.tsx`, `PrivacySettings.tsx`) sudah dieksekusi -- lihat log
+> Sesi 49 di bawah untuk rincian per-file. Total literal turun dari 329 →
+> **294** (61 file -- `ProfileSettings.tsx` & `ThemeSettings.tsx` mencapai 0
+> literal penuh sehingga keluar dari hitungan file). `NewTransaction.tsx`
+> **TIDAK berkurang** (tetap 10) -- diaudit tuntas cross-file, semua sisa
+> literal genuinely 1x-pakai, tidak ada exact match ke token manapun.
+> Token baru sesi ini: `toggle.inactiveIconBorder` (reuse cross-file
+> `AdminMaintenance.tsx` ⇄ `AdminPremiumMonitor.tsx`), `chip.accentAmberRose`
+> (reuse `ReceiptUploader.tsx` ⇄ `VoiceRecorder.tsx`, hanya dipasang di
+> `ReceiptUploader.tsx` sesi ini), `chip.accentIndigo` (reuse
+> `DashboardOverviewCard.tsx` ⇄ `DashboardInstallments.tsx`, hanya dipasang
+> di `DashboardOverviewCard.tsx` sesi ini). Reuse token lama yang akhirnya
+> terpasang setelah sempat dicatat "di luar cakupan" di sesi sebelumnya:
+> `settings.avatarBg`/`premiumBadge`/`premiumDismissBtn` (di `ProfileSettings.tsx`,
+> dicatat sejak sesi 46), `settings.optionInactive` (di `ThemeSettings.tsx`,
+> dicatat sejak sesi 46), `toggle.inactiveTrack` (di `AdminPremiumMonitor.tsx`,
+> dicatat sejak sesi 45).
 
-Status per 2026-07-18 (setelah sesi 39 + audit koreksi): hook + token dasar
-sudah terpasang di HAMPIR SEMUA file (`useThemeTokens` sudah di-import & 
-dipanggil), tapi total **690 literal inline `light_sakura:` masih tersisa
-di 67 file** (lihat tabel audit terbaru di bagian roadmap). Ini jauh lebih
-tinggi dari angka-angka yang tercatat di sesi-sesi sebelumnya karena fitur
-baru terus ditambahkan ke file yang sudah pernah "dituntaskan".
+Status per 2026-07-18 (setelah sesi 49): hook + token dasar sudah terpasang
+di HAMPIR SEMUA file (`useThemeTokens` sudah di-import & dipanggil), tapi
+total **294 literal inline `light_sakura:` masih tersisa di 61 file**
+(turun dari 329/63 setelah sesi 49, lihat tabel audit terbaru di bagian
+roadmap). Ini jauh lebih tinggi dari angka-angka yang tercatat di sesi-sesi
+lama karena fitur baru terus ditambahkan ke file yang sudah pernah
+"dituntaskan".
 
 File yang BENAR-BENAR 0 literal saat ini (dikonfirmasi ulang via `grep`):
 `src/views/Wallets.tsx`, `src/views/Onboarding.tsx`, `src/views/Login.tsx`,
@@ -25,7 +94,10 @@ File yang BENAR-BENAR 0 literal saat ini (dikonfirmasi ulang via `grep`):
 `src/views/AdminUserManager.tsx`, `src/views/AdminVoucherManager.tsx`,
 `src/views/DashboardChart.tsx`, `src/contexts/ToastContext.tsx` (1 tersisa,
 lihat sesi 27), `src/App.tsx`, `src/components/AdminUserDetailModal.tsx`,
-`src/views/NewTransaction.tsx`.
+`src/views/NewTransaction.tsx`, `src/components/ui/Badge.tsx`,
+`src/components/ui/Button.tsx`, `src/views/AdminBackup.tsx`,
+`src/views/settings/ProfileSettings.tsx` (sesi 49),
+`src/views/settings/ThemeSettings.tsx` (sesi 49).
 
 **Klaim "selesai" yang TERNYATA SUDAH TIDAK AKURAT** (dikoreksi audit ini):
 - `src/views/Settings.tsx` -- sebelumnya disebut "sudah selesai/diaudit
@@ -112,38 +184,50 @@ runtime nyata (bukan cuma masalah dokumentasi):
 > disusun ulang dari audit `grep` terhadap kode aktual per 2026-07-18, BUKAN
 > dari angka-angka sesi lama yang sudah tidak akurat (banyak file "selesai"
 > kemasukan literal baru lagi lewat fitur-fitur baru).
+>
+> **Update**: Sesi 40-44 di bawah ini SUDAH DIEKSEKUSI (lihat log masing-
+> masing sesi). Sesi 45 sekarang jadi target berikutnya.
 
-Total saat ini: **690 literal `light_sakura:` tersisa di 67 file**. Semua
-file di bawah SUDAH punya hook `useThemeTokens` terpasang (tinggal ganti
-class literal ke token, tidak perlu pasang hook baru), kecuali disebutkan
-lain.
+Total saat ini: **455 literal `light_sakura:` tersisa di 67 file** (turun
+dari 690 setelah sesi 40-44). Semua file di bawah SUDAH punya hook
+`useThemeTokens` terpasang (tinggal ganti class literal ke token, tidak
+perlu pasang hook baru), kecuali disebutkan lain.
 
-- **Sesi 40: Settings.tsx (Prioritas Tertinggi)**
-  - **File Target**: `src/views/Settings.tsx` (103 literal -- terbanyak di seluruh codebase, dan sudah 3x disebut "selesai" di sesi-sesi/paragraf sebelumnya tapi selalu kemasukan literal baru lewat fitur baru)
-  - **Fokus**: Migrasi penuh + investigasi kenapa file ini terus-menerus regresi setiap kali "dituntaskan" -- kemungkinan developer menambah section pengaturan baru langsung dengan class Tailwind literal alih-alih token yang sudah ada.
-- **Sesi 41: AdminPremiumMonitor.tsx & Fitur QRIS Sandbox**
-  - **File Target**: `src/views/AdminPremiumMonitor.tsx` (30 literal)
-  - **Fokus**: Migrasi sisa literal, dengan fokus khusus pada bagian toggle QRIS sandbox/dummy (`dummyQrisEnabled`, `tx.is_sandbox`) yang tampaknya ditambahkan setelah migrasi sesi 39 dan belum pernah disentuh token.
-- **Sesi 42: Support Chat & Telegram Settings**
-  - **File Target**: `src/components/SupportChatWidget.tsx` (29), `src/views/settings/TelegramSettings.tsx` (27)
-- **Sesi 43: Riwayat & Broadcast**
-  - **File Target**: `src/views/History.tsx` (27), `src/views/AdminBroadcast.tsx` (25)
-- **Sesi 44: Transaksi Baru & Anggaran**
-  - **File Target**: `src/views/NewTransaction.tsx` (24), `src/views/Budget.tsx` (22) -- bagian dari target Sesi 37 lama yang belum sempat dikerjakan
-- **Sesi 45: Maintenance & Support Chat Admin**
-  - **File Target**: `src/views/AdminMaintenance.tsx` (21), `src/views/AdminSupportChat.tsx` (18)
-- **Sesi 46: Sub-Settings Menengah**
-  - **File Target**: `src/components/settings/SettingsMobileMenu.tsx` (16), `src/views/settings/LanguageSettings.tsx` (15), `src/views/Dashboard.tsx` (13, belum pernah masuk roadmap manapun sebelumnya), `src/views/AdminCategoryManager.tsx` (13)
-- **Sesi 47: UI Primitives Inti (Badge, Button)**
-  - **File Target**: `src/components/ui/Badge.tsx` (15), `src/components/ui/Button.tsx` (12)
-  - **Catatan**: dokumen ini sebelumnya bilang `Button.tsx`/`Badge.tsx` "sengaja tidak diutak-atik" (lihat bagian "Tidak termasuk cakupan refactor ini" di akhir dokumen) karena warnanya sudah tersentralisasi 1 file per komponen -- tapi kenyataannya kedua file itu MASIH punya literal `light_sakura:` (bukan soal sentralisasi varian, tapi literal warna yang belum ditoken-kan). Perlu diputuskan dulu ke user: apakah pengecualian itu masih berlaku atau perlu direvisi.
-- **Sesi 48: Admin Backup, Sidebar, VoicePreview, PremiumModal**
-  - **File Target**: `src/views/AdminBackup.tsx` (12), `src/components/Sidebar.tsx` (12), `src/components/VoicePreview.tsx` (12), `src/components/PremiumModal.tsx` (12)
-- **Sesi 49: Sisa Sub-Settings Kecil**
-  - **File Target**: `src/views/settings/ProfileSettings.tsx` (11), `src/components/ReceiptUploader.tsx` (10), `src/components/DashboardOverviewCard.tsx` (10), `src/views/settings/ThemeSettings.tsx` (9), `src/views/settings/PrivacySettings.tsx` (9)
+- ~~**Sesi 40: Settings.tsx (Prioritas Tertinggi)**~~ **[SELESAI]** 103 → 8
+  literal (lihat log Sesi 40 & 42 di bawah -- sisa 8 literal adalah
+  kombinasi 1x-pakai yang tidak exact-match ke token manapun).
+- ~~**Sesi 41: AdminPremiumMonitor.tsx & Fitur QRIS Sandbox**~~ **[SELESAI]**
+  30 → 16 literal (lihat log Sesi 41).
+- ~~**Sesi 42: Support Chat & Telegram Settings**~~ **[SELESAI]**
+  `SupportChatWidget.tsx` 29 → 6, `TelegramSettings.tsx` 27 → 2 (lihat log
+  Sesi 42).
+- ~~**Sesi 43: Riwayat & Broadcast**~~ **[SELESAI]** `History.tsx` 27 → 1,
+  `AdminBroadcast.tsx` 25 → 4 (lihat log Sesi 43).
+- ~~**Sesi 44: Transaksi Baru & Anggaran**~~ **[SELESAI]**
+  `NewTransaction.tsx` 24 → 10, `Budget.tsx` 22 → 5 (lihat log Sesi 44).
+- ~~**Sesi 45: Maintenance & Support Chat Admin**~~ **[SELESAI]**
+  `AdminMaintenance.tsx` 21 → 17, `AdminSupportChat.tsx` 18 → 7 (lihat log
+  Sesi 45).
+- ~~**Sesi 46: Sub-Settings Menengah**~~ **[SELESAI]**
+  `SettingsMobileMenu.tsx` 16 → 1, `LanguageSettings.tsx` 15 → **0**,
+  `Dashboard.tsx` 13 → 11, `AdminCategoryManager.tsx` 13 → 2 (lihat log
+  Sesi 46).
+- ~~**Sesi 47: UI Primitives Inti (Badge, Button)**~~ **[SELESAI]** User
+  mengonfirmasi revisi pengecualian "Tidak termasuk cakupan refactor ini".
+  `Badge.tsx` 15 → **0**, `Button.tsx` 12 → **0** (lihat log Sesi 47).
+- ~~**Sesi 48: Admin Backup, Sidebar, VoicePreview, PremiumModal**~~ **[SELESAI]**
+  `AdminBackup.tsx` 12 → **0**, `Sidebar.tsx` 12 → 5, `VoicePreview.tsx`
+  12 → 1, `PremiumModal.tsx` 12 → 1 (lihat log Sesi 48).
+- ~~**Sesi 49: Sisa Sub-Settings Kecil**~~ **[SELESAI]**
+  `AdminMaintenance.tsx` 17 → 15, `AdminPremiumMonitor.tsx` 16 → 14,
+  `ProfileSettings.tsx` 11 → **0**, `Dashboard.tsx` 11 → 10,
+  `NewTransaction.tsx` 10 → 10 (tidak berkurang, lihat log Sesi 49),
+  `ReceiptUploader.tsx` 10 → 7, `DashboardOverviewCard.tsx` 10 → 9,
+  `ThemeSettings.tsx` 9 → **0**, `PrivacySettings.tsx` 9 → 3 (lihat log
+  Sesi 49).
 - **Sesi 50: WalletPickerField (bekas dead-code) & Sapu Bersih Akhir**
-  - **File Target**: `src/components/WalletPickerField.tsx` (4, baru dipindah dari daftar dead-code -- lihat koreksi di atas) + seluruh sisa file dengan 1-8 literal (≈30 file, termasuk `SkeletonLoader.tsx` (4), `Modal.tsx` (8), `ConfirmTransactionModal.tsx` (8), dsb.)
-  - **Fokus**: Audit akhir 100% agar tercapai status **0 literal `light_sakura:`** di seluruh basis kode, plus jalankan ulang cross-check grup/key token seperti yang dilakukan pada audit 2026-07-18 untuk memastikan tidak ada bug `tokens.<grup>` yang undefined lagi.
+  - **File Target** (di-refresh dari audit pasca sesi 49): `AdminMaintenance.tsx` (15), `AdminPremiumMonitor.tsx` (14), `DashboardOverviewCard.tsx` (9), `Dashboard.tsx` (10), `NewTransaction.tsx` (10), `ReceiptUploader.tsx` (7), `PrivacySettings.tsx` (3), `src/components/WalletPickerField.tsx` (4, baru dipindah dari daftar dead-code -- lihat koreksi di atas) + seluruh sisa file dengan 1-8 literal (≈30 file, termasuk `SkeletonLoader.tsx` (4), `Modal.tsx` (8), `ConfirmTransactionModal.tsx` (8), dsb.)
+  - **Fokus**: Audit akhir 100% agar tercapai status **0 literal `light_sakura:`** di seluruh basis kode, plus jalankan ulang cross-check grup/key token seperti yang dilakukan pada audit 2026-07-18 untuk memastikan tidak ada bug `tokens.<grup>` yang undefined lagi. Beberapa reuse cross-file yang sudah dicatat tapi belum dipasang di sesi manapun (cek dulu sebelum menambah token baru lagi): `chip.accentAmberRose` → `VoiceRecorder.tsx`, `chip.accentIndigo` → `DashboardInstallments.tsx`, `voicePreview.cancelBtn` → `ReceiptPreview.tsx`.
 
 Jalankan query ini di root repo untuk data terbaru sebelum tiap sesi (versi
 audit 2026-07-18, sudah termasuk kolom status hook):
@@ -166,6 +250,168 @@ done | sort -t'|' -k1 -rn
 > -- untuk status terkini, lihat paragraf status di awal dokumen dan tabel
 > roadmap "Sesi 40+" di atas, yang keduanya berbasis audit `grep` langsung
 > ke kode aktual per 2026-07-18.
+
+## Sesi 49: Sisa Sub-Settings Kecil
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/settings/ProfileSettings.tsx` | 11 | **0** | Reuse penuh token yang sudah ada sejak sesi 46 tapi belum dipasang di file ini: `settings.avatarBg`, `settings.premiumBadge`, `settings.premiumDismissBtn`, `settings.profileCardBgBorder`, `settings.sectionHeadingBorder`, `settings.otpInputBg` + `text.onSurface` (untuk input nama tampilan). Tidak ada token baru. |
+| `src/views/settings/ThemeSettings.tsx` | 9 | **0** | Reuse `settings.profileCardBgBorder`, `settings.sectionDivider` (dipisah dari `text.label` karena warna teks heading file ini beda dari pola `sectionHeadingBorder`), dan `settings.optionInactive` (2x, pill tema aktif/nonaktif -- exact match sudah dicatat sejak sesi 46, dipasang sekarang). |
+| `src/views/settings/PrivacySettings.tsx` | 9 | 3 | Reuse `settings.profileCardBgBorder`, `settings.sectionDivider`, `settings.innerCardBgBorder`, `text.strong` (judul kartu ekspor data). Sisa 3 literal (tombol ekspor data `border-rose-200`/`text-slate-700`, judul kartu hapus akun `text-red-300`/`light_sakura:text-red-600`) dicek cross-file, TIDAK ada exact match -- tetap literal. |
+| `src/views/AdminMaintenance.tsx` | 17 | 15 | Token baru `toggle.inactiveIconBorder` (border+teks kotak ikon toggle "inactive", dipasangkan dengan `surface.subtle` untuk bg) -- exact match ditemukan JUGA di `AdminPremiumMonitor.tsx` (lihat baris berikutnya). Sisa 15 literal (banner info biru admin-bypass, kotak ikon status toggle aktif [amber], kotak ikon lock/unlock per-fitur [merah/emerald], ikon FlaskConical ungu, teks loading) semua dicek cross-file, TIDAK ada exact match -- tetap literal. |
+| `src/views/AdminPremiumMonitor.tsx` | 16 | 14 | Reuse `toggle.inactiveIconBorder` (kotak ikon toggle sandbox QRIS nonaktif, match dengan `AdminMaintenance.tsx`) + reuse `toggle.inactiveTrack` (switch sandbox QRIS -- token ini sudah ada sejak sesi 45 tapi belum dipasang di file ini). Sisa 14 literal (tombol refresh, banner peringatan sandbox aktif, metrik warna 1x-pakai, badge status sandbox/live di tabel, filter pill aktif) dicek cross-file, TIDAK ada exact match -- tetap literal. |
+| `src/components/ReceiptUploader.tsx` | 10 | 7 | Token baru `chip.accentAmberRose` (kotak ikon lock saat OCR terkunci) -- exact match JUGA ditemukan di `VoiceRecorder.tsx` (belum dipasang ke sana, di luar cakupan sesi ini). Sisa 7 literal (dropzone border, kotak ikon upload biasa, teks hint drag-drop, ikon lock kecil) dicek cross-file, TIDAK ada exact match -- tetap literal. |
+| `src/components/DashboardOverviewCard.tsx` | 10 | 9 | Token baru `chip.accentIndigo` (bg bulat ikon "Total Kekayaan", dipasangkan dengan `icon.accent` untuk warna ikon) -- exact match JUGA ditemukan di `DashboardInstallments.tsx` (belum dipasang ke sana, di luar cakupan sesi ini). Sisa 9 literal (gradient kartu utama -- SENGAJA tidak disentuh karena dekoratif custom, lihat komentar di file, 4 literal; hover teks "Rincian Aset"; 2 kartu ringkasan aset tabungan/emas) dicek cross-file, TIDAK ada exact match -- tetap literal. |
+| `src/views/Dashboard.tsx` | 11 | 10 | Reuse parsial `text.muted` (pasangan kata `text-slate-400`/`light_sakura:text-slate-500` diekstrak dari tombol dismiss banner onboarding, sisa hover state tetap literal). Sisa 10 literal (banner onboarding gradient emerald/indigo, tombol CTA gradient indigo custom) dicek cross-file, TIDAK ada exact match -- tetap literal. |
+| `src/views/NewTransaction.tsx` | 10 | 10 | **Diaudit tuntas, TIDAK ADA yang berkurang.** Semua 10 literal (chip wallet terpilih, pill toggle jenis transaksi aktif, angka nominal besar, placeholder input catatan, pill kategori tidak-terpilih, tombol hapus transaksi) sudah dicek cross-file satu per satu -- tidak ada exact match ke token manapun di `tokens.ts` maupun ke file lain. Kemiripan yang ditemukan (mis. `light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400` di tombol hapus, mirip `ReceiptPreview.tsx`) TERNYATA beda warna dasar (`bg-red-600` vs `bg-indigo-600`) sehingga BUKAN token yang sama -- tidak dipaksakan sesuai aturan "jangan paksa token kalau cuma mirip". |
+
+Token baru sesi ini semuanya mengikuti pola "ditemukan exact match di 2 file
+sekaligus, tapi cuma dipasang di 1 file (yang masuk cakupan target sesi
+ini)" -- reuse ke file kedua dicatat sebagai peluang untuk sesi berikutnya,
+bukan dikerjakan sekarang (supaya sesi ini tidak melebar ke file di luar
+daftar target). Setelah sesi ini dijalankan pengecekan manual (`node -e`
+brace-balance check ke semua file yang diedit + `tokens.ts`) -- semua
+seimbang, tidak ada syntax error yang jelas. **Catatan**: `node_modules`
+belum ter-install di lingkungan sesi ini (tidak ada akses jaringan), jadi
+`npx tsc --noEmit` (poin 4 di "Reminder wajib") BELUM bisa dijalankan --
+WAJIB dijalankan di sesi berikutnya begitu `node_modules` tersedia, sebagai
+pemeriksaan susulan untuk seluruh perubahan sesi 47-49 (yang juga belum
+sempat di-tsc-check ulang sejak sesi 48).
+
+## Sesi 48: Admin Backup, Sidebar, VoicePreview, PremiumModal
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/AdminBackup.tsx` | 12 | **0** | Token `adminBackup.*` TERNYATA SUDAH ada penuh di `tokens.ts` (heading, tableHeader, tableRow, label, labelSpan) dari sesi sebelumnya tapi belum pernah dipasang di file ini -- murni reuse, tidak ada token baru ditambahkan. |
+| `src/components/Sidebar.tsx` | 12 | 5 | Token baru `sidebar.collapsedIconBtn` (3x, tombol ikon bulat bahasa/tema/mute di footer collapsed). Reuse cross-file `tokens.mobileBottomNav.profileBg` untuk bg avatar (exact match dgn `MobileBottomNav.tsx`). Sisa 5 literal (shadow custom sidebar, 2 tombol collapse/expand header) 1x-pakai, tidak exact-match token manapun. |
+| `src/components/VoicePreview.tsx` | 12 | 1 | Token baru `voicePreview.cancelBtn` (2x) & `voicePreview.confirmBtn` (2x). `cancelBtn` JUGA exact match di `ReceiptPreview.tsx` (1x, belum dipasang -- di luar cakupan sesi ini, dicatat di komentar token). Reuse cross-file `tokens.budget.statusDanger` untuk icon chip error. Sisa 1 literal (border card error) 1x-pakai. |
+| `src/components/PremiumModal.tsx` | 12 | 1 | Token baru grup `premiumModal` (`modalBg`, `closeBtn`, `infoBoxBg` [2x], `qrWrapperBorder`). Sisa 1 literal (`text-indigo-300 light_sakura:text-rose-500` di badge waiting-payment) mirip tapi tidak persis dengan `text.accent` (beda shade indigo-300 vs indigo-400) -- tidak dipaksakan. |
+
+Sesi ini menegaskan pola yang mulai terlihat sejak sesi 45: `AdminBackup.tsx`
+adalah contoh murni reuse (token sudah ada, tinggal dipasang), sementara
+`Sidebar.tsx`/`VoicePreview.tsx`/`PremiumModal.tsx` masing-masing masih
+punya sisa kombinasi 1x-pakai yang genuinely tidak exact-match ke pola lain
+di codebase -- konsisten dengan aturan "jangan paksa token kalau cuma mirip".
+
+## Sesi 47: UI Primitives Inti (Badge, Button)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/ui/Badge.tsx` | 15 | **0** | Token baru grup `badge` (5 tone: `neutral`, `info`, `success`, `warning`, `danger`) dipindah dari `toneClasses` lokal di komponen. Beda dari kasus token lain di dokumen ini (yang mensyaratkan ≥2 file duplikat) -- combo-combo ini cuma dipakai 1x di source, tapi tetap dipindah ke `tokens.ts` per keputusan user karena `Badge.tsx` sendiri sudah jadi titik reuse tunggal (dipanggil lewat prop `tone`), bukan token generik baru yang menambah lapisan tak perlu. |
+| `src/components/ui/Button.tsx` | 12 | **0** | Token baru grup `buttonVariant` (`primary`, `secondary`, `dangerGhost`, `ghost` -- varian `danger` & `success` TIDAK disentuh karena memang tidak punya literal `light_sakura:` di kode asli) dipindah dari `variantClasses` lokal, alasan sama seperti `Badge.tsx` di atas. |
+
+**Catatan penting**: sempat ada kesalahan hitung literal di paragraf status
+dokumen ini (audit sesi 45-46) yang melaporkan `Badge.tsx`=5 & `Button.tsx`=4
+memakai `grep -c` (hitung baris yang match), bukan `grep -o | wc -l` (hitung
+kemunculan) yang jadi standar hitung di seluruh dokumen ini -- angka yang
+BENAR sebelum sesi ini adalah 15 & 12 (cocok dengan roadmap lama). Sudah
+diverifikasi ulang dengan metode yang konsisten sebelum & sesudah migrasi
+sesi ini; tidak berulang di sesi 48.
+
+Setelah sesi 47-48 dijalankan `npx tsc --noEmit` ke seluruh project: **0
+error** terkait `tokens`/`cx` atau lainnya.
+
+## Sesi 46: Sub-Settings Menengah
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/settings/SettingsMobileMenu.tsx` | 16 | 1 | Reuse token global (`text.faint`, `text.muted`, `icon.subtle` [baru]) + token baru grup `settings` (`avatarBg`, `premiumBadge`, `premiumDismissBtn`) & grup baru `border.subtleRose`/`divide.subtleRose` untuk 3 blok card divide-y identik. Sisa 1 literal (icon chip `bg-slate-950/60 light_sakura:bg-rose-50`) 1x-pakai, tidak exact-match token manapun. |
+| `src/views/settings/LanguageSettings.tsx` | 15 | **0** | Nyaris seluruhnya sudah tercakup token yang sudah ada (`settings.profileCardBgBorder`, `settings.sectionDivider`, `settings.telegramLinkedBadge`) + 1 token baru `settings.optionInactive` (pill pilihan bahasa tidak aktif, 2x). |
+| `src/views/Dashboard.tsx` | 13 | 11 | Reuse token global (`text.onSurface`, `text.mutedAlt`) untuk banner onboarding. Sisa 11 literal (banner gradient emerald-indigo, tombol dismiss, CTA gradient indigo) 1x-pakai per kombinasi, tidak exact-match ke token manapun & tidak ditemukan duplikat di file lain. |
+| `src/views/AdminCategoryManager.tsx` | 13 | 2 | Reuse token global (`errorMonitor.tableDivide`, `errorMonitor.tableRowHover`, `errorMonitor.paginationBtn`, `errorMonitor.progressBg`, `text.success`, `text.muted`) + 1 token baru `button.cancelSlate` (tombol batal edit kategori). Sisa 2 literal (tombol simpan/checkmark hijau) 1x-pakai. |
+
+Sesi ini menemukan cukup banyak kombinasi identik yang SUDAH ada sebagai
+token di grup lain (`errorMonitor.*`, `text.faint`, `text.muted`,
+`text.onSurface`, `text.mutedAlt`, `settings.telegramLinkedBadge`) tapi
+belum pernah dipasang di file-file ini -- murni soal belum sempat
+diterapkan, bukan token yang hilang. Juga ditemukan beberapa pola yang
+berulang di file-file DI LUAR cakupan sesi ini (`AdminPremiumMonitor.tsx`,
+`WalletTransferModal.tsx`, `AdminPanel.tsx`, `ProfileSettings.tsx`,
+`Settings.tsx`, `ThemeSettings.tsx`, `AdminBroadcast.tsx`) -- token baru
+tetap ditambahkan ke `tokens.ts` (didokumentasikan di komentar masing-
+masing key) supaya sesi berikutnya yang menyentuh file-file itu tinggal
+pakai, tanpa perlu menemukan ulang pola yang sama.
+
+## Sesi 45: Maintenance & Support Chat Admin
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/AdminMaintenance.tsx` | 21 | 17 | Token baru grup `toggle` (`inactiveTrack`, dipakai 3x -- toggle maintenance global, sandbox bypass, feature lock) + reuse `tokens.errorMonitor.tableDivide` cross-file untuk divider daftar fitur. Sisa 17 literal (banner info admin-bypass, badge status power on/off, badge lock/unlock, ikon sandbox) semuanya kombinasi 1x-pakai yang tidak exact-match token manapun. |
+| `src/views/AdminSupportChat.tsx` | 18 | 7 | Token baru grup `adminSupportChat` (`spinnerText` 2x, `emptyIcon` 1x) + reuse cross-file `tokens.supportWidget.gradientAvatar`, `tokens.supportWidget.chatBubbleUser`, `tokens.supportWidget.inputFocusRing`, `tokens.budget.emptyStateIcon`, `tokens.budget.addBtn`, `tokens.errorMonitor.tableDivide`. Sisa 7 literal (tombol refresh custom padding, selected-row highlight, bubble chat non-admin) 1x-pakai atau beda 1 detail kecil (padding/opacity) dari token yang ada -- tidak dipaksakan sesuai aturan "jangan dipaksa token kalau cuma mirip". |
+
+Sesi ini menandai titik balik penting: mulai dari sini, mayoritas token
+baru yang ditambahkan ternyata sudah muncul identik di 2-3 file admin lain
+(`AdminPremiumMonitor.tsx`, `SupportChatWidget.tsx`, `EmptyState.tsx`) yang
+sebelumnya sempat "selesai" tapi belum saling mereferensikan token yang
+sama -- indikasi bahwa fase berikutnya rollout ini akan semakin banyak
+berupa reuse token lama ketimbang menciptakan token baru.
+
+## Sesi 44: NewTransaction.tsx & Budget.tsx
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/NewTransaction.tsx` | 24 | 10 | Token global (`text.*`, `border.accent`) + `tokens.newTransaction.*` yang sudah ada. 2 token baru ditambahkan: `segmentedControlBg` (toggle jenis transaksi & wallet picker, 2x) dan `inactiveHoverText` (hover pill tidak aktif, 4x). Juga reuse `tokens.settings.cardBorder` & `tokens.settings.otpInputBg` (cross-file, sama persis dengan pola di `Settings.tsx`). |
+| `src/views/Budget.tsx` | 22 | 5 | Token global + `tokens.budget.*`. 2 token baru: `emptyStateIcon` (ikon PiggyBank empty-state, 2x) dan `closeBtnHover` (hover tombol tutup modal, 2x). Reuse `tokens.settings.cardBorder`/`sectionBorder` cross-file. |
+
+Sesuai target sesi 37 lama yang sempat terlewat. Sisa literal di kedua file
+mayoritas kombinasi 1x-pakai (modal overlay custom, ikon empty-state
+tunggal) yang tidak exact-match ke token manapun -- dibiarkan literal sesuai
+aturan "jangan dipaksa token kalau cuma mirip/1x pakai".
+
+## Sesi 43: History.tsx & AdminBroadcast.tsx
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/History.tsx` | 27 | 1 | Nyaris seluruhnya sudah tercakup `tokens.history.*` yang sudah ada dari sesi sebelumnya -- hanya perlu dipasang, belum sempat dieksekusi. Sisa 1 literal (`tokens.text.accentStrong` vs warna oranye khusus saldo negatif) sengaja dibiarkan literal (beda semantik warna). |
+| `src/views/AdminBroadcast.tsx` | 25 | 4 | **File baru** (belum pernah disentuh rollout token sebelumnya, hook `useThemeTokens` sudah ada dari awal tapi belum dipakai penuh). Token baru ditambahkan ke grup `adminBroadcast`: `summaryCardBorder` (3x), `statusSuccessBadge` (2x), `statusPendingBadge` (2x), `warningBannerBg` (1x, subset dari `statusPendingBadge`). Juga reuse `tokens.telegramCard.linkedLabelText` cross-file. |
+
+## Sesi 42: Support Chat & Telegram Settings
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/SupportChatWidget.tsx` | 29 | 6 | Token baru di grup `supportWidget`: `gradientAvatar` (5x), `ringHighlight` (2x), `inputFocusRing` (2x). Juga reuse `tokens.budget.addBtn` untuk tombol kirim (cross-file, dipakai identik di `Budget.tsx`, `Settings.tsx`, dan file ini). **Ditemukan & diperbaiki bug pre-existing** (bukan hasil migrasi ini): baris 380 punya ternary `tokens.surface.card === "bg-slate-900 light_sakura:bg-white" ? A : B` -- perbandingan ini SELALU true (membandingkan token dengan nilai literalnya sendiri), jadi cabang `B` sudah lama jadi dead code. Disederhanakan jadi literal langsung tanpa mengubah perilaku. |
+| `src/views/settings/TelegramSettings.tsx` | 27 | 2 | **Ditemukan**: isi file ini identik/duplikat dengan bagian "Telegram" yang dulunya inline di `Settings.tsx` (kemungkinan besar hasil ekstraksi komponen yang belum pernah disinkronkan migrasinya). Grup token baru `telegramCard` dibuat (10 key) untuk pola yang PERSIS SAMA di kedua file -- lalu diterapkan ulang ke `Settings.tsx` juga (lihat baris "reuse" di bawah), sehingga sisa literal `Settings.tsx` ikut turun dari 28 → 8 di sesi ini juga. |
+
+**Reuse cross-file tambahan ke `Settings.tsx`** (turun 28 → 8 dari sisa
+sesi 40, sebagai efek samping token baru `telegramCard` di sesi ini):
+`lockedIconText`, `upsellBoxBorderBg`, `upsellIconChipBg`, `upsellCtaBtn`,
+`linkedBadgeBg`, `linkedAvatarRing`, `linkedLabelText`, `qrBoxBorderBg`,
+`qrCodeBoxBg`, `divider` -- semua dipasang di kedua file sekaligus. Juga
+ditambahkan `tokens.settings.divideSubtle` (2x, khusus `Settings.tsx`).
+
+## Sesi 41: AdminPremiumMonitor.tsx & Fitur QRIS Sandbox
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/AdminPremiumMonitor.tsx` | 30 | 16 | Token baru di grup `adminPremium` (grup ini sendiri baru ditambahkan ke `tokens.ts` sehari sebelumnya lewat perbaikan bug audit 2026-07-18): `metricAmber` (2x), `tableDivide`, `tableRowHover`, `paginationBorder` (2x), `sandboxBadgeBg` (2x, badge QRIS sandbox/dummy), `sandboxText` (2x). Toggle QRIS sandbox (`dummyQrisEnabled`, `tx.is_sandbox`) sudah tersentuh sebagian -- sisa 16 literal mayoritas warna 1x-pakai (metrik emerald/red individual, state toggle switch off) yang sengaja dibiarkan literal (beda shade dari token yang ada, lihat aturan "jangan dipaksa token"). |
+
+Juga menambah token global baru `text.strong` (`text-slate-200
+light_sakura:text-slate-800`) karena pola ini ditemukan dipakai identik di
+≥2 file berbeda (`Settings.tsx` & file ini) saat migrasi.
+
+## Sesi 40: Settings.tsx (Prioritas Tertinggi)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/Settings.tsx` | 103 | 28 (lalu turun lagi ke 8 di sesi 42 lewat reuse `telegramCard`) | File dengan literal terbanyak di codebase, sudah 3x salah diklaim "selesai" di sesi-sesi sebelumnya. Token baru ditambahkan ke grup `settings`: `sectionHeadingBorder`+`sectionHeadingText`+`sectionDivider` (heading section pengaturan, 5-7x), `innerCardBgBorder` (kartu kecil dalam section, 5x), `otpInputBg` (kotak input OTP, 3x, juga reuse di `NewTransaction.tsx`), `telegramLinkedBadge` (2x). |
+
+**Investigasi regresi berulang** (diminta di roadmap sesi 40): akar
+masalahnya BUKAN migrasi yang gagal, melainkan fitur-fitur baru (section
+pengaturan Telegram, OTP 2FA, log admin) yang terus ditambahkan langsung
+dengan class Tailwind literal alih-alih token yang sudah ada -- persis
+seperti dugaan di roadmap. Tidak ada perbaikan proses yang bisa dilakukan
+lewat kode (di luar scope rollout token); dicatat di sini sebagai temuan,
+bukan sesuatu yang "diperbaiki".
+
+**Audit cross-check tambahan** (mengulang audit grup/key token 2026-07-18
+ke SEMUA token baru yang ditambahkan sesi 40-44): dijalankan ulang
+verifikasi setiap `tokens.<grup>.<key>` yang dipakai di ke-8 file yang
+disentuh sesi ini terhadap definisi di `tokens.ts` -- **0 referensi tidak
+terdefinisi ditemukan** (termasuk cross-check ke SELURUH `src/`, bukan
+cuma 8 file yang disentuh). Tidak ada bug serupa `adminPremium` yang
+berulang.
+
+---
 
 ## Sesi 33: 2 file dimigrasi (2 → total 102 file tersentuh)
 

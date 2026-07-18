@@ -128,6 +128,22 @@ export const themeTokens = {
      */
     accentEmerald:
       "bg-emerald-500/10 text-emerald-500 light_sakura:bg-rose-500/10 light_sakura:text-rose-500",
+    /**
+     * Sesi 49: kotak ikon warning amber (dark) / rose (light) -- dipakai
+     * saat state "terkunci"/lock. Exact match diverifikasi di 2 file:
+     * ReceiptUploader.tsx (dipasang sesi ini) & VoiceRecorder.tsx (belum
+     * dipasang, di luar cakupan target sesi 49).
+     */
+    accentAmberRose:
+      "bg-amber-500/10 border border-amber-500/20 text-amber-500 light_sakura:bg-rose-500/10 light_sakura:border-rose-500/20 light_sakura:text-rose-500",
+    /**
+     * Sesi 49: background bulat ikon indigo (dark) / rose (light), TANPA
+     * warna teks (dipasangkan dengan `icon.accent`/`text.accent` terpisah).
+     * Exact match diverifikasi di 2 file: DashboardOverviewCard.tsx
+     * (dipasang sesi ini) & DashboardInstallments.tsx (belum dipasang, di
+     * luar cakupan target sesi 49).
+     */
+    accentIndigo: "bg-indigo-500/15 light_sakura:bg-rose-500/15",
   },
 
   /**
@@ -195,6 +211,13 @@ export const themeTokens = {
      * di sesi ini karena file itu di luar cakupan target sesi 45).
      */
     inactiveTrack: "bg-slate-700 light_sakura:bg-slate-200",
+    /**
+     * Sesi 49: border+teks kotak ikon "inactive" (dipasangkan dengan
+     * `surface.subtle` untuk bg-nya). Exact match diverifikasi di 2 file:
+     * AdminMaintenance.tsx (toggle global) & AdminPremiumMonitor.tsx
+     * (toggle sandbox QRIS).
+     */
+    inactiveIconBorder: "border-slate-700 light_sakura:border-slate-100 text-slate-500",
   },
 
   form: {
