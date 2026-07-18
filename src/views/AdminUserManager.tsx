@@ -487,7 +487,7 @@ export const AdminUserManager: React.FC = () => {
               </p>
             </div>
 
-            <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-4 shadow-sm light_sakura:bg-rose-500/5 light_sakura:border-rose-500/20 space-y-2">
+            <div className={cx("rounded-2xl border p-4 shadow-sm space-y-2", tokens.admin.metricsAdminBgBorder)}>
               <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.accent)}>
                 {t("admin.metrics.admin")}
               </p>
@@ -500,7 +500,7 @@ export const AdminUserManager: React.FC = () => {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 shadow-sm light_sakura:bg-red-500/5 light_sakura:border-red-500/20 space-y-2">
+            <div className={cx("rounded-2xl border p-4 shadow-sm space-y-2", tokens.admin.metricsSuspendedBgBorder)}>
               <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.danger)}>
                 {t("admin.metrics.suspended")}
               </p>
@@ -571,13 +571,13 @@ export const AdminUserManager: React.FC = () => {
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-6 py-4 rounded-2xl border border-indigo-500/20 bg-indigo-500/5 light_sakura:bg-rose-500/5 light_sakura:border-rose-500/20">
+        <div className={cx("flex flex-col md:flex-row md:items-center justify-between gap-3 px-6 py-4 rounded-2xl border", tokens.admin.bulkActionBgBorder)}>
           <span className={cx("text-xs font-bold", tokens.text.accent)}>
             {t("admin.users_selected").replace("{count}", selectedIds.size.toString())}
           </span>
           <div className="flex flex-wrap items-center gap-2">
             {[
-              { label: "Grant Premium",  action: "grant_premium"  as const, color: "text-amber-400 border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 light_sakura:bg-amber-500/10" },
+              { label: "Grant Premium",  action: "grant_premium"  as const, color: tokens.admin.bulkActionBtnGrant },
               { label: "Revoke Premium", action: "revoke_premium" as const, color: cx("border text-slate-400 hover:text-white transition-colors", tokens.border.default, tokens.hover.surface, tokens.surface.card) },
               { label: "Ban Semua",      action: "ban"            as const, color: "text-red-400 border-red-500/30 bg-red-500/10 hover:bg-red-500/20" },
               { label: "Unban Semua",    action: "unban"          as const, color: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20" },
@@ -628,7 +628,7 @@ export const AdminUserManager: React.FC = () => {
                        type="checkbox"
                        onChange={toggleSelectAll}
                        checked={selectedIds.size > 0 && selectedIds.size === users.filter(u => u.role !== "owner" && u.id !== currentUser?.id).length}
-                       className="w-3.5 h-3.5 accent-teal-500 light_sakura:accent-rose-500 cursor-pointer"
+                       className={cx("w-3.5 h-3.5 cursor-pointer", tokens.admin.tableCheckboxAccent)}
                     />
                   </th>
                   <th className="px-6 py-4">{t("admin.table_user")}</th>
@@ -639,7 +639,7 @@ export const AdminUserManager: React.FC = () => {
                   <th className="px-6 py-4 text-right">{t("admin.table_actions")}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-200/40">
+              <tbody className={cx("divide-y", tokens.admin.tableDivide)}>
                 {users.map((user) => {
                   const isSelf = user.id === currentUser?.id;
                   return (
@@ -654,7 +654,7 @@ export const AdminUserManager: React.FC = () => {
                             type="checkbox"
                             checked={selectedIds.has(user.id)}
                             onChange={() => toggleSelectUser(user.id)}
-                            className="w-3.5 h-3.5 accent-teal-500 light_sakura:accent-rose-500 cursor-pointer"
+                            className={cx("w-3.5 h-3.5 cursor-pointer", tokens.admin.tableCheckboxAccent)}
                           />
                         )}
                       </td>
@@ -709,8 +709,8 @@ export const AdminUserManager: React.FC = () => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider rounded-lg uppercase border",
-                            user.role === "owner" ? cx("bg-red-500/10 border-red-500/20 light_sakura:bg-red-50 light_sakura:border-red-100", tokens.text.danger) :
-                              user.role === "admin" ? cx("bg-indigo-500/10 border-indigo-500/20 light_sakura:bg-rose-50 light_sakura:border-rose-100", tokens.text.accent) :
+                            user.role === "owner" ? tokens.admin.roleOwner :
+                              user.role === "admin" ? tokens.admin.roleAdmin :
                               cx(tokens.surface.subtle, tokens.border.strong, tokens.text.muted))}>
                             {user.role}
                           </span>
@@ -720,12 +720,12 @@ export const AdminUserManager: React.FC = () => {
                       {/* Suspend Status */}
                       <td className="px-6 py-4">
                         {user.is_banned ? (
-                          <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-red-500/15 border border-red-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-red-50 light_sakura:border-red-100", tokens.text.danger)}>
+                          <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider rounded-lg flex items-center gap-1 inline-flex uppercase", tokens.admin.statusSuspended)}>
                             <XCircle size={10} />
                             {t("admin.status_suspended")}
                           </span>
                         ) : (
-                          <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider bg-emerald-500/15 border border-emerald-500/35 rounded-lg flex items-center gap-1 inline-flex uppercase light_sakura:bg-emerald-50 light_sakura:border-emerald-100", tokens.text.success)}>
+                          <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider rounded-lg flex items-center gap-1 inline-flex uppercase", tokens.admin.statusActive)}>
                             <CheckCircle size={10} />
                             {t("admin.status_active")}
                           </span>

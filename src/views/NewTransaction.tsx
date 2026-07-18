@@ -324,11 +324,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         >
           {/* ── Colour stripe header ─────────────────────────────────── */}
           <div
-            className={`h-1.5 w-full transition-colors duration-300 ${
-              isExpense
-                ? "bg-red-500 light_sakura:bg-rose-400"
-                : "bg-emerald-500"
-            }`}
+            className={cx("h-1.5 w-full transition-colors duration-300", isExpense ? tokens.newTransaction.headerStripeExpense : tokens.newTransaction.headerStripeIncome)}
           />
 
           <div className="p-6 md:p-8 space-y-7">
@@ -401,11 +397,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                     <button
                       type="button"
                       onClick={() => { audioFeedback.playClick(); setType("expense"); }}
-                      className={`py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2
-                        ${isExpense
-                          ? "bg-red-500/15 border border-red-500/60 text-red-400 shadow-sm light_sakura:bg-red-50 light_sakura:border-red-300 light_sakura:text-red-600"
-                          : "text-slate-500 hover:text-slate-300 light_sakura:text-slate-400 light_sakura:hover:text-slate-600"
-                        }`}
+                      className={cx("py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2", isExpense ? tokens.newTransaction.typeToggleActiveExpense : "text-slate-500 hover:text-slate-300 light_sakura:text-slate-400 light_sakura:hover:text-slate-600")}
                     >
                       <span className="text-base leading-none"> </span>
                       {t("transaction.expense")}
@@ -413,11 +405,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                     <button
                       type="button"
                       onClick={() => { audioFeedback.playClick(); setType("income"); }}
-                      className={`py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2
-                        ${!isExpense
-                          ? "bg-emerald-500/15 border border-emerald-500/60 text-emerald-400 shadow-sm light_sakura:bg-emerald-50 light_sakura:border-emerald-300 light_sakura:text-emerald-600"
-                          : "text-slate-500 hover:text-slate-300 light_sakura:text-slate-400 light_sakura:hover:text-slate-600"
-                        }`}
+                      className={cx("py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2", !isExpense ? tokens.newTransaction.typeToggleActiveIncome : "text-slate-500 hover:text-slate-300 light_sakura:text-slate-400 light_sakura:hover:text-slate-600")}
                     >
                       <span className="text-base leading-none"> </span>
                       {t("transaction.income")}
@@ -430,11 +418,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                   <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                     {t("transaction.label_amount")}
                   </label>
-                  <div className={`rounded-2xl border transition-colors duration-200 px-5 py-4 space-y-2 ${
-                    isExpense
-                      ? "bg-red-500/5 border-red-500/20 light_sakura:bg-red-50/40 light_sakura:border-red-200"
-                      : "bg-emerald-500/5 border-emerald-500/20 light_sakura:bg-emerald-50/40 light_sakura:border-emerald-200"
-                  }`}>
+                  <div className={cx("rounded-2xl border transition-colors duration-200 px-5 py-4 space-y-2", isExpense ? tokens.newTransaction.amountInputExpense : tokens.newTransaction.amountInputIncome)}>
                     {/* Live formatted preview */}
                     <AnimatePresence mode="wait">
                       {amountDisplay ? (
@@ -443,9 +427,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                           initial={{ opacity: 0, y: -6 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 6 }}
-                          className={`font-sans font-black text-3xl tracking-tight tabular-nums leading-none ${
-                            isExpense ? "text-red-400 light_sakura:text-red-500" : "text-emerald-400 light_sakura:text-emerald-600"
-                          }`}
+                          className={cx("font-sans font-black text-3xl tracking-tight tabular-nums leading-none", isExpense ? tokens.newTransaction.amountDisplayExpense : tokens.newTransaction.amountDisplayIncome)}
                         >
                           {isExpense ? "−" : "+"}{amountDisplay}
                         </motion.div>
@@ -491,13 +473,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                             audioFeedback.playClick();
                             setCategory(cat.key);
                           }}
-                          className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-                            isSelected
-                              ? isExpense
-                                ? "bg-red-500/15 border-red-500/50 text-red-300 light_sakura:bg-rose-100 light_sakura:border-rose-400 light_sakura:text-rose-700"
-                                : "bg-emerald-500/15 border-emerald-500/50 text-emerald-300 light_sakura:bg-emerald-100 light_sakura:border-emerald-400 light_sakura:text-emerald-700"
-                              : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:text-slate-300 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-500 light_sakura:hover:bg-rose-50"
-                          }`}
+                          className={cx(isSelected ? (isExpense ? tokens.newTransaction.categoryPillSelectedExpense : tokens.newTransaction.categoryPillSelectedIncome) : "bg-slate-800/50 border-slate-700/50 text-slate-400 hover:border-slate-600 hover:text-slate-300 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-500 light_sakura:hover:bg-rose-50")}
                         >
                           <span className="text-sm leading-none">{getCategoryEmoji(cat.key)}</span>
                           <span>{locale === "id" ? cat.label_id || cat.key : cat.label_en || cat.key}</span>

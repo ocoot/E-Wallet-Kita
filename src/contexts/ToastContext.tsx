@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, XCircle, AlertTriangle, Info, X } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { themeTokens } from "../lib/theme/tokens";
 
 type ToastType = "success" | "error" | "info" | "warning";
 
@@ -39,9 +40,9 @@ const TOAST_CONFIG: Record<
     duration: 3500,
     icon: CheckCircle2,
     sound: () => audioFeedback.playChime(),
-    container: "bg-emerald-950/95 border-emerald-500/25 text-emerald-50 light_sakura:bg-emerald-50 light_sakura:border-emerald-200 light_sakura:text-emerald-800",
-    iconChip: "bg-emerald-500/15 light_sakura:bg-emerald-500/10",
-    iconColor: "text-emerald-400 light_sakura:text-emerald-600",
+    container: themeTokens.toast.successContainer,
+    iconChip: themeTokens.toast.successIconChip,
+    iconColor: themeTokens.toast.successIconColor,
     accentBar: "bg-emerald-500",
     progressBar: "bg-emerald-500/60",
     glow: "shadow-[0_8px_28px_-6px_rgba(16,185,129,0.35)]",
@@ -50,9 +51,9 @@ const TOAST_CONFIG: Record<
     duration: 5500,
     icon: XCircle,
     sound: () => audioFeedback.playAlert(),
-    container: "bg-red-950/95 border-red-500/25 text-red-50 light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:text-red-800",
-    iconChip: "bg-red-500/15 light_sakura:bg-red-500/10",
-    iconColor: "text-red-400 light_sakura:text-red-600",
+    container: themeTokens.toast.errorContainer,
+    iconChip: themeTokens.toast.errorIconChip,
+    iconColor: themeTokens.toast.errorIconColor,
     accentBar: "bg-red-500",
     progressBar: "bg-red-500/60",
     glow: "shadow-[0_8px_28px_-6px_rgba(239,68,68,0.35)]",
@@ -61,9 +62,9 @@ const TOAST_CONFIG: Record<
     duration: 4500,
     icon: AlertTriangle,
     sound: () => audioFeedback.playDullPluck(),
-    container: "bg-amber-950/95 border-amber-500/25 text-amber-50 light_sakura:bg-amber-50 light_sakura:border-amber-200 light_sakura:text-amber-800",
-    iconChip: "bg-amber-500/15 light_sakura:bg-amber-500/10",
-    iconColor: "text-amber-400 light_sakura:text-amber-600",
+    container: themeTokens.toast.warningContainer,
+    iconChip: themeTokens.toast.warningIconChip,
+    iconColor: themeTokens.toast.warningIconColor,
     accentBar: "bg-amber-500",
     progressBar: "bg-amber-500/60",
     glow: "shadow-[0_8px_28px_-6px_rgba(245,158,11,0.35)]",
@@ -72,9 +73,9 @@ const TOAST_CONFIG: Record<
     duration: 3500,
     icon: Info,
     sound: () => audioFeedback.playClick(),
-    container: "bg-slate-900/95 border-indigo-500/25 text-indigo-50 light_sakura:bg-indigo-50 light_sakura:border-indigo-200 light_sakura:text-indigo-800",
-    iconChip: "bg-indigo-500/15 light_sakura:bg-indigo-500/10",
-    iconColor: "text-indigo-400 light_sakura:text-indigo-600",
+    container: themeTokens.toast.infoContainer,
+    iconChip: themeTokens.toast.infoIconChip,
+    iconColor: themeTokens.toast.infoIconColor,
     accentBar: "bg-indigo-500",
     progressBar: "bg-indigo-500/60",
     glow: "shadow-[0_8px_28px_-6px_rgba(99,102,241,0.3)]",

@@ -123,8 +123,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       <nav
         className={cx(
           "md:hidden fixed inset-x-4 z-40 flex items-stretch justify-around max-w-md mx-auto px-2",
-          "bg-slate-950/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 shadow-[0_12px_32px_rgba(0,0,0,0.45)] rounded-full",
-          "light_sakura:bg-white/85 light_sakura:backdrop-saturate-100 light_sakura:border-white/60 light_sakura:shadow-[0_12px_32px_rgba(244,63,94,0.18)]",
+          tokens.mobileBottomNav.navContainer,
           tokens.text.onSurface
         )}
         style={{ bottom: "calc(1.1rem + env(safe-area-inset-bottom))" }}
@@ -151,7 +150,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     className={`w-14 h-14 rounded-full flex items-center justify-center
                       bg-gradient-to-br from-indigo-500 via-violet-500 to-indigo-600
                       shadow-lg shadow-indigo-600/40 ring-[5px] ring-slate-950
-                      light_sakura:ring-white
                       transition-transform duration-200 active:scale-95
                       ${locked ? "opacity-50 grayscale" : ""}`}
                   >
@@ -268,14 +266,13 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               transition={{ type: "spring", damping: 28, stiffness: 260 }}
               className={cx(
                 "relative flex flex-col w-full max-h-[85vh] mt-auto rounded-t-3xl outline-none",
-                "bg-slate-900/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-white/10 shadow-[0_-8px_40px_rgba(0,0,0,0.4)]",
-                "light_sakura:bg-rose-50/85 light_sakura:backdrop-saturate-100 light_sakura:border-white/70",
+                tokens.mobileBottomNav.sheetContainer,
                 tokens.text.onSurface
               )}
             >
               {/* Grip handle */}
               <div className="flex justify-center pt-3 pb-1 shrink-0">
-                <div className="w-10 h-1.5 rounded-full bg-slate-700 light_sakura:bg-rose-200" />
+                <div className={cx("w-10 h-1.5 rounded-full", tokens.mobileBottomNav.sheetGrip)} />
               </div>
 
               {/* Header */}
@@ -287,7 +284,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   onClick={closeSheet}
                   className={cx(
                     "p-1 rounded-lg cursor-pointer transition-colors",
-                    "hover:bg-white/10 light_sakura:hover:bg-slate-200",
+                    "hover:bg-white/10",
+                    tokens.mobileBottomNav.closeBtn,
                     tokens.text.primary
                   )}
                 >
@@ -306,7 +304,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                         belum pasang foto. */}
                     <div className={cx(
                       "w-10 h-10 shrink-0 rounded-full flex items-center justify-center overflow-hidden text-sm font-bold",
-                      "bg-slate-900 light_sakura:bg-rose-200",
+                      tokens.mobileBottomNav.profileBg,
                       tokens.text.accent
                     )}>
                       {userAvatarUrl ? (
@@ -346,10 +344,10 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                         onClick={() => setIsMoreOpen(false)}
                         className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-sans text-sm font-medium transition-all duration-150 cursor-pointer
                           ${isActive
-                            ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 light_sakura:bg-rose-500"
+                            ? tokens.mobileBottomNav.navLinkActive
                             : locked
                               ? tokens.text.faint
-                              : cx(tokens.text.label, "hover:bg-slate-800 light_sakura:hover:bg-rose-100")
+                              : cx(tokens.text.label, tokens.mobileBottomNav.navLinkInactive)
                           }`}
                       >
                         <IconComp size={18} />
@@ -411,7 +409,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     setIsMoreOpen(false);
                     onLogoutClick();
                   }}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border bg-slate-950/40 border-red-500/20 text-red-400 hover:bg-red-500/10 font-sans text-sm font-semibold transition-colors cursor-pointer light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:text-red-600 light_sakura:hover:bg-red-100"
+                  className={cx("w-full flex items-center justify-center gap-2 py-3 rounded-xl border font-sans text-sm font-semibold transition-colors cursor-pointer", tokens.mobileBottomNav.logoutBtn)}
                 >
                   <LogOut size={16} />
                   <span>{t("nav.logout")}</span>

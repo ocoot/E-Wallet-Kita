@@ -168,7 +168,7 @@ export const AdminAiMonitor: React.FC = () => {
                     "px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer transition-colors",
                     period === d
                       ? cx("shadow-sm", tokens.surface.card, tokens.text.accent)
-                      : cx("hover:text-indigo-400 light_sakura:hover:text-rose-500", tokens.text.muted)
+                      : cx(tokens.admin.aiMonitorPeriodHover, tokens.text.muted)
                   )}
                 >
                   {d}{t("ai_monitor.days_suffix")}
@@ -238,7 +238,7 @@ export const AdminAiMonitor: React.FC = () => {
                       </div>
                       <div className={cx("h-2 rounded-full overflow-hidden", tokens.surface.subtle)}>
                         <div
-                          className="h-full rounded-full bg-indigo-500 light_sakura:bg-rose-500 transition-all duration-500"
+                          className={cx("h-full rounded-full transition-all duration-500", tokens.admin.aiMonitorSuccessProgress)}
                           style={{ width: `${sRate}%` }}
                         />
                       </div>

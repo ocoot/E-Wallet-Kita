@@ -549,12 +549,12 @@ export const Settings: React.FC<SettingsProps> = ({
       {/* Main Card -- tampilan desktop lama, tidak diubah, hanya
           disembunyikan di breakpoint mobile. */}
       <div className="hidden md:block">
-      <div className={cx("rounded-3xl border border-slate-800/60 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}>
+      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
         
         {/* View Header */}
-        <div className="flex flex-col border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
+        <div className={cx("flex flex-col border-b pb-6", tokens.settings.sectionBorder)}>
           <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
             {t("settings.title")}
           </h1>
@@ -564,7 +564,7 @@ export const Settings: React.FC<SettingsProps> = ({
         </div>
 
         {/* ── Formasi: strip profil ringkas ala kartu identitas ─────────── */}
-        <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-slate-950/40 border border-slate-800/60 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50">
+        <div className={cx("flex items-center gap-3.5 p-4 rounded-2xl", tokens.settings.profileCardBgBorder)}>
           <button
             type="button"
             onClick={handleAvatarClick}

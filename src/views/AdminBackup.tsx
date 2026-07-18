@@ -345,7 +345,7 @@ export const AdminBackup: React.FC = () => {
               <DatabaseBackup className="w-5 h-5 text-indigo-400" />
             </div>
             <div>
-              <h3 className="font-black text-sm text-slate-100 light_sakura:text-slate-800">
+              <h3 className={tokens.adminBackup.heading}>
                 {t("admin.backup_title")}
               </h3>
               <p className={cx("text-xs mt-1 max-w-md", tokens.text.muted)}>
@@ -357,7 +357,7 @@ export const AdminBackup: React.FC = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={loadStatus}
-              className={cx("px-3 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100 flex items-center gap-1.5", tokens.text.secondary)}
+              className={cx(tokens.adminBackup.btnSecondary, tokens.text.secondary)}
             >
               <RefreshCw className="w-3.5 h-3.5" />
               {t("admin.refresh")}
@@ -375,33 +375,33 @@ export const AdminBackup: React.FC = () => {
 
         {latest ? (
           <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 space-y-1.5 light_sakura:bg-rose-100/10 light_sakura:border-rose-200">
+            <div className={tokens.adminBackup.cardBgBorder}>
               <p className={cx("text-[10px] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
                 {t("admin.backup_last_status")}
               </p>
               {statusBadge(latest.status)}
             </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 space-y-1.5 light_sakura:bg-rose-100/10 light_sakura:border-rose-200">
+            <div className={tokens.adminBackup.cardBgBorder}>
               <p className={cx("text-[10px] uppercase font-black tracking-wider flex items-center gap-1", tokens.text.mutedAlt)}>
                 <Clock className="w-3 h-3" /> {t("admin.backup_last_time")}
               </p>
-              <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700">
+              <p className={tokens.adminBackup.cardText}>
                 {new Date(latest.started_at).toLocaleString(locale === "id" ? "id-ID" : "en-US")}
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 space-y-1.5 light_sakura:bg-rose-100/10 light_sakura:border-rose-200">
+            <div className={tokens.adminBackup.cardBgBorder}>
               <p className={cx("text-[10px] uppercase font-black tracking-wider flex items-center gap-1", tokens.text.mutedAlt)}>
                 <HardDrive className="w-3 h-3" /> {t("admin.backup_size")}
               </p>
-              <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700">
+              <p className={tokens.adminBackup.cardText}>
                 {formatBytes(latest.file_size_bytes)}
               </p>
             </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/40 p-4 space-y-1.5 light_sakura:bg-rose-100/10 light_sakura:border-rose-200">
+            <div className={tokens.adminBackup.cardBgBorder}>
               <p className={cx("text-[10px] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
                 {t("admin.backup_destination")}
               </p>
-              <p className="text-xs font-bold text-slate-200 light_sakura:text-slate-700 capitalize">
+              <p className={cx(tokens.adminBackup.cardText, "capitalize")}>
                 Google Drive
               </p>
             </div>

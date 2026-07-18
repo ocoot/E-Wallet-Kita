@@ -37,14 +37,14 @@ function useCountUp(target: number, duration = 900) {
   return value;
 }
 
-const STATUS_CONFIG = {
+const getStatusConfig = (tokens: any) => ({
   safe: {
     barFrom: "#6366f1",
     barTo: "#818cf8",
     glow: "rgba(99,102,241,0.35)",
     icon: <CheckCircle2 size={12} />,
-    badgeBg: "bg-indigo-500/15 light_sakura:bg-indigo-50",
-    badgeText: "text-indigo-400 light_sakura:text-indigo-600",
+    badgeBg: tokens.budgetProgressCard.badgeBgSafe,
+    badgeText: tokens.budgetProgressCard.badgeTextSafe,
     ringColor: "#6366f1",
   },
   warning: {
@@ -52,8 +52,8 @@ const STATUS_CONFIG = {
     barTo: "#fcd34d",
     glow: "rgba(245,158,11,0.35)",
     icon: <AlertTriangle size={12} />,
-    badgeBg: "bg-amber-500/15 light_sakura:bg-amber-50",
-    badgeText: "text-amber-400 light_sakura:text-amber-600",
+    badgeBg: tokens.budgetProgressCard.badgeBgWarning,
+    badgeText: tokens.budgetProgressCard.badgeTextWarning,
     ringColor: "#f59e0b",
   },
   danger: {
@@ -61,13 +61,13 @@ const STATUS_CONFIG = {
     barTo: "#f87171",
     glow: "rgba(239,68,68,0.35)",
     icon: <Flame size={12} />,
-    badgeBg: "bg-red-500/15 light_sakura:bg-red-50",
-    badgeText: "text-red-400 light_sakura:text-red-600",
+    badgeBg: tokens.budgetProgressCard.badgeBgDanger,
+    badgeText: tokens.budgetProgressCard.badgeTextDanger,
     ringColor: "#ef4444",
   },
-};
+});
 
-const STATUS_TONE: Record<keyof typeof STATUS_CONFIG, BadgeTone> = {
+const STATUS_TONE: Record<keyof ReturnType<typeof getStatusConfig>, BadgeTone> = {
   safe: "success",
   warning: "warning",
   danger: "danger",
@@ -86,7 +86,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
 }) => {
   const { t } = useLanguage();
   const { tokens, cx } = useThemeTokens();
-  const cfg = STATUS_CONFIG[budget.status];
+  const cfg = getStatusConfig(tokens)[budget.status];
   const clampedPercent = Math.min(100, budget.percent);
   const animPercent = useCountUp(Math.round(budget.percent));
   const animClamp = Math.min(100, animPercent);
@@ -279,7 +279,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
               onClick={onDelete}
               className={cx(
                 "text-[clamp(0.5625rem,2.6vw,0.625rem)] font-medium transition-colors cursor-pointer",
-                "text-red-400/70 hover:text-red-500 light_sakura:text-red-500/80 light_sakura:hover:text-red-600"
+                tokens.budgetProgressCard.deleteBtn
               )}
             >
               Hapus anggaran ini

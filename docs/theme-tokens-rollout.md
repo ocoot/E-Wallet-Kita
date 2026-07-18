@@ -1,29 +1,52 @@
 # Rollout useThemeTokens() — Panduan Lanjutan
 
-Status per 2026-07-16 (sesi 14): hook + token dasar sudah dibuat. File yang
-sudah selesai/diaudit penuh: `src/components/ui/Card.tsx`,
-`src/components/DashboardWalletCards.tsx`, `src/components/MobileBottomNav.tsx`,
-`src/views/Wallets.tsx`, `src/views/Onboarding.tsx`, `src/views/Settings.tsx`,
-`src/views/Login.tsx`, `src/components/SkeletonLoader.tsx` (diaudit, 0
-migrasi -- lihat catatan sesi 11 di bawah, bukan berarti belum dikerjakan).
-File yang SUDAH dipasangi hook + sebagian token tapi BELUM full-audit
-cross-file (31 file): `src/views/AdminPanel.tsx`,
-`src/components/SupportChatWidget.tsx`, `src/views/AdminAiMonitor.tsx`,
-`src/components/Sidebar.tsx`, `src/views/AdminCategoryManager.tsx`,
-`src/views/AdminPremiumMonitor.tsx`, `src/views/AdminErrorMonitor.tsx`,
-`src/views/BillReminders.tsx`, `src/views/NewTransaction.tsx`,
-`src/views/AdminBackup.tsx`, `src/views/AdminBroadcast.tsx`,
-`src/views/AdminVoucherManager.tsx`, `src/views/AdminMaintenance.tsx`,
-`src/views/Savings.tsx`, `src/views/Installments.tsx`,
-`src/views/GoldSavings.tsx`, `src/components/ReceiptPreview.tsx`,
-`src/views/History.tsx`, `src/views/AdminSupportChat.tsx`,
-`src/components/PremiumModal.tsx`, `src/components/VoicePreview.tsx`,
-`src/views/Budget.tsx`, `src/components/AdminUserDetailModal.tsx`,
-`src/components/DashboardChart.tsx`, `src/components/DashboardOverviewCard.tsx`,
-`src/components/BudgetProgressCard.tsx`, `src/components/ConfirmTransactionModal.tsx`,
-`src/components/DashboardRecentTransactions.tsx`, `src/components/UpdatePrompt.tsx`,
-`src/components/ResetPasswordModal.tsx`, `src/components/HistoryEditModal.tsx`.
-Sisanya belum disentuh.
+> ⚠️ **Audit koreksi 2026-07-18**: Paragraf status di bawah ini sebelumnya
+> berhenti update di "sesi 14" (2026-07-16) padahal log sesi di dokumen ini
+> sudah berjalan sampai **sesi 39**, dan beberapa file yang disebut "selesai"
+> ternyata TIDAK selesai lagi di kode aktual saat ini (kemungkinan besar
+> literal `light_sakura:` baru masuk lewat fitur-fitur baru yang ditambah
+> setelah sesi migrasi terkait, bukan berarti migrasinya gagal). Paragraf ini
+> sudah ditulis ulang berdasarkan audit ulang `grep` terhadap kode aktual
+> (bukan cuma catatan sesi lama). Lihat juga bagian **"Bug ditemukan saat
+> audit"** dan **"Rencana Sesi Selanjutnya (revisi 2026-07-18)"** di bawah.
+
+Status per 2026-07-18 (setelah sesi 39 + audit koreksi): hook + token dasar
+sudah terpasang di HAMPIR SEMUA file (`useThemeTokens` sudah di-import & 
+dipanggil), tapi total **690 literal inline `light_sakura:` masih tersisa
+di 67 file** (lihat tabel audit terbaru di bagian roadmap). Ini jauh lebih
+tinggi dari angka-angka yang tercatat di sesi-sesi sebelumnya karena fitur
+baru terus ditambahkan ke file yang sudah pernah "dituntaskan".
+
+File yang BENAR-BENAR 0 literal saat ini (dikonfirmasi ulang via `grep`):
+`src/views/Wallets.tsx`, `src/views/Onboarding.tsx`, `src/views/Login.tsx`,
+`src/components/DashboardWalletCards.tsx`, `src/components/SplashScreen.tsx`,
+`src/views/GoldSavings.tsx`, `src/views/Savings.tsx`, `src/views/Installments.tsx`,
+`src/views/BillReminders.tsx`, `src/views/AdminErrorMonitor.tsx`,
+`src/views/AdminUserManager.tsx`, `src/views/AdminVoucherManager.tsx`,
+`src/views/DashboardChart.tsx`, `src/contexts/ToastContext.tsx` (1 tersisa,
+lihat sesi 27), `src/App.tsx`, `src/components/AdminUserDetailModal.tsx`,
+`src/views/NewTransaction.tsx`.
+
+**Klaim "selesai" yang TERNYATA SUDAH TIDAK AKURAT** (dikoreksi audit ini):
+- `src/views/Settings.tsx` -- sebelumnya disebut "sudah selesai/diaudit
+  penuh" di paragraf ini, TAPI kode aktual saat ini punya **103 literal**
+  `light_sakura:` tersisa (bukan 0, bukan juga 59 seperti klaim sesi 38/39).
+  Ini file dengan literal terbanyak di seluruh codebase saat ini.
+- `src/views/AdminPremiumMonitor.tsx` -- sesi 39 mencatat file ini
+  "18 → 0" migrasi ke `tokens.adminPremium`, TAPI (a) grup token
+  `adminPremium` ternyata **tidak pernah didefinisikan** di `tokens.ts`
+  (bug runtime, sudah diperbaiki hari ini -- lihat bagian bug di bawah),
+  dan (b) kode aktual sekarang punya **30 literal** tersisa, kemungkinan
+  besar dari fitur toggle QRIS sandbox/dummy (`dummyQrisEnabled`,
+  `tx.is_sandbox`) yang ditambahkan belakangan dan belum pernah dimigrasi.
+- `src/components/SkeletonLoader.tsx` -- paragraf ini sebelumnya masih
+  merujuk status sesi 11 ("diaudit, 0 migrasi"), padahal sesi 16 sudah
+  memasang hook & migrasi penuh (19→0), lalu sesi 22 mencatat 4 literal
+  baru muncul lagi dan dikurangi ke 11→4. Status aktual saat ini: hook
+  terpasang, **4 literal tersisa** (cocok dengan angka akhir sesi 22).
+- `src/components/MobileBottomNav.tsx` dan `src/components/ui/Card.tsx` --
+  sebelumnya disebut "selesai/diaudit penuh", tapi aktual saat ini
+  masing-masing punya 6 dan 3 literal tersisa (fitur baru).
 
 **Dead code / TIDAK dimigrasi (bukan bagian rollout):**
 - `src/components/DashboardAccumulatedBalance.tsx` -- ditemukan di sesi 11
@@ -40,8 +63,14 @@ Sisanya belum disentuh.
   `DashboardOverviewCard.tsx`, `InfoTooltip.tsx` sebagai "komponen lama"
   yang sudah digantikan `DashboardOverviewCard.tsx`, pola sama seperti
   `DashboardAccumulatedBalance.tsx`).
-- `src/components/WalletPickerField.tsx` -- ditemukan di sesi 12, TIDAK
-  diimpor (cuma disebut di komentar `useDropdownPosition.ts`).
+- ~~`src/components/WalletPickerField.tsx`~~ -- **KOREKSI 2026-07-18: file
+  ini SEKARANG DIIMPOR dan dipakai** (`import { WalletPickerField } from
+  "../components/WalletPickerField"` di `src/views/Wallets.tsx` baris 15,
+  dipakai baris 467). Klaim dead-code dari sesi 12 sudah tidak berlaku --
+  kemungkinan fitur pemilih dompet di `Wallets.tsx` diaktifkan ulang setelah
+  sesi 12. File ini SUDAH punya hook (`useThemeTokens` terpasang) tapi masih
+  ada **4 literal `light_sakura:` tersisa** -- pindahkan ke daftar prioritas
+  migrasi aktif (lihat roadmap di bawah), BUKAN dead code lagi.
 
 **Jangan migrasi token di file-file di atas** -- kalau mau dihapus, itu di
 luar scope rollout token, perlu konfirmasi dulu ke user karena keputusan
@@ -50,40 +79,174 @@ manapun untuk migrasi, WAJIB cek dulu apakah file itu benar-benar diimpor
 (`grep -rln "import.*<NamaKomponen>" src`) supaya tidak buang waktu migrasi
 token di dead code lagi.
 
-## Rencana Sesi Selanjutnya (Roadmap Migrasi Lanjutan)
+## ⚠️ Bug ditemukan & diperbaiki saat audit 2026-07-18
 
-Berikut adalah rencana pembagian sesi migrasi lanjutan untuk merapikan sisa file-file yang masih memiliki inline `light_sakura:` agar sepenuhnya menggunakan abstraksi `useThemeTokens()` secara bertahap dan aman:
+Saat cross-check tiap pemanggilan `tokens.<grup>.<key>` di seluruh `src`
+terhadap definisi asli di `src/lib/theme/tokens.ts`, ditemukan satu bug
+runtime nyata (bukan cuma masalah dokumentasi):
 
-- **Sesi 30: Pembersihan Inti & Autentikasi (Core & Auth)**
-  - **File Target**: `src/views/Login.tsx` (46), `src/components/SplashScreen.tsx` (6)
-  - **Fokus**: Menstandarisasi halaman login dan splash screen agar tidak ada inline literal `light_sakura:` pada elemen dekoratif login, focus ring, dsb.
-- **Sesi 31: Alur Pengenalan Aplikasi (Onboarding Flow)**
-  - **File Target**: `src/views/Onboarding.tsx` (79)
-  - **Fokus**: Standardisasi komprehensif pada halaman onboarding (form pendaftaran, pemilihan profil awal, setup awal dompet) agar selaras penuh dengan palet warna semantik global.
-- **Sesi 32: Menu Pengaturan Utama & Telegram (Main Settings & Telegram)**
-  - **File Target**: `src/views/Settings.tsx` (59), `src/components/settings/SettingsMobileMenu.tsx` (11), `src/views/settings/TelegramSettings.tsx` (16)
-  - **Fokus**: Standarisasi halaman pengaturan utama, menu navigasi mobile settings, dan pengaturan integrasi telegram.
-- **Sesi 33: Sisa Pengaturan Akun & Keamanan (Account & Security Settings)**
-  - **File Target**: `src/views/settings/ProfileSettings.tsx` (6), `src/views/settings/PrivacySettings.tsx` (6), `src/views/settings/LanguageSettings.tsx` (6), `src/views/settings/SecuritySettings.tsx` (5), `src/views/settings/ThemeSettings.tsx` (4), `src/views/settings/PwaSettings.tsx` (3), `src/views/settings/NotificationSettings.tsx` (3)
-  - **Fokus**: Membersihkan seluruh sisa inline `light_sakura` di sub-modul pengaturan pengguna yang lebih kecil.
-- **Sesi 34: Admin & Developer Utilities (Admin Monitors & Backups)**
-  - **File Target**: `src/views/AdminErrorMonitor.tsx` (22), `src/views/AdminBackup.tsx` (21), `src/views/AdminPremiumMonitor.tsx` (18)
-  - **Fokus**: Membersihkan halaman log kesalahan (error monitor), manajemen backup data, dan pemantau premium admin agar visual datanya rapi dan konsisten.
-- **Sesi 35: Kontrol Admin Utama & Siaran (Admin Core & Broadcast)**
-  - **File Target**: `src/views/AdminSupportChat.tsx` (13), `src/views/AdminMaintenance.tsx` (12), `src/views/AdminBroadcast.tsx` (12), `src/views/AdminCategoryManager.tsx` (9), `src/views/AdminPanel.tsx` (6)
-  - **Fokus**: Membersihkan modul chat dukungan admin, status pemeliharaan, siaran pesan, manajemen kategori, dan sisa dasbor admin utama.
-- **Sesi 36: Transaksi Utama & Riwayat (Transactions & History)**
-  - **File Target**: `src/views/NewTransaction.tsx` (22), `src/views/History.tsx` (11), `src/components/HistoryGroupedList.tsx` (4), `src/components/DashboardRecentTransactions.tsx` (6)
-  - **Fokus**: Membersihkan modul input transaksi baru, riwayat transaksi utama, daftar grup riwayat, dan transaksi terbaru di dashboard.
-- **Sesi 37: Anggaran & Widget Pendukung Dashboard (Budgeting & Support Widget)**
-  - **File Target**: `src/views/Budget.tsx` (16), `src/components/SupportChatWidget.tsx` (21), `src/components/BudgetProgressCard.tsx` (7)
-  - **Fokus**: Membersihkan halaman manajemen anggaran bulanan, widget chat bantuan di dashboard, dan kartu progres anggaran.
-- **Sesi 38: Shell Aplikasi & Dialog Global (App Shell & Global Dialogs)**
-  - **File Target**: `src/components/Sidebar.tsx` (14), `src/components/MobileBottomNav.tsx` (12), `src/components/UpdatePrompt.tsx` (6), `src/components/Modal.tsx` (6), `src/components/PremiumModal.tsx` (6)
-  - **Fokus**: Membersihkan visual navigasi bingkai utama (Sidebar & BottomNav) dan dialog-dialog modal global agar seragam secara keseluruhan.
-- **Sesi 39: Sapu Bersih Komponen Dashboard & Sisa Akhir (Cleanup & Final Polish)**
-  - **File Target**: Sisa file-file kecil dengan 1-5 inline `light_sakura:` (seperti `DashboardOverviewCard.tsx` (5), `WalletTransferModal.tsx` (5), `ConfirmTransactionModal.tsx` (4), `SkeletonLoader.tsx` (4), dsb.)
-  - **Fokus**: Sapu bersih (100% audit akhir) seluruh file tersisa agar tercapai status **0 literal light_sakura:** di seluruh basis kode.
+- **`src/views/AdminPremiumMonitor.tsx` memanggil `tokens.adminPremium.*`
+  (4 key: `statusBadgeSuccess`, `statusBadgePending`, `statusBadgeExpired`,
+  `statusBadgeFailed`) padahal grup `adminPremium` TIDAK PERNAH ada di
+  `tokens.ts`.** Ini akan menyebabkan `Cannot read properties of undefined`
+  begitu badge status transaksi premium (SUCCESS/PENDING/EXPIRED/FAILED)
+  dirender. Kemungkinan penyebab: sesi 39 mencatat migrasi "18 → 0" ke
+  `tokens.adminPremium`, tapi entah kenapa definisi grupnya di `tokens.ts`
+  tidak pernah ter-commit/tersimpan.
+- **Sudah diperbaiki**: grup `adminPremium` ditambahkan ke `tokens.ts`
+  (setelah grup `errorMonitor`, sebelum `adminUserModal`) dengan 4 key di
+  atas, memakai pola warna yang sama dengan grup semantik lain (emerald =
+  sukses, amber = pending, slate = expired, red = gagal), lengkap dengan
+  varian `light_sakura:`.
+- Audit ini juga menjalankan cross-check yang sama (grup + key) ke SEMUA
+  grup token lain di seluruh codebase -- `adminPremium` adalah satu-satunya
+  referensi yang tidak terdefinisi. Tidak ada bug serupa di grup lain.
+
+## Rencana Sesi Selanjutnya (revisi 2026-07-18, menggantikan roadmap sesi 30-39 di atas)
+
+> Roadmap "Sesi 30-39" yang sebelumnya ada di bagian ini SUDAH DIEKSEKUSI
+> SELURUHNYA (lihat log sesi 30-39 di bawah) kecuali **Sesi 37 yang
+> direncanakan tapi tidak pernah dijalankan/dicatat** (target aslinya:
+> `Budget.tsx`, `SupportChatWidget.tsx`, `BudgetProgressCard.tsx`).
+> Roadmap lama karena itu sudah usang dan diganti dengan daftar di bawah,
+> disusun ulang dari audit `grep` terhadap kode aktual per 2026-07-18, BUKAN
+> dari angka-angka sesi lama yang sudah tidak akurat (banyak file "selesai"
+> kemasukan literal baru lagi lewat fitur-fitur baru).
+
+Total saat ini: **690 literal `light_sakura:` tersisa di 67 file**. Semua
+file di bawah SUDAH punya hook `useThemeTokens` terpasang (tinggal ganti
+class literal ke token, tidak perlu pasang hook baru), kecuali disebutkan
+lain.
+
+- **Sesi 40: Settings.tsx (Prioritas Tertinggi)**
+  - **File Target**: `src/views/Settings.tsx` (103 literal -- terbanyak di seluruh codebase, dan sudah 3x disebut "selesai" di sesi-sesi/paragraf sebelumnya tapi selalu kemasukan literal baru lewat fitur baru)
+  - **Fokus**: Migrasi penuh + investigasi kenapa file ini terus-menerus regresi setiap kali "dituntaskan" -- kemungkinan developer menambah section pengaturan baru langsung dengan class Tailwind literal alih-alih token yang sudah ada.
+- **Sesi 41: AdminPremiumMonitor.tsx & Fitur QRIS Sandbox**
+  - **File Target**: `src/views/AdminPremiumMonitor.tsx` (30 literal)
+  - **Fokus**: Migrasi sisa literal, dengan fokus khusus pada bagian toggle QRIS sandbox/dummy (`dummyQrisEnabled`, `tx.is_sandbox`) yang tampaknya ditambahkan setelah migrasi sesi 39 dan belum pernah disentuh token.
+- **Sesi 42: Support Chat & Telegram Settings**
+  - **File Target**: `src/components/SupportChatWidget.tsx` (29), `src/views/settings/TelegramSettings.tsx` (27)
+- **Sesi 43: Riwayat & Broadcast**
+  - **File Target**: `src/views/History.tsx` (27), `src/views/AdminBroadcast.tsx` (25)
+- **Sesi 44: Transaksi Baru & Anggaran**
+  - **File Target**: `src/views/NewTransaction.tsx` (24), `src/views/Budget.tsx` (22) -- bagian dari target Sesi 37 lama yang belum sempat dikerjakan
+- **Sesi 45: Maintenance & Support Chat Admin**
+  - **File Target**: `src/views/AdminMaintenance.tsx` (21), `src/views/AdminSupportChat.tsx` (18)
+- **Sesi 46: Sub-Settings Menengah**
+  - **File Target**: `src/components/settings/SettingsMobileMenu.tsx` (16), `src/views/settings/LanguageSettings.tsx` (15), `src/views/Dashboard.tsx` (13, belum pernah masuk roadmap manapun sebelumnya), `src/views/AdminCategoryManager.tsx` (13)
+- **Sesi 47: UI Primitives Inti (Badge, Button)**
+  - **File Target**: `src/components/ui/Badge.tsx` (15), `src/components/ui/Button.tsx` (12)
+  - **Catatan**: dokumen ini sebelumnya bilang `Button.tsx`/`Badge.tsx` "sengaja tidak diutak-atik" (lihat bagian "Tidak termasuk cakupan refactor ini" di akhir dokumen) karena warnanya sudah tersentralisasi 1 file per komponen -- tapi kenyataannya kedua file itu MASIH punya literal `light_sakura:` (bukan soal sentralisasi varian, tapi literal warna yang belum ditoken-kan). Perlu diputuskan dulu ke user: apakah pengecualian itu masih berlaku atau perlu direvisi.
+- **Sesi 48: Admin Backup, Sidebar, VoicePreview, PremiumModal**
+  - **File Target**: `src/views/AdminBackup.tsx` (12), `src/components/Sidebar.tsx` (12), `src/components/VoicePreview.tsx` (12), `src/components/PremiumModal.tsx` (12)
+- **Sesi 49: Sisa Sub-Settings Kecil**
+  - **File Target**: `src/views/settings/ProfileSettings.tsx` (11), `src/components/ReceiptUploader.tsx` (10), `src/components/DashboardOverviewCard.tsx` (10), `src/views/settings/ThemeSettings.tsx` (9), `src/views/settings/PrivacySettings.tsx` (9)
+- **Sesi 50: WalletPickerField (bekas dead-code) & Sapu Bersih Akhir**
+  - **File Target**: `src/components/WalletPickerField.tsx` (4, baru dipindah dari daftar dead-code -- lihat koreksi di atas) + seluruh sisa file dengan 1-8 literal (≈30 file, termasuk `SkeletonLoader.tsx` (4), `Modal.tsx` (8), `ConfirmTransactionModal.tsx` (8), dsb.)
+  - **Fokus**: Audit akhir 100% agar tercapai status **0 literal `light_sakura:`** di seluruh basis kode, plus jalankan ulang cross-check grup/key token seperti yang dilakukan pada audit 2026-07-18 untuk memastikan tidak ada bug `tokens.<grup>` yang undefined lagi.
+
+Jalankan query ini di root repo untuk data terbaru sebelum tiap sesi (versi
+audit 2026-07-18, sudah termasuk kolom status hook):
+
+```bash
+for f in $(find src/views src/components -name "*.tsx"); do
+  c=$(grep -o "light_sakura:" "$f" | wc -l)
+  h=$(grep -c useThemeTokens "$f")
+  [ "$c" -gt 0 ] && echo "$c|$f|hook:$h"
+done | sort -t'|' -k1 -rn
+```
+
+---
+
+> 📌 **Catatan audit 2026-07-18**: Log sesi di bawah ini adalah **arsip
+> historis** -- angka "Sebelum/Sesudah" di tiap sesi akurat UNTUK WAKTU
+> SESI ITU DIJALANKAN, tapi banyak file yang tercatat "0" di sini sudah
+> kemasukan literal `light_sakura:` baru lagi lewat penambahan fitur
+> setelahnya. **Jangan jadikan log ini sebagai acuan status file saat ini**
+> -- untuk status terkini, lihat paragraf status di awal dokumen dan tabel
+> roadmap "Sesi 40+" di atas, yang keduanya berbasis audit `grep` langsung
+> ke kode aktual per 2026-07-18.
+
+## Sesi 33: 2 file dimigrasi (2 → total 102 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/Installments.tsx` | 6 | 0 | Menggunakan theme tokens semantik global (ditambahkan sub-grup `installments` di `tokens.ts`) untuk melenyapkan sisa literal `light_sakura:` pada shadow tombol, gradien kartu cicilan aktif, ring offset, badge sukses, progress bar, dan tombol transaksi. |
+| `src/views/BillReminders.tsx` | 6 | 0 | Menggunakan theme tokens semantik global (ditambahkan sub-grup `billReminders` di `tokens.ts`) untuk membersihkan sisa `light_sakura:` pada badge status pembayaran, penanda garis vertikal timeline, dan penanda ring bulatan timeline. |
+
+Sesi ini berfokus pada standardisasi visual sistem Cicilan Bulanan (Installments) dan Pengingat Tagihan (BillReminders) untuk memastikan asisten tagihan menyatu sempurna dengan skema tema dinamis.
+
+## Sesi 32: 2 file dimigrasi (2 → total 100 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/GoldSavings.tsx` | 8 | 0 | Menggunakan theme tokens semantik global (ditambahkan sub-grup `gold` di `tokens.ts`) untuk melenyapkan sisa literal `light_sakura:` pada banner keuntungan/kerugian investasi, info banner harga, tombol batal, edit, dan statistik kepemilikan emas. |
+| `src/views/Savings.tsx` | 3 | 0 | Menggunakan theme tokens semantik global (ditambahkan sub-grup `savings` di `tokens.ts`) untuk melenyapkan sisa literal `light_sakura:` pada tombol penarikan tabungan dan bayangan/shadow tombol tambah. |
+
+## Sesi 39: Strategi Refactoring & Audit (Audit & BudgetProgressCard)
+Berdasarkan data audit Sesi 38, ditetapkan kategori prioritas migrasi untuk efisiensi refactoring:
+- **Kategori Kritis (High Impact/High Frequency):** `src/views/Settings.tsx` (59), `src/views/NewTransaction.tsx` (22), `src/views/Budget.tsx` (16), `src/components/Sidebar.tsx` (14). Komponen ini sering diakses dan menjadi referensi gaya bagi komponen lain.
+- **Kategori Maintenance (Low Impact):** Modul admin sekunder, Sub-settings spesifik, dan modal-modal yang jarang diakses.
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/NewTransaction.tsx` | 22 | 0 | Migrasi tema transaksi ke `tokens.newTransaction`. |
+| `src/views/AdminPremiumMonitor.tsx` | 18 | 0 | Migrasi tema monitor premium ke `tokens.adminPremium`. |
+
+Sesi ini berfokus pada pemetaan beban kerja refactoring dan migrasi komponen visualisasi data `BudgetProgressCard`.
+
+## Sesi 38: Audit Kuantitatif Distribusi literal `light_sakura:`
+Audit `grep` terhadap sisa literal `light_sakura:` di luar `src/lib/theme/tokens.ts`:
+
+| File | Jumlah Literal |
+|---|---|
+| `src/views/Settings.tsx` | 59 |
+| `src/views/NewTransaction.tsx` | 22 |
+| `src/components/SupportChatWidget.tsx` | 21 |
+| `src/views/AdminPremiumMonitor.tsx` | 18 |
+| `src/views/settings/TelegramSettings.tsx` | 16 |
+| `src/views/Budget.tsx` | 16 |
+| `src/components/Sidebar.tsx` | 14 |
+| `src/views/AdminSupportChat.tsx` | 13 |
+| `src/views/AdminMaintenance.tsx` | 12 |
+| `src/views/AdminBroadcast.tsx` | 12 |
+| `src/views/AdminBackup.tsx` | 12 |
+
+*(Sisa file memiliki <12 literal)*
+
+Sesi ini berfokus pada pemetaan beban kerja refactoring untuk memprioritaskan komponen berdampak tinggi (high-impact) agar migrasi token lebih efisien dan meminimalkan risiko regresi visual.
+
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/MobileBottomNav.tsx` | 13 | 0 | Migrasi tema navbar bawah ke `tokens.mobileBottomNav` untuk navbar floating dan bottom-sheet. |
+
+## Sesi 36: 2 file dimigrasi (2 → total 106 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/AdminUserDetailModal.tsx` | 5 | 0 | Mengabstraksikan styling modal detail user ke `tokens.adminUserModal`. |
+| `src/components/UpdatePrompt.tsx` | 6 | 0 | Mengabstraksikan styling prompt update ke `tokens.updatePrompt`. |
+
+## Sesi 35: 2 file dimigrasi (2 → total 104 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/AdminErrorMonitor.tsx` | 33 | 0 | Mengabstraksikan konfigurasi error level, tab navigasi, tabel log, dan statistik banner ke dalam `tokens.adminErrorMonitor` untuk eliminasi literal `light_sakura:`. |
+| `src/views/AdminBackup.tsx` | 23 | 0 | Menggunakan `tokens.adminBackup` untuk menstandarisasikan judul, tombol, kartu ringkasan, dan tabel cadangan database. |
+
+Sesi ini berfokus pada penyelesaian modul UI mobile (Navbar) dan komponen modal administrasi serta prompt update aplikasi.
+
+## Sesi 34: 4 file dimigrasi (4 → total 102 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/AdminUserManager.tsx` | 14 | 0 | Menggunakan token global untuk merapikan kartu statistik dan daftar pengguna. |
+| `src/views/AdminAiMonitor.tsx` | 15 | 0 | Menggunakan token global untuk merapikan kartu monitor AI. |
+| `src/contexts/ToastContext.tsx` | 12 | 0 | Mengabstraksikan styling toast container, icon, dan color ke `tokens.toast` untuk konsistensi visual global. |
+| `src/App.tsx` | 1 | 0 | Membersihkan referensi inline `light_sakura:` pada link Github menggunakan `tokens.hover.textAccent`. |
+
+Sesi ini berfokus pada penyelesaian modul administrasi pengguna, monitor AI, dan sistem notifikasi (Toast) untuk memastikan elemen-elemen kritikal terbebas dari literal `light_sakura:`.
 
 ## Sesi 31: 1 file dimigrasi (1 → total 98 file tersentuh)
 

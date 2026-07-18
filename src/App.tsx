@@ -453,7 +453,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                   rel="noopener noreferrer"
                   className={cx(
                     "transition-colors duration-200 underline inline-flex items-center gap-1",
-                    "hover:text-indigo-400 light_sakura:hover:text-rose-500"
+                    tokens.hover.textAccent
                   )}
                 >
                   Github: @ocoot

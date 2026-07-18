@@ -209,7 +209,7 @@ export const Installments: React.FC = () => {
             <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
               className={cx(
                 "flex items-center gap-2 px-5 py-2.5 rounded-2xl text-white font-semibold text-sm transition-colors shadow-lg shrink-0 cursor-pointer",
-                "shadow-indigo-600/20 light_sakura:shadow-rose-500/20",
+                tokens.installments.btnShadow,
                 tokens.button.accentEmerald
               )}>
               <Plus size={16} /> {t("installments.add_button")}
@@ -255,11 +255,11 @@ export const Installments: React.FC = () => {
                         initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.97 }}
                         className={cx(
                           "shrink-0 w-56 snap-start text-left rounded-2xl p-4 cursor-pointer transition-all",
-                          i.is_completed
+                           i.is_completed
                             ? "bg-gradient-to-br from-emerald-600 to-emerald-800 text-white"
-                            : "bg-gradient-to-br from-indigo-600 to-violet-800 text-white light_sakura:from-rose-500 light_sakura:to-rose-700",
+                            : cx("bg-gradient-to-br text-white", tokens.installments.gradientCardActive),
                           isActive
-                            ? "ring-2 ring-offset-2 ring-offset-slate-900 ring-white/70 light_sakura:ring-offset-white"
+                            ? cx("ring-2 ring-offset-2 ring-offset-slate-900 ring-white/70", tokens.installments.ringOffset)
                             : "opacity-80"
                         )}>
                         <div className="flex items-center justify-between text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider opacity-80">
@@ -286,8 +286,8 @@ export const Installments: React.FC = () => {
                         <p className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>{i.name}</p>
                         <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">{getCategoryLabel(i.category_key)}</p>
                       </div>
-                      {i.is_completed && (
-                        <span className={cx("inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold shrink-0 bg-emerald-500/15 light_sakura:bg-emerald-500/10", tokens.text.success)}>
+                       {i.is_completed && (
+                        <span className={cx("inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold shrink-0", tokens.installments.badgeSuccessBg, tokens.text.success)}>
                           <PartyPopper size={11} />{t("installments.status_completed")}
                         </span>
                       )}
@@ -302,13 +302,13 @@ export const Installments: React.FC = () => {
                           {i.progressPercent}%
                         </span>
                       </div>
-                      <div className={cx("h-2 w-full rounded-full overflow-hidden", tokens.surface.subtle)}>
+                       <div className={cx("h-2 w-full rounded-full overflow-hidden", tokens.surface.subtle)}>
                         <motion.div initial={{ width: 0 }} animate={{ width: `${i.progressPercent}%` }} transition={{ duration: 0.5, ease: "easeOut" }}
                           className={cx(
                             "h-full rounded-full",
                             i.is_completed
                               ? "bg-emerald-500"
-                              : "bg-gradient-to-r from-indigo-500 to-violet-500 light_sakura:from-rose-500 light_sakura:to-rose-400"
+                              : tokens.installments.progressGlow
                           )} />
                       </div>
                     </div>
@@ -334,11 +334,11 @@ export const Installments: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2 pt-1">
-                      {!i.is_completed && (
+                       {!i.is_completed && (
                         <button onClick={() => requestMarkPaid(i)} disabled={busyId === i.id}
                           className={cx(
                             "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50",
-                            "bg-indigo-500/15 hover:bg-indigo-500/25 light_sakura:bg-rose-500/10",
+                            tokens.installments.actionBtnBg,
                             tokens.text.accent
                           )}>
                           {busyId === i.id ? <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" /> : <><CheckCircle2 size={12} /> {t("installments.mark_month_paid")}</>}

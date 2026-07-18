@@ -264,7 +264,8 @@ export const Savings: React.FC = () => {
             </button>
             <button onClick={() => openMove(p, "withdraw")} disabled={busyId === p.id || p.is_archived || p.current_amount <= 0}
               className={cx(
-                "flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 hover:bg-indigo-500/25 light_sakura:bg-rose-50",
+                "flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50",
+                tokens.savings.actionBtnBg,
                 tokens.text.accent
               )}>
               <ArrowUpCircle size={12} /> {t("savings.withdraw_button")}
@@ -300,10 +301,10 @@ export const Savings: React.FC = () => {
                 {t("savings.page_subtitle")}
               </p>
             </div>
-            <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
+             <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
               className={cx(
-                "flex items-center gap-2 px-5 py-2.5 rounded-2xl text-white font-semibold text-sm transition-colors shadow-lg shadow-indigo-600/20 shrink-0 cursor-pointer",
-                "shadow-indigo-600/20 light_sakura:shadow-rose-500/20",
+                "flex items-center gap-2 px-5 py-2.5 rounded-2xl text-white font-semibold text-sm transition-colors shadow-lg shrink-0 cursor-pointer",
+                tokens.savings.btnShadow,
                 tokens.button.accentEmerald
               )}>
               <Plus size={16} /> {t("savings.add_button")}
@@ -483,9 +484,9 @@ export const Savings: React.FC = () => {
                   <button onClick={executeMove} disabled={isMoving}
                     className={cx(
                       "flex-1 py-3 rounded-2xl text-white font-semibold text-sm transition-colors disabled:opacity-50 cursor-pointer shadow-lg",
-                      moveTarget.direction === "deposit"
+                       moveTarget.direction === "deposit"
                         ? "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20"
-                        : cx("shadow-indigo-600/20 light_sakura:shadow-rose-500/20", tokens.button.accentEmerald)
+                        : cx(tokens.savings.btnShadow, tokens.button.accentEmerald)
                     )}>
                     {isMoving ? t("common.loading") : t(moveTarget.direction === "deposit" ? "savings.deposit_button" : "savings.withdraw_button")}
                   </button>

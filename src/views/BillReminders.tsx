@@ -170,10 +170,10 @@ export const BillReminders: React.FC = () => {
   const paidCount = reminders.filter(r => r.is_paid).length;
 
   const urgencyConfig = (r: BillReminderWithUrgency) => {
-    if (r.is_paid) return { stripe: "bg-emerald-500", badge: cx("bg-emerald-500/15 light_sakura:bg-emerald-500/10", tokens.text.success), icon: <CheckCircle2 size={11} />, label: t("bill_reminders.status_paid") };
-    if (r.urgency === "overdue") return { stripe: "bg-red-500", badge: cx("bg-red-500/15 light_sakura:bg-red-500/10", tokens.text.danger), icon: <AlertCircle size={11} />, label: t("bill_reminders.status_overdue") };
-    if (r.urgency === "due_soon") return { stripe: "bg-amber-500", badge: cx("bg-amber-500/15 light_sakura:bg-amber-500/10", tokens.text.warning), icon: <Clock size={11} />, label: t("bill_reminders.status_due_soon") };
-    return { stripe: "bg-slate-600", badge: cx("bg-slate-700/50 light_sakura:bg-slate-50", tokens.text.muted), icon: <CalendarDays size={11} />, label: t("bill_reminders.status_upcoming") };
+    if (r.is_paid) return { stripe: "bg-emerald-500", badge: cx(tokens.billReminders.badgePaid, tokens.text.success), icon: <CheckCircle2 size={11} />, label: t("bill_reminders.status_paid") };
+    if (r.urgency === "overdue") return { stripe: "bg-red-500", badge: cx(tokens.billReminders.badgeOverdue, tokens.text.danger), icon: <AlertCircle size={11} />, label: t("bill_reminders.status_overdue") };
+    if (r.urgency === "due_soon") return { stripe: "bg-amber-500", badge: cx(tokens.billReminders.badgeDueSoon, tokens.text.warning), icon: <Clock size={11} />, label: t("bill_reminders.status_due_soon") };
+    return { stripe: "bg-slate-600", badge: cx(tokens.billReminders.badgeUpcoming, tokens.text.muted), icon: <CalendarDays size={11} />, label: t("bill_reminders.status_upcoming") };
   };
 
   const dueDateLabel = (r: BillReminderWithUrgency) => {
@@ -275,7 +275,7 @@ export const BillReminders: React.FC = () => {
           ) : (
             <AnimatePresence>
               {/* ── Formasi timeline: diurutkan dari yang paling mendesak ── */}
-              <div className={cx("relative pl-5 before:content-[''] before:absolute before:left-[7px] before:top-1.5 before:bottom-1.5 before:w-px before:bg-slate-800 light_sakura:before:bg-slate-100")}>
+              <div className={cx("relative pl-5 before:content-[''] before:absolute before:left-[7px] before:top-1.5 before:bottom-1.5 before:w-px", tokens.billReminders.timelineLine)}>
                 {[...reminders]
                   .sort((a, b) => {
                     const rank = (r: BillReminderWithUrgency) => r.is_paid ? 3 : r.urgency === "overdue" ? 0 : r.urgency === "due_soon" ? 1 : 2;
@@ -295,7 +295,7 @@ export const BillReminders: React.FC = () => {
                         <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }}
                           className="relative mb-3">
                           {/* Timeline dot */}
-                          <span className={cx("absolute -left-5 top-4 w-2.5 h-2.5 rounded-full ring-4 ring-slate-950 light_sakura:ring-white", cfg.stripe)} />
+                          <span className={cx("absolute -left-5 top-4 w-2.5 h-2.5 rounded-full ring-4", tokens.billReminders.timelineRing, cfg.stripe)} />
                           <div className={cx("rounded-2xl border overflow-hidden", tokens.surface.sunken, tokens.border.default)}>
                             <div className="p-4 space-y-3">
                               {/* Top row */}

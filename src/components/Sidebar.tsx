@@ -116,11 +116,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <>
       {/* Desktop Persistent and Collapsible Sidebar (tampilan handphone kini
           memakai navbar bawah -- lihat MobileBottomNav.tsx) */}
-      <aside 
+          <aside 
         className={cx(
           "hidden md:flex flex-col h-screen fixed top-0 left-0 border-r transition-all duration-300 z-30 shadow-[8px_0_32px_rgba(0,0,0,0.35)] light_sakura:shadow-[8px_0_32px_rgba(244,63,94,0.08)]",
-          "bg-slate-950/55 backdrop-blur-2xl backdrop-saturate-150 border-white/10",
-          "light_sakura:bg-white/70 light_sakura:backdrop-saturate-100 light_sakura:border-white/70",
+          tokens.sidebar.brandBg,
           tokens.text.onSurface,
           isCollapsed ? "w-20" : "w-64"
         )}
@@ -171,7 +170,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             "transition-all duration-300 rounded-xl border flex items-center",
             isCollapsed 
               ? "bg-transparent border-transparent p-0 justify-center" 
-              : cx("p-3 backdrop-blur-sm gap-2.5", tokens.surface.sunken, tokens.border.accent)
+              : cx("p-3 backdrop-blur-sm gap-2.5", tokens.sidebar.profileWidget)
           )}>
             <div className={cx(
               "w-8 h-8 shrink-0 rounded-full flex items-center justify-center overflow-hidden bg-slate-900 text-xs font-bold shadow-xs transition-all duration-300",
@@ -214,14 +213,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 key={item.id}
                 to={item.path}
                 title={isCollapsed ? item.label : undefined}
-                className={`w-full flex items-center px-4 py-3 rounded-xl font-sans text-sm font-medium transition-all duration-300 cursor-pointer
-                  ${isCollapsed ? "gap-0 justify-center" : "gap-3"}
-                  ${isActive 
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-600/10 light_sakura:bg-rose-500" 
-                    : locked
-                      ? tokens.text.faint
-                      : cx(tokens.text.label, "hover:bg-slate-900 light_sakura:hover:bg-rose-100/70")
-                  }`}
+                className={cx("w-full flex items-center px-4 py-3 rounded-xl font-sans text-sm font-medium transition-all duration-300 cursor-pointer", isCollapsed ? "gap-0 justify-center" : "gap-3", isActive ? tokens.sidebar.menuItemActive : locked ? tokens.text.faint : cx(tokens.text.label, tokens.sidebar.menuItemInactive))}
               >
                 <IconComp size={18} className="shrink-0 transition-transform duration-300 hover:scale-105" />
                 <div className={`transition-all duration-300 flex items-center justify-between min-w-0 overflow-hidden flex-1 ${isCollapsed ? "w-0 opacity-0 -translate-x-4" : "w-auto opacity-100 translate-x-0"}`}>
@@ -241,7 +233,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={toggleLanguage}
                 title={t("settings.language")}
-                className={cx("flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50", tokens.text.secondary)}
+                className={cx("flex flex-col items-center justify-center py-1.5 rounded-xl border hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer", tokens.sidebar.footerAction, tokens.text.secondary)}
               >
                 <Globe size={11} className="mb-0.5" />
                 <span>{locale.toUpperCase()}</span>
@@ -249,7 +241,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={toggleTheme}
                 title={t("settings.theme")}
-                className={cx("flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50", tokens.text.secondary)}
+                className={cx("flex flex-col items-center justify-center py-1.5 rounded-xl border hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer", tokens.sidebar.footerAction, tokens.text.secondary)}
               >
                 <SunMoon size={11} className="mb-0.5" />
                 <span>{theme === "dark_obsidian" ? t("common.dark") : t("common.light")}</span>
@@ -257,7 +249,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <button
                 onClick={toggleMute}
                 title="Toggle Effects Sound"
-                className={cx("flex flex-col items-center justify-center py-1.5 rounded-xl border border-slate-900 hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50", tokens.text.secondary)}
+                className={cx("flex flex-col items-center justify-center py-1.5 rounded-xl border hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer", tokens.sidebar.footerAction, tokens.text.secondary)}
               >
                 {isMuted ? (
                   <VolumeX size={11} className={cx("mb-0.5", tokens.text.danger)} />
@@ -298,11 +290,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
 
           {/* Log out actions */}
-          <button
-            onClick={onLogoutClick}
-            className={`w-full flex items-center justify-center rounded-xl border bg-slate-950/40 border-red-500/20 text-red-400 hover:bg-red-500/10 font-sans text-xs font-semibold transition-all duration-300 cursor-pointer light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:hover:bg-red-100/70 py-2.5
-              ${isCollapsed ? "px-0 gap-0 justify-center" : "px-3 gap-2"}`}
-          >
+              <button
+                onClick={onLogoutClick}
+                className={cx("w-full flex items-center justify-center rounded-xl border font-sans text-xs font-semibold transition-all duration-300 cursor-pointer py-2.5", tokens.sidebar.logoutBtn, isCollapsed ? "px-0 gap-0 justify-center" : "px-3 gap-2")}
+              >
             <LogOut size={14} className="shrink-0" />
             <div className={`transition-all duration-300 overflow-hidden flex items-center ${isCollapsed ? "w-0 opacity-0 -translate-x-4" : "w-auto opacity-100 translate-x-0"}`}>
               <span className="whitespace-nowrap">{t("nav.logout")}</span>

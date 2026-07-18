@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { themeTokens } from "../lib/theme/tokens";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
@@ -57,9 +58,9 @@ const PERIOD_OPTIONS = [
 ] as const;
 
 const LEVEL_CONFIG: Record<ErrorLogRow["level"], { color: string; bg: string; icon: typeof XCircle }> = {
-  error:   { color: "text-red-400 light_sakura:text-red-600",     bg: "bg-red-500/10 border-red-500/30",     icon: XCircle },
-  warning: { color: "text-amber-400 light_sakura:text-amber-600", bg: "bg-amber-500/10 border-amber-500/30", icon: AlertTriangle },
-  info:    { color: "text-sky-400 light_sakura:text-sky-600",     bg: "bg-sky-500/10 border-sky-500/30",     icon: Info },
+  error:   { color: themeTokens.errorMonitor.levelErrorColor,     bg: themeTokens.errorMonitor.levelErrorBg,     icon: XCircle },
+  warning: { color: themeTokens.errorMonitor.levelWarningColor,   bg: themeTokens.errorMonitor.levelWarningBg,   icon: AlertTriangle },
+  info:    { color: themeTokens.errorMonitor.levelInfoColor,      bg: themeTokens.errorMonitor.levelInfoBg,      icon: Info },
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -180,15 +181,15 @@ export const AdminErrorMonitor: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-            <div className={cx("flex rounded-xl border border-slate-800 light_sakura:border-slate-200 p-1", tokens.surface.subtle)}>
+            <div className={cx("flex rounded-xl border p-1", tokens.errorMonitor.tabBorder, tokens.surface.subtle)}>
               {PERIOD_OPTIONS.map((p) => (
                 <button
                   key={p.hours}
                   onClick={() => setPeriodHours(p.hours)}
                   className={`px-3 py-1.5 text-xs font-semibold rounded-lg cursor-pointer transition-colors
                     ${periodHours === p.hours
-                      ? "bg-slate-700 light_sakura:bg-white shadow-sm text-indigo-400 light_sakura:text-indigo-600"
-                      : "text-slate-400 light_sakura:text-slate-500 hover:text-slate-200 light_sakura:hover:text-slate-700"}`}
+                      ? tokens.errorMonitor.tabActive
+                      : tokens.errorMonitor.tabInactive}`}
                 >
                   {t(p.labelKey)}
                 </button>
@@ -198,7 +199,7 @@ export const AdminErrorMonitor: React.FC = () => {
             <button
               onClick={handleRefresh}
               disabled={refreshing}
-              className={cx("flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-slate-800 light_sakura:border-slate-200 bg-slate-800 light_sakura:bg-white hover:bg-slate-700 light_sakura:hover:bg-slate-50 cursor-pointer transition-colors disabled:opacity-50", tokens.text.label)}
+              className={cx("flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border cursor-pointer transition-colors disabled:opacity-50", tokens.errorMonitor.btnRefresh, tokens.text.label)}
             >
               <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
               {t("admin.refresh_data")}
@@ -216,12 +217,12 @@ export const AdminErrorMonitor: React.FC = () => {
           {/* Stat cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: t("error_monitor.total"), val: stats?.total ?? 0, color: "text-slate-200 light_sakura:text-slate-800" },
-              { label: t("error_monitor.errors"), val: stats?.errors ?? 0, color: "text-red-400 light_sakura:text-red-600" },
-              { label: t("error_monitor.warnings"), val: stats?.warnings ?? 0, color: "text-amber-400 light_sakura:text-amber-600" },
-              { label: t("error_monitor.info"), val: stats?.info ?? 0, color: "text-sky-400 light_sakura:text-sky-600" },
+              { label: t("error_monitor.total"), val: stats?.total ?? 0, color: tokens.errorMonitor.statLabelTotal },
+              { label: t("error_monitor.errors"), val: stats?.errors ?? 0, color: tokens.errorMonitor.levelErrorColor },
+              { label: t("error_monitor.warnings"), val: stats?.warnings ?? 0, color: tokens.errorMonitor.levelWarningColor },
+              { label: t("error_monitor.info"), val: stats?.info ?? 0, color: tokens.errorMonitor.levelInfoColor },
             ].map((m, i) => (
-              <div key={i} className={cx("rounded-2xl border bg-slate-950/40 p-4 shadow-sm light_sakura:bg-white", tokens.border.default)}>
+              <div key={i} className={cx("rounded-2xl border p-4 shadow-sm", tokens.errorMonitor.statCardBg, tokens.border.default)}>
                 <p className={cx("text-xs font-medium", tokens.text.muted)}>{m.label}</p>
                 <h3 className={`font-bold text-2xl mt-1 ${m.color}`}>{m.val.toLocaleString()}</h3>
               </div>
@@ -230,7 +231,7 @@ export const AdminErrorMonitor: React.FC = () => {
 
           {/* Zero-error banner (mirrors the "0 ERRORS — Semua sistem aman" idea) */}
           {stats?.total === 0 && (
-            <div className="flex items-center gap-3 px-5 py-4 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:border-emerald-200 light_sakura:text-emerald-700 text-sm font-medium">
+            <div className={cx("flex items-center gap-3 px-5 py-4 rounded-2xl border text-sm font-medium", tokens.errorMonitor.allClearBanner)}>
               <Activity size={18} className="shrink-0" />
               <span>{t("error_monitor.all_clear")}</span>
             </div>
@@ -255,7 +256,7 @@ export const AdminErrorMonitor: React.FC = () => {
                         <span className={cx("font-mono", tokens.text.secondary)}>{s.source}</span>
                         <span className={cx(tokens.text.muted)}>{s.count} ({pct}%)</span>
                       </div>
-                      <div className="h-1.5 rounded-full bg-slate-800 light_sakura:bg-slate-100 overflow-hidden">
+                      <div className={cx("h-1.5 rounded-full overflow-hidden", tokens.errorMonitor.progressBg)}>
                         <div className="h-full rounded-full bg-red-500/70 transition-all duration-500" style={{ width: `${pct}%` }} />
                       </div>
                     </button>
@@ -275,8 +276,8 @@ export const AdminErrorMonitor: React.FC = () => {
             onClick={() => setLevelFilter(lvl)}
             className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer
               ${levelFilter === lvl
-                ? "bg-slate-700 light_sakura:bg-white text-white light_sakura:text-indigo-600 shadow-sm"
-                : "text-slate-400 light_sakura:text-slate-500 hover:text-slate-200 light_sakura:hover:text-slate-700"}`}
+                ? tokens.errorMonitor.tabActive
+                : tokens.errorMonitor.tabInactive}`}
           >
             {lvl === "all" ? t("admin.status_all") : t(`error_monitor.${lvl}`)}
           </button>
@@ -313,7 +314,7 @@ export const AdminErrorMonitor: React.FC = () => {
                   <th className="px-6 py-4 w-10" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 light_sakura:divide-slate-100">
+              <tbody className={cx("divide-y", tokens.errorMonitor.tableDivide)}>
                 {logs.map((log) => {
                   const cfg = LEVEL_CONFIG[log.level];
                   const LevelIcon = cfg.icon;
@@ -322,7 +323,7 @@ export const AdminErrorMonitor: React.FC = () => {
                   return (
                     <React.Fragment key={log.id}>
                       <tr
-                        className={`hover:bg-slate-800/50 light_sakura:hover:bg-slate-50/50 ${hasContext ? "cursor-pointer" : ""}`}
+                        className={`${tokens.errorMonitor.tableRowHover} ${hasContext ? "cursor-pointer" : ""}`}
                         onClick={() => hasContext && setExpandedId(isExpanded ? null : log.id)}
                       >
                         <td className="px-6 py-4">
@@ -335,7 +336,7 @@ export const AdminErrorMonitor: React.FC = () => {
                           <span className={cx("font-mono text-xs", tokens.text.muted)}>{log.source}</span>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-slate-200 light_sakura:text-slate-800 line-clamp-2">{log.message}</p>
+                          <p className={cx("line-clamp-2", tokens.errorMonitor.rowMessage)}>{log.message}</p>
                         </td>
                         <td className={cx("px-6 py-4 text-xs whitespace-nowrap", tokens.text.muted)}>
                           {formatRelativeTime(log.created_at, t)}
@@ -345,7 +346,7 @@ export const AdminErrorMonitor: React.FC = () => {
                         </td>
                       </tr>
                       {isExpanded && hasContext && (
-                        <tr className="bg-slate-950/40 light_sakura:bg-slate-50">
+                        <tr className={tokens.errorMonitor.tableRowExpanded}>
                           <td colSpan={5} className="px-6 py-4">
                             <p className="text-xs text-slate-500 mb-2">{formatDate(log.created_at)}{log.trace_id ? ` · trace: ${log.trace_id}` : ""}</p>
                             <pre className={cx("text-xs whitespace-pre-wrap break-all font-mono p-3 rounded-xl border", tokens.text.mutedAlt, tokens.surface.card, tokens.border.default)}>
@@ -392,7 +393,7 @@ export const AdminErrorMonitor: React.FC = () => {
               <button
                 disabled={page === 0}
                 onClick={() => setPage((p) => p - 1)}
-                className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
+                className={cx("p-2 rounded-xl border disabled:opacity-50 cursor-pointer", tokens.errorMonitor.paginationBtn, tokens.text.label, tokens.surface.card, tokens.hover.surface)}
               >
                 <ChevronLeft size={14} />
               </button>
@@ -400,7 +401,7 @@ export const AdminErrorMonitor: React.FC = () => {
               <button
                 disabled={page + 1 >= totalPages}
                 onClick={() => setPage((p) => p + 1)}
-                className={cx("p-2 rounded-xl border border-slate-800 light_sakura:border-slate-200 disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.surface.card, tokens.hover.surface)}
+                className={cx("p-2 rounded-xl border disabled:opacity-50 cursor-pointer", tokens.errorMonitor.paginationBtn, tokens.text.label, tokens.surface.card, tokens.hover.surface)}
               >
                 <ChevronRight size={14} />
               </button>

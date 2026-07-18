@@ -371,7 +371,8 @@ export const GoldSavings: React.FC = () => {
                 <button onClick={(e) => { e.stopPropagation(); openMove(p, "sell"); }} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0 || !price?.buyback_price_per_gram} tabIndex={isFlipped ? 0 : -1}
                   title={!price?.buyback_price_per_gram ? t("gold.buyback_unavailable_hint") : undefined}
                   className={cx(
-                    "flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-indigo-500/15 hover:bg-indigo-500/25 light_sakura:bg-rose-50",
+                    "flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50",
+                    tokens.gold.actionBtnBg,
                     tokens.text.accent
                   )}
                 >
@@ -386,7 +387,7 @@ export const GoldSavings: React.FC = () => {
                   <PackageMinus size={12} /> {t("gold.manual_remove_button_short")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); audioFeedback.playClick(); openEditForm(p); }} tabIndex={isFlipped ? 0 : -1}
-                  className={cx("flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer bg-slate-700/40 hover:bg-slate-700/60 light_sakura:bg-slate-100", tokens.text.label)}>
+                  className={cx("flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer", tokens.gold.editBtnBg, tokens.text.label)}>
                   <Edit2 size={12} /> {t("common.edit")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); toggleArchive(p); }} disabled={busyId === p.id} tabIndex={isFlipped ? 0 : -1}
@@ -395,7 +396,8 @@ export const GoldSavings: React.FC = () => {
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); audioFeedback.playClick(); setDeleteTarget(p); }} tabIndex={isFlipped ? 0 : -1}
                   className={cx(
-                    "col-span-2 flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer bg-red-500/10 hover:bg-red-500/20 light_sakura:bg-red-50",
+                    "col-span-2 flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer",
+                    tokens.gold.deleteBtnBg,
                     tokens.text.danger
                   )}
                 >
@@ -451,11 +453,11 @@ export const GoldSavings: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="rounded-2xl bg-amber-500/8 border border-amber-500/15 px-3 py-3 light_sakura:bg-amber-50/60 light_sakura:border-amber-100">
+            <div className={cx("rounded-2xl px-3 py-3", tokens.gold.statGramsBgBorder)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_total_grams")}</span>
               <p className={cx("font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.warning)}>{formatGrams(summary.total_grams)}</p>
             </div>
-            <div className="rounded-2xl bg-indigo-500/8 border border-indigo-500/15 px-3 py-3 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100">
+            <div className={cx("rounded-2xl px-3 py-3", tokens.gold.statValBgBorder)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_market_value")}</span>
               <p className={cx("font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.accentStrong)}>{formatIDR(summary.total_market_value)}</p>
               {/* Footnote "estimasi" -- nilai ini dihitung dari harga acuan
@@ -474,9 +476,7 @@ export const GoldSavings: React.FC = () => {
                   tidak menyesatkan lagi soal efeknya ke saldo riil. */}
               <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-slate-500 mt-0.5 leading-snug">{t("gold.stat_cash_locked_note")}</p>
             </div>
-            <div className={`rounded-2xl border px-3 py-3 ${summary.unrealized_gain_loss >= 0
-              ? "bg-emerald-500/8 border-emerald-500/15 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100"
-              : "bg-red-500/8 border-red-500/15 light_sakura:bg-red-50/60 light_sakura:border-red-100"}`}>
+            <div className={cx("rounded-2xl border px-3 py-3", summary.unrealized_gain_loss >= 0 ? tokens.gold.gainBgBorder : tokens.gold.lossBgBorder)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_gain_loss")}</span>
               <p className={cx(
                 "font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight",
@@ -494,7 +494,7 @@ export const GoldSavings: React.FC = () => {
             </div>
           )}
 
-          <div className="flex items-start gap-2.5 rounded-2xl border border-indigo-500/15 bg-indigo-500/5 px-4 py-3 light_sakura:bg-indigo-50/40 light_sakura:border-indigo-100">
+          <div className={cx("flex items-start gap-2.5 rounded-2xl border px-4 py-3", tokens.gold.infoBannerBgBorder)}>
             <Info size={14} className={cx("shrink-0 mt-0.5", tokens.text.accent)} />
             <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed", tokens.text.mutedAlt)}>{t("gold.info_banner_text")}</p>
           </div>
@@ -620,7 +620,7 @@ export const GoldSavings: React.FC = () => {
                   accent="amber"
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeForm} className={cx("flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer", tokens.text.label)}>{t("common.cancel")}</button>
+                  <button onClick={closeForm} className={cx("flex-1 py-3 rounded-2xl font-semibold text-sm transition-colors cursor-pointer", tokens.gold.cancelBtn, tokens.text.label)}>{t("common.cancel")}</button>
                   <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm transition-colors shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer">{isSaving ? t("common.loading") : t("common.save")}</button>
                 </div>
               </div>
@@ -688,7 +688,7 @@ export const GoldSavings: React.FC = () => {
                   accent="amber"
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeMoveModal} className={cx("flex-1 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-100 font-semibold text-sm hover:bg-slate-700 transition-colors cursor-pointer", tokens.text.label)}>{t("common.cancel")}</button>
+                  <button onClick={closeMoveModal} className={cx("flex-1 py-3 rounded-2xl font-semibold text-sm transition-colors cursor-pointer", tokens.gold.cancelBtn, tokens.text.label)}>{t("common.cancel")}</button>
                   <button onClick={executeMove} disabled={isMoving}
                     className={`flex-1 py-3 rounded-2xl text-white font-semibold text-sm transition-colors shadow-lg disabled:opacity-50 cursor-pointer ${copy.buttonClass}`}>
                     {isMoving ? t("common.loading") : t(copy.button)}

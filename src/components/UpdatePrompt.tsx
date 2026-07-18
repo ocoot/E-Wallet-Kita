@@ -121,18 +121,18 @@ export const UpdatePrompt: React.FC = () => {
             aria-labelledby="update-prompt-title"
             className="relative w-full max-w-[22rem] sm:max-w-sm md:max-w-md my-auto max-h-[85vh] overflow-y-auto"
           >
-            <div className={cx("relative flex flex-col gap-4 p-5 sm:p-6 rounded-2xl shadow-2xl border border-indigo-500/30 light_sakura:border-rose-300/50", tokens.surface.card, tokens.text.onSurface)}>
+            <div className={cx("relative flex flex-col gap-4 p-5 sm:p-6 rounded-2xl shadow-2xl border", tokens.updatePrompt.cardBorder, tokens.surface.card, tokens.text.onSurface)}>
               <button
                 onClick={handleDismiss}
                 disabled={isUpdating}
-                className="absolute top-3 right-3 p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent light_sakura:hover:text-slate-700 light_sakura:hover:bg-black/5"
+                className={cx("absolute top-3 right-3 p-1.5 rounded-lg text-slate-500 hover:text-slate-300 hover:bg-white/5 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent", tokens.updatePrompt.closeBtn)}
                 aria-label="Tutup"
               >
                 <X size={16} />
               </button>
 
               <div className="flex flex-col items-center text-center gap-3 pt-1">
-                <div className={cx("p-3 rounded-2xl bg-indigo-500/15 light_sakura:bg-rose-500/10", tokens.icon.accent)}>
+                <div className={cx("p-3 rounded-2xl", tokens.updatePrompt.iconContainer, tokens.icon.accent)}>
                   {isUpdating ? (
                     <Loader2 size={22} className="animate-spin" />
                   ) : (
@@ -175,7 +175,7 @@ export const UpdatePrompt: React.FC = () => {
                             v{entry.version}
                           </span>
                           {idx === 0 && (
-                            <span className="px-1.5 py-0.5 rounded-full bg-indigo-500 text-white text-[9px] font-bold uppercase tracking-wide leading-none light_sakura:bg-rose-500">
+                            <span className={cx("px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide leading-none", tokens.updatePrompt.badge)}>
                               {t("pwa.badge_new")}
                             </span>
                           )}
@@ -201,7 +201,7 @@ export const UpdatePrompt: React.FC = () => {
                 <button
                   onClick={handleDismiss}
                   disabled={isUpdating}
-                  className={cx("flex-1 order-2 sm:order-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs sm:text-sm font-bold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white/5 light_sakura:bg-black/5 light_sakura:hover:bg-black/10", tokens.text.label)}
+                  className={cx("flex-1 order-2 sm:order-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs sm:text-sm font-bold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white/5", tokens.updatePrompt.btnCancel, tokens.text.label)}
                 >
                   {t("pwa.update_dismiss") || "Nanti"}
                 </button>
@@ -209,7 +209,7 @@ export const UpdatePrompt: React.FC = () => {
                   onClick={handleUpdate}
                   disabled={isUpdating}
                   aria-busy={isUpdating}
-                  className="flex-1 order-1 sm:order-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs sm:text-sm font-bold transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-80 disabled:cursor-wait disabled:hover:bg-indigo-600 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                  className={cx("flex-1 order-1 sm:order-2 px-4 py-2.5 rounded-xl text-white text-xs sm:text-sm font-bold transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-80 disabled:cursor-wait", tokens.updatePrompt.btnConfirm)}
                 >
                   {isUpdating && <Loader2 size={14} className="animate-spin shrink-0" />}
                   {isUpdating ? t("pwa.updating") : t("pwa.update_btn")}

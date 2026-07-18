@@ -330,7 +330,7 @@ export const SupportChatWidget: React.FC = () => {
         whileTap={{ scale: 0.92 }}
         className={cx(
           "fixed bottom-24 sm:bottom-32 right-6 z-30 flex items-center justify-center w-14 h-14 rounded-full text-white shadow-2xl transition-colors duration-200",
-          "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-900/40 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-900/20"
+          tokens.supportWidget.fabButton
         )}
         style={{ marginBottom: "env(safe-area-inset-bottom)" }}
       >
@@ -521,7 +521,7 @@ export const SupportChatWidget: React.FC = () => {
                         <div
                           className={cx(
                             "self-end max-w-[85%] px-3 py-2 rounded-2xl rounded-br-md text-xs leading-relaxed text-white",
-                            "bg-indigo-600 light_sakura:bg-rose-500"
+                            tokens.supportWidget.chatBubbleUser
                           )}
                         >
                           {bubble.text}

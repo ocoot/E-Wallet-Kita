@@ -356,7 +356,7 @@ export const AdminPremiumMonitor: React.FC = () => {
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${cfg.bg.replace("bg-", "bg-opacity-20 bg-")} ${cfg.color}`}>
+                        <span className={cx("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold", tx.status === "SUCCESS" ? tokens.adminPremium.statusBadgeSuccess : tx.status === "PENDING" ? tokens.adminPremium.statusBadgePending : tx.status === "EXPIRED" ? tokens.adminPremium.statusBadgeExpired : tokens.adminPremium.statusBadgeFailed)}>
                           <StatusIcon size={14} />
                           {cfg.label}
                         </span>

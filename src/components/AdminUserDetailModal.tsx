@@ -113,7 +113,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
         {/* Header */}
         <div className={cx("shrink-0 flex items-center justify-between px-6 py-4 border-b", tokens.border.accent, tokens.surface.sunken)}>
           <div className="flex items-center gap-3">
-            <div className={cx("w-10 h-10 rounded-2xl border flex items-center justify-center font-black text-lg bg-indigo-500/10 border-indigo-500/20 light_sakura:bg-rose-200/50 light_sakura:border-rose-300", tokens.text.accent)}>
+            <div className={cx("w-10 h-10 rounded-2xl border flex items-center justify-center font-black text-lg", tokens.adminUserModal.avatarContainer, tokens.text.accent)}>
               {user.display_name.charAt(0).toUpperCase()}
             </div>
             <div>
@@ -147,8 +147,8 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
               <span className={cx(
                 "px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase border flex items-center gap-1",
                 detail.role === "owner" && "bg-red-500/10 border-red-500/20 text-red-400",
-                detail.role === "admin" && "bg-indigo-500/10 border-indigo-500/20 text-indigo-400 light_sakura:bg-rose-200/40 light_sakura:border-rose-300 light_sakura:text-rose-600",
-                detail.role === "user" && "bg-slate-800 border-slate-700 text-slate-400 light_sakura:bg-slate-200 light_sakura:border-slate-300 light_sakura:text-slate-600"
+                detail.role === "admin" && tokens.adminUserModal.roleAdmin,
+                detail.role === "user" && tokens.adminUserModal.roleUser
               )}>
                 <Shield size={9} />
                 {detail.role}
