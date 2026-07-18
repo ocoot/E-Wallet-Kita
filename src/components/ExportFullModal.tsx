@@ -8,6 +8,7 @@ import { DropdownField } from "./DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { Button } from "./ui/Button";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface ExportFullModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
   onGenerate,
   isGenerating = false,
 }) => {
+  const { tokens, cx } = useThemeTokens();
   const { t } = useLanguage();
   const { activeWallets } = useWallets();
 
@@ -69,12 +71,12 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
             role="dialog"
             aria-modal="true"
             tabIndex={-1}
-            className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl outline-none bg-slate-900 border-indigo-500/20 text-white light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-rose-100"
+            className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl outline-none", tokens.surface.card, tokens.border.accent, tokens.text.onSurface)}
           >
             <button
               onClick={onCancel}
               aria-label="Tutup"
-              className="absolute top-4 right-4 text-slate-400 hover:text-white light_sakura:hover:text-slate-900 cursor-pointer"
+              className={cx("absolute top-4 right-4 cursor-pointer", tokens.text.faint, "hover:text-white light_sakura:hover:text-slate-900")}
             >
               <X size={18} />
             </button>
@@ -88,13 +90,13 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
               </h3>
             </div>
 
-            <p className="mb-5 font-sans text-sm opacity-80 leading-relaxed">
+            <p className={cx("mb-5 font-sans text-sm leading-relaxed", tokens.text.secondary)}>
               {t("export.modal_full_desc")}
             </p>
 
             <div className="grid grid-cols-2 gap-3 mb-2">
               <div className="space-y-1.5">
-                <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
+                <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block", tokens.text.muted)}>
                   {t("export.from_month")}
                 </label>
                 <DropdownField
@@ -105,7 +107,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
               </div>
 
               <div className="space-y-1.5">
-                <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
+                <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block", tokens.text.muted)}>
                   {t("export.to_month")}
                 </label>
                 <DropdownField
@@ -117,7 +119,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
             </div>
 
             <div className="space-y-1.5 mb-3">
-              <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
+              <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block", tokens.text.muted)}>
                 {t("wallet.label_pos")}
               </label>
               <DropdownField
@@ -134,12 +136,12 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
             </div>
 
             {!valid && monthsSelected !== 0 && (
-              <p className="text-xs text-red-400 font-medium mb-3">
+              <p className={cx("text-xs font-medium mb-3", tokens.text.danger)}>
                 {t("export.range_invalid")}
               </p>
             )}
             {valid && (
-              <p className="text-xs text-slate-400 light_sakura:text-slate-500 mb-3">
+              <p className={cx("text-xs mb-3", tokens.text.muted)}>
                 {monthsSelected} / {MAX_RANGE_MONTHS} {t("export.from_month").toLowerCase()}
               </p>
             )}

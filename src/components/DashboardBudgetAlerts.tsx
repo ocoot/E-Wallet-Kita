@@ -8,6 +8,7 @@ import { useCategories } from "../hooks/useCategories";
 import { useBudgets } from "../hooks/useBudgets";
 import { audioFeedback } from "../lib/audio";
 import { Card } from "./ui/Card";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 const MotionCard = motion.create(Card);
 
@@ -17,6 +18,7 @@ const MotionCard = motion.create(Card);
  * logic tandingan -- kartu ini hanya mem-filter & menampilkan ringkasannya.
  */
 export const DashboardBudgetAlerts: React.FC = () => {
+  const { tokens, cx } = useThemeTokens();
   const { t, locale } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -45,7 +47,7 @@ export const DashboardBudgetAlerts: React.FC = () => {
           <div className="w-8 h-8 rounded-xl bg-amber-500/15 flex items-center justify-center text-amber-400 shrink-0">
             <AlertTriangle size={16} />
           </div>
-          <h3 className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-800">
+          <h3 className={cx("font-sans font-bold text-sm", tokens.text.onSurface)}>
             {t("budget.dashboard_alert_title")}
           </h3>
         </div>
@@ -54,7 +56,7 @@ export const DashboardBudgetAlerts: React.FC = () => {
             audioFeedback.playClick();
             navigate("/budget");
           }}
-          className="flex items-center gap-1 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold text-amber-400 hover:text-amber-300 light_sakura:text-amber-600 cursor-pointer"
+          className={cx("flex items-center gap-1 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold hover:opacity-80 transition-colors cursor-pointer", tokens.text.warning)}
         >
           {t("budget.dashboard_alert_cta")}
           <ChevronRight size={12} />
@@ -65,7 +67,7 @@ export const DashboardBudgetAlerts: React.FC = () => {
         {alerts.slice(0, 4).map((b) => (
           <li
             key={b.id}
-            className="flex items-center justify-between text-xs text-slate-300 light_sakura:text-slate-700"
+            className={cx("flex items-center justify-between text-xs", tokens.text.secondary)}
           >
             <span className="truncate">
               {t("budget.dashboard_alert_item", {

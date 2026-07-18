@@ -9,6 +9,7 @@ import { audioFeedback } from "../lib/audio";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "./PremiumModal";
 import { VoicePreview, VoiceModalStatus } from "./VoicePreview";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 export interface VoiceParsedResult {
   type: "income" | "expense";
@@ -40,6 +41,7 @@ const MAX_DURATION_SECONDS = 60;
 const FEATURE_KEY = "new_transaction";
 
 export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
+  const { tokens, cx } = useThemeTokens();
   const { session, user } = useAuth();
   const { t, locale } = useLanguage();
   const { showToast } = useToast();
@@ -325,7 +327,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
 
   return (
     <div className="w-full space-y-3">
-      <label className="font-sans text-xs font-bold text-slate-400 light_sakura:text-slate-600 uppercase tracking-wider block">
+      <label className={cx("font-sans text-xs font-bold uppercase tracking-wider block", tokens.text.mutedAlt)}>
         {t("dashboard.voice_title")}
       </label>
 
@@ -343,11 +345,12 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
         </div>
       ) : (
         <div
-          className={`relative overflow-hidden p-6 rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center min-h-[140px] text-center
-            ${isRecording
+          className={cx(
+            "relative overflow-hidden p-6 rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center min-h-[140px] text-center",
+            isRecording
               ? "border-red-500 bg-red-500/5"
-              : "border-slate-800 bg-slate-900/60 light_sakura:border-rose-200 light_sakura:bg-rose-50/10"
-            }`}
+              : cx(tokens.border.accent, tokens.surface.sunken)
+          )}
         >
           <AnimatePresence mode="wait">
             {isRecording ? (
@@ -369,7 +372,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
                   <p className="font-sans text-xs font-bold text-red-400 tabular-nums">
                     {formatTimer(seconds)} / {formatTimer(MAX_DURATION_SECONDS)}
                   </p>
-                  <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400">
+                  <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)]", tokens.text.muted)}>
                     {t("dashboard.voice_recording")}
                   </p>
                 </div>
@@ -384,20 +387,21 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
                 <button
                   type="button"
                   onClick={startRecording}
-                  className={`p-3 rounded-xl border transition-colors cursor-pointer ${
+                  className={cx(
+                    "p-3 rounded-xl border transition-colors cursor-pointer",
                     isVoiceLocked
                       ? "bg-amber-500/10 border-amber-500/20 text-amber-500 light_sakura:bg-rose-500/10 light_sakura:border-rose-500/20 light_sakura:text-rose-500"
-                      : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 light_sakura:bg-rose-100/30 light_sakura:border-rose-100/50 light_sakura:text-rose-500"
-                  }`}
+                      : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 light_sakura:bg-rose-500/10 light_sakura:border-rose-500/20 light_sakura:text-rose-500"
+                  )}
                 >
                   {isVoiceLocked ? <Lock size={24} className="animate-pulse" /> : <Mic size={24} />}
                 </button>
                 <div className="space-y-1">
-                  <p className="font-sans text-xs font-bold text-slate-200 light_sakura:text-slate-700 flex items-center justify-center gap-1.5">
-                    {isVoiceLocked && <Lock size={12} className="text-amber-400 light_sakura:text-rose-500" />}
+                  <p className={cx("font-sans text-xs font-bold flex items-center justify-center gap-1.5", tokens.text.secondary)}>
+                    {isVoiceLocked && <Lock size={12} className={tokens.text.accent} />}
                     <span>{t("dashboard.voice_tap_to_record")}</span>
                   </p>
-                  <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 light_sakura:text-slate-400">
+                  <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)]", tokens.text.faint)}>
                     {isVoiceLocked
                       ? (locale === "id" ? "Fitur khusus Pengguna Premium" : "Exclusive Premium Feature")
                       : t("dashboard.voice_supported")

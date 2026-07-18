@@ -50,6 +50,91 @@ manapun untuk migrasi, WAJIB cek dulu apakah file itu benar-benar diimpor
 (`grep -rln "import.*<NamaKomponen>" src`) supaya tidak buang waktu migrasi
 token di dead code lagi.
 
+## Sesi 20: 4 file dimigrasi (4 → total 70 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/contexts/ToastContext.tsx` | 20 | 0 | hook dipasang, menggunakan `cx` untuk menyelaraskan custom alert class dan mendaftarkan pemakaian theme hook |
+| `src/App.tsx` | 12 | 0 | hook dipasang, menggunakan tokens.surface.card, tokens.border.accent, tokens.text.primary, tokens.text.muted, menyelaraskan main wrapper dan footer link hover |
+| `src/components/UpdateCheckingIndicator.tsx` | 4 | 0 | hook dipasang, menggunakan tokens.text.accent, tokens.text.onSurface, menyelaraskan layout background / border |
+| `src/components/MaintenanceBanner.tsx` | 3 | 0 | hook dipasang, menyelaraskan layout background / border |
+| `src/components/ProviderBadge.tsx` | 2 | 0 | hook dipasang, menggunakan tokens.text.accent |
+
+Sesi ini menuntaskan 100% migrasi seluruh komponen di codebase ke pola token terpusat (`useThemeTokens`). Seluruh proses pengujian kompilasi berhasil dengan status 0 error.
+
+## Sesi 19: 7 file dimigrasi (7 → total 66 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/DeleteAccountModal.tsx` | 10 | 0 | hook dipasang, menggunakan tokens.surface.card, tokens.text.heading, tokens.text.secondary, tokens.text.muted, tokens.text.mutedAlt, tokens.text.danger, tokens.surface.sunken, tokens.text.primary |
+| `src/components/Breadcrumbs.tsx` | 6 | 0 | hook dipasang, menggunakan tokens.surface.card, tokens.border.accent, tokens.text.muted, tokens.text.faint, tokens.text.accent |
+| `src/components/ui/ToggleSwitch.tsx` | 5 | 0 | hook dipasang, menggunakan tokens.text.heading, tokens.text.muted, tokens.surface.sunken, tokens.border.strong |
+| `src/components/InfoTooltip.tsx` | 5 | 0 | hook dipasang, menggunakan tokens.text.faint, tokens.surface.card, tokens.border.accent, tokens.text.secondary |
+| `src/components/LoadingOverlay.tsx` | 4 | 0 | hook dipasang, menggunakan tokens.surface.card, tokens.border.accent, tokens.text.accent, tokens.text.secondary |
+| `src/components/FeatureLockGate.tsx` | 4 | 0 | hook dipasang, menggunakan tokens.surface.sunken, tokens.text.heading, tokens.text.muted |
+| `src/components/MobileTopBar.tsx` | 3 | 0 | hook dipasang, merapikan struktur styling kelas dengan `cx` untuk menyelaraskan struktur brand |
+
+Sesi ini menyasar komponen utility, sistem, navigasi, dan modal keamanan. Seluruh proses pengujian kompilasi berhasil dengan status 0 error.
+
+## Sesi 18: 6 file dimigrasi (6 → total 59 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/DashboardBudgetSummary.tsx` | 13 | 0 | hook dipasang, menggunakan tokens.text.accent, tokens.text.heading, tokens.text.muted, tokens.surface.sunken, tokens.text.secondary, tokens.text.faint, tokens.border.accent |
+| `src/components/VoiceRecorder.tsx` | 12 | 0 | hook dipasang, menggunakan tokens.text.mutedAlt, tokens.border.accent, tokens.surface.sunken, tokens.text.muted, tokens.text.secondary, tokens.text.accent, tokens.text.faint |
+| `src/components/DashboardInstallments.tsx` | 9 | 0 | hook dipasang, menggunakan tokens.text.accent, tokens.text.onSurface, tokens.text.muted, tokens.text.secondary, tokens.text.faint, tokens.surface.sunken |
+| `src/components/DashboardHeader.tsx` | 8 | 0 | hook dipasang, menggunakan tokens.text.accent, tokens.text.primary, tokens.text.muted |
+| `src/components/DashboardBillReminders.tsx` | 4 | 0 | hook dipasang, menggunakan tokens.text.onSurface, tokens.text.danger, tokens.text.secondary |
+| `src/components/DashboardBudgetAlerts.tsx` | 3 | 0 | hook dipasang, menggunakan tokens.text.onSurface, tokens.text.warning, tokens.text.secondary |
+
+Sesi ini berfokus pada sub-sistem Dashboard Utama & Voice Input yang sering diakses pengguna. Semua verifikasi build / `compile_applet` berhasil dengan 0 error baru.
+
+## Sesi 17: 7 file dimigrasi (7 → total 53 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/HistoryExport.tsx` | 13 | 0 | hook dipasang, menggunakan tokens.border.accent, tokens.text.onSurface, tokens.text.secondary, tokens.surface.card, tokens.hover.sunken |
+| `src/components/HistoryGroupedList.tsx` | 13 | 0 | hook dipasang, menggunakan tokens.border.accent, tokens.surface.sunken, tokens.text.muted, tokens.text.heading, tokens.hover.sunken |
+| `src/components/HistoryPagination.tsx` | 4 | 0 | hook dipasang, menggunakan tokens.surface.sunken, tokens.border.accent, tokens.text.muted, tokens.text.secondary, tokens.text.label |
+| `src/components/HistoryFilter.tsx` | 7 | 0 | hook dipasang, menggunakan tokens.surface.sunken, tokens.border.accent, tokens.text.muted, tokens.text.onSurface |
+| `src/components/HistoryDeleteModal.tsx` | 6 | 0 | hook dipasang, menggunakan tokens.surface.card, tokens.text.onSurface, tokens.text.danger, tokens.text.secondary, tokens.surface.sunken, tokens.border.accent |
+| `src/components/ExportFullModal.tsx` | 9 | 0 | hook dipasang, menggunakan tokens.surface.card, tokens.border.accent, tokens.text.onSurface, tokens.text.faint, tokens.text.secondary, tokens.text.muted, tokens.text.danger |
+| `src/components/ExportSummaryModal.tsx` | 6 | 0 | hook dipasang, menggunakan tokens.surface.card, tokens.border.accent, tokens.text.onSurface, tokens.text.faint, tokens.text.secondary, tokens.text.muted |
+
+Tidak ada token baru ditambahkan. Sesi ini menuntaskan migrasi seluruh sub-sistem Riwayat & Ekspor (History & Export) ke theme tokens.
+
+Semua verifikasi build / `compile_applet` sukses dengan 0 error baru di semua file yang disentuh sesi ini.
+
+## Sesi 16: 8 file dimigrasi (8 → total 46 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/WalletPickerField.tsx` | 3 | 0 | hook dipasang, menggunakan tokens.surface.subtle, tokens.text.heading, tokens.border.strong |
+| `src/components/ui/Badge.tsx` | 12 | 0 | hook dipasang, membersihkan tonal classes |
+| `src/components/ui/Button.tsx` | 18 | 0 | hook dipasang, membersihkan variant classes |
+| `src/components/ui/Input.tsx` | 4 | 0 | hook dipasang, membersihkan input classes |
+| `src/components/SkeletonLoader.tsx` | 19 | 0 | hook dipasang, membersihkan skeleton loading components |
+| `src/components/SplashScreen.tsx` | 7 | 0 | hook dipasang, membersihkan splash screen loading animation ring |
+| `src/components/ErrorState.tsx` | 7 | 0 | hook dipasang, membersihkan error layout |
+| `src/components/EmptyState.tsx` | 3 | 0 | hook dipasang, membersihkan empty layout |
+
+Tidak ada token baru ditambahkan. Sesi ini mempercepat rollout token ke UI dasar (Badge, Button, Input, SkeletonLoader, SplashScreen, ErrorState, EmptyState) dan salah satu picker field penting (WalletPickerField).
+
+Semua verifikasi build / `compile_applet` sukses dengan 0 error baru di semua file yang disentuh sesi ini.
+
+## Sesi 15: 3 file baru dimigrasi + 1 file direvisit (3 → total 38 file tersentuh)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/DropdownField.tsx` | 15 | 0 | hook dipasang, file baru |
+| `src/components/ReceiptUploader.tsx` | 14 | 0 | hook dipasang, file baru |
+| `src/components/Modal.tsx` | 14 | 0 | hook dipasang, file baru |
+| `src/components/UpdatePrompt.tsx` | 20 | 0 | **direvisit** -- sisa manual styles dicleanup dengan theme tokens |
+
+Tidak ada token baru ditambahkan. Token yang dipakai: `surface.card`, `text.onSurface`, `text.heading`, `border.strong`, `border.accent`, `text.secondary`, `hover.sunken`, `text.mutedAlt`, `icon.accent`, `text.faint`, `text.warning`, `text.success`, `text.accentStrong`.
+
+`tsc --noEmit` penuh dijalankan -- 0 hasil untuk `Cannot find name 'tokens'/'cx'`, 0 error baru di semua file yang disentuh sesi ini.
+
 ## Sesi 14: 1 file dimigrasi + 1 file direvisit dengan token baru (1 token baru ditambahkan, 1 → total 35 file tersentuh)
 
 | File | Sebelum | Sesudah | Catatan |

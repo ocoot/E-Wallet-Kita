@@ -1,4 +1,5 @@
 import React from "react";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface EmptyStateProps {
   message?: string;
@@ -8,6 +9,8 @@ interface EmptyStateProps {
 }
 
 export const EmptyState = ({ message, icon, title, description }: EmptyStateProps) => {
+  const { tokens, cx } = useThemeTokens();
+
   return (
     <div className="flex flex-col items-center justify-center p-10 text-center space-y-4">
       {icon ? (
@@ -19,11 +22,11 @@ export const EmptyState = ({ message, icon, title, description }: EmptyStateProp
         </svg>
       )}
       {title && (
-        <h3 className="font-sans font-bold text-slate-300 light_sakura:text-slate-700 text-sm">
+        <h3 className={cx("font-sans font-bold text-sm", tokens.text.secondary)}>
           {title}
         </h3>
       )}
-      <p className="font-sans text-xs text-slate-500 light_sakura:text-slate-400 max-w-[200px]">
+      <p className={cx("font-sans text-xs max-w-[200px]", tokens.text.muted)}>
         {description || message}
       </p>
     </div>

@@ -4,6 +4,7 @@ import { Search, Filter } from "lucide-react";
 import { DropdownField } from "./DropdownField";
 import { audioFeedback } from "../lib/audio";
 import { Category } from "../types";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface HistoryFilterProps {
   filterMonth: string;
@@ -30,13 +31,14 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
   setFilterCategory,
   categories,
 }) => {
+  const { tokens, cx } = useThemeTokens();
   const { t, locale } = useLanguage();
 
   return (
-    <div id="history-controls-row" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/30">
+    <div id="history-controls-row" className={cx("grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-4 rounded-2xl border", tokens.surface.sunken, tokens.border.accent)}>
       {/* 1. Month Selector dropdown */}
       <div className="space-y-1.5">
-        <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
+        <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block", tokens.text.muted)}>
           {t("history.filter_month")}
         </label>
         <DropdownField
@@ -48,7 +50,7 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
 
       {/* 2. Category Filter */}
       <div className="space-y-1.5">
-        <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500 flex items-center gap-1.5">
+        <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block flex items-center gap-1.5", tokens.text.muted)}>
           <Filter size={10} />
           <span>{t("transaction.label_category")}</span>
         </label>
@@ -67,7 +69,7 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
 
       {/* 3. Text Filter search bar */}
       <div className="space-y-1.5">
-        <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
+        <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block", tokens.text.muted)}>
           {t("history.search_label")}
         </label>
         <div className="relative">
@@ -84,14 +86,14 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
               }
               setSearch(e.target.value);
             }}
-            className="w-full pl-10 pr-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl font-sans text-xs text-white outline-none focus:border-indigo-500 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:text-slate-800"
+            className={cx("w-full pl-10 pr-4 py-2.5 rounded-xl font-sans text-xs outline-none focus:border-indigo-500 border", tokens.surface.sunken, tokens.border.accent, tokens.text.onSurface)}
           />
         </div>
       </div>
 
       {/* 4. Dynamic page sizing selector */}
       <div className="space-y-1.5">
-        <label className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider block light_sakura:text-slate-500">
+        <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block", tokens.text.muted)}>
           {t("history.page_size")}
         </label>
         <DropdownField

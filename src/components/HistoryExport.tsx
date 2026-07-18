@@ -6,6 +6,7 @@ import { audioFeedback } from "../lib/audio";
 import { usePremium } from "../hooks/usePremium";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface HistoryExportProps {
   isExportMenuOpen: boolean;
@@ -26,6 +27,7 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
   hasTransactions,
   onRequirePremium,
 }) => {
+  const { tokens, cx } = useThemeTokens();
   const { t, locale } = useLanguage();
   const { isPremium } = usePremium();
   const { user } = useAuth();
@@ -35,12 +37,12 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
   const isExportLocked = isGuest || !isPremium;
 
   return (
-    <div id="history-export-header-row" className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800/50 pb-6 light_sakura:border-rose-100/30">
+    <div id="history-export-header-row" className={cx("flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6", tokens.border.accent)}>
       <div>
-        <h2 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+        <h2 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.onSurface)}>
           {t("history.title")}
         </h2>
-        <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500">
+        <p className={cx("font-sans text-sm mt-1", tokens.text.secondary)}>
           {t("history.desc")}
         </p>
       </div>
@@ -65,12 +67,12 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
               }
               setIsExportMenuOpen((prev) => !prev);
             }}
-            className={`cursor-pointer px-4.5 py-3 border text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer
-              ${isExportLocked
+            className={cx(
+              "cursor-pointer px-4.5 py-3 border text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors",
+              isExportLocked
                 ? "border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/15 text-amber-400 light_sakura:text-rose-600 light_sakura:border-rose-300/30 light_sakura:bg-rose-50/50"
                 : "border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 light_sakura:text-indigo-600"
-              }
-            `}
+            )}
           >
             {isExportLocked ? <Lock size={15} /> : <FileDown size={15} />}
             <span>{t("history.export_menu_label")}</span>
@@ -91,7 +93,7 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.97 }}
                   transition={{ type: "spring", duration: 0.2 }}
-                  className="absolute left-0 md:left-auto md:right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] z-40 rounded-xl border bg-slate-900 border-slate-800 shadow-2xl overflow-hidden light_sakura:bg-white light_sakura:border-rose-100"
+                  className={cx("absolute left-0 md:left-auto md:right-0 mt-2 w-56 max-w-[calc(100vw-2rem)] z-40 rounded-xl border shadow-2xl overflow-hidden", tokens.surface.card, tokens.border.accent)}
                 >
                   <button
                     onClick={() => {
@@ -103,7 +105,7 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
                       }
                       setIsSummaryConfirmOpen(true);
                     }}
-                    className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:text-slate-700 light_sakura:hover:bg-rose-50 flex items-center justify-between"
+                    className={cx("w-full text-left px-4 py-3 text-xs font-semibold transition-colors cursor-pointer flex items-center justify-between", tokens.text.secondary, tokens.hover.sunken)}
                   >
                     <span>{t("history.export_summary_pdf")}</span>
                     {!isPremium && (
@@ -122,7 +124,7 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
                       }
                       setIsFullExportOpen(true);
                     }}
-                    className="w-full text-left px-4 py-3 text-xs font-semibold text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer border-t border-slate-800/60 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50 light_sakura:border-rose-100/60 flex items-center justify-between"
+                    className={cx("w-full text-left px-4 py-3 text-xs font-semibold transition-colors cursor-pointer border-t flex items-center justify-between", tokens.text.secondary, tokens.hover.sunken, tokens.border.accent)}
                   >
                     <span>{t("history.export_full_pdf")}</span>
                     {!isPremium && (

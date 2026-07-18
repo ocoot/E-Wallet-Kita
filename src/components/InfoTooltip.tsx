@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { createPortal } from "react-dom";
 import { Info } from "lucide-react";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface InfoTooltipProps {
   /** Teks penjelasan yang tampil di popover (idealnya berisi rumus/kalkulasi singkat). */
@@ -36,6 +37,7 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
   align = "center",
   className = "",
 }) => {
+  const { tokens, cx } = useThemeTokens();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLSpanElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -106,7 +108,10 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
         }}
         aria-label="Info"
         aria-expanded={open}
-        className="w-4 h-4 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-300 active:text-slate-200 light_sakura:text-slate-400 light_sakura:hover:text-slate-600 transition-colors shrink-0"
+        className={cx(
+          "w-4 h-4 rounded-full flex items-center justify-center transition-colors shrink-0 hover:opacity-80 active:opacity-100",
+          tokens.text.faint
+        )}
       >
         <Info size={13} />
       </button>
@@ -121,7 +126,12 @@ export const InfoTooltip: React.FC<InfoTooltipProps> = ({
               left: coords?.left ?? -9999,
               visibility: coords ? "visible" : "hidden",
             }}
-            className="z-[999] w-56 max-w-[calc(100vw-2rem)] p-2.5 rounded-xl bg-slate-800 border border-slate-700 shadow-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed font-normal normal-case tracking-normal text-slate-200 light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-700"
+            className={cx(
+              "z-[999] w-56 max-w-[calc(100vw-2rem)] p-2.5 rounded-xl border shadow-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed font-normal normal-case tracking-normal",
+              tokens.surface.card,
+              tokens.border.accent,
+              tokens.text.secondary
+            )}
           >
             {text}
           </div>,

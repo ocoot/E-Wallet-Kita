@@ -2,6 +2,7 @@ import React from "react";
 import { motion, useReducedMotion } from "motion/react";
 import logoUrl from "../assets/images/user_logo_transparent.png";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 /**
  * Splash screen full-screen yang tampil selagi `AuthProvider` masih resolve
@@ -19,6 +20,7 @@ import { useLanguage } from "../contexts/LanguageContext";
  * di OS-nya, spin ring & pulse logo otomatis dihentikan (cuma fade-in polos).
  */
 export const SplashScreen: React.FC = () => {
+  const { tokens, cx } = useThemeTokens();
   const { t } = useLanguage();
   const shouldReduceMotion = useReducedMotion();
 
@@ -41,7 +43,7 @@ export const SplashScreen: React.FC = () => {
             <div
               className="absolute inset-0 rounded-full border-2 border-transparent
                          border-t-indigo-600 border-r-violet-500 animate-spin
-                         light_sakura:border-t-rose-500 light_sakura:border-r-rose-300"
+                         light_sakura:border-t-rose-50 light_sakura:border-r-rose-300"
               style={{ animationDuration: "1.4s" }}
             />
           )}
@@ -54,7 +56,7 @@ export const SplashScreen: React.FC = () => {
 
         {/* Brand */}
         <div className="flex flex-col items-center gap-1.5">
-          <p className="font-sans font-extrabold text-base text-slate-900 tracking-tight light_sakura:text-slate-800">
+          <p className="font-sans font-extrabold text-base tracking-tight text-slate-900 light_sakura:text-slate-800">
             E-Wallet <span className="text-indigo-600 light_sakura:text-rose-500">Kita</span>
           </p>
           <p className="font-mono text-[10.5px] tracking-wider uppercase text-slate-400 light_sakura:text-rose-400">

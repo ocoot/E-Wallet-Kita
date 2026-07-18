@@ -6,6 +6,7 @@ import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -21,6 +22,7 @@ interface DeleteAccountModalProps {
  * untuk konfirmasi lain (hapus transaksi, dsb) yang masih reversibel-ish.
  */
 export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, onCancel, onConfirm }) => {
+  const { tokens, cx } = useThemeTokens();
   const { t } = useLanguage();
   const [inputValue, setInputValue] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
@@ -72,7 +74,11 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
             role="dialog"
             aria-modal="true"
             tabIndex={-1}
-            className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-red-500/30 bg-slate-900 p-6 shadow-2xl outline-none light_sakura:bg-white light_sakura:border-red-200"
+            className={cx(
+              "relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl outline-none",
+              "border-red-500/30 light_sakura:border-red-200",
+              tokens.surface.card
+            )}
           >
             <button
               onClick={handleClose}
@@ -87,23 +93,23 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
               <div className="rounded-full p-2.5 bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500">
                 <AlertTriangle size={22} />
               </div>
-              <h3 className="font-sans text-lg font-semibold tracking-tight text-white light_sakura:text-slate-800">
+              <h3 className={cx("font-sans text-lg font-semibold tracking-tight", tokens.text.heading)}>
                 {t("settings.privacy_delete_title")}
               </h3>
             </div>
 
-            <p className="mb-3 font-sans text-sm text-slate-300 light_sakura:text-slate-600 leading-relaxed">
+            <p className={cx("mb-3 font-sans text-sm leading-relaxed", tokens.text.secondary)}>
               {t("settings.privacy_delete_desc")}
             </p>
 
-            <ul className="mb-4 space-y-1.5 text-xs text-slate-400 light_sakura:text-slate-500 list-disc list-inside">
+            <ul className={cx("mb-4 space-y-1.5 text-xs list-disc list-inside", tokens.text.muted)}>
               <li>{t("settings.privacy_delete_point_1")}</li>
               <li>{t("settings.privacy_delete_point_2")}</li>
               <li>{t("settings.privacy_delete_point_3")}</li>
             </ul>
 
-            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider mb-1.5">
-              {t("settings.privacy_delete_type_prompt")} <span className="text-red-400">{confirmPhrase}</span>
+            <label className={cx("block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mb-1.5", tokens.text.mutedAlt)}>
+              {t("settings.privacy_delete_type_prompt")} <span className={cx(tokens.text.danger)}>{confirmPhrase}</span>
             </label>
             <Input
               type="text"
@@ -112,11 +118,15 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
               placeholder={confirmPhrase}
               disabled={isDeleting}
               accent="danger"
-              className="bg-slate-950 border-red-500/30 placeholder:text-slate-600 light_sakura:bg-slate-50 light_sakura:text-slate-800"
+              className={cx(
+                "border-red-500/30 placeholder:text-slate-600",
+                tokens.surface.sunken,
+                tokens.text.primary
+              )}
             />
 
             {error && (
-              <p className="mt-2 text-xs text-red-400">{t("settings.privacy_delete_error")}</p>
+              <p className={cx("mt-2 text-xs", tokens.text.danger)}>{t("settings.privacy_delete_error")}</p>
             )}
 
             <div className="mt-5 flex gap-3">

@@ -2,6 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface LoadingOverlayProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface LoadingOverlayProps {
 }
 
 export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ isOpen, message = "Memproses..." }) => {
+  const { tokens, cx } = useThemeTokens();
   useLockBodyScroll(isOpen);
 
   return (
@@ -29,10 +31,14 @@ export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({ isOpen, message 
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 10 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className="relative z-10 flex flex-col items-center gap-3 rounded-2xl border border-indigo-500/20 bg-slate-900 px-8 py-7 shadow-2xl light_sakura:bg-rose-50/90 light_sakura:border-rose-100"
+            className={cx(
+              "relative z-10 flex flex-col items-center gap-3 rounded-2xl border px-8 py-7 shadow-2xl",
+              tokens.surface.card,
+              tokens.border.accent
+            )}
           >
-            <Loader2 className="animate-spin text-indigo-400 light_sakura:text-rose-500" size={30} />
-            <p className="font-sans text-xs font-bold text-slate-200 light_sakura:text-slate-700 text-center max-w-[200px]">
+            <Loader2 className={cx("animate-spin", tokens.text.accent)} size={30} />
+            <p className={cx("font-sans text-xs font-bold text-center max-w-[200px]", tokens.text.secondary)}>
               {message}
             </p>
           </motion.div>

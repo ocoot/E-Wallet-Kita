@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ChevronDown } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
 import { useDropdownPosition } from "../hooks/useDropdownPosition";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 export interface WalletPickerOption {
   /** Value disimpan ke form state -- boleh string kosong "" untuk opsi default/umum. */
@@ -50,6 +51,7 @@ export const WalletPickerField: React.FC<WalletPickerFieldProps> = ({
   placeholder = "—",
   className = "",
 }) => {
+  const { tokens, cx } = useThemeTokens();
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -103,7 +105,7 @@ export const WalletPickerField: React.FC<WalletPickerFieldProps> = ({
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => { audioFeedback.playClick(); setOpen((v) => !v); }}
-        className={`w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 outline-none ${focusBorder} cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
+        className={cx("w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl outline-none cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm", focusBorder, tokens.surface.subtle, tokens.text.heading, tokens.border.strong)}
       >
         <span className="truncate text-left">{selected ? selected.label : placeholder}</span>
         <ChevronDown size={14} className={`shrink-0 text-slate-500 transition-transform ${open ? "rotate-180" : ""}`} />
@@ -125,7 +127,7 @@ export const WalletPickerField: React.FC<WalletPickerFieldProps> = ({
                 bottom: position.bottom ?? undefined,
                 maxHeight: position.maxHeight,
               }}
-              className="z-[70] overflow-y-auto rounded-xl border bg-slate-900 border-slate-800 shadow-xl light_sakura:bg-white light_sakura:border-rose-100 p-1"
+              className={cx("z-[70] overflow-y-auto rounded-xl border shadow-xl p-1", tokens.surface.card, tokens.border.accent)}
               role="listbox"
             >
               {options.map((opt) => {
@@ -137,9 +139,10 @@ export const WalletPickerField: React.FC<WalletPickerFieldProps> = ({
                     role="option"
                     aria-selected={isSelected}
                     onClick={() => { audioFeedback.playClick(); onChange(opt.value); setOpen(false); }}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg font-sans text-xs transition-colors cursor-pointer ${
-                      isSelected ? selectedStyle : "text-slate-300 hover:bg-slate-800/60 light_sakura:text-slate-700 light_sakura:hover:bg-rose-50/60"
-                    }`}
+                    className={cx(
+                      "w-full text-left px-3 py-2.5 rounded-lg font-sans text-xs transition-colors cursor-pointer",
+                      isSelected ? selectedStyle : cx(tokens.text.secondary, tokens.hover.sunken)
+                    )}
                   >
                     {opt.label}
                   </button>

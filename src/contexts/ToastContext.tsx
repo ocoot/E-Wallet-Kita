@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useCallback, useMemo, useRe
 import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, XCircle, AlertTriangle, Info, X } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 type ToastType = "success" | "error" | "info" | "warning";
 
@@ -81,6 +82,7 @@ const TOAST_CONFIG: Record<
 };
 
 const ToastItem: React.FC<{ toast: Toast; onDismiss: (id: string) => void }> = ({ toast, onDismiss }) => {
+  const { tokens, cx } = useThemeTokens();
   const config = TOAST_CONFIG[toast.type];
   const Icon = config.icon;
 
@@ -126,7 +128,11 @@ const ToastItem: React.FC<{ toast: Toast; onDismiss: (id: string) => void }> = (
       transition={{ type: "spring", stiffness: 320, damping: 24 }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative overflow-hidden rounded-xl border pointer-events-auto backdrop-blur-xs ${config.container} ${config.glow}`}
+      className={cx(
+        "relative overflow-hidden rounded-xl border pointer-events-auto backdrop-blur-xs",
+        config.container,
+        config.glow
+      )}
     >
       <div className={`absolute left-0 top-0 bottom-0 w-1 ${config.accentBar}`} />
 

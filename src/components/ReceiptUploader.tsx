@@ -8,12 +8,14 @@ import { useMaintenance } from "../contexts/MaintenanceContext";
 import { audioFeedback } from "../lib/audio";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "./PremiumModal";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface ReceiptUploaderProps {
   onParsed: (draft: any) => void;
 }
 
 export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) => {
+  const { tokens, cx } = useThemeTokens();
   const { session, user } = useAuth();
   const { t, locale } = useLanguage();
   const { showToast } = useToast();
@@ -252,7 +254,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
 
   return (
     <div className="w-full space-y-3">
-      <label className="font-sans text-xs font-bold text-slate-400 light_sakura:text-slate-600 uppercase tracking-wider block">
+      <label className={cx("font-sans text-xs font-bold uppercase tracking-wider block", tokens.text.mutedAlt)}>
         {t("dashboard.ocr_title")}
       </label>
 
@@ -310,7 +312,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
                 <FileImage className="absolute text-indigo-400" size={18} />
               </div>
               <div className="space-y-1">
-                <p className="font-sans text-xs font-bold text-white light_sakura:text-slate-800">
+                <p className={cx("font-sans text-xs font-bold", tokens.text.onSurface)}>
                   {t("dashboard.ocr_loading")}
                 </p>
                 <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 max-w-sm px-4 leading-relaxed">
@@ -330,7 +332,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
                   <Lock size={24} className="animate-pulse" />
                 </div>
               ) : (
-                <div className="p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10 text-indigo-400 light_sakura:bg-rose-100/30 light_sakura:border-rose-100/50 light_sakura:text-rose-500">
+                <div className={cx("p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10 light_sakura:bg-rose-100/30 light_sakura:border-rose-100/50", tokens.icon.accent)}>
                   <UploadCloud size={24} />
                 </div>
               )}
@@ -339,7 +341,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
                   {isOcrLocked && <Lock size={12} className="text-amber-400 light_sakura:text-rose-500" />}
                   <span>{t("dashboard.ocr_drag_drop")}</span>
                 </p>
-                <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 light_sakura:text-slate-400">
+                <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)]", tokens.text.faint)}>
                   {isOcrLocked
                     ? (locale === "id" ? "Fitur khusus Pengguna Premium" : "Exclusive Premium Feature")
                     : t("dashboard.ocr_supported")

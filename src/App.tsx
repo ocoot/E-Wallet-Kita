@@ -16,6 +16,7 @@ import { Login } from "./views/Login";
 import { AuthCallback } from "./components/AuthCallback";
 import { Onboarding } from "./views/Onboarding";
 import { useAdmin } from "./hooks/useAdmin";
+import { useThemeTokens } from "./hooks/useThemeTokens";
 import { Modal } from "./components/Modal";
 import { ResetPasswordModal } from "./components/ResetPasswordModal";
 import { MaintenanceBanner } from "./components/MaintenanceBanner";
@@ -115,6 +116,7 @@ interface MainLayoutProps {
 }
 
 const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
+  const { tokens, cx } = useThemeTokens();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
   const { showToast } = useToast();
@@ -304,7 +306,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col md:flex-row bg-slate-950 text-white transition-colors duration-300 light_sakura:bg-rose-50/20 light_sakura:text-slate-800">
+    <div className={cx(
+      "relative min-h-screen flex flex-col md:flex-row transition-colors duration-300",
+      "bg-slate-950 text-white light_sakura:bg-rose-50/20 light_sakura:text-slate-800"
+    )}>
 
       {/* Ambient background orbs -- lapisan dekoratif statis (blur besar,
           warna lembut) yang sengaja diletakkan di belakang seluruh layout
@@ -445,7 +450,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                   href="https://github.com/ocoot" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="hover:text-emerald-500 light_sakura:hover:text-rose-500 transition-colors duration-200 underline inline-flex items-center gap-1"
+                  className={cx(
+                    "transition-colors duration-200 underline inline-flex items-center gap-1",
+                    "hover:text-emerald-500 light_sakura:hover:text-rose-500"
+                  )}
                 >
                   Github: @ocoot
                 </a>
@@ -486,26 +494,31 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
               initial={{ scale: 0.93, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.93, opacity: 0 }}
-              className="flex flex-col items-center text-center p-8
-                         bg-slate-900 border border-slate-800 rounded-3xl
-                         shadow-2xl max-w-xs w-full
-                         light_sakura:bg-white light_sakura:border-rose-100"
+              className={cx(
+                "flex flex-col items-center text-center p-8 border rounded-3xl shadow-2xl max-w-xs w-full",
+                tokens.surface.card,
+                tokens.border.accent
+              )}
             >
               <div className="relative w-14 h-14 flex items-center justify-center mb-4">
-                <div className="absolute inset-0 border-[3px] border-indigo-600/20 rounded-full
-                                light_sakura:border-rose-400/20" />
-                <div className="absolute inset-0 border-[3px] border-t-indigo-500 rounded-full
-                                animate-spin light_sakura:border-t-rose-500" />
+                <div className={cx(
+                  "absolute inset-0 border-[3px] rounded-full",
+                  "border-indigo-600/20 light_sakura:border-rose-400/20"
+                )} />
+                <div className={cx(
+                  "absolute inset-0 border-[3px] rounded-full animate-spin",
+                  "border-t-indigo-500 light_sakura:border-t-rose-500"
+                )} />
                 <img
                   src={logoUrl}
                   alt=""
                   className="w-7 h-7 object-contain animate-pulse"
                 />
               </div>
-              <h3 className="font-bold text-base text-white mb-1 light_sakura:text-slate-900">
+              <h3 className={cx("font-bold text-base mb-1", tokens.text.primary)}>
                 {t("common.loading")}
               </h3>
-              <p className="text-xs text-slate-400 leading-relaxed light_sakura:text-slate-500">
+              <p className={cx("text-xs leading-relaxed", tokens.text.muted)}>
                 {t("auth.loading_logout_desc")}
               </p>
             </motion.div>

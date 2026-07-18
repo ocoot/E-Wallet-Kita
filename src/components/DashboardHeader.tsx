@@ -13,6 +13,7 @@ import { getActiveEvent, fetchAllEvents } from "../api/eventCalendar";
 import type { NagerHoliday, SportsDbEvent } from "../api/eventCalendar";
 import type { OverlayType } from "../api/eventCalendar";
 import { Card } from "./ui/Card";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface DashboardHeaderProps {
   currentUser: UserSession;
@@ -23,6 +24,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   currentUser,
   telegramStatus,
 }) => {
+  const { tokens, cx } = useThemeTokens();
   const { t, locale } = useLanguage();
   const { weather, loading: weatherLoading } = useWeather();
   const { budgets, loading: budgetsLoading } = useBudgets(currentUser.id);
@@ -177,7 +179,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
         >
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium text-slate-300 shrink-0 whitespace-nowrap light_sakura:bg-rose-50 light_sakura:border-rose-100/50 light_sakura:text-rose-600 transition-colors duration-300">
+            <div className={cx("flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium shrink-0 whitespace-nowrap light_sakura:bg-rose-50 light_sakura:border-rose-100/50 transition-colors duration-300", tokens.text.accent)}>
               <Calendar size={12} className="shrink-0" />
               <span>{formattedDate}</span>
             </div>
@@ -189,7 +191,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             )}
 
             {effectiveWeather && weatherTheme && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium text-slate-300 shrink-0 whitespace-nowrap light_sakura:bg-rose-50 light_sakura:border-rose-100/50 light_sakura:text-rose-600 transition-colors duration-300">
+              <div className={cx("flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium shrink-0 whitespace-nowrap light_sakura:bg-rose-50 light_sakura:border-rose-100/50 transition-colors duration-300", tokens.text.accent)}>
                 <weatherTheme.icon size={12} className={`shrink-0 ${weatherTheme.accentClass}`} />
                 <span>{locale === "id" ? weatherTheme.labelId : weatherTheme.labelEn}</span>
                 {!debugOverride && weather && (
@@ -206,13 +208,13 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
             <WeatherDebugToggle value={debugOverride} onChange={setDebugOverride} />
           </div>
-          <h1 className="font-sans font-bold text-2xl tracking-tight text-white light_sakura:text-slate-900">
+          <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
             {t(getGreetingKey(), { name: currentUser.display_name })}
           </h1>
           {(() => {
             const subGreeting = getDynamicSubGreeting();
             return (
-              <p className="font-sans text-xs mt-1.5 max-w-xl leading-relaxed transition-colors text-slate-400 light_sakura:text-slate-500 italic">
+              <p className={cx("font-sans text-xs mt-1.5 max-w-xl leading-relaxed transition-colors italic", tokens.text.muted)}>
                 {subGreeting.text}
               </p>
             );

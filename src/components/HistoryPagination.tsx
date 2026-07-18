@@ -2,6 +2,7 @@ import React from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface HistoryPaginationProps {
   totalPages: number;
@@ -18,12 +19,13 @@ export const HistoryPagination: React.FC<HistoryPaginationProps> = ({
   paginatedCount,
   totalItems,
 }) => {
+  const { tokens, cx } = useThemeTokens();
   const { t } = useLanguage();
 
   if (totalPages <= 1) return null;
 
   return (
-    <div id="history-pagination-footer" className="p-4 bg-slate-950/20 border-t border-slate-800/50 flex items-center justify-between font-sans text-xs text-slate-400 light_sakura:bg-rose-50/20 light_sakura:border-rose-100">
+    <div id="history-pagination-footer" className={cx("p-4 border-t flex items-center justify-between font-sans text-xs", tokens.surface.sunken, tokens.border.accent, tokens.text.muted)}>
       <span>
         {t("history.pagination_info", { current: paginatedCount, total: totalItems })}
       </span>
@@ -37,12 +39,12 @@ export const HistoryPagination: React.FC<HistoryPaginationProps> = ({
             audioFeedback.playClick();
             setCurrentPage((curr) => Math.max(1, curr - 1));
           }}
-          className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-800"
+          className={cx("p-1.5 rounded-lg border hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer", tokens.surface.sunken, tokens.border.accent, tokens.text.secondary)}
         >
           <ChevronLeft size={14} />
         </button>
         
-        <span className="font-mono font-semibold text-slate-300 light_sakura:text-slate-800">
+        <span className={cx("font-mono font-semibold", tokens.text.label)}>
           {currentPage} / {totalPages}
         </span>
 
@@ -53,7 +55,7 @@ export const HistoryPagination: React.FC<HistoryPaginationProps> = ({
             audioFeedback.playClick();
             setCurrentPage((curr) => Math.min(totalPages, curr + 1));
           }}
-          className="p-1.5 rounded-lg bg-slate-950 hover:bg-slate-900 border border-slate-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer light_sakura:bg-white light_sakura:border-rose-100 light_sakura:text-slate-800"
+          className={cx("p-1.5 rounded-lg border hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer", tokens.surface.sunken, tokens.border.accent, tokens.text.secondary)}
         >
           <ChevronRight size={14} />
         </button>

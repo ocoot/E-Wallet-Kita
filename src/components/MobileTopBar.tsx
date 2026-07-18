@@ -1,6 +1,7 @@
 import React from "react";
 import logoUrl from "../assets/images/user_logo_transparent.png";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 /**
  * Header khusus tampilan handphone. Berbeda dari header mobile versi lama
@@ -15,6 +16,7 @@ import { useLanguage } from "../contexts/LanguageContext";
  * bukan ikut ter-scroll keluar layar.
  */
 export const MobileTopBar: React.FC = () => {
+  const { tokens, cx } = useThemeTokens();
   const { t } = useLanguage();
 
   return (

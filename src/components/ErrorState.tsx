@@ -1,6 +1,7 @@
 import React from "react";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface ErrorStateProps {
   title?: string;
@@ -19,6 +20,7 @@ interface ErrorStateProps {
  * tanpa cara untuk mencoba lagi selain me-refresh seluruh halaman.
  */
 export const ErrorState: React.FC<ErrorStateProps> = ({ title, description, onRetry }) => {
+  const { tokens, cx } = useThemeTokens();
   const { t } = useLanguage();
 
   return (
@@ -29,10 +31,10 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ title, description, onRe
       <div className="w-16 h-16 rounded-full flex items-center justify-center bg-red-500/10 light_sakura:bg-red-50">
         <AlertTriangle size={28} className="text-red-400 light_sakura:text-red-500" />
       </div>
-      <h3 className="font-sans font-bold text-slate-300 light_sakura:text-slate-700 text-sm">
+      <h3 className={cx("font-sans font-bold text-sm", tokens.text.secondary)}>
         {title || t("common.error_generic_title")}
       </h3>
-      <p className="font-sans text-xs text-slate-500 light_sakura:text-slate-400 max-w-[240px]">
+      <p className={cx("font-sans text-xs max-w-[240px]", tokens.text.muted)}>
         {description || t("common.error_generic_desc")}
       </p>
       {onRetry && (

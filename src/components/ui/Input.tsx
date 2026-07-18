@@ -1,4 +1,5 @@
 import React, { useId } from "react";
+import { useThemeTokens } from "../../hooks/useThemeTokens";
 
 export type InputAccent = "indigo" | "amber" | "emerald" | "rose" | "danger";
 
@@ -27,6 +28,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
  */
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, accent = "indigo", className = "", containerClassName = "", id, leftIcon, rightElement, ...rest }, ref) => {
+    const { tokens, cx } = useThemeTokens();
     const generatedId = useId();
     const inputId = id || generatedId;
 
@@ -43,7 +45,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 light_sakura:text-slate-500 uppercase tracking-wider mb-1.5"
+            className={cx("block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mb-1.5", tokens.text.muted)}
           >
             {label}
           </label>
@@ -59,7 +61,17 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             aria-invalid={!!error}
             aria-describedby={error ? `${inputId}-error` : undefined}
-            className={`w-full px-4 py-3 rounded-2xl bg-slate-800 light_sakura:bg-slate-50 text-slate-100 light_sakura:text-slate-900 text-sm border border-slate-700 light_sakura:border-slate-200 outline-none placeholder:text-slate-500 transition-colors ${focusBorder[accent]} ${error ? "border-red-500/60" : ""} ${leftIcon ? "pl-11" : ""} ${rightElement ? "pr-11" : ""} ${className}`}
+            className={cx(
+              "w-full px-4 py-3 rounded-2xl text-sm border outline-none placeholder:text-slate-500 transition-colors",
+              tokens.surface.subtle,
+              tokens.text.heading,
+              tokens.border.strong,
+              focusBorder[accent],
+              error && "border-red-500/60",
+              leftIcon && "pl-11",
+              rightElement && "pr-11",
+              className
+            )}
             {...rest}
           />
           {rightElement && (
@@ -69,7 +81,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && (
-          <p id={`${inputId}-error`} className="mt-1.5 text-xs text-red-400 light_sakura:text-red-500">
+          <p id={`${inputId}-error`} className={cx("mt-1.5 text-xs", tokens.text.danger)}>
             {error}
           </p>
         )}

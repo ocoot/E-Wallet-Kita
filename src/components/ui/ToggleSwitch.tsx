@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { Loader2 } from "lucide-react";
 import { audioFeedback } from "../../lib/audio";
+import { useThemeTokens } from "../../hooks/useThemeTokens";
 
 interface ToggleSwitchProps {
   checked: boolean;
@@ -28,16 +29,17 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
   description,
   "aria-label": ariaLabel,
 }) => {
+  const { tokens, cx } = useThemeTokens();
   const isInteractive = !disabled && !loading;
 
   return (
-    <div className={`flex items-center justify-between gap-3 py-2.5 ${disabled ? "opacity-50" : ""}`}>
+    <div className={cx("flex items-center justify-between gap-3 py-2.5", disabled && "opacity-50")}>
       <div className="min-w-0">
-        <p className="font-sans text-xs font-semibold text-slate-200 light_sakura:text-slate-800">
+        <p className={cx("font-sans text-xs font-semibold", tokens.text.heading)}>
           {label}
         </p>
         {description && (
-          <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 leading-relaxed mt-0.5">
+          <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] leading-relaxed mt-0.5", tokens.text.muted)}>
             {description}
           </p>
         )}
@@ -54,11 +56,12 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
           audioFeedback.playClick();
           onChange(!checked);
         }}
-        className={`btn-exact relative shrink-0 w-11 h-6 rounded-full border transition-colors duration-200 cursor-pointer disabled:cursor-not-allowed
-          ${checked
+        className={cx(
+          "btn-exact relative shrink-0 w-11 h-6 rounded-full border transition-colors duration-200 cursor-pointer disabled:cursor-not-allowed",
+          checked
             ? "bg-indigo-600 border-indigo-500 light_sakura:bg-rose-500 light_sakura:border-rose-400"
-            : "bg-slate-800 border-slate-700 light_sakura:bg-rose-100 light_sakura:border-rose-200"
-          }`}
+            : cx(tokens.surface.sunken, tokens.border.strong)
+        )}
       >
         {loading ? (
           <Loader2

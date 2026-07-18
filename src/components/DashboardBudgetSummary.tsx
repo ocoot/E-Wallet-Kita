@@ -8,10 +8,12 @@ import { useCategories } from "../hooks/useCategories";
 import { useBudgets } from "../hooks/useBudgets";
 import { audioFeedback } from "../lib/audio";
 import { Card } from "./ui/Card";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 const MotionCard = motion.create(Card);
 
 export const DashboardBudgetSummary: React.FC = () => {
+  const { tokens, cx } = useThemeTokens();
   const { t, locale } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -42,14 +44,14 @@ export const DashboardBudgetSummary: React.FC = () => {
     >
       <div className="flex items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:text-rose-500 shrink-0">
+          <div className={cx("w-10 h-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center shrink-0 light_sakura:bg-rose-500/10", tokens.text.accent)}>
             <PiggyBank size={18} />
           </div>
           <div>
-            <h3 className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900">
+            <h3 className={cx("font-sans font-bold text-sm", tokens.text.heading)}>
               {t("budget.page_title")}
             </h3>
-            <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 light_sakura:text-slate-500 uppercase tracking-widest font-bold">
+            <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest font-bold", tokens.text.muted)}>
               {t("budget.summary_subtitle", "Monthly Spending Limits")}
             </p>
           </div>
@@ -59,7 +61,7 @@ export const DashboardBudgetSummary: React.FC = () => {
             audioFeedback.playClick();
             navigate("/budget");
           }}
-          className="p-2 rounded-xl bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-800 transition-colors light_sakura:bg-rose-50 light_sakura:text-rose-400 light_sakura:hover:text-rose-600 cursor-pointer"
+          className={cx("p-2 rounded-xl transition-colors cursor-pointer", tokens.surface.sunken, tokens.text.accent, "hover:text-white light_sakura:hover:text-rose-600")}
         >
           <ChevronRight size={18} />
         </button>
@@ -73,15 +75,15 @@ export const DashboardBudgetSummary: React.FC = () => {
           return (
             <div key={b.id} className="space-y-2">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-slate-200 light_sakura:text-slate-700">{getLabel(b.category_key)}</span>
+                <span className={cx("font-semibold", tokens.text.secondary)}>{getLabel(b.category_key)}</span>
                 <div className="flex items-center gap-1.5">
                   <span className={`font-bold tabular-nums ${isDanger ? 'text-red-400' : isWarning ? 'text-amber-400' : 'text-emerald-400'}`}>
                     {Math.round(b.percent)}%
                   </span>
-                  <span className="text-slate-500 text-[clamp(0.5625rem,2.6vw,0.625rem)]">{formatIDR(b.spent)} / {formatIDR(b.monthly_limit)}</span>
+                  <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.text.faint)}>{formatIDR(b.spent)} / {formatIDR(b.monthly_limit)}</span>
                 </div>
               </div>
-              <div className="h-1.5 w-full bg-slate-800/50 rounded-full overflow-hidden light_sakura:bg-rose-100/40">
+              <div className={cx("h-1.5 w-full rounded-full overflow-hidden", tokens.surface.sunken)}>
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${Math.min(100, b.percent)}%` }}
@@ -100,10 +102,10 @@ export const DashboardBudgetSummary: React.FC = () => {
         })}
       </div>
 
-      <div className="mt-6 pt-5 border-t border-slate-800/50 light_sakura:border-rose-100/30">
+      <div className={cx("mt-6 pt-5 border-t", tokens.border.accent)}>
         <button
           onClick={() => navigate("/budget")}
-          className="w-full flex items-center justify-center gap-2 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-indigo-400 hover:text-indigo-300 light_sakura:text-rose-500 light_sakura:hover:text-rose-600 transition-colors cursor-pointer"
+          className={cx("w-full flex items-center justify-center gap-2 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold transition-colors cursor-pointer", tokens.text.accent, "hover:opacity-80")}
         >
           <TrendingUp size={14} />
           {t("budget.view_all_budgets", "Manage All Budgets")}

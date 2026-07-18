@@ -7,6 +7,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useBillReminders } from "../hooks/useBillReminders";
 import { audioFeedback } from "../lib/audio";
 import { Card } from "./ui/Card";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 const MotionCard = motion.create(Card);
 
@@ -16,6 +17,7 @@ const MotionCard = motion.create(Card);
  * Tidak punya logic tersendiri — data murni dari useBillReminders.
  */
 export const DashboardBillReminders: React.FC = () => {
+  const { tokens, cx } = useThemeTokens();
   const { t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -46,7 +48,7 @@ export const DashboardBillReminders: React.FC = () => {
           }`}>
             {hasOverdue ? <AlertCircle size={16} /> : <Bell size={16} />}
           </div>
-          <h3 className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-800">
+          <h3 className={cx("font-sans font-bold text-sm", tokens.text.onSurface)}>
             {t("bill_reminders.dashboard_alert_title")}
           </h3>
         </div>
@@ -55,11 +57,12 @@ export const DashboardBillReminders: React.FC = () => {
             audioFeedback.playClick();
             navigate("/bill-reminders");
           }}
-          className={`flex items-center gap-1 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold cursor-pointer ${
+          className={cx(
+            "flex items-center gap-1 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold cursor-pointer hover:opacity-80 transition-colors",
             hasOverdue
-              ? "text-red-400 hover:text-red-300 light_sakura:text-red-600"
-              : "text-orange-400 hover:text-orange-300 light_sakura:text-orange-600"
-          }`}
+              ? tokens.text.danger
+              : "text-orange-400 light_sakura:text-orange-600"
+          )}
         >
           {t("bill_reminders.dashboard_alert_cta")}
           <ChevronRight size={12} />
@@ -70,7 +73,7 @@ export const DashboardBillReminders: React.FC = () => {
         {alerts.slice(0, 4).map((r) => (
           <li
             key={r.id}
-            className="flex items-center justify-between gap-2 text-xs text-slate-300 light_sakura:text-slate-700"
+            className={cx("flex items-center justify-between gap-2 text-xs", tokens.text.secondary)}
           >
             <div className="flex items-center gap-1.5 min-w-0">
               <Clock size={10} className="shrink-0 text-slate-500" />

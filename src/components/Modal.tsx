@@ -4,6 +4,7 @@ import { AlertCircle, HelpCircle, Trash2, CheckCircle } from "lucide-react";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { Button } from "./ui/Button";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface ModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export const Modal: React.FC<ModalProps> = ({
   onCancel,
   confirmDisabled = false
 }) => {
+  const { tokens, cx } = useThemeTokens();
   useLockBodyScroll(isOpen);
   const panelRef = useRef<HTMLDivElement>(null);
   useDialogA11y(isOpen, panelRef, onCancel);
@@ -59,24 +61,25 @@ export const Modal: React.FC<ModalProps> = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 15 }}
             transition={{ type: "spring", duration: 0.3 }}
-            className={`relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl outline-none transition-colors duration-300
-              ${type === "danger" 
-                ? "bg-slate-900 border-red-500/30 text-white dark_obsidian:bg-slate-900 light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-red-200" 
-                : "bg-slate-900 border-indigo-500/20 text-white dark_obsidian:bg-slate-900 light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
-              }`}
+            className={cx(
+              "relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl outline-none transition-colors duration-300",
+              type === "danger"
+                ? cx("border-red-500/30 dark_obsidian:bg-slate-900 light_sakura:border-red-200", tokens.surface.card, tokens.text.onSurface)
+                : cx("border-indigo-500/20 dark_obsidian:bg-slate-900 light_sakura:bg-rose-50/90 light_sakura:border-rose-100", tokens.text.onSurface)
+            )}
           >
             {/* Type Icon indicator row */}
             <div className="mb-4 flex items-center gap-3">
-              <div className={`rounded-full p-2.5 
-                ${type === "danger" 
-                  ? "bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500" 
-                  : type === "warning" 
-                    ? "bg-amber-500/15 text-amber-400 light_sakura:bg-amber-50 light_sakura:text-amber-600"
+              <div className={cx(
+                "rounded-full p-2.5",
+                type === "danger"
+                  ? "bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500"
+                  : type === "warning"
+                    ? cx("bg-amber-500/15 light_sakura:bg-amber-50", tokens.text.warning)
                     : type === "success"
-                      ? "bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-600"
-                      : "bg-indigo-500/15 text-indigo-400 light_sakura:bg-indigo-50 light_sakura:text-indigo-600"
-                }`}
-              >
+                      ? cx("bg-emerald-500/15 light_sakura:bg-emerald-50", tokens.text.success)
+                      : cx("bg-indigo-500/15 light_sakura:bg-indigo-50", tokens.text.accentStrong)
+              )}>
                 {type === "danger" && <Trash2 size={22} />}
                 {type === "warning" && <AlertCircle size={22} />}
                 {type === "info" && <HelpCircle size={22} />}

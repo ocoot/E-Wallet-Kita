@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Loader2 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 /**
  * Pill kecil non-modal yang muncul saat kita TAHU sebuah pembaruan sedang
@@ -32,6 +33,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 const AUTO_HIDE_MS = 20000;
 
 export const UpdateCheckingIndicator: React.FC = () => {
+  const { tokens, cx } = useThemeTokens();
   const { t } = useLanguage();
   const [visible, setVisible] = useState(false);
   const hideTimerRef = useRef<number | null>(null);
@@ -98,10 +100,13 @@ export const UpdateCheckingIndicator: React.FC = () => {
           transition={{ type: "spring", stiffness: 300, damping: 26 }}
           role="status"
           aria-live="polite"
-          className="fixed top-3 left-1/2 -translate-x-1/2 z-[95] flex items-center gap-2 rounded-full border border-indigo-500/30 bg-slate-900/95 px-4 py-2 shadow-xl backdrop-blur-sm light_sakura:bg-white/95 light_sakura:border-rose-300/50"
+          className={cx(
+            "fixed top-3 left-1/2 -translate-x-1/2 z-[95] flex items-center gap-2 rounded-full border px-4 py-2 shadow-xl backdrop-blur-sm",
+            "bg-slate-900/95 light_sakura:bg-white/95 border-indigo-500/30 light_sakura:border-rose-300/50"
+          )}
         >
-          <Loader2 size={14} className="animate-spin text-indigo-400 light_sakura:text-rose-500 shrink-0" />
-          <span className="text-xs font-semibold text-slate-200 light_sakura:text-slate-700 whitespace-nowrap">
+          <Loader2 size={14} className={cx("animate-spin shrink-0", tokens.text.accent)} />
+          <span className={cx("text-xs font-semibold whitespace-nowrap", tokens.text.onSurface)}>
             {t("pwa.checking_update") || "Memeriksa pembaruan..."}
           </span>
         </motion.div>

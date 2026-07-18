@@ -2,6 +2,7 @@ import React from "react";
 import { Wallet as WalletIcon, Landmark, Banknote, Layers } from "lucide-react";
 import { WalletType } from "../types";
 import { matchProvider } from "../data/walletProviders";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface ProviderBadgeProps {
   type: WalletType;
@@ -13,7 +14,7 @@ interface ProviderBadgeProps {
 /**
  * Badge bulat kecil untuk logo provider (dari katalog di
  * data/walletProviders.ts -- e-wallet maupun bank) atau, kalau tidak match
- * katalog (mis. "Lainnya" atau wallet lama), inisial/ikon generik sebagai
+ * katalog (mis. "Lainnya" or wallet lama), inisial/ikon generik sebagai
  * fallback. Dipakai di Wallets.tsx (list pos) supaya identitas visual
  * provider tetap terlihat di baris pengelolaan pos.
  *
@@ -25,6 +26,7 @@ interface ProviderBadgeProps {
  * lewat badge ini.
  */
 export const ProviderBadge: React.FC<ProviderBadgeProps> = ({ type, provider, size = 36, className = "" }) => {
+  const { tokens, cx } = useThemeTokens();
   const matched = matchProvider(type, provider);
   const dim = { width: size, height: size };
 
@@ -55,7 +57,11 @@ export const ProviderBadge: React.FC<ProviderBadgeProps> = ({ type, provider, si
   const Icon = type === "bank" ? Landmark : type === "cash" ? Banknote : type === "ewallet" ? WalletIcon : Layers;
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-xl shrink-0 bg-slate-700/60 text-slate-300 light_sakura:bg-rose-100 light_sakura:text-rose-500 ${className}`}
+      className={cx(
+        "inline-flex items-center justify-center rounded-xl shrink-0 bg-slate-700/60 light_sakura:bg-rose-100",
+        tokens.text.accent,
+        className
+      )}
       style={dim}
     >
       <Icon size={size * 0.5} />

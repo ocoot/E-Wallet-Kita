@@ -9,6 +9,7 @@ import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface HistoryDeleteModalProps {
   deleteTargetId: string | null;
@@ -39,6 +40,7 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
   setDeleteAllConfirmText,
   onConfirmDeleteAll,
 }) => {
+  const { tokens, cx } = useThemeTokens();
   const { t, locale } = useLanguage();
 
   const targetTransaction = transactions.find(t => t.id === deleteTargetId);
@@ -96,14 +98,14 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none p-6 rounded-2xl bg-slate-900 text-white border border-red-500/30 light_sakura:bg-white light_sakura:text-slate-800 light_sakura:border-red-200"
+              className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none p-6 rounded-2xl border", tokens.surface.card, tokens.text.onSurface, "border-red-500/30 light_sakura:border-red-200")}
             >
-              <div className="flex items-center gap-2.5 text-red-100 mb-3 light_sakura:text-red-600">
+              <div className={cx("flex items-center gap-2.5 mb-3", tokens.text.danger)}>
                 <AlertTriangle size={24} />
                 <h3 className="font-sans font-bold text-lg">{t("confirm.delete_all_title")}</h3>
               </div>
               
-              <p className="font-sans text-xs text-slate-300 leading-relaxed mb-4 block light_sakura:text-slate-600">
+              <p className={cx("font-sans text-xs leading-relaxed mb-4 block", tokens.text.secondary)}>
                 {t("confirm.delete_all_desc")}
               </p>
 
@@ -114,7 +116,7 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
                 value={deleteAllConfirmText}
                 onChange={(e) => setDeleteAllConfirmText(e.target.value)}
                 accent="danger"
-                className="bg-slate-950 border-slate-800 text-xs uppercase font-mono tracking-wider mb-6 light_sakura:bg-slate-100 light_sakura:border-rose-100 light_sakura:text-slate-800"
+                className={cx("text-xs uppercase font-mono tracking-wider mb-6", tokens.surface.sunken, tokens.border.accent, tokens.text.onSurface)}
               />
 
               <div className="flex justify-end gap-3">

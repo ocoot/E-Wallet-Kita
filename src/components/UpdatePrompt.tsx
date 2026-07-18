@@ -5,6 +5,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { supabase } from "../lib/supabase";
 import { CHANGELOG_TABLE, type ChangelogEntry } from "../data/changelog";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 /**
  * Banner "Versi baru tersedia" yang muncul otomatis saat service worker
@@ -28,39 +29,40 @@ import { CHANGELOG_TABLE, type ChangelogEntry } from "../data/changelog";
  * lengkap di `src/data/changelog.ts`.
  */
 export const UpdatePrompt: React.FC = () => {
+  const { tokens, cx } = useThemeTokens();
   const { t, locale } = useLanguage();
   const [visible, setVisible] = useState(false);
   const [changelogEntries, setChangelogEntries] = useState<ChangelogEntry[]>([]);
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
-    const handler = () => {
+    const handler = async () => {
       setVisible(true);
-      supabase
-        .from(CHANGELOG_TABLE)
-        .select("version, release_date, changes")
-        .order("created_at", { ascending: false })
-        // Tampilkan beberapa versi terakhir sekaligus (riwayat singkat),
-        // bukan cuma versi paling baru -- supaya user yang sempat skip
-        // beberapa update tetap lihat ringkasan apa saja yang berubah.
-        .limit(5)
-        .then(({ data, error }) => {
-          if (error) throw error;
-          if (data) {
-            setChangelogEntries(
-              data.map((row) => ({
-                version: row.version,
-                date: row.release_date,
-                changes: row.changes,
-              }))
-            );
-          }
-        })
-        .catch((err) => {
-          // Best-effort saja -- kalau gagal, dialog tetap tampil normal
-          // dengan teks generik (tanpa daftar "Yang Baru").
-          console.warn("[UpdatePrompt] Gagal memuat changelog:", err);
-        });
+      try {
+        const { data, error } = await supabase
+          .from(CHANGELOG_TABLE)
+          .select("version, release_date, changes")
+          .order("created_at", { ascending: false })
+          // Tampilkan beberapa versi terakhir sekaligus (riwayat singkat),
+          // bukan cuma versi paling baru -- supaya user yang sempat skip
+          // beberapa update tetap lihat ringkasan apa saja yang berubah.
+          .limit(5);
+
+        if (error) throw error;
+        if (data) {
+          setChangelogEntries(
+            data.map((row) => ({
+              version: row.version,
+              date: row.release_date,
+              changes: row.changes,
+            }))
+          );
+        }
+      } catch (err) {
+        // Best-effort saja -- kalau gagal, dialog tetap tampil normal
+        // dengan teks generik (tanpa daftar "Yang Baru").
+        console.warn("[UpdatePrompt] Gagal memuat changelog:", err);
+      }
     };
     window.addEventListener("pwa-update-available", handler);
     return () => window.removeEventListener("pwa-update-available", handler);
@@ -119,7 +121,7 @@ export const UpdatePrompt: React.FC = () => {
             aria-labelledby="update-prompt-title"
             className="relative w-full max-w-[22rem] sm:max-w-sm md:max-w-md my-auto max-h-[85vh] overflow-y-auto"
           >
-            <div className="relative flex flex-col gap-4 p-5 sm:p-6 rounded-2xl shadow-2xl border bg-slate-900 border-indigo-500/30 text-white light_sakura:bg-white light_sakura:border-rose-300/50 light_sakura:text-slate-800">
+            <div className={cx("relative flex flex-col gap-4 p-5 sm:p-6 rounded-2xl shadow-2xl border border-indigo-500/30 light_sakura:border-rose-300/50", tokens.surface.card, tokens.text.onSurface)}>
               <button
                 onClick={handleDismiss}
                 disabled={isUpdating}
@@ -130,7 +132,7 @@ export const UpdatePrompt: React.FC = () => {
               </button>
 
               <div className="flex flex-col items-center text-center gap-3 pt-1">
-                <div className="p-3 rounded-2xl bg-indigo-500/15 text-indigo-400 light_sakura:bg-rose-500/10 light_sakura:text-rose-500">
+                <div className={cx("p-3 rounded-2xl bg-indigo-500/15 light_sakura:bg-rose-500/10", tokens.icon.accent)}>
                   {isUpdating ? (
                     <Loader2 size={22} className="animate-spin" />
                   ) : (
@@ -144,7 +146,7 @@ export const UpdatePrompt: React.FC = () => {
                   >
                     {isUpdating ? t("pwa.updating") : t("pwa.update_title")}
                   </p>
-                  <p className="mt-1 text-xs sm:text-sm text-slate-400 light_sakura:text-slate-500">
+                  <p className={cx("mt-1 text-xs sm:text-sm", tokens.text.muted)}>
                     {isUpdating ? t("pwa.updating_desc") : t("pwa.update_desc")}
                   </p>
                 </div>
@@ -169,7 +171,7 @@ export const UpdatePrompt: React.FC = () => {
                         }
                       >
                         <div className="flex items-center gap-1.5 mb-1.5">
-                          <span className="text-xs sm:text-sm font-bold text-white light_sakura:text-slate-800">
+                          <span className={cx("text-xs sm:text-sm font-bold", tokens.text.onSurface)}>
                             v{entry.version}
                           </span>
                           {idx === 0 && (
@@ -181,7 +183,7 @@ export const UpdatePrompt: React.FC = () => {
                             <span className="text-[10px] text-slate-500 ml-auto shrink-0">{entry.date}</span>
                           )}
                         </div>
-                        <ul className="space-y-1.5 text-xs sm:text-sm text-slate-300 light_sakura:text-slate-600">
+                        <ul className={cx("space-y-1.5 text-xs sm:text-sm", tokens.text.label)}>
                           {entry.changes.map((change, i) => (
                             <li key={i} className="flex gap-2">
                               <span className="text-indigo-400 light_sakura:text-rose-400">•</span>
@@ -199,7 +201,7 @@ export const UpdatePrompt: React.FC = () => {
                 <button
                   onClick={handleDismiss}
                   disabled={isUpdating}
-                  className="flex-1 order-2 sm:order-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs sm:text-sm font-bold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white/5 light_sakura:bg-black/5 light_sakura:hover:bg-black/10 light_sakura:text-slate-600"
+                  className={cx("flex-1 order-2 sm:order-1 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs sm:text-sm font-bold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white/5 light_sakura:bg-black/5 light_sakura:hover:bg-black/10", tokens.text.label)}
                 >
                   {t("pwa.update_dismiss") || "Nanti"}
                 </button>

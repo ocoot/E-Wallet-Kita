@@ -1,6 +1,7 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
 import { useMaintenance } from "../contexts/MaintenanceContext";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 /**
  * Banner global berisi running text (marquee) yang muncul di semua halaman
@@ -9,6 +10,7 @@ import { useMaintenance } from "../contexts/MaintenanceContext";
  * teks yang di-hardcode di komponen ini.
  */
 export const MaintenanceBanner: React.FC = () => {
+  const { tokens, cx } = useThemeTokens();
   const { status, runningText } = useMaintenance();
 
   if (!status.is_active || !runningText) return null;
@@ -21,7 +23,10 @@ export const MaintenanceBanner: React.FC = () => {
   return (
     <div
       role="status"
-      className="w-full bg-amber-500/15 border-b border-amber-500/40 text-amber-300 overflow-hidden flex items-center gap-2 px-3 py-2 light_sakura:bg-amber-100 light_sakura:text-amber-700 light_sakura:border-amber-300"
+      className={cx(
+        "w-full border-b overflow-hidden flex items-center gap-2 px-3 py-2",
+        "bg-amber-500/15 border-amber-500/40 text-amber-300 light_sakura:bg-amber-100 light_sakura:text-amber-700 light_sakura:border-amber-300"
+      )}
     >
       <AlertTriangle size={14} className="shrink-0" />
       <div className="overflow-hidden flex-1">

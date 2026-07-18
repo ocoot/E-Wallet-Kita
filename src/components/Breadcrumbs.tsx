@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { audioFeedback } from "../lib/audio";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 import { 
   ChevronRight, 
   Home, 
@@ -21,6 +22,7 @@ import {
 } from "lucide-react";
 
 export const Breadcrumbs: React.FC = () => {
+  const { tokens, cx } = useThemeTokens();
   const { t, locale } = useLanguage();
   const location = useLocation();
   const pathname = location.pathname;
@@ -192,7 +194,12 @@ export const Breadcrumbs: React.FC = () => {
     <nav 
       id="app-breadcrumbs-nav" 
       aria-label="breadcrumb"
-      className="mb-6 flex items-center overflow-x-auto whitespace-nowrap py-3 px-5 rounded-3xl bg-slate-900 border border-slate-900 light_sakura:bg-white light_sakura:border-rose-100/10 shadow-sm text-xs text-slate-400 transition-all duration-300 max-w-fit"
+      className={cx(
+        "mb-6 flex items-center overflow-x-auto whitespace-nowrap py-3 px-5 rounded-3xl border shadow-sm text-xs transition-all duration-300 max-w-fit",
+        tokens.surface.card,
+        tokens.border.accent,
+        tokens.text.muted
+      )}
     >
       <ol className="flex items-center gap-1.5 sm:gap-2">
         {breadcrumbs.map((item, index) => {
@@ -203,13 +210,13 @@ export const Breadcrumbs: React.FC = () => {
               {index > 0 && (
                 <ChevronRight 
                   size={12} 
-                  className="text-slate-600 shrink-0 light_sakura:text-rose-300" 
+                  className={cx("shrink-0", tokens.text.faint)} 
                 />
               )}
               <li className="flex items-center">
                 {isLast ? (
                   <span 
-                    className="flex items-center gap-1.5 font-bold text-emerald-400 light_sakura:text-rose-500 cursor-default select-none"
+                    className={cx("flex items-center gap-1.5 font-bold cursor-default select-none", tokens.text.accent)}
                     aria-current="page"
                   >
                     {item.icon}
@@ -219,7 +226,7 @@ export const Breadcrumbs: React.FC = () => {
                   <Link
                     to={item.path}
                     onClick={() => audioFeedback.playClick()}
-                    className="flex items-center gap-1.5 font-medium text-slate-400 hover:text-slate-200 transition-colors duration-200 light_sakura:text-slate-500 light_sakura:hover:text-slate-800"
+                    className={cx("flex items-center gap-1.5 font-medium transition-colors duration-200", tokens.text.muted, "hover:text-slate-200 light_sakura:hover:text-slate-800")}
                   >
                     {item.icon}
                     <span>{item.label}</span>

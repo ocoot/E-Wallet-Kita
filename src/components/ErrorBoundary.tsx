@@ -39,9 +39,12 @@ const COPY = isIndonesian
  * Admin Panel > Monitor Error dengan componentStack di kolom context.
  */
 export class ErrorBoundary extends React.Component<Props, State> {
+  state: State = { hasError: false };
+  props: Props;
+
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false };
+    this.props = props;
   }
 
   static getDerivedStateFromError(): State {

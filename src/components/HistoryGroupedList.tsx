@@ -4,6 +4,7 @@ import { Transaction, Category } from "../types";
 import { Trash2, Send, Pencil, ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { EmptyState } from "./EmptyState";
+import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface HistoryGroupedListProps {
   paginatedTransactions: Transaction[];
@@ -27,6 +28,7 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
   onEditItem,
   categories,
 }) => {
+  const { tokens, cx } = useThemeTokens();
   const { t, locale } = useLanguage();
 
   const groups = useMemo(() => {
@@ -47,7 +49,7 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
 
   if (paginatedTransactions.length === 0) {
     return (
-      <div className="border border-slate-800/80 rounded-2xl bg-slate-950/40 light_sakura:border-rose-100/50 light_sakura:bg-rose-50/10">
+      <div className={cx("border rounded-2xl", tokens.border.accent, tokens.surface.sunken)}>
         <EmptyState message={t("history.no_transactions")} />
       </div>
     );
@@ -57,10 +59,10 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
     <div className="space-y-5">
       {groups.map(([date, txs]) => (
         <div key={date}>
-          <div className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-bold uppercase tracking-widest text-slate-500 mb-2 px-1">
+          <div className={cx("text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-bold uppercase tracking-widest mb-2 px-1", tokens.text.muted)}>
             {formatDateLabel(date)}
           </div>
-          <div className="rounded-2xl border border-slate-800/80 bg-slate-950/40 overflow-hidden divide-y divide-slate-800/50 light_sakura:border-rose-100/50 light_sakura:bg-rose-50/10 light_sakura:divide-rose-100/40">
+          <div className={cx("rounded-2xl border overflow-hidden divide-y", tokens.border.accent, tokens.surface.sunken, "divide-slate-800/50 light_sakura:divide-rose-100/40")}>
             <AnimatePresence mode="popLayout">
               {txs.map(tx => {
                 const isExpense = tx.type === "expense";
@@ -70,7 +72,7 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.97 }}
-                    className="flex items-center gap-3 p-3.5 hover:bg-slate-950/20 transition-colors light_sakura:hover:bg-rose-50/30"
+                    className={cx("flex items-center gap-3 p-3.5 transition-colors", tokens.hover.sunken)}
                   >
                     {/* Icon lingkaran */}
                     <div className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center ${
@@ -82,10 +84,10 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
 
                     {/* Detail */}
                     <div className="min-w-0 flex-1">
-                      <p className="font-sans font-bold text-sm text-slate-100 light_sakura:text-slate-900 truncate">
+                      <p className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>
                         {getCategoryLabel(tx.category)}
                       </p>
-                      <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] text-slate-500 mt-0.5 truncate flex items-center gap-1">
+                      <p className={cx("text-[clamp(0.5906rem,2.73vw,0.6562rem)] mt-0.5 truncate flex items-center gap-1", tokens.text.muted)}>
                         {tx.source === "telegram" && (
                           <span className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-sm bg-[#0088cc]/20 text-[#0088cc] shrink-0">
                             <Send size={8} className="-translate-x-0.5 translate-y-0.5 rotate-45" />

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { TFunc } from "../../src/lib/pdf/pdfTemplate.js";
+import { TFunc } from "../../src/lib/pdf/exportPdf.js";
 
 /**
  * Creates a standard PDF translator function for backend use,
