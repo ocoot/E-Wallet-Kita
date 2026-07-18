@@ -143,7 +143,7 @@ export const AdminMaintenance: React.FC = () => {
   const getFeatureLabel = (featureKey: string) => t(`admin.maintenance_feature.${featureKey}`);
 
   if (loading) {
-    return <div className="py-12 text-center text-slate-500 text-sm light_sakura:text-rose-500">{t("admin.loading")}</div>;
+    return <div className={cx("py-12 text-center", tokens.adminMaintenance.loadingText)}>{t("admin.loading")}</div>;
   }
 
   if (loadError) {
@@ -167,16 +167,16 @@ export const AdminMaintenance: React.FC = () => {
         </div>
 
         {/* Info: admin always bypass */}
-        <div className="flex items-start gap-3 px-4 py-3 rounded-2xl bg-blue-950/30 border border-blue-800/40 light_sakura:bg-blue-50 light_sakura:border-blue-100">
-          <Info size={16} className="text-blue-400 light_sakura:text-blue-500 mt-0.5 shrink-0" />
-          <p className="text-xs text-blue-300 light_sakura:text-blue-600 leading-relaxed">
+        <div className={cx("flex items-start gap-3 px-4 py-3 rounded-2xl", tokens.adminMaintenance.bypassNoteBanner)}>
+          <Info size={16} className={cx("mt-0.5 shrink-0", tokens.adminMaintenance.bypassNoteIcon)} />
+          <p className={cx("text-xs leading-relaxed", tokens.adminMaintenance.bypassNoteText)}>
             {t("admin.maintenance_admin_bypass_note")}
           </p>
         </div>
 
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-2xl border ${isActive ? "bg-amber-900/20 light_sakura:bg-amber-50 border-amber-800/50 light_sakura:border-amber-100 text-amber-500 light_sakura:text-amber-600" : cx(tokens.surface.subtle, tokens.toggle.inactiveIconBorder)}`}>
+            <div className={`p-3 rounded-2xl border ${isActive ? tokens.adminMaintenance.toggleIconActive : cx(tokens.surface.subtle, tokens.toggle.inactiveIconBorder)}`}>
               <Power size={20} />
             </div>
             <div>
@@ -275,8 +275,8 @@ export const AdminMaintenance: React.FC = () => {
                 <div
                   className={`p-3 rounded-xl border shrink-0 ${
                     feature.is_locked
-                      ? "bg-red-950/40 light_sakura:bg-red-50 border-red-900/50 light_sakura:border-red-100 text-red-400 light_sakura:text-red-600"
-                      : "bg-emerald-950/40 light_sakura:bg-emerald-50 border-emerald-900/50 light_sakura:border-emerald-100 text-emerald-400 light_sakura:text-emerald-600"
+                      ? tokens.adminMaintenance.featureIconLocked
+                      : tokens.adminMaintenance.featureIconUnlocked
                   }`}
                 >
                   {feature.is_locked ? <Lock size={18} /> : <Unlock size={18} />}
@@ -302,7 +302,7 @@ export const AdminMaintenance: React.FC = () => {
                   }`}
                   title={t("admin.maintenance_sandbox_bypass_tooltip")}
                 >
-                  <FlaskConical size={14} className="text-violet-400 light_sakura:text-violet-500" />
+                  <FlaskConical size={14} className={tokens.adminMaintenance.sandboxIcon} />
                   <button
                     onClick={() =>
                       handleToggleSandboxBypass(feature.feature_key, !feature.bypass_in_sandbox)

@@ -169,7 +169,7 @@ export const WalletTopUpModal: React.FC<WalletTopUpModalProps> = ({
                   onClick={handleClose}
                   disabled={isBusy}
                   aria-label={t("walletActions.close_action")}
-                  className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed light_sakura:hover:bg-rose-100"
+                  className={cx("p-1.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed", tokens.modal.closeBtn)}
                 >
                   <X size={16} />
                 </button>

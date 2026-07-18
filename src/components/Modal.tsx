@@ -73,12 +73,12 @@ export const Modal: React.FC<ModalProps> = ({
               <div className={cx(
                 "rounded-full p-2.5",
                 type === "danger"
-                  ? "bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500"
+                  ? cx(tokens.budgetProgressCard.badgeBgDanger, tokens.newTransaction.amountDisplayExpense)
                   : type === "warning"
-                    ? cx("bg-amber-500/15 light_sakura:bg-amber-50", tokens.text.warning)
+                    ? cx(tokens.budgetProgressCard.badgeBgWarning, tokens.text.warning)
                     : type === "success"
-                      ? cx("bg-emerald-500/15 light_sakura:bg-emerald-50", tokens.text.success)
-                      : cx("bg-indigo-500/15 light_sakura:bg-indigo-50", tokens.text.accentStrong)
+                      ? cx(tokens.budget.statusSafe, tokens.text.success)
+                      : cx(tokens.budgetProgressCard.badgeBgSafe, tokens.text.accentStrong)
               )}>
                 {type === "danger" && <Trash2 size={22} />}
                 {type === "warning" && <AlertCircle size={22} />}

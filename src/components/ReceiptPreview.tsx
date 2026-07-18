@@ -344,7 +344,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
           }}
           className={cx(
             "flex-1 cursor-pointer py-3.5 px-4 rounded-xl font-sans text-xs font-bold flex items-center justify-center gap-2 transition-all border",
-            "bg-slate-800 hover:bg-slate-700/80 border-slate-800 light_sakura:bg-slate-100 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent",
+            tokens.voicePreview.cancelBtn,
             tokens.text.secondary
           )}
         >

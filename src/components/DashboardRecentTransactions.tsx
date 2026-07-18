@@ -47,7 +47,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
       );
     }
     return (
-      <div className="bg-slate-800 p-2 rounded-xl text-slate-300 light_sakura:bg-slate-100 light_sakura:text-slate-600 flex items-center justify-center">
+      <div className={cx("p-2 rounded-xl flex items-center justify-center", tokens.errorMonitor.progressBg, tokens.text.label)}>
         <User size={15} />
       </div>
     );
@@ -55,7 +55,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
 
   return (
     <Card id="recent-transactions-panel" padding="lg" border="subtle" elevation="lg" className="space-y-6">
-      <div className="flex items-center justify-between border-b border-slate-800/50 pb-5 light_sakura:border-rose-100/30">
+      <div className={cx("flex items-center justify-between border-b pb-5", tokens.settings.sectionBorder)}>
         <div>
           <h3 className={cx("font-sans font-bold text-base tracking-tight", tokens.text.onSurface)}>
             {t("history.title")}

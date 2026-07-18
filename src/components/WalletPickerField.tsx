@@ -92,8 +92,8 @@ export const WalletPickerField: React.FC<WalletPickerFieldProps> = ({
 
   const focusBorder = accent === "amber" ? "focus:border-amber-500" : "focus:border-indigo-500";
   const selectedStyle = accent === "amber"
-    ? "bg-amber-500/15 text-amber-300 font-bold light_sakura:bg-amber-50 light_sakura:text-amber-700"
-    : "bg-indigo-500/15 text-indigo-300 font-bold light_sakura:bg-rose-50 light_sakura:text-rose-600";
+    ? tokens.chip.badgeAmber
+    : tokens.chip.badgeIndigo;
 
   const selected = options.find((o) => o.value === value);
 

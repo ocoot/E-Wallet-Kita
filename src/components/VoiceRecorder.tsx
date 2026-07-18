@@ -390,7 +390,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
                   className={cx(
                     "p-3 rounded-xl border transition-colors cursor-pointer",
                     isVoiceLocked
-                      ? "bg-amber-500/10 border-amber-500/20 text-amber-500 light_sakura:bg-rose-500/10 light_sakura:border-rose-500/20 light_sakura:text-rose-500"
+                      ? tokens.chip.accentAmberRose
                       : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 light_sakura:bg-rose-500/10 light_sakura:border-rose-500/20 light_sakura:text-rose-500"
                   )}
                 >

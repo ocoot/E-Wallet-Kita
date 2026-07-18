@@ -109,7 +109,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
           role="dialog"
           aria-modal="true"
           tabIndex={-1}
-          className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl outline-none text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
+          className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl p-6 shadow-2xl outline-none", tokens.modal.panel)}
         >
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -128,18 +128,17 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
             <button
               onClick={onCancel}
               aria-label="Tutup"
-              className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer light_sakura:hover:bg-rose-100"
+              className={cx("p-1.5 rounded-lg", tokens.modal.closeBtn)}
             >
               <X size={16} />
             </button>
           </div>
 
           {/* Big amount preview */}
-          <div className={`rounded-2xl border px-4 py-3 mb-4 text-center ${
-            isExpense
-              ? "bg-red-500/5 border-red-500/20 light_sakura:bg-red-50/40 light_sakura:border-red-200"
-              : "bg-emerald-500/5 border-emerald-500/20 light_sakura:bg-emerald-50/40 light_sakura:border-emerald-200"
-          }`}>
+          <div className={cx(
+            "rounded-2xl border px-4 py-3 mb-4 text-center",
+            isExpense ? tokens.newTransaction.amountInputExpense : tokens.newTransaction.amountInputIncome
+          )}>
             <span className={`font-sans font-black text-2xl tabular-nums ${isExpense ? "text-red-400" : "text-emerald-400"}`}>
               {isExpense ? "−" : "+"}{formatIDR(draft.amount)}
             </span>

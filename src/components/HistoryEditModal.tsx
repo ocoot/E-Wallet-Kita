@@ -93,7 +93,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
             <button
               onClick={onClose}
               aria-label="Tutup"
-              className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer light_sakura:hover:bg-rose-100"
+              className={cx("p-1.5 rounded-lg", tokens.modal.closeBtn)}
             >
               <X size={16} />
             </button>

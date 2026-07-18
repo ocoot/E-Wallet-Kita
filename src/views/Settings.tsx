@@ -922,7 +922,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 <div className="flex items-start gap-2.5">
                   <Trash2 size={14} className="text-red-400 mt-0.5 shrink-0" />
                   <div>
-                    <p className="font-sans text-xs font-semibold text-red-300 light_sakura:text-red-600">
+                    <p className={cx("font-sans text-xs font-semibold", tokens.text.dangerSoft)}>
                       {t("settings.privacy_delete_title")}
                     </p>
                     <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 leading-relaxed mt-0.5">

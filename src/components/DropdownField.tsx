@@ -100,8 +100,8 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
   }[accent];
 
   const selectedStyle = {
-    indigo: "bg-indigo-500/15 text-indigo-300 font-bold light_sakura:bg-rose-50 light_sakura:text-rose-600",
-    amber: "bg-amber-500/15 text-amber-300 font-bold light_sakura:bg-amber-50 light_sakura:text-amber-700",
+    indigo: tokens.chip.badgeIndigo,
+    amber: tokens.chip.badgeAmber,
     emerald: "bg-emerald-500/15 text-emerald-300 font-bold light_sakura:bg-emerald-50 light_sakura:text-emerald-700",
     rose: "bg-rose-500/15 text-rose-300 font-bold light_sakura:bg-rose-50 light_sakura:text-rose-600",
   }[accent];

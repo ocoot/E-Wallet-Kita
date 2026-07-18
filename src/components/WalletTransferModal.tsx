@@ -151,7 +151,7 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
           role="dialog"
           aria-modal="true"
           tabIndex={-1}
-          className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl outline-none text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
+          className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl p-6 shadow-2xl outline-none", tokens.modal.panel)}
         >
           {status === "success" ? (
             <div className="flex flex-col items-center text-center py-4 gap-3">
@@ -212,7 +212,7 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
                   onClick={handleClose}
                   disabled={isBusy}
                   aria-label={t("walletActions.close_action")}
-                  className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed light_sakura:hover:bg-rose-100"
+                  className={cx("p-1.5 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed", tokens.modal.closeBtn)}
                 >
                   <X size={16} />
                 </button>
@@ -225,7 +225,7 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
               </div>
 
               {targetOptions.length === 0 ? (
-                <p className={cx("text-xs leading-relaxed rounded-xl border p-3", tokens.text.muted, "border-slate-800/60 light_sakura:border-rose-100/50")}>
+                <p className={cx("text-xs leading-relaxed rounded-xl border p-3", tokens.text.muted, tokens.border.subtleRose)}>
                   {t("walletActions.transfer_no_target")}
                 </p>
               ) : (
@@ -256,7 +256,7 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
                           className={cx(
                             "flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 text-sm tabular-nums cursor-pointer",
                             tokens.surface.sunken,
-                            "border-slate-800/60 light_sakura:border-rose-100/50"
+                            tokens.border.subtleRose
                           )}
                         >
                           <span className="truncate">{contactVisible ? contactValue : maskContact(contactValue)}</span>

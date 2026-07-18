@@ -340,7 +340,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
               </div>
               {/* Today mini-summary pill */}
               {todaySummary && (
-                <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/60 border border-slate-700/50 light_sakura:bg-slate-50 light_sakura:border-rose-100">
+                <div className={cx("shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl", tokens.newTransaction.quickAddChipBorder)}>
                   <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-wider">Hari ini</span>
                   <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-red-400">−{formatIDR(todaySummary.expense)}</span>
                   {todaySummary.income > 0 && (
@@ -363,7 +363,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                   onClick={() => { audioFeedback.playClick(); setActiveInputTab(tab.key); }}
                   className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-sans text-xs font-bold transition-colors cursor-pointer ${
                     activeInputTab === tab.key
-                      ? "bg-indigo-600 text-white shadow-sm light_sakura:bg-rose-500"
+                      ? tokens.newTransaction.walletSelectedActive
                       : cx(tokens.newTransaction.inactiveHoverText, tokens.text.faint)
                   }`}
                 >
@@ -437,7 +437,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
-                          className="font-sans font-black text-3xl tracking-tight text-slate-700 light_sakura:text-slate-300 leading-none"
+                          className={cx("font-sans font-black text-3xl tracking-tight leading-none", tokens.newTransaction.amountDisplayPlaceholder)}
                         >
                           Rp 0
                         </motion.div>
@@ -451,7 +451,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                       disabled={isLoading}
                       value={amount}
                       onChange={(e) => setAmount(e.target.value !== "" ? parseInt(e.target.value) || 0 : "")}
-                      className={cx("w-full bg-transparent border-none outline-none font-sans text-sm placeholder:text-slate-600 light_sakura:placeholder:text-slate-400", tokens.text.label)}
+                      className={cx("w-full bg-transparent border-none outline-none font-sans text-sm", tokens.newTransaction.amountInputPlaceholder, tokens.text.label)}
                     />
                   </div>
                 </div>
@@ -473,7 +473,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                             audioFeedback.playClick();
                             setCategory(cat.key);
                           }}
-                          className={cx(isSelected ? (isExpense ? tokens.newTransaction.categoryPillSelectedExpense : tokens.newTransaction.categoryPillSelectedIncome) : cx("bg-slate-800/50 border-slate-700/50 hover:border-slate-600 hover:text-slate-300 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:hover:bg-rose-50", tokens.text.muted))}
+                          className={cx(isSelected ? (isExpense ? tokens.newTransaction.categoryPillSelectedExpense : tokens.newTransaction.categoryPillSelectedIncome) : cx(tokens.newTransaction.categoryPillInactive, tokens.text.muted))}
                         >
                           <span className="text-sm leading-none">{getCategoryEmoji(cat.key)}</span>
                           <span>{locale === "id" ? cat.label_id || cat.key : cat.label_en || cat.key}</span>
@@ -548,7 +548,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                     disabled={isLoading || amount === "" || amount === 0}
                     className={`ml-auto cursor-pointer py-3 px-6 text-white rounded-xl font-sans text-xs font-bold flex items-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none active:scale-[0.98] ${
                       isExpense
-                        ? "bg-red-600 hover:bg-red-500 shadow-lg shadow-red-900/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                        ? tokens.newTransaction.submitBtnExpense
                         : "bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-900/20"
                     }`}
                   >

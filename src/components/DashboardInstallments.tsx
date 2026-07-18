@@ -36,7 +36,7 @@ export const DashboardInstallments: React.FC = () => {
     >
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5">
-          <div className={cx("w-8 h-8 rounded-xl flex items-center justify-center shrink-0 bg-indigo-500/15 light_sakura:bg-rose-500/15", tokens.text.accent)}>
+          <div className={cx("w-8 h-8 rounded-xl flex items-center justify-center shrink-0", tokens.chip.accentIndigo, tokens.text.accent)}>
             <Landmark size={16} />
           </div>
           <h3 className={cx("font-sans font-bold text-sm", tokens.text.onSurface)}>

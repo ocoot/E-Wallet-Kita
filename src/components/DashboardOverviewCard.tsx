@@ -118,8 +118,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       className={cx(
         "relative overflow-hidden rounded-3xl border shadow-xl",
-        "border-indigo-500/20 bg-gradient-to-br from-indigo-500/10 via-slate-900 to-slate-900 shadow-indigo-900/10",
-        "light_sakura:from-rose-100/60 light_sakura:via-white light_sakura:to-white light_sakura:border-rose-200/50"
+        tokens.dashboardOverviewCard.heroCardGradient
       )}
     >
       {/* Total Kekayaan -- sekarang jadi angka utama kartu ini, karena
@@ -188,7 +187,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
             onClick={() => { audioFeedback.playClick(); setShowDetails(v => !v); }}
             className="w-full flex items-center justify-between py-2 cursor-pointer group"
           >
-            <span className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold group-hover:text-slate-300 light_sakura:group-hover:text-slate-700 transition-colors", tokens.text.muted)}>
+            <span className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold transition-colors", tokens.dashboardOverviewCard.labelHoverText, tokens.text.muted)}>
               {t("dashboard.asset_breakdown_label")}
             </span>
             <ChevronDown size={14} className={`text-slate-500 transition-transform ${showDetails ? "rotate-180" : ""}`} />
@@ -204,7 +203,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
               >
                 <div className="grid grid-cols-2 gap-2.5 pb-3">
                   {hasSavings && (
-                    <div className="flex items-center gap-2.5 rounded-2xl border border-emerald-500/15 bg-emerald-500/5 px-3.5 py-2.5 light_sakura:bg-emerald-50/40 light_sakura:border-emerald-100">
+                    <div className={cx("flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5", tokens.dashboardOverviewCard.statChipEmerald)}>
                       <div className="w-7 h-7 rounded-lg bg-emerald-500/15 flex items-center justify-center text-emerald-400 shrink-0">
                         <Vault size={13} />
                       </div>
@@ -218,7 +217,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                     </div>
                   )}
                   {hasGold && (
-                    <div className="flex items-center gap-2.5 rounded-2xl border border-amber-500/15 bg-amber-500/5 px-3.5 py-2.5 light_sakura:bg-amber-50/40 light_sakura:border-amber-100">
+                    <div className={cx("flex items-center gap-2.5 rounded-2xl px-3.5 py-2.5", tokens.dashboardOverviewCard.statChipAmber)}>
                       <div className="w-7 h-7 rounded-lg bg-amber-500/15 flex items-center justify-center text-amber-400 shrink-0">
                         <Coins size={13} />
                       </div>

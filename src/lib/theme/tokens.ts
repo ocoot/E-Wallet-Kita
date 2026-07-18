@@ -55,6 +55,13 @@ export const themeTokens = {
     success: "text-emerald-400 light_sakura:text-emerald-600",
     successStrong: "text-emerald-500 light_sakura:text-rose-500",
     danger: "text-red-400 light_sakura:text-red-600",
+    /**
+     * Sesi 50: varian danger dengan shade red-300 (bukan red-400) di dark
+     * mode -- BEDA dari `danger` di atas. Exact match diverifikasi di 2
+     * file: `Settings.tsx` & `PrivacySettings.tsx` (masing-masing 1x,
+     * teks peringatan hapus akun).
+     */
+    dangerSoft: "text-red-300 light_sakura:text-red-600",
     warning: "text-amber-400 light_sakura:text-amber-600",
     /** Teks agak menonjol di atas surface gelap -- dipakai di Settings.tsx (2x) & AdminPremiumMonitor.tsx. */
     strong: "text-slate-200 light_sakura:text-slate-800",
@@ -144,6 +151,16 @@ export const themeTokens = {
      * luar cakupan target sesi 49).
      */
     accentIndigo: "bg-indigo-500/15 light_sakura:bg-rose-500/15",
+    /**
+     * Sesi 50: badge bold indigo/amber (bg+text, dengan font-bold) --
+     * BEDA dari `accentIndigo` di atas (yang tanpa warna teks & tanpa
+     * font-bold). Exact match diverifikasi di 2 file: `DropdownField.tsx`
+     * (varian `indigo`/`amber` dari colorMap `selectedStyle`, varian
+     * `emerald`/`rose` di file yang sama TETAP literal karena belum
+     * diverifikasi ada duplikat di file lain) & `WalletPickerField.tsx`.
+     */
+    badgeIndigo: "bg-indigo-500/15 text-indigo-300 font-bold light_sakura:bg-rose-50 light_sakura:text-rose-600",
+    badgeAmber: "bg-amber-500/15 text-amber-300 font-bold light_sakura:bg-amber-50 light_sakura:text-amber-700",
   },
 
   /**
@@ -394,6 +411,22 @@ export const themeTokens = {
     label: "flex items-start gap-2 p-3 rounded-xl border border-slate-800 light_sakura:border-slate-200 cursor-pointer",
     labelSpan: "block text-xs font-bold text-slate-200 light_sakura:text-slate-800",
   },
+  /**
+   * Sesi 52: token per-file untuk `AdminMaintenance.tsx`. Semua kombinasi di
+   * bawah ini genuinely 1x-pakai (sudah dicek cross-file, tidak ada exact
+   * match di file lain) -- dipindah ke sini sesuai kebijakan baru sesi 52
+   * (persiapan migrasi tema: single source of truth, bukan lagi soal reuse).
+   */
+  adminMaintenance: {
+    loadingText: "text-slate-500 text-sm light_sakura:text-rose-500",
+    bypassNoteBanner: "bg-blue-950/30 border border-blue-800/40 light_sakura:bg-blue-50 light_sakura:border-blue-100",
+    bypassNoteIcon: "text-blue-400 light_sakura:text-blue-500",
+    bypassNoteText: "text-blue-300 light_sakura:text-blue-600",
+    toggleIconActive: "bg-amber-900/20 light_sakura:bg-amber-50 border-amber-800/50 light_sakura:border-amber-100 text-amber-500 light_sakura:text-amber-600",
+    featureIconLocked: "bg-red-950/40 light_sakura:bg-red-50 border-red-900/50 light_sakura:border-red-100 text-red-400 light_sakura:text-red-600",
+    featureIconUnlocked: "bg-emerald-950/40 light_sakura:bg-emerald-50 border-emerald-900/50 light_sakura:border-emerald-100 text-emerald-400 light_sakura:text-emerald-600",
+    sandboxIcon: "text-violet-400 light_sakura:text-violet-500",
+  },
   adminPremium: {
     statusBadgeSuccess: "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:border-emerald-200 light_sakura:text-emerald-700",
     statusBadgePending: "bg-amber-500/10 border border-amber-500/30 text-amber-400 light_sakura:bg-amber-50 light_sakura:border-amber-200 light_sakura:text-amber-700",
@@ -411,6 +444,21 @@ export const themeTokens = {
     sandboxBadgeBg: "bg-purple-900/20 light_sakura:bg-purple-50",
     /** Warna teks sandbox QRIS -- dipakai 2x. */
     sandboxText: "text-purple-400 light_sakura:text-purple-600",
+    /**
+     * Sesi 52 (kebijakan tokenisasi penuh): kombinasi berikut genuinely
+     * 1x-pakai di `AdminPremiumMonitor.tsx` (dicek cross-file, tidak ada
+     * exact match), tetap dikelompokkan di grup `adminPremium` karena
+     * sudah ada namespace file ini alih-alih bikin grup per-file baru.
+     */
+    exportBtn: "bg-slate-800 light_sakura:bg-white border hover:bg-slate-700 light_sakura:hover:bg-slate-50",
+    sandboxWarningBanner: "border-amber-500/40 bg-amber-500/10 text-amber-300 light_sakura:bg-amber-50 light_sakura:border-amber-200 light_sakura:text-amber-700",
+    sandboxIconBorderActive: "border-purple-800/50 light_sakura:border-purple-100",
+    metricEmerald: "text-emerald-500 light_sakura:text-emerald-600",
+    metricRed: "text-red-500 light_sakura:text-red-600",
+    tabActive: "bg-slate-700 light_sakura:bg-white text-white light_sakura:text-indigo-600",
+    tabInactiveHover: "hover:text-slate-200 light_sakura:hover:text-slate-700",
+    sandboxBadgeText: "text-purple-300 light_sakura:text-purple-600",
+    normalBadge: "bg-indigo-900/20 light_sakura:bg-indigo-50 text-indigo-300 light_sakura:text-indigo-600",
   },
   adminSupportChat: {
     /** Warna spinner loading (list sesi & thread pesan) -- dipakai 2x. */
@@ -471,6 +519,16 @@ export const themeTokens = {
     segmentedControlBg: "bg-slate-950/60 border border-slate-800/50 light_sakura:bg-rose-50/30 light_sakura:border-rose-100",
     /** Hover text tombol/pill tidak aktif -- dipakai 4x. */
     inactiveHoverText: "hover:text-slate-300 light_sakura:hover:text-slate-600",
+    /**
+     * Sesi 52 (kebijakan tokenisasi penuh): sisa kombinasi 1x-pakai di
+     * `NewTransaction.tsx` (dicek cross-file, tidak ada exact match).
+     */
+    quickAddChipBorder: "bg-slate-800/60 border border-slate-700/50 light_sakura:bg-slate-50 light_sakura:border-rose-100",
+    walletSelectedActive: "bg-indigo-600 text-white shadow-sm light_sakura:bg-rose-500",
+    amountDisplayPlaceholder: "text-slate-700 light_sakura:text-slate-300",
+    amountInputPlaceholder: "placeholder:text-slate-600 light_sakura:placeholder:text-slate-400",
+    categoryPillInactive: "bg-slate-800/50 border-slate-700/50 hover:border-slate-600 hover:text-slate-300 light_sakura:bg-slate-50 light_sakura:border-rose-100 light_sakura:hover:bg-rose-50",
+    submitBtnExpense: "bg-red-600 hover:bg-red-500 shadow-lg shadow-red-900/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400",
   },
   supportWidget: {
     fabButton: "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-900/40 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-900/20",
@@ -568,6 +626,28 @@ export const themeTokens = {
     infoBoxBg: "bg-slate-800/50 light_sakura:bg-white light_sakura:border light_sakura:border-rose-100",
     qrWrapperBorder: "light_sakura:border light_sakura:border-rose-100",
   },
+  /**
+   * Sesi 51: kelas panel modal generik (border+bg+text) untuk modal custom
+   * yang TIDAK memakai komponen `Modal.tsx` (mis. modal transfer/konfirmasi
+   * transaksi punya animasi/layout sendiri). Exact match diverifikasi di 2
+   * file: `WalletTransferModal.tsx` & `ConfirmTransactionModal.tsx`
+   * (masing-masing 1x, string identik penuh termasuk urutan class).
+   */
+  modal: {
+    panel:
+      "border border-indigo-500/20 bg-slate-900 text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100",
+    /**
+     * Tombol close (X) modal -- exact match ditemukan di 4 file:
+     * `WalletTransferModal.tsx`, `ConfirmTransactionModal.tsx` (dipasang
+     * sesi 51), `WalletTopUpModal.tsx` & `HistoryEditModal.tsx` (dipasang
+     * sesi 52, "prioritas tambahan" -- pola sama persis, termasuk varian
+     * dengan `disabled:opacity-40 disabled:cursor-not-allowed` disisipkan
+     * di `WalletTopUpModal.tsx`). Semua 4 pemakai sudah terpasang; urutan
+     * class tidak mempengaruhi hasil CSS karena token ini cuma kumpulan
+     * class lewat `cx()`.
+     */
+    closeBtn: "text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer light_sakura:hover:bg-rose-100",
+  },
   settings: {
     cardBorder: "border-slate-800/60 light_sakura:border-rose-100/40",
     sectionBorder: "border-slate-800/50 light_sakura:border-rose-100/30",
@@ -612,6 +692,28 @@ export const themeTokens = {
      * (2x, belum dipasang -- di luar cakupan target sesi 46).
      */
     optionInactive: "bg-slate-950 border-slate-800 text-slate-400 hover:bg-slate-900 light_sakura:bg-rose-50/20 light_sakura:border-rose-100 light_sakura:text-slate-500",
+  },
+  /**
+   * Sesi 52: token per-file untuk `Dashboard.tsx`. Genuinely 1x-pakai
+   * (dicek cross-file), dipindah ke sini sesuai kebijakan tokenisasi
+   * penuh sesi 52.
+   */
+  dashboard: {
+    goalCompleteBanner: "bg-gradient-to-r from-emerald-500/10 to-indigo-500/10 border border-emerald-500/20 shadow-xl shadow-emerald-900/5 light_sakura:from-rose-500/10 light_sakura:to-indigo-500/10 light_sakura:border-rose-300/30",
+    seeAllBtnHover: "hover:text-slate-300 hover:bg-slate-800/50 light_sakura:hover:text-slate-700 light_sakura:hover:bg-rose-50",
+    ctaButtonGradient: "bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 border border-indigo-500/30 light_sakura:from-rose-500 light_sakura:to-rose-600 light_sakura:hover:from-rose-600 light_sakura:hover:to-rose-700 light_sakura:border-rose-300",
+  },
+  /**
+   * Sesi 52: token per-file untuk `DashboardOverviewCard.tsx`. Genuinely
+   * 1x-pakai (dicek cross-file). `heroCardGradient` menggabungkan 2 string
+   * literal terpisah (baris non-light_sakura + baris light_sakura) yang
+   * sebelumnya dipecah lewat `cx(...)` multi-arg menjadi 1 token string.
+   */
+  dashboardOverviewCard: {
+    heroCardGradient: "border-indigo-500/20 bg-gradient-to-br from-indigo-500/10 via-slate-900 to-slate-900 shadow-indigo-900/10 light_sakura:from-rose-100/60 light_sakura:via-white light_sakura:to-white light_sakura:border-rose-200/50",
+    labelHoverText: "group-hover:text-slate-300 light_sakura:group-hover:text-slate-700",
+    statChipEmerald: "border border-emerald-500/15 bg-emerald-500/5 light_sakura:bg-emerald-50/40 light_sakura:border-emerald-100",
+    statChipAmber: "border border-amber-500/15 bg-amber-500/5 light_sakura:bg-amber-50/40 light_sakura:border-amber-100",
   },
 } as const;
 

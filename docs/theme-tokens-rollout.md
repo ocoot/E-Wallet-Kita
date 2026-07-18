@@ -78,10 +78,94 @@
 > dicatat sejak sesi 46), `toggle.inactiveTrack` (di `AdminPremiumMonitor.tsx`,
 > dicatat sejak sesi 45).
 
-Status per 2026-07-18 (setelah sesi 49): hook + token dasar sudah terpasang
+> **Update 2026-07-18 (setelah sesi 50)**: Sesi 50 dieksekusi sebagai audit
+> "sapu bersih" terhadap 7 file target roadmap (`AdminMaintenance.tsx`,
+> `AdminPremiumMonitor.tsx`, `DashboardOverviewCard.tsx`, `Dashboard.tsx`,
+> `NewTransaction.tsx`, `ReceiptUploader.tsx`, `PrivacySettings.tsx`) +
+> `WalletPickerField.tsx`, plus eksekusi 3 reuse cross-file yang sudah
+> dicatat sejak sesi 48-49 tapi belum dipasang (`chip.accentAmberRose` →
+> `VoiceRecorder.tsx`, `chip.accentIndigo` → `DashboardInstallments.tsx`,
+> `voicePreview.cancelBtn` → `ReceiptPreview.tsx`). **Hasil audit 7 file
+> target roadmap: TIDAK ADA yang berkurang** (`AdminMaintenance.tsx` tetap
+> 15, `AdminPremiumMonitor.tsx` tetap 14, `DashboardOverviewCard.tsx` tetap
+> 9, `Dashboard.tsx` tetap 10, `NewTransaction.tsx` tetap 10,
+> `ReceiptUploader.tsx` tetap 7, `PrivacySettings.tsx` turun dari 3 → 2
+> lewat token baru `text.dangerSoft`, lihat di bawah) -- semua literal
+> lainnya di 7 file ini genuinely 1x-pakai/tidak exact-match setelah
+> di-cross-check ke `tokens.ts` & ke seluruh `src/`, lihat log Sesi 50 di
+> bawah untuk rincian per-baris. Total literal turun dari kontribusi 3
+> reuse tercatat + 2 token baru yang ditemukan tak terduga saat audit
+> (`chip.badgeIndigo` / `chip.badgeAmber` -- exact match `DropdownField.tsx`
+> colorMap ⇄ `WalletPickerField.tsx` badge; `text.dangerSoft` -- exact
+> match `Settings.tsx` ⇄ `PrivacySettings.tsx` teks peringatan hapus akun):
+> **294 → 277** (60 file -- `WalletPickerField.tsx` mencapai 0 literal
+> penuh sehingga keluar dari hitungan file & keluar dari daftar dead-code
+> lama). Detail lengkap di log Sesi 50.
+
+> **⚠️ PERUBAHAN STRATEGI 2026-07-18 (setelah sesi 51, konfirmasi user)**:
+> Mulai Sesi 52, tujuan rollout ini berubah dari "kurangi duplikasi lewat
+> reuse ≥2 file" menjadi **persiapan migrasi tema besar** -- SEMUA sisa
+> literal `light_sakura:` (termasuk yang genuinely 1x-pakai) sekarang WAJIB
+> dipindah ke `tokens.ts`, bukan lagi opsional. Target akhir yang baru:
+> **0 literal `light_sakura:` di seluruh `src/`**, tanpa pengecualian
+> "genuinely 1x-pakai". Detail lengkap & alasan di bagian "Kapan menambah
+> token baru" dan roadmap Sesi 52 di bawah.
+>
+> **Update 2026-07-18 (setelah sesi 52)**: Sesi 52 (`AdminMaintenance.tsx`,
+> `AdminPremiumMonitor.tsx`, `NewTransaction.tsx`, `Dashboard.tsx`,
+> `DashboardOverviewCard.tsx` -- 5 file target teratas dari daftar roadmap
+> sesi 52, sesuai kebijakan tokenisasi penuh baru) sudah dieksekusi. Total
+> literal turun dari 247 → **187** (53 file -- kelima file target sesi ini
+> mencapai 0 literal penuh sehingga keluar dari hitungan file). Rincian
+> per-file: `AdminMaintenance.tsx` 15 → **0**, `AdminPremiumMonitor.tsx`
+> 14 → **0**, `NewTransaction.tsx` 10 → **0**, `Dashboard.tsx` 10 → **0**,
+> `DashboardOverviewCard.tsx` 9 → **0**. Semua kombinasi di 5 file ini
+> dicek cross-file dulu (tidak ada exact match ≥2 file) sebelum dipindah
+> sebagai token per-file (`adminMaintenance.*`, `dashboard.*`,
+> `dashboardOverviewCard.*` -- grup baru; `adminPremium.*` &
+> `newTransaction.*` -- ditambah ke grup lama yang sudah ada). Lihat log
+> Sesi 52 di bawah untuk rincian per-baris. **Prioritas tambahan juga
+> dieksekusi**: `modal.closeBtn` (token dari sesi 51) dipasang ke 2 file
+> yang sudah dikonfirmasi exact-match sejak sesi 51: `WalletTopUpModal.tsx`
+> 6 → 5, `HistoryEditModal.tsx` 4 → 3 (masing-masing masih ada sisa literal
+> lain di luar cakupan `modal.closeBtn`, belum diaudit sesi ini). `npx tsc
+> --noEmit -p tsconfig.json` dijalankan bersih (0 error) atas SELURUH
+> project setelah `npm install` berhasil di sandbox sesi ini (`node_modules`
+> sebelumnya tidak tersedia di sesi 51) -- termasuk verifikasi retroaktif
+> perubahan sesi 51 yang belum sempat di-tsc.
+>
+> **Update 2026-07-18 (setelah sesi 51)**: Sesi 51 (`NotificationSettings.tsx`,
+> `WalletTransferModal.tsx`, `Modal.tsx`, `DashboardRecentTransactions.tsx`,
+> `ConfirmTransactionModal.tsx` -- 5 file target teratas dari daftar "8
+> literal" di roadmap sesi 51) sudah dieksekusi. Total literal turun dari
+> 277 → **247** (58 file -- `NotificationSettings.tsx` &
+> `ConfirmTransactionModal.tsx` mencapai 0 literal penuh sehingga keluar
+> dari hitungan file). Rincian per-file: `NotificationSettings.tsx` 8 → **0**,
+> `WalletTransferModal.tsx` 8 → 2, `Modal.tsx` 6 → 3, `ConfirmTransactionModal.tsx`
+> 8 → **0**, `DashboardRecentTransactions.tsx` 8 → 5. Lihat log Sesi 51 di
+> bawah untuk rincian per-baris. Token baru sesi ini: `modal.panel` &
+> `modal.closeBtn` (reuse cross-file `WalletTransferModal.tsx` ⇄
+> `ConfirmTransactionModal.tsx`, `modal.closeBtn` pola sama juga ditemukan
+> di `WalletTopUpModal.tsx` & `HistoryEditModal.tsx` tapi BELUM dipasang di
+> sana -- di luar cakupan target sesi 51, dicatat untuk sesi berikutnya).
+> Reuse token lama yang terpasang lintas file sesi ini: `border.subtleRose`
+> (`WalletTransferModal.tsx`), `newTransaction.amountInputExpense`/`amountInputIncome`/
+> `amountDisplayExpense` (`ConfirmTransactionModal.tsx` & `Modal.tsx`),
+> `budgetProgressCard.badgeBgDanger`/`badgeBgWarning`/`badgeBgSafe` &
+> `budget.statusSafe` (`Modal.tsx`), `errorMonitor.progressBg` &
+> `settings.sectionBorder` (`DashboardRecentTransactions.tsx`).
+> **Catatan lingkungan**: `npx tsc --noEmit` (poin 4 di "Reminder wajib")
+> TIDAK BISA dijalankan sesi ini karena `node_modules` belum ter-install dan
+> sandbox tidak punya akses jaringan ke registry npm -- verifikasi diganti
+> dengan pengecekan manual (audit baris-per-baris + cek keseimbangan
+> kurung kurawal `{}` di tiap file yang diubah). **Perlu dijalankan ulang
+> di sesi berikutnya begitu `node_modules` tersedia** untuk memastikan
+> tidak ada `Cannot find name 'tokens'/'cx'`.
+
+Status per 2026-07-18 (setelah sesi 51): hook + token dasar sudah terpasang
 di HAMPIR SEMUA file (`useThemeTokens` sudah di-import & dipanggil), tapi
-total **294 literal inline `light_sakura:` masih tersisa di 61 file**
-(turun dari 329/63 setelah sesi 49, lihat tabel audit terbaru di bagian
+total **247 literal inline `light_sakura:` masih tersisa di 58 file**
+(turun dari 277/60 setelah sesi 50, lihat tabel audit terbaru di bagian
 roadmap). Ini jauh lebih tinggi dari angka-angka yang tercatat di sesi-sesi
 lama karena fitur baru terus ditambahkan ke file yang sudah pernah
 "dituntaskan".
@@ -94,10 +178,20 @@ File yang BENAR-BENAR 0 literal saat ini (dikonfirmasi ulang via `grep`):
 `src/views/AdminUserManager.tsx`, `src/views/AdminVoucherManager.tsx`,
 `src/views/DashboardChart.tsx`, `src/contexts/ToastContext.tsx` (1 tersisa,
 lihat sesi 27), `src/App.tsx`, `src/components/AdminUserDetailModal.tsx`,
-`src/views/NewTransaction.tsx`, `src/components/ui/Badge.tsx`,
+`src/components/ui/Badge.tsx`,
 `src/components/ui/Button.tsx`, `src/views/AdminBackup.tsx`,
 `src/views/settings/ProfileSettings.tsx` (sesi 49),
-`src/views/settings/ThemeSettings.tsx` (sesi 49).
+`src/views/settings/ThemeSettings.tsx` (sesi 49),
+`src/components/WalletPickerField.tsx` (sesi 50),
+`src/views/settings/NotificationSettings.tsx` (sesi 51),
+`src/components/ConfirmTransactionModal.tsx` (sesi 51).
+
+> **Koreksi sesi 50**: `src/views/NewTransaction.tsx` SEBELUMNYA tercantum
+> di daftar ini, TAPI itu keliru -- audit `grep` aktual (sesi 44, 49, 50)
+> konsisten menunjukkan file ini punya **10 literal** tersisa (semua
+> genuinely 1x-pakai, lihat log Sesi 49 & 50). Kemungkinan besar sisa salah
+> catat dari sesi jauh lebih lama yang tidak pernah dikoreksi. Sudah
+> dihapus dari daftar ini.
 
 **Klaim "selesai" yang TERNYATA SUDAH TIDAK AKURAT** (dikoreksi audit ini):
 - `src/views/Settings.tsx` -- sebelumnya disebut "sudah selesai/diaudit
@@ -225,9 +319,99 @@ perlu pasang hook baru), kecuali disebutkan lain.
   `ReceiptUploader.tsx` 10 → 7, `DashboardOverviewCard.tsx` 10 → 9,
   `ThemeSettings.tsx` 9 → **0**, `PrivacySettings.tsx` 9 → 3 (lihat log
   Sesi 49).
-- **Sesi 50: WalletPickerField (bekas dead-code) & Sapu Bersih Akhir**
-  - **File Target** (di-refresh dari audit pasca sesi 49): `AdminMaintenance.tsx` (15), `AdminPremiumMonitor.tsx` (14), `DashboardOverviewCard.tsx` (9), `Dashboard.tsx` (10), `NewTransaction.tsx` (10), `ReceiptUploader.tsx` (7), `PrivacySettings.tsx` (3), `src/components/WalletPickerField.tsx` (4, baru dipindah dari daftar dead-code -- lihat koreksi di atas) + seluruh sisa file dengan 1-8 literal (≈30 file, termasuk `SkeletonLoader.tsx` (4), `Modal.tsx` (8), `ConfirmTransactionModal.tsx` (8), dsb.)
-  - **Fokus**: Audit akhir 100% agar tercapai status **0 literal `light_sakura:`** di seluruh basis kode, plus jalankan ulang cross-check grup/key token seperti yang dilakukan pada audit 2026-07-18 untuk memastikan tidak ada bug `tokens.<grup>` yang undefined lagi. Beberapa reuse cross-file yang sudah dicatat tapi belum dipasang di sesi manapun (cek dulu sebelum menambah token baru lagi): `chip.accentAmberRose` → `VoiceRecorder.tsx`, `chip.accentIndigo` → `DashboardInstallments.tsx`, `voicePreview.cancelBtn` → `ReceiptPreview.tsx`.
+- ~~**Sesi 50: WalletPickerField (bekas dead-code) & Sapu Bersih Akhir**~~
+  **[SELESAI SEBAGIAN]** Audit penuh 7 file target roadmap (`AdminMaintenance.tsx`,
+  `AdminPremiumMonitor.tsx`, `DashboardOverviewCard.tsx`, `Dashboard.tsx`,
+  `NewTransaction.tsx`, `ReceiptUploader.tsx`, `PrivacySettings.tsx`) --
+  TIDAK ADA exact-match token baru ditemukan di file-file ini (semua
+  literal tersisa genuinely 1x-pakai), kecuali `PrivacySettings.tsx`
+  9 → 2 lewat token baru `text.dangerSoft` (lihat di bawah). `WalletPickerField.tsx`
+  4 → **0** (token baru `chip.badgeIndigo`/`chip.badgeAmber`, reuse ke
+  `DropdownField.tsx` 8 → 4). Plus eksekusi 3 reuse tercatat sejak sesi
+  48-49: `VoiceRecorder.tsx` 6 → 3, `DashboardInstallments.tsx` 3 → 2,
+  `ReceiptPreview.tsx` 5 → 2 (lihat log Sesi 50). **"Sapu bersih" ~30 file
+  sisa (1-8 literal) BELUM disentuh** -- dipindah ke Sesi 51.
+- ~~**Sesi 51: Sapu Bersih Akhir (lanjutan)**~~ **[SELESAI SEBAGIAN]**
+  5 file target teratas (8 literal masing-masing) dieksekusi:
+  `NotificationSettings.tsx` 8 → **0**, `WalletTransferModal.tsx` 8 → 2,
+  `Modal.tsx` 6 → 3 (angka awal file ini sebenarnya 6, bukan 8 -- lihat
+  audit ulang di log Sesi 51), `ConfirmTransactionModal.tsx` 8 → **0**,
+  `DashboardRecentTransactions.tsx` 8 → 5 (lihat log Sesi 51). Total
+  turun dari 277 → **247** (58 file). Sisa target `NotificationSettings.tsx`
+  (8), `WalletTransferModal.tsx` (8), `Modal.tsx` (8 -- angka roadmap lama
+  keliru) di daftar sesi 51 SUDAH tercakup; `AdminMaintenance.tsx`,
+  `AdminPremiumMonitor.tsx`, `NewTransaction.tsx`, `Dashboard.tsx`,
+  `DashboardOverviewCard.tsx` BELUM disentuh lagi (sudah diaudit tuntas
+  sesi 49-50, lihat catatan roadmap lama) -- dipindah ke Sesi 52 bersama
+  seluruh sisa file 1-7 literal.
+- **Sesi 52: PERUBAHAN STRATEGI -- Tokenisasi Penuh untuk Kesiapan Migrasi Tema**
+  **[SELESAI SEBAGIAN]** 5 file target teratas dieksekusi: `AdminMaintenance.tsx`
+  15 → **0**, `AdminPremiumMonitor.tsx` 14 → **0**, `NewTransaction.tsx`
+  10 → **0**, `Dashboard.tsx` 10 → **0**, `DashboardOverviewCard.tsx`
+  9 → **0**. Plus prioritas tambahan `modal.closeBtn` dipasang ke
+  `WalletTopUpModal.tsx` 6 → 5 & `HistoryEditModal.tsx` 4 → 3. Total turun
+  dari 247 → **187** (53 file). Sisa target roadmap sesi ini yang BELUM
+  disentuh: `SecuritySettings.tsx` (7), `Settings.tsx` (7),
+  `AdminSupportChat.tsx` (7), `AdminPanel.tsx` (7),
+  `MobileSettingsDetailPage.tsx` (7), `ReceiptUploader.tsx` (7),
+  `HistoryGroupedList.tsx` (7), `DashboardWalletSelectorCard.tsx` (7) +
+  seluruh sisa file (~45 file) -- dipindah ke Sesi 53. Lihat log Sesi 52
+  di bawah untuk rincian per-baris.
+  - **⚠️ Strategi berubah total mulai sesi ini** (atas konfirmasi user
+    2026-07-18, lihat kotak peringatan di bagian "Kapan menambah token
+    baru"). Sebelumnya: hanya tokenisasi kombinasi exact-match ≥2 file,
+    sisanya boleh tetap literal selamanya. **Sekarang: SEMUA sisa 247
+    literal, termasuk yang genuinely 1x-pakai, harus dipindah ke
+    `tokens.ts`** -- tujuannya bukan reuse lagi, tapi single source of
+    truth supaya migrasi tema (ganti palet warna) nanti cukup edit
+    `tokens.ts`, tanpa perlu grep manual ke seluruh `src/`.
+  - **Cara kerja berbeda dari sesi-sesi sebelumnya**:
+    1. Kombinasi yang muncul ≥2 file → tetap jadi token semantik/generik
+       seperti biasa (grup `text.*`, `chip.*`, dst) -- alur lama tidak
+       berubah untuk kasus ini.
+    2. Kombinasi 1x-pakai (yang dulu "tidak dipaksakan, tetap literal") →
+       SEKARANG dipindah juga, tapi dengan penamaan `<namaFile
+       camelCase>.<deskripsiSingkat>` di grup token per-file (pola sudah
+       ada, mis. `newTransaction.*`, `adminBackup.*`) supaya jelas
+       asalnya dan tidak mencemari grup semantik generik.
+    3. Kombinasi yang MIRIP tapi beda shade (poin 3 di "Cara migrasi 1
+       file") TETAP dapat token terpisah, TIDAK dipaksa gabung -- aturan
+       ini tidak berubah, karena ini soal jangan diam-diam mengubah
+       tampilan, bukan soal reuse.
+  - **File Target sesi ini** (lanjutan urutan literal terbanyak, TERMASUK
+    kembali 5 file besar yang sebelumnya "dikecualikan" karena audit
+    lama mencari exact-match ≥2 file -- sekarang semua literalnya justru
+    harus ditoken-kan sebagai token per-file): ~~`AdminMaintenance.tsx` (15)~~,
+    ~~`AdminPremiumMonitor.tsx` (14)~~, ~~`NewTransaction.tsx` (10)~~,
+    ~~`Dashboard.tsx` (10)~~, ~~`DashboardOverviewCard.tsx` (9)~~ **[SELESAI
+    sesi 52, lihat log Sesi 52]** -- lanjut Sesi 53:
+    `SecuritySettings.tsx` (7), `Settings.tsx` (7), `AdminSupportChat.tsx` (7),
+    `AdminPanel.tsx` (7), `MobileSettingsDetailPage.tsx` (7),
+    `ReceiptUploader.tsx` (7), `HistoryGroupedList.tsx` (7),
+    `DashboardWalletSelectorCard.tsx` (7) + seluruh sisa file (≈45 file,
+    lihat query audit di bawah untuk daftar lengkap terbaru).
+  - **Prioritas tambahan**: pasang `modal.closeBtn` (token baru sesi 51)
+    ke `WalletTopUpModal.tsx` (6) & `HistoryEditModal.tsx` (4) -- sudah
+    dikonfirmasi exact-match sejak sesi 51, tinggal eksekusi. **[SELESAI
+    sesi 52]** kedua file turun 1 literal masing-masing (sisa literal lain
+    di kedua file BELUM diaudit, lihat log Sesi 52).
+  - **Target "selesai" baru**: `grep -c "light_sakura:" src` di SELURUH
+    project = **0**. Ini realistis dicapai sekarang karena tidak ada lagi
+    kategori "tetap literal karena 1x-pakai" -- satu-satunya alasan sah
+    tersisa literal adalah kalau memang butuh audit ulang di sesi
+    berikutnya (belum sempat dikerjakan), bukan karena keputusan
+    permanen.
+  - **Wajib**: jalankan `npx tsc --noEmit` untuk verifikasi SELURUH
+    perubahan sesi 51 (tidak sempat dijalankan sesi itu karena
+    `node_modules` tidak tersedia & sandbox tanpa akses jaringan) SEBELUM
+    melanjutkan migrasi file baru -- lihat catatan lingkungan di paragraf
+    status sesi 51.
+  - **Catatan untuk sesi berikutnya setelah 0 literal tercapai**: begitu
+    seluruh `src/` bebas `light_sakura:` inline, migrasi tema besar
+    (ganti palet/tambah tema baru) baru aman dilakukan HANYA dengan edit
+    `tokens.ts` -- tidak perlu lagi menyentuh file komponen satu-satu.
+    Itu jadi milestone terpisah, bukan bagian dari rollout token ini.
+
 
 Jalankan query ini di root repo untuk data terbaru sebelum tiap sesi (versi
 audit 2026-07-18, sudah termasuk kolom status hook):
@@ -250,6 +434,71 @@ done | sort -t'|' -k1 -rn
 > -- untuk status terkini, lihat paragraf status di awal dokumen dan tabel
 > roadmap "Sesi 40+" di atas, yang keduanya berbasis audit `grep` langsung
 > ke kode aktual per 2026-07-18.
+
+## Sesi 52: Tokenisasi Penuh -- 5 File Target Teratas + Prioritas Tambahan
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/AdminMaintenance.tsx` | 15 | **0** | Semua 8 kombinasi dicek cross-file dulu -- TIDAK ADA exact match ≥2 file (satu kombinasi mirip di `AdminCategoryManager.tsx` L307 punya `hover:bg-emerald-950/60` tambahan, bukan exact match). Token baru grup `adminMaintenance.*` (8 key): `loadingText`, `bypassNoteBanner`, `bypassNoteIcon`, `bypassNoteText`, `toggleIconActive`, `featureIconLocked`, `featureIconUnlocked`, `sandboxIcon`. |
+| `src/views/AdminPremiumMonitor.tsx` | 14 | **0** | Semua 8 kombinasi genuinely 1x-pakai (dicek cross-file). Token baru ditambahkan ke grup `adminPremium.*` yang sudah ada (9 key baru): `exportBtn`, `sandboxWarningBanner`, `sandboxIconBorderActive`, `metricEmerald`, `metricRed`, `tabActive`, `tabInactiveHover`, `sandboxBadgeText`, `normalBadge`. |
+| `src/views/NewTransaction.tsx` | 10 | **0** | Semua 6 kombinasi genuinely 1x-pakai (dicek cross-file, termasuk ulang terhadap token lama `newTransaction.*` dari sesi-sesi sebelumnya -- tidak ada yang cocok). Token baru ditambahkan ke grup `newTransaction.*` yang sudah ada (6 key baru): `quickAddChipBorder`, `walletSelectedActive`, `amountDisplayPlaceholder`, `amountInputPlaceholder`, `categoryPillInactive`, `submitBtnExpense`. File ini sebelumnya diaudit tuntas 2x (sesi 49 & 50) dengan hasil "tidak ada exact-match, tetap literal" -- kesimpulan itu masih valid di bawah kebijakan LAMA (≥2 file), tapi di bawah kebijakan BARU sesi 52 (semua 1x-pakai wajib ditoken) semua 6 baris tersebut sekarang dapat token per-file. |
+| `src/views/Dashboard.tsx` | 10 | **0** | 3 kombinasi (banner goal tercapai, hover tombol "lihat semua", gradient tombol CTA quick-add) genuinely 1x-pakai. Token baru grup `dashboard.*` (3 key, grup baru): `goalCompleteBanner`, `seeAllBtnHover`, `ctaButtonGradient`. Baris CTA (L375) sebelumnya punya `cursor-pointer` dobel (typo lama di kode asli) -- dipertahankan apa adanya saat migrasi (tidak masalah secara CSS, di luar cakupan refactor ini untuk diperbaiki). |
+| `src/components/DashboardOverviewCard.tsx` | 9 | **0** | Token baru grup `dashboardOverviewCard.*` (4 key, grup baru): `heroCardGradient` (gabungan 2 string literal terpisah -- baris non-`light_sakura` + baris `light_sakura` yang sebelumnya dipecah lewat `cx(...)` multi-arg -- jadi 1 token string, TIDAK mengubah hasil CSS karena `cx` cuma join dengan spasi), `labelHoverText`, `statChipEmerald`, `statChipAmber`. Komentar NOTE di baris 111-115 soal alasan tidak memakai `<Card>` primitive TETAP dipertahankan apa adanya (masih relevan, bukan bagian dari migrasi token ini). |
+| `src/components/WalletTopUpModal.tsx` | 6 | 5 | **Prioritas tambahan** (bukan bagian 5 file target utama): tombol close (X) modal (`text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed light_sakura:hover:bg-rose-100`) exact match ke `tokens.modal.closeBtn` (token lama dari sesi 51, varian dengan `disabled:*` disisipkan di tengah -- sudah diantisipasi di komentar token). Sisa 2 literal (panel modal & kartu ringkasan hasil top up) BELUM diaudit sesi ini -- di luar cakupan "prioritas tambahan", dipindah ke Sesi 53. |
+| `src/components/HistoryEditModal.tsx` | 4 | 3 | **Prioritas tambahan**: tombol close (X) modal exact match persis ke `tokens.modal.closeBtn` (tanpa varian `disabled:*`). Sisa 2 literal (panel modal & kartu ikon indigo) BELUM diaudit sesi ini, dipindah ke Sesi 53. |
+
+**Token baru ditambahkan sesi ini** (di `tokens.ts`):
+- Grup baru: `adminMaintenance` (8 key), `dashboard` (3 key), `dashboardOverviewCard` (4 key).
+- Ditambahkan ke grup lama: `adminPremium` (+9 key), `newTransaction` (+6 key).
+- Semua token baru sesi ini genuinely 1x-pakai per definisi kebijakan sesi 52 -- tidak ada reuse cross-file yang ditemukan saat audit, jadi tidak ada token yang dipasang ke >1 file kecuali `modal.closeBtn` (token LAMA dari sesi 51 yang direuse ke 2 file baru sesi ini).
+
+**Catatan lingkungan sesi 52**: `node_modules` TIDAK tersedia di awal sesi (sama seperti sesi 51), tapi `npm install` (dengan `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1`) berhasil dijalankan sesi ini (sebelumnya gagal 403 di sesi 51) -- `npx tsc --noEmit -p tsconfig.json` berhasil dijalankan ke SELURUH project dan menghasilkan **0 error**, termasuk verifikasi retroaktif untuk perubahan sesi 51 yang sebelumnya cuma diverifikasi manual (audit baris-per-baris + pengecekan kurung kurawal, lihat catatan lingkungan sesi 51 di bawah).
+
+## Sesi 51: Sapu Bersih Akhir (lanjutan) -- 5 File "8 Literal"
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/settings/NotificationSettings.tsx` | 8 | **0** | Hook `useThemeTokens` sudah di-import tapi belum dipanggil -- dipasang sesi ini. 2 blok kartu identik (`bg-slate-950 border border-slate-800 ... light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50` + `divide-slate-800/60 light_sakura:divide-rose-200/40`) exact match ke `tokens.settings.innerCardBgBorder` + `tokens.settings.divideSubtle` (token lama, dicatat sejak sesi 46, dipakai 5x di `Settings.tsx`). 1 blok lain (tanpa divide) exact match ke `tokens.settings.innerCardBgBorder` saja. |
+| `src/components/WalletTransferModal.tsx` | 8 | 2 | Panel modal (`border-indigo-500/20 bg-slate-900 ... text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100`) & tombol close (`text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer ... light_sakura:hover:bg-rose-100`) ternyata identik PERSIS dengan `ConfirmTransactionModal.tsx` -- token baru `modal.panel` & `modal.closeBtn` ditambahkan ke `tokens.ts` (lihat baris terkait). 2x `border-slate-800/60 light_sakura:border-rose-100/50` exact match ke `tokens.border.subtleRose` (token lama, dicatat sejak sesi 45-46, belum pernah dipasang di file ini). Sisa 1 baris (`bg-indigo-500/5 border-indigo-500/20 light_sakura:bg-rose-50/40 light_sakura:border-rose-200`, banner info transfer) dicek cross-file -- tidak ada exact match di file lain, tetap literal. |
+| `src/components/ConfirmTransactionModal.tsx` | 8 | **0** | Panel modal & tombol close sama seperti `WalletTransferModal.tsx` di atas (pasangan reuse, token `modal.panel`/`modal.closeBtn` ditambahkan sesi ini). Blok "big amount preview" (`bg-red-500/5 border-red-500/20 ... light_sakura:bg-red-50/40 light_sakura:border-red-200` untuk expense, `bg-emerald-500/5 border-emerald-500/20 ... light_sakura:bg-emerald-50/40 light_sakura:border-emerald-200` untuk income) exact match ke `tokens.newTransaction.amountInputExpense`/`amountInputIncome` (token lama dari `NewTransaction.tsx`, direuse cross-file sesi ini). |
+| `src/components/Modal.tsx` | 6 *(koreksi: bukan 8 seperti tercatat di roadmap lama sebelum audit ulang)* | 3 | 4 dari 6 literal ternyata exact match ke token yang SUDAH ADA tapi belum diverifikasi silang: `bg-red-500/15 light_sakura:bg-red-50` → `tokens.budgetProgressCard.badgeBgDanger`, teks `text-red-400 light_sakura:text-red-500` → `tokens.newTransaction.amountDisplayExpense` (match dengan `ErrorState.tsx`), `bg-amber-500/15 light_sakura:bg-amber-50` → `tokens.budgetProgressCard.badgeBgWarning`, `bg-emerald-500/15 light_sakura:bg-emerald-50` → `tokens.budget.statusSafe`, `bg-indigo-500/15 light_sakura:bg-indigo-50` → `tokens.budgetProgressCard.badgeBgSafe`. Sisa 2 baris (panel varian `danger`/lainnya, memakai `dark_obsidian:bg-slate-900` eksplisit + `border-red-500/30`/`border-indigo-500/20` unik) dicek cross-file -- MIRIP tapi TIDAK identik dengan token `modal.panel` baru (beda: ada prefix `dark_obsidian:` alih-alih polos, tidak ada `text-white` literal karena sudah lewat `tokens.text.onSurface` terpisah) -- tidak dipaksakan, tetap literal. |
+| `src/components/DashboardRecentTransactions.tsx` | 8 | 5 | Kotak ikon avatar transaksi (`bg-slate-800 ... text-slate-300 light_sakura:bg-slate-100 light_sakura:text-slate-600`) dipecah 2 token: bg-pair exact match ke `tokens.errorMonitor.progressBg` (token lama, dipakai lintas-konteks -- nilainya identik walau nama semantiknya beda konteks, sesuai konvensi reuse sesi-sesi sebelumnya), text-pair exact match ke `tokens.text.label`. Border section header (`border-b border-slate-800/50 pb-5 light_sakura:border-rose-100/30`) exact match ke `tokens.settings.sectionBorder` (token lama, pola sama juga ada di `MobileSettingsDetailPage.tsx` & `AdminPanel.tsx`, keduanya di luar cakupan sesi ini). Sisa 4 baris (kotak ikon `Sparkles` bg-indigo/rose unik, hover tombol "lihat semua" bg-slate/rose unik, kartu list item bg+border unik, dot indikator kecil unik) dicek cross-file satu per satu -- tidak ada exact match, tetap literal. |
+
+**Token baru ditambahkan sesi ini** (di `tokens.ts`, grup `modal`):
+- `modal.panel` -- panel modal custom (bukan lewat komponen `Modal.tsx`), exact match 2 file (`WalletTransferModal.tsx`, `ConfirmTransactionModal.tsx`).
+- `modal.closeBtn` -- tombol close (X) modal, exact match 2 file dipasang sesi ini + 2 file lagi dengan pola identik (`WalletTopUpModal.tsx`, `HistoryEditModal.tsx`) BELUM dipasang, di luar cakupan target sesi 51 -- dicatat untuk sesi 52.
+
+**Catatan lingkungan sesi 51**: `node_modules` tidak tersedia di sandbox dan `npm install` gagal (403 Forbidden, tidak ada akses jaringan keluar). Verifikasi wajib `npx tsc --noEmit -p tsconfig.json` (poin 4 di "Reminder wajib") TIDAK BISA dijalankan. Sebagai gantinya, tiap file yang diubah diverifikasi manual: audit baris-per-baris tiap penggantian class + pengecekan keseimbangan tanda kurung kurawal (`{`/`}`) sebelum & sesudah edit. **Sesi 52 WAJIB menjalankan `tsc --noEmit` begitu `node_modules` tersedia** untuk memastikan tidak ada `Cannot find name 'tokens'/'cx'` akibat perubahan sesi ini.
+
+## Sesi 50: WalletPickerField & Audit 7 File Target Roadmap
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/components/WalletPickerField.tsx` | 4 | **0** | Token baru `chip.badgeIndigo`/`chip.badgeAmber` (badge bold indigo/amber untuk saldo wallet) -- exact match ditemukan di colorMap `selectedStyle` milik `DropdownField.tsx` (varian `indigo`/`amber`). File ini sekaligus resmi keluar dari daftar "dead-code" lama (lihat koreksi sesi ini di bagian status) karena ternyata memang diimpor & dipakai. |
+| `src/components/DropdownField.tsx` | 8 | 4 | Reuse `chip.badgeIndigo`/`chip.badgeAmber` (match dengan `WalletPickerField.tsx` di atas) untuk 2 dari 4 varian colorMap `selectedStyle`. Varian `emerald`/`rose` TETAP literal -- belum diverifikasi ada duplikat exact match di file lain, tidak dipaksakan. |
+| `src/views/settings/PrivacySettings.tsx` | 3 | 2 | Token baru `text.dangerSoft` (teks peringatan hapus akun, shade `red-300`/`red-600`) -- exact match ditemukan di `Settings.tsx` (baris 925, konteks sama: judul peringatan hapus akun). Sisa 2 literal (tombol ekspor data) sudah diaudit sejak sesi 49, tidak ada exact match -- tetap literal. |
+| `src/views/Settings.tsx` | 8 | 7 | Reuse `text.dangerSoft` (match dengan `PrivacySettings.tsx` di atas). |
+| `src/components/VoiceRecorder.tsx` | 6 | 3 | Reuse `chip.accentAmberRose` (kondisi `isVoiceLocked` pada tombol mic) -- token sudah ada sejak sesi 49 (dipasang di `ReceiptUploader.tsx`), exact match dikonfirmasi ulang & dipasang sekarang. |
+| `src/components/DashboardInstallments.tsx` | 3 | 2 | Reuse `chip.accentIndigo` (bg bulat ikon kartu cicilan) -- token sudah ada sejak sesi 49 (dipasang di `DashboardOverviewCard.tsx`), exact match dikonfirmasi ulang & dipasang sekarang. |
+| `src/components/ReceiptPreview.tsx` | 5 | 2 | Reuse `voicePreview.cancelBtn` (tombol batal preview struk) -- token sudah ada sejak sesi 48 (dipasang di `VoicePreview.tsx`), exact match dikonfirmasi ulang & dipasang sekarang. |
+| `src/views/AdminMaintenance.tsx` | 15 | 15 | **Diaudit tuntas, TIDAK ADA yang berkurang.** Semua 15 literal (banner info biru admin-bypass, kotak status toggle aktif [amber], kotak ikon lock/unlock [merah/emerald], ikon FlaskConical ungu, teks loading rose) dicek satu per satu ke `tokens.ts` & cross-file ke seluruh `src/` -- tidak ada exact match. Pola warna biru (banner info) unik di file ini, tidak ditemukan di file lain sama sekali. |
+| `src/views/AdminPremiumMonitor.tsx` | 14 | 14 | **Diaudit tuntas, TIDAK ADA yang berkurang.** Semua 14 literal (tombol expand tabel, banner peringatan sandbox, metrik sukses/gagal, tab aktif/nonaktif, badge sandbox/live) dicek cross-file satu per satu -- tidak ada exact match ke token manapun. |
+| `src/components/DashboardOverviewCard.tsx` | 9 | 9 | **Diaudit tuntas, TIDAK ADA yang berkurang.** 4 literal gradient kartu utama tetap sengaja tidak disentuh (dekoratif custom, sudah dicatat sejak sesi 49), 1 literal hover teks, 2 kotak ringkasan aset (emerald/amber) dicek cross-file -- tidak ada exact match, pola mirip di file lain (mis. `AdminMaintenance.tsx` baris 278-279) beda struktur (ada border+text, bukan cuma bg+border). |
+| `src/views/Dashboard.tsx` | 10 | 10 | **Diaudit tuntas, TIDAK ADA yang berkurang.** Banner onboarding gradient emerald/indigo, hover tombol dismiss, tombol CTA gradient indigo custom -- semua dicek cross-file, tidak ada exact match. |
+| `src/views/NewTransaction.tsx` | 10 | 10 | Tidak diaudit ulang baris-per-baris (sudah tuntas diverifikasi di sesi 49, lihat log Sesi 49), hanya dikonfirmasi ulang via `grep` bahwa jumlahnya masih 10 dan belum ada fitur baru yang mengubahnya. |
+| `src/components/ReceiptUploader.tsx` | 7 | 7 | **Diaudit tuntas, TIDAK ADA yang berkurang.** Dropzone border, kotak ikon upload, teks hint drag-drop dicek cross-file -- tidak ada exact match. Ikon lock kecil (`text-amber-400 light_sakura:text-rose-500`) SEMPAT dicurigai exact match ke `chip.accentAmberRose` (dipasang sesi ini di file lain), tapi ternyata beda struktur -- token itu bundel bg+border+text, sedangkan ikon ini cuma text tanpa bg/border, jadi TIDAK dipaksakan. |
+
+**Koreksi tambahan sesi ini**: paragraf status & daftar "0 literal" sebelumnya
+salah mencantumkan `src/views/NewTransaction.tsx` sebagai file 0-literal --
+sudah dikoreksi (lihat bagian status di atas dokumen).
+
+Setelah sesi ini dijalankan pengecekan manual (`python3 -c` brace-balance
+check ke semua file yang diedit + `tokens.ts`) -- semua seimbang, tidak ada
+syntax error yang jelas. **Catatan berulang**: `node_modules` masih belum
+ter-install di lingkungan sesi ini, jadi `npx tsc --noEmit` (poin 4 di
+"Reminder wajib") masih BELUM bisa dijalankan -- WAJIB dijalankan di sesi
+berikutnya begitu `node_modules` tersedia, sebagai pemeriksaan susulan
+untuk seluruh perubahan sesi 47-50 yang belum sempat di-tsc-check.
 
 ## Sesi 49: Sisa Sub-Settings Kecil
 
@@ -1357,8 +1606,11 @@ DITAMBAH 2 poin baru dari sesi 11):
    `form.input`) dengan `grep -c` pola exact-nya di file yang dikerjakan --
    TERMASUK varian yang MIRIP tapi beda 1 detail kecil (mis. `py-2.5` vs
    `py-2` di `tokens.form.input`, ditemukan di `ConfirmTransactionModal.tsx`
-   sesi 11) -- jangan dipaksa cocok, tapi CATAT kalau ditemukan supaya
-   sesi lain yang menemukan pola sama tahu ini sudah pernah dicek.
+   sesi 11) -- **jangan dipaksa cocok ke token yang sudah ada** (tetap
+   berlaku tanpa perubahan), tapi sejak sesi 52 varian yang beda ini WAJIB
+   dapat token baru terpisah miliknya sendiri (bukan lagi "dicatat lalu
+   dibiarkan literal") -- lihat perubahan kebijakan di bagian "Kapan
+   menambah token baru".
 6. Setelah str_replace/insert manual (bukan lewat script Python) yang
    menyisipkan baris baru DI ANTARA baris-baris `const {...} = useXxx();`
    yang beruntun, WAJIB `sed -n` ulang area yang diedit untuk pastikan
@@ -1397,8 +1649,14 @@ grep -rlo "light_sakura:" src/components src/views | \
    `tokens.<kategori>.<nama>`.
 3. Kalau MIRIP tapi tidak persis (beda opacity, beda shade satu tingkat) →
    **jangan dipaksa pakai token yang ada** (itu akan diam-diam mengubah
-   tampilan). Tetap literal, atau kalau polanya muncul >2x di file lain juga,
-   tambahkan token baru dulu di `tokens.ts` baru dipakai.
+   tampilan). Buat token BARU yang terpisah untuk kombinasi ini -- **sejak
+   sesi 52, ini WAJIB ditoken-kan juga** (bukan lagi opsional/"tetap
+   literal"), walau cuma dipakai 1x di 1 file. Pakai penamaan `<namaFile
+   camelCase>.<deskripsiSingkat>` untuk token yang genuinely 1x-pakai,
+   supaya tidak mencemari grup token semantik generik (`text.*`, `chip.*`,
+   dst) yang harusnya khusus untuk pola reusable ≥2 file. Lihat kotak
+   peringatan "PERUBAHAN KEBIJAKAN" di bagian "Kapan menambah token baru"
+   untuk alasan lengkap.
 4. Tambahkan `const { tokens, cx } = useThemeTokens();` di awal komponen
    (butuh import `useThemeTokens` dari `../hooks/useThemeTokens`).
 5. Ganti template string manual (`` `a b ${x} c` ``) dengan `cx(...)` kalau
@@ -1411,11 +1669,47 @@ grep -rlo "light_sakura:" src/components src/views | \
 
 ## Kapan menambah token baru
 
+> **⚠️ PERUBAHAN KEBIJAKAN 2026-07-18 (setelah sesi 51, atas konfirmasi
+> user)**: Aturan "≥2 file" di bawah ini SUDAH TIDAK BERLAKU sebagai syarat
+> mutlak. Alasan perubahan: tujuan rollout ini bergeser dari sekadar
+> "kurangi duplikasi" menjadi **persiapan migrasi tema besar** (mis. ganti
+> palet warna `light_sakura` atau tambah tema baru). Untuk migrasi tema,
+> yang penting BUKAN reuse-nya, tapi **single source of truth** — supaya
+> ganti warna cukup edit `tokens.ts`, tidak perlu grep manual ke seluruh
+> `src/`. Konsekuensinya:
+> - **Literal 1x-pakai TETAP dipindah ke `tokens.ts`** sebagai token
+>   spesifik-komponen (bukan token generik reusable) -- pola yang sudah
+>   dipakai untuk `badge.*`/`buttonVariant.*` di sesi 47 (titik reuse-nya
+>   ada di prop komponen, bukan di file lain), sekarang diperluas ke SEMUA
+>   sisa literal, termasuk yang genuinely unique.
+> - **Poin 3 di "Cara migrasi 1 file" (jangan paksa token yang mirip tapi
+>   beda shade) TETAP BERLAKU TANPA PERUBAHAN** -- ini bukan soal reuse,
+>   ini soal jangan diam-diam mengubah tampilan. Kombinasi yang mirip tapi
+>   beda 1 shade dapat token BARU yang terpisah, bukan dipaksa pakai token
+>   yang sudah ada.
+> - **Target "selesai" berubah**: sebelumnya "selesai" berarti semua
+>   exact-match ≥2 file sudah ditoken-kan (sisa 1x-pakai boleh tetap
+>   literal selamanya). Sekarang "selesai" berarti `grep -c
+>   "light_sakura:" src` di SELURUH project = **0** — itu jadi syarat
+>   "siap migrasi tema", bukan lagi target opsional.
+> - Penamaan token untuk kasus 1x-pakai: pakai pola `<namaFile
+>   camelCase>.<deskripsiSingkat>` (mis. `dashboardRecentTransactions.iconChipSparkles`)
+>   supaya jelas asalnya, alih-alih dipaksa masuk ke grup token semantik
+>   generik (`chip.*`, `text.*`, dst) yang sebenarnya untuk pola reusable.
+>
+> Aturan lama di bawah ini dipertahankan sebagai catatan historis (masih
+> relevan untuk grup token *semantik/generik* yang sudah ada -- lihat
+> poin terakhir di atas soal penamaan).
+
 Tambahkan ke `tokens.ts` HANYA kalau kombinasi tsb muncul di ≥2 file
 berbeda. Kombinasi yang cuma dipakai 1 kali di 1 komponen spesifik lebih
 baik tetap literal di tempatnya — memaksakannya jadi token generik cuma
 menambah lapisan tak berguna dan bikin token map makin gemuk tanpa manfaat
 reuse yang nyata.
+
+*(⚠️ lihat kotak peringatan di atas — paragraf ini sudah tidak jadi acuan
+utama sejak sesi 52, dipertahankan untuk konteks historis kenapa beberapa
+token grup di file ini dinamai per-grup semantik alih-alih per-file.)*
 
 ## Tidak termasuk cakupan refactor ini
 

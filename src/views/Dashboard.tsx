@@ -275,7 +275,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          className="p-5 bg-gradient-to-r from-emerald-500/10 to-indigo-500/10 border border-emerald-500/20 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl shadow-emerald-900/5 light_sakura:from-rose-500/10 light_sakura:to-indigo-500/10 light_sakura:border-rose-300/30"
+          className={cx("p-5 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4", tokens.dashboard.goalCompleteBanner)}
         >
           <div className="flex items-start gap-3.5">
             <div className={cx("w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5", tokens.chip.accentEmerald)}>
@@ -297,7 +297,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 setShowOnboardingBanner(false);
                 localStorage.setItem("ewallet_onboarding_completed", "true");
               }}
-              className={cx("px-3.5 py-1.5 text-xs font-semibold hover:text-slate-300 hover:bg-slate-800/50 rounded-xl transition-colors light_sakura:hover:text-slate-700 light_sakura:hover:bg-rose-50", tokens.text.muted)}
+              className={cx("px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-colors", tokens.dashboard.seeAllBtnHover, tokens.text.muted)}
             >
               {t("onboarding.dashboard_banner_btn_dismiss")}
             </button>
@@ -372,7 +372,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           }}
           whileHover={{ scale: 1.05, y: -2 }}
           whileTap={{ scale: 0.95 }}
-          className="cursor-pointer bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white font-sans font-bold py-3.5 px-6 rounded-2xl shadow-xl flex items-center gap-2 border border-indigo-500/30 transition-all cursor-pointer light_sakura:from-rose-500 light_sakura:to-rose-600 light_sakura:hover:from-rose-600 light_sakura:hover:to-rose-700 light_sakura:border-rose-300"
+          className={cx("cursor-pointer text-white font-sans font-bold py-3.5 px-6 rounded-2xl shadow-xl flex items-center gap-2 transition-all cursor-pointer", tokens.dashboard.ctaButtonGradient)}
         >
           <Plus size={18} />
           <span>{t("dashboard.quick_add_fab")}</span>

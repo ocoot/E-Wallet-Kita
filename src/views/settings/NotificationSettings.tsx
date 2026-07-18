@@ -15,6 +15,7 @@ export const NotificationSettings: React.FC = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { showToast } = useToast();
+  const { tokens, cx } = useThemeTokens();
   const { isPremium } = usePremium();
   const isGuest = user?.is_anonymous ?? false;
   const isTelegramLocked = isGuest || !isPremium;
@@ -59,7 +60,7 @@ export const NotificationSettings: React.FC = () => {
               <span className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-wider">
                 {t("settings.notif_group_push")}
               </span>
-              <div className="rounded-xl bg-slate-950 border border-slate-800 px-3.5 divide-y divide-slate-800/60 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 light_sakura:divide-rose-200/40">
+              <div className={cx("rounded-xl px-3.5 divide-y", tokens.settings.innerCardBgBorder, tokens.settings.divideSubtle)}>
                 <ToggleSwitch
                   label={t("settings.notif_push_transaction")}
                   description={t("settings.notif_push_transaction_desc")}
@@ -89,12 +90,12 @@ export const NotificationSettings: React.FC = () => {
                 {t("settings.notif_group_telegram")}
               </span>
               {isTelegramLocked || !isTelegramLinked ? (
-                <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-slate-500 text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed flex items-center gap-2 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50">
+                <div className={cx("p-3 rounded-xl text-slate-500 text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed flex items-center gap-2", tokens.settings.innerCardBgBorder)}>
                   <BellOff size={13} className="shrink-0" />
                   <span>{t("settings.notif_telegram_locked")}</span>
                 </div>
               ) : (
-                <div className="rounded-xl bg-slate-950 border border-slate-800 px-3.5 divide-y divide-slate-800/60 light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 light_sakura:divide-rose-200/40">
+                <div className={cx("rounded-xl px-3.5 divide-y", tokens.settings.innerCardBgBorder, tokens.settings.divideSubtle)}>
                   <ToggleSwitch
                     label={t("settings.notif_telegram_budget_alert")}
                     description={t("settings.notif_telegram_budget_alert_desc")}
