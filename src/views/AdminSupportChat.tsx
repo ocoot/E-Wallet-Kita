@@ -162,7 +162,7 @@ export const AdminSupportChat: React.FC = () => {
     const loadMessages = async () => {
       const { data, error } = await supabase
         .from("support_messages")
-        .select("id, sender, content, created_at")
+        .select("id, sender, content, created_at, image_url")
         .eq("session_id", selectedId)
         .order("created_at", { ascending: true });
       if (!error && data && isMounted) {

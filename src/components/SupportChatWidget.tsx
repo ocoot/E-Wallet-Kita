@@ -207,7 +207,7 @@ export const SupportChatWidget: React.FC = () => {
     const loadMessages = async () => {
       const { data, error } = await supabase
         .from("support_messages")
-        .select("id, sender, content, created_at")
+        .select("id, sender, content, created_at, image_url")
         .eq("session_id", session.id)
         .order("created_at", { ascending: true });
       if (!error && data && isMounted) {
@@ -444,12 +444,13 @@ export const SupportChatWidget: React.FC = () => {
       {/* Panel */}
       <AnimatePresence>
         {isOpen && (
+          <div className="fixed inset-0 z-40 pointer-events-none sm:flex sm:items-center sm:justify-center">
           <motion.div
             initial={{ opacity: 0, y: 16, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className={cx("fixed z-40 top-20 bottom-32 left-4 right-4 sm:top-auto sm:bottom-56 sm:left-auto sm:right-6 sm:w-96 sm:max-h-[70vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden", tokens.surface.card, tokens.border.accent)}
+            className={cx("pointer-events-auto fixed sm:static top-20 bottom-32 left-4 right-4 sm:w-96 sm:max-h-[80vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden", tokens.surface.card, tokens.border.accent)}
           >
             {/* Header */}
             <div className={cx("px-4 py-3.5 border-b flex items-center gap-3 shrink-0", tokens.border.accent)}>
@@ -1019,6 +1020,7 @@ export const SupportChatWidget: React.FC = () => {
               </div>
             )}
           </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
