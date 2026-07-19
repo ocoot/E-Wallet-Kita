@@ -41,7 +41,7 @@ const getStatusConfig = (tokens: any) => ({
   safe: {
     barFrom: "#6366f1",
     barTo: "#818cf8",
-    glow: "rgba(99,102,241,0.35)",
+    glow: "rgba(63, 190, 155,0.35)",
     icon: <CheckCircle2 size={12} />,
     badgeBg: tokens.budgetProgressCard.badgeBgSafe,
     badgeText: tokens.budgetProgressCard.badgeTextSafe,

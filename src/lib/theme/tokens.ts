@@ -283,15 +283,15 @@ export const themeTokens = {
   },
 
   login: {
-    arc1: "stroke-[rgba(99,102,241,0.18)] light_sakura:stroke-[rgba(251,113,133,0.18)]",
-    arc2: "stroke-[rgba(99,102,241,0.12)] light_sakura:stroke-[rgba(251,113,133,0.12)]",
-    arc3: "stroke-[rgba(45,212,191,0.14)] light_sakura:stroke-[rgba(244,63,94,0.10)]",
-    arc4: "stroke-[rgba(45,212,191,0.10)] light_sakura:stroke-[rgba(244,63,94,0.07)]",
+    arc1: "stroke-[rgba(63, 190, 155,0.18)] light_sakura:stroke-[rgba(76, 169, 138,0.18)]",
+    arc2: "stroke-[rgba(63, 190, 155,0.12)] light_sakura:stroke-[rgba(76, 169, 138,0.12)]",
+    arc3: "stroke-[rgba(94, 212, 180,0.14)] light_sakura:stroke-[rgba(30, 122, 99,0.10)]",
+    arc4: "stroke-[rgba(94, 212, 180,0.10)] light_sakura:stroke-[rgba(30, 122, 99,0.07)]",
     line: "stroke-[rgba(255,255,255,0.04)] light_sakura:stroke-[rgba(0,0,0,0.04)]",
     glow: "bg-indigo-500/10 light_sakura:bg-rose-300/20",
     ring1: "border-white/8 light_sakura:border-rose-200/20",
     ring2: "border-white/5 light_sakura:border-rose-200/15",
-    logoGlow: "drop-shadow-[0_0_32px_rgba(99,102,241,0.5)] light_sakura:drop-shadow-[0_0_32px_rgba(244,63,94,0.35)]",
+    logoGlow: "drop-shadow-[0_0_32px_rgba(63, 190, 155,0.5)] light_sakura:drop-shadow-[0_0_32px_rgba(30, 122, 99,0.35)]",
     statChip: "bg-white/10 border-white/15 light_sakura:bg-rose-900/10 light_sakura:border-rose-200/30",
     statChipVal: "text-indigo-300 light_sakura:text-rose-400",
     statChipLbl: "text-white/60 light_sakura:text-rose-900/60",
@@ -299,21 +299,21 @@ export const themeTokens = {
     tabBg: "bg-white/10 border-white/15 light_sakura:bg-rose-900/10 light_sakura:border-rose-200/30",
     tabBtnActive: "bg-white text-indigo-700 shadow-sm light_sakura:bg-white light_sakura:text-rose-600",
     tabBtnInactive: "text-white/70 hover:text-white light_sakura:text-rose-50/90",
-    inputFieldFocus: "focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(99,102,241,0.15)] light_sakura:focus:border-rose-400 light_sakura:focus:shadow-[0_0_0_3px_rgba(244,63,94,0.12)]",
+    inputFieldFocus: "focus:border-indigo-500 focus:shadow-[0_0_0_3px_rgba(63, 190, 155,0.15)] light_sakura:focus:border-rose-400 light_sakura:focus:shadow-[0_0_0_3px_rgba(30, 122, 99,0.12)]",
     inputFieldBgBorder: "bg-slate-800/60 border-slate-700/60 placeholder:text-slate-500 light_sakura:bg-slate-100/80 light_sakura:border-rose-200 light_sakura:placeholder:text-slate-400 light_sakura:focus:bg-white",
     disclaimerBgBorder: "bg-amber-500/5 border border-amber-500/15 light_sakura:bg-rose-50 light_sakura:border-rose-200/60",
     disclaimerIcon: "text-amber-400 light_sakura:text-rose-400",
     googleBtn: "border border-slate-700/80 bg-slate-800/40 hover:bg-slate-800 text-slate-200 light_sakura:border-rose-200 light_sakura:bg-rose-50/50 light_sakura:text-slate-700 light_sakura:hover:bg-rose-100/60",
     guestBtn: "border border-dashed border-indigo-500/30 bg-indigo-500/5 hover:bg-indigo-500/10 text-indigo-400 light_sakura:border-rose-300/60 light_sakura:bg-rose-50/40 light_sakura:text-rose-600 light_sakura:hover:bg-rose-100/50",
     iconBg: "bg-indigo-600/10 light_sakura:bg-rose-100",
-    ctaBtn: "bg-indigo-600 hover:bg-indigo-500 shadow-[0_4px_24px_rgba(99,102,241,0.30)] light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-[0_4px_24px_rgba(244,63,94,0.25)]",
+    ctaBtn: "bg-indigo-600 hover:bg-indigo-500 shadow-[0_4px_24px_rgba(63, 190, 155,0.30)] light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-[0_4px_24px_rgba(30, 122, 99,0.25)]",
     eyeBtn: "text-slate-500 hover:text-slate-300 light_sakura:hover:text-slate-700",
     formDivider: "bg-slate-800 light_sakura:bg-rose-100",
     footerLink: "hover:text-emerald-500 light_sakura:hover:text-rose-500",
     spinnerRing1: "border-indigo-600/20 light_sakura:border-rose-400/20",
     spinnerRing2: "border-t-indigo-500 light_sakura:border-t-rose-500",
     ambientGlow1: "bg-indigo-600/8 blur-[100px] light_sakura:bg-rose-300/20",
-    ambientGlow2: "bg-indigo-600/8 blur-[80px] light_sakura:bg-pink-300/15",
+    ambientGlow2: "bg-indigo-600/8 blur-[80px] light_sakura:bg-rose-300/15",
     cardShadow: "shadow-[0_32px_80px_rgba(0,0,0,0.55)] light_sakura:shadow-[0_32px_80px_rgba(200,50,80,0.12)]",
     divider: "bg-white/10 light_sakura:bg-rose-200/30",
   },
@@ -515,7 +515,7 @@ export const themeTokens = {
     btnConfirm: "light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400",
   },
   mobileBottomNav: {
-    navContainer: "bg-slate-950/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 shadow-[0_12px_32px_rgba(0,0,0,0.45)] rounded-full light_sakura:bg-white/85 light_sakura:backdrop-saturate-100 light_sakura:border-white/60 light_sakura:shadow-[0_12px_32px_rgba(244,63,94,0.18)]",
+    navContainer: "bg-slate-950/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 shadow-[0_12px_32px_rgba(0,0,0,0.45)] rounded-full light_sakura:bg-white/85 light_sakura:backdrop-saturate-100 light_sakura:border-white/60 light_sakura:shadow-[0_12px_32px_rgba(30, 122, 99,0.18)]",
     sheetContainer: "bg-slate-900/70 backdrop-blur-2xl backdrop-saturate-150 border-t border-white/10 shadow-[0_-8px_40px_rgba(0,0,0,0.4)] light_sakura:bg-rose-50/85 light_sakura:backdrop-saturate-100 light_sakura:border-white/70",
     sheetGrip: "bg-slate-700 light_sakura:bg-rose-200",
     closeBtn: "hover:bg-white/10 light_sakura:hover:bg-slate-200",
@@ -578,8 +578,8 @@ export const themeTokens = {
     ringHighlight: "ring-indigo-500/40 light_sakura:ring-rose-300/60",
     /** Ring fokus input pesan -- dipakai 2x. */
     inputFocusRing: "focus:ring-indigo-500 light_sakura:focus:ring-rose-400",
-    /** Timestamp warna lebih jelas (#7A8294) -- dipakai di semua pesan admin. */
-    timestamp: "text-[#7A8294] text-[11px]",
+    /** Timestamp warna lebih jelas (#6B8378) -- dipakai di semua pesan admin. */
+    timestamp: "text-[#6B8378] text-[11px]",
     /** Warna checkmark read indicator. */
     checkmarkSent: "text-slate-500",
     checkmarkRead: "text-indigo-400 light_sakura:text-rose-500",
@@ -607,7 +607,7 @@ export const themeTokens = {
      * Sesi 54 (kebijakan tokenisasi penuh): sisa kombinasi 1x-pakai di
      * `Sidebar.tsx` (dicek cross-file, tidak ada exact match).
      */
-    outerShadow: "shadow-[8px_0_32px_rgba(0,0,0,0.35)] light_sakura:shadow-[8px_0_32px_rgba(244,63,94,0.08)]",
+    outerShadow: "shadow-[8px_0_32px_rgba(0,0,0,0.35)] light_sakura:shadow-[8px_0_32px_rgba(30, 122, 99,0.08)]",
     collapseBtnHover: "p-1 rounded-lg hover:bg-white/5 light_sakura:hover:bg-slate-200 cursor-pointer hidden md:block hover:text-white light_sakura:hover:text-slate-800 transition-all duration-205",
     expandBtnBg: "bg-slate-950 border-slate-800 hover:text-white light_sakura:bg-slate-100 light_sakura:border-slate-200",
   },

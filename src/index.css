@@ -22,6 +22,74 @@
   --text-2xl: clamp(1.35rem, 6.24vw, 1.5rem);
   --text-3xl: clamp(1.6875rem, 7.8vw, 1.875rem);
   --text-4xl: clamp(2.025rem, 9.36vw, 2.25rem);
+
+  /*
+   * ── Tema "Porselen & Giok" (Konsep 04) ──────────────────────────────
+   * Reskin dilakukan dengan mengganti nilai variable warna Tailwind itu
+   * sendiri (slate/indigo/rose/emerald/red), BUKAN dengan mengganti
+   * className di tiap komponen. Karena hampir seluruh app sudah dibangun
+   * di atas 4 skala warna ini (termasuk `tokens.ts` yang sudah tertokenisasi
+   * penuh), override di satu tempat ini otomatis merambat ke seluruh app:
+   * dashboard, modal, form, badge, dst -- tanpa risiko salah edit satu
+   * per satu file.
+   *
+   *   slate   -> neutral giok/porselen (bg, border, teks netral)
+   *   indigo  -> aksen giok terang (dipakai tema gelap "Giok Malam")
+   *   rose    -> aksen giok tua (dipakai tema terang "Porselen")
+   *   emerald -> warna sukses/CTA, disatukan ke keluarga giok yang sama
+   *   red     -> danger, disesuaikan ke nuansa merah-giok yang lebih adem
+   */
+  --color-slate-50:  #F5FAF8;
+  --color-slate-100: #E7F1EC;
+  --color-slate-200: #DCEAE4;
+  --color-slate-300: #C7DED5;
+  --color-slate-400: #5F7A6E;
+  --color-slate-500: #7C8F85;
+  --color-slate-600: #47594F;
+  --color-slate-700: #223A30;
+  --color-slate-800: #16281F;
+  --color-slate-900: #10201B;
+  --color-slate-950: #0A1512;
+
+  --color-indigo-50:  #EAFBF5;
+  --color-indigo-100: #D2F5E7;
+  --color-indigo-200: #A6ECD0;
+  --color-indigo-300: #78DFB8;
+  --color-indigo-400: #5ED4B4;
+  --color-indigo-500: #3FBE9B;
+  --color-indigo-600: #2E9A7D;
+  --color-indigo-700: #227A63;
+  --color-indigo-800: #1B5F4E;
+  --color-indigo-900: #163F35;
+  --color-indigo-950: #0D2820;
+
+  --color-rose-50:  #EAF6F1;
+  --color-rose-100: #D3ECE3;
+  --color-rose-200: #A9D9C8;
+  --color-rose-300: #7CC5AC;
+  --color-rose-400: #4CA98A;
+  --color-rose-500: #1E7A63;
+  --color-rose-600: #16604F;
+  --color-rose-700: #114B3D;
+  --color-rose-800: #0D3A2F;
+  --color-rose-900: #092A22;
+  --color-rose-950: #051A15;
+
+  --color-emerald-50:  #EAF6F1;
+  --color-emerald-100: #D3ECE3;
+  --color-emerald-200: #A9D9C8;
+  --color-emerald-300: #7CC5AC;
+  --color-emerald-400: #5ED4B4;
+  --color-emerald-500: #22916F;
+  --color-emerald-600: #1E7A63;
+  --color-emerald-700: #16604F;
+  --color-emerald-800: #114B3D;
+  --color-emerald-900: #0D3A2F;
+  --color-emerald-950: #051A15;
+
+  --color-red-400: #E08579;
+  --color-red-500: #C85F52;
+  --color-red-600: #B8473E;
 }
 
 @variant light_sakura (.light_sakura &);
@@ -49,7 +117,7 @@
 /* Base custom resets */
 html, body {
   font-family: var(--font-sans);
-  background-color: #020617; /* Slate-950 by default */
+  background-color: #0A1512; /* Giok Malam (dark) — Konsep 04 */
   min-height: 100vh;
   margin: 0;
   padding: 0;
@@ -85,16 +153,16 @@ html, body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.3);
+  background: rgba(10, 21, 18, 0.3);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.2);
+  background: rgba(63, 190, 155, 0.25);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.4);
+  background: rgba(63, 190, 155, 0.45);
 }
 
 /* Color theme modifications override classes */
@@ -103,15 +171,15 @@ html, body {
 }
 
 .light_sakura {
-  background-color: #fff5f6 !important;
+  background-color: #F5FAF8 !important;
 }
 
 .light_sakura ::-webkit-scrollbar-track {
-  background: rgba(254, 244, 245, 0.5);
+  background: rgba(231, 241, 236, 0.6);
 }
 
 .light_sakura ::-webkit-scrollbar-thumb {
-  background: #fca5a5;
+  background: #7CC5AC;
 }
 
 /* Running text (marquee) animation used by the maintenance mode banner */
@@ -496,19 +564,19 @@ html { scroll-behavior: smooth; }
   background: transparent;
 }
 .chat-scrollarea::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.15);
+  background: rgba(63, 190, 155, 0.15);
   border-radius: 4px;
 }
 .chat-scrollarea {
   scrollbar-width: thin;
-  scrollbar-color: rgba(99, 102, 241, 0.15) transparent;
+  scrollbar-color: rgba(63, 190, 155, 0.15) transparent;
 }
 
 .light_sakura .chat-scrollarea::-webkit-scrollbar-thumb {
-  background: rgba(244, 63, 94, 0.2);
+  background: rgba(30, 122, 99, 0.2);
 }
 .light_sakura .chat-scrollarea {
-  scrollbar-color: rgba(244, 63, 94, 0.2) transparent;
+  scrollbar-color: rgba(30, 122, 99, 0.2) transparent;
 }
 
 /* Typing indicator bouncing dots */

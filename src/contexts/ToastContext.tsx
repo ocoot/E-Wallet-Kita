@@ -78,7 +78,7 @@ const TOAST_CONFIG: Record<
     iconColor: themeTokens.toast.infoIconColor,
     accentBar: "bg-indigo-500",
     progressBar: "bg-indigo-500/60",
-    glow: "shadow-[0_8px_28px_-6px_rgba(99,102,241,0.3)]",
+    glow: "shadow-[0_8px_28px_-6px_rgba(63, 190, 155,0.3)]",
   },
 };
 

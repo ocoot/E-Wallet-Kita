@@ -531,13 +531,13 @@ export const SupportChatWidget: React.FC = () => {
             {/* Operating hours & SLA info bar */}
             {tab === "admin" && (
               <div className={cx("px-4 py-2 border-b flex items-center gap-3 shrink-0", tokens.border.accent, tokens.surface.subtle)}>
-                <div className="flex items-center gap-1.5 text-[10px] font-medium" style={{ color: "#7A8294" }}>
-                  <Clock size={11} className="shrink-0" style={{ color: "#7A8294" }} />
+                <div className="flex items-center gap-1.5 text-[10px] font-medium" style={{ color: "#6B8378" }}>
+                  <Clock size={11} className="shrink-0" style={{ color: "#6B8378" }} />
                   <span>{t("support.admin_chat.operating_hours")}:</span>
                   <span className="font-semibold text-emerald-400">{t("support.admin_chat.operating_hours_value")}</span>
                 </div>
-                <span className="shrink-0" style={{ color: "#7A8294" }}>·</span>
-                <div className="flex items-center gap-1 text-[10px] font-medium" style={{ color: "#7A8294" }}>
+                <span className="shrink-0" style={{ color: "#6B8378" }}>·</span>
+                <div className="flex items-center gap-1 text-[10px] font-medium" style={{ color: "#6B8378" }}>
                   <span>{t("support.admin_chat.sla_response")}</span>
                   <span className="font-semibold text-emerald-400">{t("support.admin_chat.sla_response_value")}</span>
                 </div>
@@ -768,7 +768,7 @@ export const SupportChatWidget: React.FC = () => {
                                 {showDateSep && (
                                   <div className="flex items-center gap-3 py-2">
                                     <div className="flex-1 h-px bg-slate-700/50 light_sakura:bg-rose-200/50" />
-                                    <span className="text-[11px] font-semibold shrink-0" style={{ color: "#7A8294" }}>
+                                    <span className="text-[11px] font-semibold shrink-0" style={{ color: "#6B8378" }}>
                                       {formatDateSeparator(msg.created_at, t)}
                                     </span>
                                     <div className="flex-1 h-px bg-slate-700/50 light_sakura:bg-rose-200/50" />
@@ -833,7 +833,7 @@ export const SupportChatWidget: React.FC = () => {
                               </div>
                               <div className={cx("px-3 py-2.5 rounded-[18px] rounded-tl-[4px]", tokens.supportWidget.chatBubbleAdmin)}>
                                 <div className="flex items-center gap-2">
-                                  <span className="text-[11px] font-medium" style={{ color: "#7A8294" }}>
+                                  <span className="text-[11px] font-medium" style={{ color: "#6B8378" }}>
                                     {t("support.admin_chat.admin_typing")}
                                   </span>
                                   <div className="flex items-center gap-1">
