@@ -100,14 +100,19 @@ export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
 
   return (
     <div className="md:hidden space-y-5">
-      {/* Page title */}
-      <div className="px-1">
-        <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
-          {t("nav.settings")}
-        </h1>
-        <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.muted)}>
-          {t("settings.desc")}
-        </p>
+      {/* Page title -- disamakan dengan pola kartu hero di AdminPanel.tsx
+          (rounded-3xl + bar gradient tipis di atas + judul/deskripsi di
+          dalam kartu putih/slate), supaya konsisten dengan halaman lain. */}
+      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.settings.cardBorder)}>
+        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
+        <div className="p-6 space-y-1">
+          <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+            {t("nav.settings")}
+          </h1>
+          <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.muted)}>
+            {t("settings.desc")}
+          </p>
+        </div>
       </div>
 
       {/* Profile summary card */}

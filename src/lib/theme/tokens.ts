@@ -237,7 +237,7 @@ export const themeTokens = {
     primary: "bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-500/20",
     secondary: "bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold border border-slate-700 light_sakura:bg-white light_sakura:hover:bg-slate-50 light_sakura:text-slate-600 light_sakura:border-slate-200",
     dangerGhost: "bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold light_sakura:bg-red-50 light_sakura:hover:bg-red-100 light_sakura:text-red-500",
-    ghost: "bg-transparent hover:bg-slate-800 text-slate-300 font-semibold light_sakura:hover:bg-rose-50 light_sakura:text-slate-600",
+    ghost: "bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold border border-slate-700 light_sakura:bg-white light_sakura:hover:bg-slate-50 light_sakura:text-slate-700 light_sakura:border-slate-200",
   },
 
   toggle: {
@@ -729,8 +729,8 @@ export const themeTokens = {
      * `variant`) -- BEDA dari `panel` di atas (yang khusus modal custom
      * non-komponen). Genuinely 1x-pakai per varian (dicek cross-file).
      */
-    panelDanger: "border-red-500/30 dark_obsidian:bg-slate-900 light_sakura:border-red-200",
-    panelNormal: "border-indigo-500/20 dark_obsidian:bg-slate-900 light_sakura:bg-rose-50/90 light_sakura:border-rose-100",
+    panelDanger: "border-red-500/30 bg-slate-900 light_sakura:border-red-200",
+    panelNormal: "border-indigo-500/20 bg-slate-900 light_sakura:bg-rose-50/90 light_sakura:border-rose-100",
     /**
      * Sesi 54: border merah tipis untuk modal konfirmasi hapus. Exact
      * match di 2 file: `DeleteAccountModal.tsx` & `HistoryDeleteModal.tsx`
@@ -833,7 +833,7 @@ export const themeTokens = {
    * sebelumnya dipecah lewat `cx(...)` multi-arg menjadi 1 token string.
    */
   dashboardOverviewCard: {
-    heroCardGradient: "border-indigo-500/20 bg-gradient-to-br from-indigo-500/10 via-slate-900 to-slate-900 shadow-indigo-900/10 light_sakura:from-rose-100/60 light_sakura:via-white light_sakura:to-white light_sakura:border-rose-200/50",
+    heroCardGradient: "border-indigo-500/20 bg-slate-900 shadow-indigo-900/10 light_sakura:bg-white light_sakura:border-rose-200/50",
     labelHoverText: "group-hover:text-slate-300 light_sakura:group-hover:text-slate-700",
     statChipEmerald: "border border-emerald-500/15 bg-emerald-500/5 light_sakura:bg-emerald-50/40 light_sakura:border-emerald-100",
     statChipAmber: "border border-amber-500/15 bg-amber-500/5 light_sakura:bg-amber-50/40 light_sakura:border-amber-100",

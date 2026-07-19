@@ -45,11 +45,7 @@ export const SplashScreen: React.FC = () => {
           />
           {!shouldReduceMotion && (
             <div
-              className={cx(
-                "absolute inset-0 rounded-full border-2 border-transparent animate-spin",
-                tokens.text.accent.replace(/text-/g, "border-t-"),
-                tokens.text.accent.replace(/text-/g, "border-r-").replace(/indigo-400/g, "indigo-400/30").replace(/rose-500/g, "rose-500/30")
-              )}
+              className="absolute inset-0 rounded-full border-2 border-transparent animate-spin border-t-indigo-400 light_sakura:border-t-rose-500 border-r-indigo-400/30 light_sakura:border-r-rose-500/30"
               style={{ animationDuration: "1.4s" }}
             />
           )}
