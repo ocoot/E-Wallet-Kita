@@ -59,7 +59,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     // sini (bukan bug yang dibenerin diam-diam lewat refactor ini).
     const borderClasses: Record<CardBorder, string> = {
       default: tokens.border.accent,
-      subtle: "border-slate-900 light_sakura:border-rose-100",
+      subtle: tokens.card.borderSubtle,
     };
 
     return (

@@ -64,8 +64,8 @@ export const Modal: React.FC<ModalProps> = ({
             className={cx(
               "relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl outline-none transition-colors duration-300",
               type === "danger"
-                ? cx("border-red-500/30 dark_obsidian:bg-slate-900 light_sakura:border-red-200", tokens.surface.card, tokens.text.onSurface)
-                : cx("border-indigo-500/20 dark_obsidian:bg-slate-900 light_sakura:bg-rose-50/90 light_sakura:border-rose-100", tokens.text.onSurface)
+                ? cx(tokens.modal.panelDanger, tokens.surface.card, tokens.text.onSurface)
+                : cx(tokens.modal.panelNormal, tokens.text.onSurface)
             )}
           >
             {/* Type Icon indicator row */}

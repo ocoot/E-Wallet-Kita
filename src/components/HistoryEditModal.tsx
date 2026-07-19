@@ -79,11 +79,11 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
           role="dialog"
           aria-modal="true"
           tabIndex={-1}
-          className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl outline-none light_sakura:bg-rose-50/90 light_sakura:border-rose-100", tokens.text.onSurface)}
+          className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl p-6 shadow-2xl outline-none", tokens.modal.panel)}
         >
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={cx("rounded-full p-2.5 bg-indigo-500/15 light_sakura:bg-indigo-50", tokens.text.accentStrong)}>
+              <div className={cx("rounded-full p-2.5", tokens.budgetProgressCard.badgeBgSafe, tokens.text.accentStrong)}>
                 <Pencil size={20} />
               </div>
               <h3 className="font-sans text-lg font-semibold tracking-tight">

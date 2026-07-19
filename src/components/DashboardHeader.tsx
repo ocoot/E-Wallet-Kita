@@ -179,7 +179,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
         >
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <div className={cx("flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium shrink-0 whitespace-nowrap light_sakura:bg-rose-50 light_sakura:border-rose-100/50 transition-colors duration-300", tokens.text.accent)}>
+            <div className={cx(tokens.dashboardHeader.weatherBadge, tokens.text.accent)}>
               <Calendar size={12} className="shrink-0" />
               <span>{formattedDate}</span>
             </div>
@@ -191,7 +191,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             )}
 
             {effectiveWeather && weatherTheme && (
-              <div className={cx("flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium shrink-0 whitespace-nowrap light_sakura:bg-rose-50 light_sakura:border-rose-100/50 transition-colors duration-300", tokens.text.accent)}>
+              <div className={cx(tokens.dashboardHeader.weatherBadge, tokens.text.accent)}>
                 <weatherTheme.icon size={12} className={`shrink-0 ${weatherTheme.accentClass}`} />
                 <span>{locale === "id" ? weatherTheme.labelId : weatherTheme.labelEn}</span>
                 {!debugOverride && weather && (

@@ -374,10 +374,10 @@ export const SupportChatWidget: React.FC = () => {
             <div className={cx("px-4 py-3.5 border-b flex items-center gap-3", tokens.border.accent)}>
               <div className={cx(
                 "relative w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-lg",
-                cx("shadow-indigo-600/20 light_sakura:shadow-rose-500/20", tokens.supportWidget.gradientAvatar)
+                cx(tokens.savings.btnShadow, tokens.supportWidget.gradientAvatar)
               )}>
                 <Bot size={18} className="text-white" />
-                <span className={cx("absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2", "border-slate-900 light_sakura:border-white")} />
+                <span className={cx("absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2", tokens.telegramCard.linkedAvatarRing)} />
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>
@@ -403,7 +403,7 @@ export const SupportChatWidget: React.FC = () => {
                   "shrink-0 p-1.5 -m-1.5 rounded-lg cursor-pointer transition-colors",
                   tokens.text.muted,
                   tokens.hover.surface,
-                  "hover:text-white light_sakura:hover:text-slate-900"
+                  tokens.hover.textInverse
                 )}
               >
                 <X size={18} />
@@ -483,7 +483,7 @@ export const SupportChatWidget: React.FC = () => {
                               tokens.border.strong,
                               tokens.text.secondary,
                               tokens.hover.surface,
-                              "hover:border-indigo-500/40 light_sakura:border-rose-200"
+                              tokens.supportWidget.categoryHoverBorder
                             )}
                           >
                             <Icon size={13} className={cx("shrink-0", tokens.icon.accent)} />
@@ -494,7 +494,7 @@ export const SupportChatWidget: React.FC = () => {
                     </div>
                     {/* Fade di tepi kanan -- sinyal visual bahwa masih ada chip lain untuk di-scroll */}
                     {chipCanScroll && (
-                    <div className="pointer-events-none absolute right-0 top-0 bottom-1 w-8 bg-gradient-to-l from-slate-900 light_sakura:from-white to-transparent" />
+                    <div className={tokens.supportWidget.scrollFadeGradient} />
                     )}
                   </div>
 
@@ -507,7 +507,7 @@ export const SupportChatWidget: React.FC = () => {
                             key={i}
                             className={cx(
                               "h-1 rounded-full transition-all duration-200",
-                              active ? "w-3.5 bg-emerald-500" : "w-1 bg-slate-700 light_sakura:bg-rose-200"
+                              active ? "w-3.5 bg-emerald-500" : cx("w-1", tokens.mobileBottomNav.sheetGrip)
                             )}
                           />
                         );

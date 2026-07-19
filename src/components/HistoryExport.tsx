@@ -70,8 +70,8 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
             className={cx(
               "cursor-pointer px-4.5 py-3 border text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors",
               isExportLocked
-                ? "border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/15 text-amber-400 light_sakura:text-rose-600 light_sakura:border-rose-300/30 light_sakura:bg-rose-50/50"
-                : "border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 light_sakura:text-indigo-600"
+                ? tokens.historyExport.optionActive
+                : tokens.historyExport.optionInactive
             )}
           >
             {isExportLocked ? <Lock size={15} /> : <FileDown size={15} />}

@@ -118,7 +118,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           memakai navbar bawah -- lihat MobileBottomNav.tsx) */}
           <aside 
         className={cx(
-          "hidden md:flex flex-col h-screen fixed top-0 left-0 border-r transition-all duration-300 z-30 shadow-[8px_0_32px_rgba(0,0,0,0.35)] light_sakura:shadow-[8px_0_32px_rgba(244,63,94,0.08)]",
+          "hidden md:flex flex-col h-screen fixed top-0 left-0 border-r transition-all duration-300 z-30",
+          tokens.sidebar.outerShadow,
           tokens.sidebar.brandBg,
           tokens.text.onSurface,
           isCollapsed ? "w-20" : "w-64"
@@ -145,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {!isCollapsed && (
             <button
               onClick={() => onToggle(true)}
-              className={cx("p-1 rounded-lg hover:bg-white/5 light_sakura:hover:bg-slate-200 cursor-pointer hidden md:block hover:text-white light_sakura:hover:text-slate-800 transition-all duration-205", tokens.text.mutedAlt)}
+              className={cx(tokens.sidebar.collapseBtnHover, tokens.text.mutedAlt)}
             >
               <ChevronLeft size={16} />
             </button>
@@ -155,7 +156,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               onClick={() => onToggle(false)}
               className={cx(
                 "absolute -right-3 top-8 p-1.5 rounded-full border hover:scale-105 active:scale-95 transition-all duration-205 cursor-pointer",
-                "bg-slate-950 border-slate-800 hover:text-white light_sakura:bg-slate-100 light_sakura:border-slate-200",
+                tokens.sidebar.expandBtnBg,
                 tokens.text.mutedAlt
               )}
             >

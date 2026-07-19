@@ -218,7 +218,7 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
                 </button>
               </div>
 
-              <div className="rounded-2xl border px-4 py-3 mb-4 text-center bg-indigo-500/5 border-indigo-500/20 light_sakura:bg-rose-50/40 light_sakura:border-rose-200">
+              <div className={cx("rounded-2xl border px-4 py-3 mb-4 text-center", tokens.walletTransferModal.summaryCardBg)}>
                 <span className={cx("font-sans font-black text-2xl tabular-nums", tokens.text.accent)}>
                   {formatIDR(numericAmount)}
                 </span>

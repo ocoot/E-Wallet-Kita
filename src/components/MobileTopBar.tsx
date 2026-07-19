@@ -21,10 +21,7 @@ export const MobileTopBar: React.FC = () => {
 
   return (
     <header
-      className="md:hidden sticky top-0 z-40 flex items-center gap-2 px-4 py-3 backdrop-blur-md relative
-        bg-slate-950/90 text-white
-        dark_obsidian:bg-slate-950/90
-        light_sakura:bg-rose-500/90 light_sakura:text-white"
+      className={cx("md:hidden sticky top-0 z-40 flex items-center gap-2 px-4 py-3 backdrop-blur-md relative", tokens.mobileTopBar.headerBg)}
     >
       <div className="shrink-0">
         <img src={logoUrl} alt="EWK Icon" className="w-8 h-8 object-contain" />
@@ -38,9 +35,7 @@ export const MobileTopBar: React.FC = () => {
           punya "signature" brand yang konsisten dengan elemen lain,
           bukan sekadar garis abu-abu flat. */}
       <div
-        className="absolute bottom-0 left-0 right-0 h-px
-          bg-gradient-to-r from-transparent via-indigo-400/70 to-transparent
-          light_sakura:via-rose-200"
+        className={cx("absolute bottom-0 left-0 right-0 h-px", tokens.mobileTopBar.accentGradientLine)}
         aria-hidden="true"
       />
     </header>

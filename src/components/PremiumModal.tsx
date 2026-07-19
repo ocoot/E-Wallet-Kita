@@ -293,7 +293,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
                 <Clock size={14} />
                 <span>{t("premium.expires_in", { time: `${Math.floor(secondsLeft / 60)}:${String(secondsLeft % 60).padStart(2, "0")}` })}</span>
               </div>
-              <div className="flex items-center justify-center gap-2 mt-4 text-xs text-indigo-300 light_sakura:text-rose-500">
+              <div className={cx("flex items-center justify-center gap-2 mt-4 text-xs", tokens.premiumModal.footerNoteText)}>
                 <Loader2 size={13} className="animate-spin" />
                 <span>{t("premium.waiting_payment")}</span>
               </div>

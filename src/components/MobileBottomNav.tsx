@@ -368,7 +368,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     onClick={toggleLanguage}
                     className={cx(
                       "flex flex-col items-center justify-center py-2 rounded-xl border font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-semibold cursor-pointer transition-colors",
-                      "border-slate-800 hover:bg-slate-800 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50",
+                      tokens.mobileBottomNav.footerBtn,
                       tokens.text.secondary
                     )}
                   >
@@ -379,7 +379,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     onClick={toggleTheme}
                     className={cx(
                       "flex flex-col items-center justify-center py-2 rounded-xl border font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-semibold cursor-pointer transition-colors",
-                      "border-slate-800 hover:bg-slate-800 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50",
+                      tokens.mobileBottomNav.footerBtn,
                       tokens.text.secondary
                     )}
                   >
@@ -390,7 +390,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     onClick={toggleMute}
                     className={cx(
                       "flex flex-col items-center justify-center py-2 rounded-xl border font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-semibold cursor-pointer transition-colors",
-                      "border-slate-800 hover:bg-slate-800 light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50",
+                      tokens.mobileBottomNav.footerBtn,
                       tokens.text.secondary
                     )}
                     title="Mute / Unmute"

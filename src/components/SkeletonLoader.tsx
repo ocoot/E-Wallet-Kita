@@ -4,8 +4,8 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
 /* ── Base shimmer block ────────────────────────────────────────── */
 
 function Block({ className = "" }: { className?: string }) {
-  const { cx } = useThemeTokens();
-  return <div className={cx("animate-pulse bg-slate-800/60 light_sakura:bg-rose-200/60 rounded-lg", className)} />;
+  const { tokens, cx } = useThemeTokens();
+  return <div className={cx("animate-pulse rounded-lg", tokens.skeleton.pulseBg, className)} />;
 }
 
 /* ── Route-specific skeletons ──────────────────────────────────── */
@@ -30,7 +30,7 @@ export function DashboardSkeleton() {
         <Block className="w-32 h-4 mb-4" />
         <div className="flex items-end gap-3 h-40">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className={cx("flex-1 rounded-lg animate-pulse bg-slate-800/60 light_sakura:bg-rose-200/60")} style={{ height: `${30 + (i * 8)}%` }} />
+            <div key={i} className={cx("flex-1 rounded-lg animate-pulse", tokens.skeleton.pulseBg)} style={{ height: `${30 + (i * 8)}%` }} />
           ))}
         </div>
       </div>
@@ -76,7 +76,7 @@ export function HistorySkeleton() {
       {/* Pagination */}
       <div className="flex justify-center gap-2">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className={cx("w-10 h-10 rounded-lg animate-pulse bg-slate-800/60 light_sakura:bg-rose-200/60")} />
+          <div key={i} className={cx("w-10 h-10 rounded-lg animate-pulse", tokens.skeleton.pulseBg)} />
         ))}
       </div>
     </div>
@@ -157,7 +157,7 @@ export function AdminSkeleton() {
       {/* Tab bar */}
       <div className="flex gap-2">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className={cx("h-9 w-24 rounded-lg animate-pulse bg-slate-800/60 light_sakura:bg-rose-200/60")} />
+          <div key={i} className={cx("h-9 w-24 rounded-lg animate-pulse", tokens.skeleton.pulseBg)} />
         ))}
       </div>
       {/* Content */}

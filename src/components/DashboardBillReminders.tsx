@@ -61,7 +61,7 @@ export const DashboardBillReminders: React.FC = () => {
             "flex items-center gap-1 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold cursor-pointer hover:opacity-80 transition-colors",
             hasOverdue
               ? tokens.text.danger
-              : "text-orange-400 light_sakura:text-orange-600"
+              : tokens.text.warningOrange
           )}
         >
           {t("bill_reminders.dashboard_alert_cta")}

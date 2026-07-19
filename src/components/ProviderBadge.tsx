@@ -58,7 +58,8 @@ export const ProviderBadge: React.FC<ProviderBadgeProps> = ({ type, provider, si
   return (
     <span
       className={cx(
-        "inline-flex items-center justify-center rounded-xl shrink-0 bg-slate-700/60 light_sakura:bg-rose-100",
+        "inline-flex items-center justify-center rounded-xl shrink-0",
+        tokens.providerBadge.iconChipBg,
         tokens.text.accent,
         className
       )}

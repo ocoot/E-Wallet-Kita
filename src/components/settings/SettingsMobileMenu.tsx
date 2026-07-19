@@ -52,7 +52,7 @@ const MenuRow: React.FC<MenuRowDef> = ({ to, icon, label, desc, rightText, right
         tokens.hover.sunken
       )}
     >
-      <span className={cx("shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-slate-950/60 light_sakura:bg-rose-50", tokens.icon.accent)}>
+      <span className={cx("shrink-0 w-9 h-9 rounded-xl flex items-center justify-center", tokens.settingsMobileMenuExtra.iconChipBg, tokens.icon.accent)}>
         {icon}
       </span>
       <span className="min-w-0 flex-1">

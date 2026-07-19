@@ -28,8 +28,8 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ title, description, onRe
       role="alert"
       className="flex flex-col items-center justify-center p-10 text-center space-y-4"
     >
-      <div className="w-16 h-16 rounded-full flex items-center justify-center bg-red-500/10 light_sakura:bg-red-50">
-        <AlertTriangle size={28} className="text-red-400 light_sakura:text-red-500" />
+      <div className={cx("w-16 h-16 rounded-full flex items-center justify-center", tokens.errorState.iconCircleBg)}>
+        <AlertTriangle size={28} className={tokens.newTransaction.amountDisplayExpense} />
       </div>
       <h3 className={cx("font-sans font-bold text-sm", tokens.text.secondary)}>
         {title || t("common.error_generic_title")}
@@ -41,7 +41,7 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ title, description, onRe
         <button
           type="button"
           onClick={onRetry}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 light_sakura:bg-red-50 light_sakura:hover:bg-red-100 light_sakura:text-red-600 text-xs font-sans font-bold transition-colors cursor-pointer"
+          className={cx("flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-sans font-bold transition-colors cursor-pointer", tokens.errorState.retryBtn)}
         >
           <RotateCcw size={13} />
           {t("common.retry")}

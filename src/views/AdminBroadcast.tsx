@@ -183,7 +183,7 @@ export const AdminBroadcast: React.FC = () => {
                 className={`flex-1 flex flex-col items-center gap-1 px-4 py-3 rounded-2xl text-sm font-semibold transition-all cursor-pointer
                   ${channel === ch
                     ? "bg-indigo-600 text-white shadow-md"
-                    : cx("bg-slate-800 light_sakura:bg-slate-100 border hover:bg-slate-700 light_sakura:hover:bg-slate-200", tokens.text.label, tokens.border.strong)
+                    : cx(tokens.button.cancelSlate, "border", tokens.text.label, tokens.border.strong)
                   }`}
               >
                 <span>{t(`admin.${ch}_channel_label`)}</span>
@@ -261,7 +261,7 @@ export const AdminBroadcast: React.FC = () => {
         {/* Warnings */}
         <div className={cx("flex items-start gap-3 px-6 py-4 rounded-2xl border", tokens.adminBroadcast.warningBannerBg)}>
           <AlertTriangle className="text-amber-500 shrink-0 mt-0.5" size={18} />
-          <p className="text-xs text-amber-200 light_sakura:text-amber-700">
+          <p className={cx("text-xs", tokens.adminBroadcast.warningTextAmber)}>
             {t("admin.broadcast_warning")}
           </p>
         </div>
@@ -299,7 +299,7 @@ export const AdminBroadcast: React.FC = () => {
             <p className={cx("text-xs", tokens.text.muted)}>
               {t("admin.markdown_hint")}
             </p>
-            <p className={`text-xs font-semibold ${charCount > maxChar * 0.9 ? "text-amber-500 light_sakura:text-amber-600" : tokens.text.muted}`}>
+            <p className={`text-xs font-semibold ${charCount > maxChar * 0.9 ? tokens.adminPremium.metricAmber : tokens.text.muted}`}>
               {charCount}/{maxChar}
             </p>
           </div>

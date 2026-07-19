@@ -76,7 +76,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
             tabIndex={-1}
             className={cx(
               "relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl outline-none",
-              "border-red-500/30 light_sakura:border-red-200",
+              tokens.modal.dangerBorder,
               tokens.surface.card
             )}
           >
@@ -90,7 +90,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
             </button>
 
             <div className="mb-4 flex items-center gap-3">
-              <div className="rounded-full p-2.5 bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500">
+              <div className={cx("rounded-full p-2.5", tokens.budgetProgressCard.badgeBgDanger, tokens.newTransaction.amountDisplayExpense)}>
                 <AlertTriangle size={22} />
               </div>
               <h3 className={cx("font-sans text-lg font-semibold tracking-tight", tokens.text.heading)}>

@@ -32,7 +32,8 @@ export const FeatureLockGate: React.FC<FeatureLockGateProps> = ({ featureKey, ch
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       className={cx(
-        "flex flex-col items-center justify-center min-h-[60vh] text-center p-6 rounded-3xl border border-amber-500/20 light_sakura:border-amber-200",
+        "flex flex-col items-center justify-center min-h-[60vh] text-center p-6 rounded-3xl border",
+        tokens.featureLockGate.panelBorder,
         tokens.surface.sunken
       )}
     >

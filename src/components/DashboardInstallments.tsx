@@ -60,7 +60,7 @@ export const DashboardInstallments: React.FC = () => {
             </div>
             <div className={cx("h-1.5 w-full rounded-full overflow-hidden", tokens.surface.sunken)}>
               <div
-                className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 light_sakura:from-rose-500 light_sakura:to-rose-400"
+                className={cx("h-full rounded-full", tokens.installments.progressGlow)}
                 style={{ width: `${i.progressPercent}%` }}
               />
             </div>

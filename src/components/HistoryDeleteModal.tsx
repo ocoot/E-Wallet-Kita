@@ -98,7 +98,7 @@ export const HistoryDeleteModal: React.FC<HistoryDeleteModalProps> = ({
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none p-6 rounded-2xl border", tokens.surface.card, tokens.text.onSurface, "border-red-500/30 light_sakura:border-red-200")}
+              className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none p-6 rounded-2xl border", tokens.surface.card, tokens.text.onSurface, tokens.modal.dangerBorder)}
             >
               <div className={cx("flex items-center gap-2.5 mb-3", tokens.text.danger)}>
                 <AlertTriangle size={24} />

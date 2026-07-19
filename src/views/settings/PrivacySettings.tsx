@@ -70,7 +70,7 @@ export const PrivacySettings: React.FC = () => {
             type="button"
             onClick={handleExportMyData}
             disabled={isExportingData}
-            className={cx("w-full cursor-pointer border border-slate-700 hover:bg-slate-800 py-2.5 rounded-xl font-sans text-xs font-semibold text-slate-200 tracking-tight transition-all disabled:opacity-50 flex items-center justify-center gap-2 light_sakura:border-rose-200 light_sakura:text-slate-700", tokens.surface.card)}
+            className={cx(tokens.privacySettings.exportBtn, tokens.surface.card)}
           >
             <Download size={13} />
             <span>{isExportingData ? t("common.loading") : t("settings.privacy_export_button")}</span>

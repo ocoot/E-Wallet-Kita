@@ -109,7 +109,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
         role="dialog"
         aria-modal="true"
         tabIndex={-1}
-        className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden border rounded-3xl p-8 shadow-2xl outline-none flex flex-col relative z-20", tokens.surface.card, tokens.border.accent, "light_sakura:shadow-rose-150/10")}
+        className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden border rounded-3xl p-8 shadow-2xl outline-none flex flex-col relative z-20", tokens.surface.card, tokens.border.accent, tokens.resetPasswordModal.modalShadow)}
       >
         {/* Close Button */}
         <button
@@ -118,14 +118,14 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
             onClose();
           }}
           aria-label="Tutup"
-          className={cx("absolute top-5 right-5 p-1.5 hover:text-white rounded-full bg-slate-950/20 hover:bg-slate-800 transition-colors cursor-pointer", tokens.text.muted, "light_sakura:hover:text-slate-800 light_sakura:hover:bg-rose-50")}
+          className={cx("absolute top-5 right-5 p-1.5", tokens.text.muted, tokens.resetPasswordModal.closeBtnHover)}
         >
           <X size={16} />
         </button>
 
         {/* Brand visual header */}
         <div className="flex flex-col items-center text-center mb-6">
-          <div className={cx("p-3 w-14 h-14 bg-indigo-600/10 rounded-2xl flex items-center justify-center mb-4 shadow-inner light_sakura:bg-rose-500/10", tokens.icon.accent)}>
+          <div className={cx(tokens.resetPasswordModal.iconChipBg, tokens.icon.accent)}>
             <ShieldCheck size={32} />
           </div>
           <h2 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
@@ -152,7 +152,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               leftIcon={<Lock size={16} />}
-              className={cx("bg-slate-950 py-3 light_sakura:bg-slate-50", tokens.border.accent)}
+              className={cx(tokens.settings.otpInputBg, "py-3", tokens.border.accent)}
               rightElement={
                 <button
                   type="button"
@@ -184,7 +184,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               leftIcon={<Lock size={16} />}
-              className={cx("bg-slate-950 py-3 light_sakura:bg-slate-50", tokens.border.accent)}
+              className={cx(tokens.settings.otpInputBg, "py-3", tokens.border.accent)}
               rightElement={
                 <button
                   type="button"

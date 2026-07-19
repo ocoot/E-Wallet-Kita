@@ -313,7 +313,7 @@ export const History: React.FC<HistoryProps> = ({
                   </span>
                 </div>
                 <p className={`font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight ${
-                  stats.net >= 0 ? tokens.text.accentStrong : "text-orange-400 light_sakura:text-orange-600"
+                  stats.net >= 0 ? tokens.text.accentStrong : tokens.text.warningOrange
                 }`}>
                   {stats.net >= 0 ? "+" : ""}{formatIDR(stats.net)}
                 </p>

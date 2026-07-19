@@ -25,7 +25,7 @@ export const MaintenanceBanner: React.FC = () => {
       role="status"
       className={cx(
         "w-full border-b overflow-hidden flex items-center gap-2 px-3 py-2",
-        "bg-amber-500/15 border-amber-500/40 text-amber-300 light_sakura:bg-amber-100 light_sakura:text-amber-700 light_sakura:border-amber-300"
+        tokens.maintenanceBanner.bannerBg
       )}
     >
       <AlertTriangle size={14} className="shrink-0" />

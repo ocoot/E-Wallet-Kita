@@ -30,7 +30,7 @@ export const AdminBackBar: React.FC = () => {
       onClick={handleBack}
       className={cx(
         "flex items-center gap-2 px-4 py-2.5 rounded-xl border font-sans text-xs font-bold cursor-pointer transition-colors",
-        "bg-slate-900/60 border-slate-800 hover:bg-slate-800 hover:text-white light_sakura:bg-white light_sakura:border-rose-200 light_sakura:hover:bg-rose-100",
+        tokens.adminBackBar.btnBg,
         tokens.text.secondary
       )}
     >

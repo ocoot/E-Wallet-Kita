@@ -41,7 +41,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
     }
     if (source === "ai_web") {
       return (
-        <div className={cx("bg-indigo-500/15 p-2 rounded-xl light_sakura:bg-rose-50 flex items-center justify-center", tokens.icon.accent)}>
+        <div className={cx(tokens.dashboardRecentTransactions.aiWebIconChip, tokens.icon.accent)}>
           <Sparkles size={15} />
         </div>
       );
@@ -70,7 +70,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
             audioFeedback.playClick();
             onNavigateToHistory();
           }}
-          className={cx("cursor-pointer px-3.5 py-2 hover:bg-slate-800 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold light_sakura:hover:bg-rose-50 flex items-center gap-1.5 transition-colors", tokens.text.accent)}
+          className={cx(tokens.dashboardRecentTransactions.showAllBtnHover, tokens.text.accent)}
         >
           <span>{t("history.show_all")}</span>
           <ArrowRight size={13} />
@@ -89,7 +89,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className="flex items-center justify-between p-4 rounded-2xl bg-slate-950/40 hover:bg-slate-950/60 border border-slate-800/40 hover:border-slate-700 transition-all duration-200 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/10"
+                className={tokens.dashboardRecentTransactions.rowCardBg}
               >
                 <div className="flex items-center gap-3">
                   {getSourceIcon(tx.source)}
@@ -104,7 +104,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
                     </div>
                     <div className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] mt-0.5 flex items-center gap-1.5", tokens.text.muted)}>
                       <span>{formatDateLabel(tx.transaction_date)}</span>
-                      <span className="w-1 h-1 rounded-full bg-slate-700 light_sakura:bg-rose-100" />
+                      <span className={tokens.dashboardRecentTransactions.dotSeparator} />
                       <span className={cx("font-semibold", tokens.text.label)}>
                         {(() => {
                           const cat = categories.find(c => c.key === tx.category);

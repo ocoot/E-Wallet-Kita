@@ -33,7 +33,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const inputId = id || generatedId;
 
     const focusBorder: Record<InputAccent, string> = {
-      indigo: "focus:border-indigo-500 light_sakura:focus:border-rose-400",
+      indigo: tokens.onboarding.inputFocus,
       amber: "focus:border-amber-500",
       emerald: "focus:border-emerald-500",
       rose: "focus:border-rose-400",

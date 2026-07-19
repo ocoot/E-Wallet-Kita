@@ -102,7 +102,7 @@ export const UpdateCheckingIndicator: React.FC = () => {
           aria-live="polite"
           className={cx(
             "fixed top-3 left-1/2 -translate-x-1/2 z-[95] flex items-center gap-2 rounded-full border px-4 py-2 shadow-xl backdrop-blur-sm",
-            "bg-slate-900/95 light_sakura:bg-white/95 border-indigo-500/30 light_sakura:border-rose-300/50"
+            tokens.updateCheckingIndicator.panelBg
           )}
         >
           <Loader2 size={14} className={cx("animate-spin shrink-0", tokens.text.accent)} />

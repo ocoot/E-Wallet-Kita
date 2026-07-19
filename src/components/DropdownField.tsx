@@ -102,8 +102,8 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
   const selectedStyle = {
     indigo: tokens.chip.badgeIndigo,
     amber: tokens.chip.badgeAmber,
-    emerald: "bg-emerald-500/15 text-emerald-300 font-bold light_sakura:bg-emerald-50 light_sakura:text-emerald-700",
-    rose: "bg-rose-500/15 text-rose-300 font-bold light_sakura:bg-rose-50 light_sakura:text-rose-600",
+    emerald: tokens.chip.badgeEmerald,
+    rose: tokens.chip.badgeRose,
   }[accent];
 
   const selected = options.find((o) => o.value === value);

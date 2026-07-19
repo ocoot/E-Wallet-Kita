@@ -59,7 +59,7 @@ export const ToggleSwitch: React.FC<ToggleSwitchProps> = ({
         className={cx(
           "btn-exact relative shrink-0 w-11 h-6 rounded-full border transition-colors duration-200 cursor-pointer disabled:cursor-not-allowed",
           checked
-            ? "bg-indigo-600 border-indigo-500 light_sakura:bg-rose-500 light_sakura:border-rose-400"
+            ? tokens.toggleSwitch.trackActive
             : cx(tokens.surface.sunken, tokens.border.strong)
         )}
       >

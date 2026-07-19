@@ -137,7 +137,8 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
               transition={{ type: "spring", duration: 0.3 }}
               className={cx(
-                "relative z-10 w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl border-red-500/30 light_sakura:border-red-200",
+                "relative z-10 w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl",
+                tokens.modal.dangerBorder,
                 tokens.text.onSurface,
                 tokens.surface.card
               )}

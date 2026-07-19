@@ -76,13 +76,13 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
             <button
               onClick={onCancel}
               aria-label="Tutup"
-              className={cx("absolute top-4 right-4 cursor-pointer", tokens.text.faint, "hover:text-white light_sakura:hover:text-slate-900")}
+              className={cx("absolute top-4 right-4 cursor-pointer", tokens.text.faint, tokens.hover.textInverse)}
             >
               <X size={18} />
             </button>
 
             <div className="mb-4 flex items-center gap-3">
-              <div className="rounded-full p-2.5 bg-indigo-500/15 text-indigo-400 light_sakura:bg-indigo-50 light_sakura:text-indigo-600">
+              <div className={cx("rounded-full p-2.5", tokens.budgetProgressCard.badgeBgSafe, tokens.text.accentStrong)}>
                 <FileText size={20} />
               </div>
               <h3 className="font-sans text-lg font-semibold tracking-tight">

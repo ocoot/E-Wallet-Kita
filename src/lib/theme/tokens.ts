@@ -63,6 +63,12 @@ export const themeTokens = {
      */
     dangerSoft: "text-red-300 light_sakura:text-red-600",
     warning: "text-amber-400 light_sakura:text-amber-600",
+    /**
+     * Sesi 54: warna angka "net" negatif ringan / due-soon. Exact match
+     * di 2 file: `History.tsx` & `DashboardBillReminders.tsx` (keduanya
+     * dipasang sesi ini).
+     */
+    warningOrange: "text-orange-400 light_sakura:text-orange-600",
     /** Teks agak menonjol di atas surface gelap -- dipakai di Settings.tsx (2x) & AdminPremiumMonitor.tsx. */
     strong: "text-slate-200 light_sakura:text-slate-800",
   },
@@ -109,6 +115,14 @@ export const themeTokens = {
     /** Hover state untuk kartu di atas surface.sunken (mis. kartu terkait di Wallets.tsx). */
     sunken: "hover:bg-slate-800/60 light_sakura:hover:bg-rose-50/60",
     textAccent: "hover:text-indigo-400 light_sakura:hover:text-rose-500",
+    /**
+     * Sesi 54: hover teks jadi putih (dark) / slate-900 (light) -- dipakai
+     * untuk ikon close/dismiss yang basis warnanya beda-beda per pemanggil
+     * (jadi cuma bagian hover-nya yang ditokenkan terpisah). Exact match
+     * di 3 file: `SupportChatWidget.tsx`, `ExportSummaryModal.tsx`,
+     * `ExportFullModal.tsx` (semua dipasang sesi ini).
+     */
+    textInverse: "hover:text-white light_sakura:hover:text-slate-900",
   },
 
   icon: {
@@ -161,6 +175,13 @@ export const themeTokens = {
      */
     badgeIndigo: "bg-indigo-500/15 text-indigo-300 font-bold light_sakura:bg-rose-50 light_sakura:text-rose-600",
     badgeAmber: "bg-amber-500/15 text-amber-300 font-bold light_sakura:bg-amber-50 light_sakura:text-amber-700",
+    /**
+     * Sesi 54 (kebijakan tokenisasi penuh): melengkapi varian `colorMap`
+     * `DropdownField.tsx` yang tadinya dibiarkan literal (`emerald`/`rose`,
+     * genuinely 1x-pakai, dicek cross-file tidak ada duplikat).
+     */
+    badgeEmerald: "bg-emerald-500/15 text-emerald-300 font-bold light_sakura:bg-emerald-50 light_sakura:text-emerald-700",
+    badgeRose: "bg-rose-500/15 text-rose-300 font-bold light_sakura:bg-rose-50 light_sakura:text-rose-600",
   },
 
   /**
@@ -316,6 +337,7 @@ export const themeTokens = {
     badgeDueSoon: "bg-rose-500/20 text-rose-400 light_sakura:bg-rose-50 light_sakura:text-rose-600",
     conclusionCardBgBorder: "bg-gradient-to-br from-slate-950 to-slate-900 border border-slate-800/80 light_sakura:from-rose-50/40 light_sakura:to-rose-50/10 light_sakura:border-rose-100",
     conclusionTipText: "text-emerald-400 light_sakura:text-rose-600",
+    /** Sesi 54: exact match juga di `ui/Input.tsx` (colorMap accent="indigo", dipasang sesi ini). */
     inputFocus: "focus:border-indigo-500 light_sakura:focus:border-rose-400",
     btnShadow: "shadow-lg shadow-emerald-500/20 light_sakura:shadow-rose-500/20",
     savingsProgressGlow: "bg-gradient-to-r from-emerald-500 to-teal-400 light_sakura:from-rose-500 light_sakura:to-rose-300",
@@ -466,8 +488,7 @@ export const themeTokens = {
     /**
      * Ikon ilustrasi empty-state (MessagesSquare, daftar sesi kosong).
      * Exact match sama persis dengan ikon default di EmptyState.tsx --
-     * belum dipasang ke sana karena file itu di luar cakupan target
-     * sesi 45 (cuma 1 literal, bukan bagian roadmap saat ini).
+     * sesi 54 sudah memasangnya di sana juga.
      */
     emptyIcon: "text-slate-700 light_sakura:text-rose-200",
     /**
@@ -505,6 +526,13 @@ export const themeTokens = {
     logoutBtn: "bg-slate-950/40 border-red-500/20 text-red-400 hover:bg-red-500/10 light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:text-red-600 light_sakura:hover:bg-red-100",
   },
   budgetProgressCard: {
+    /**
+     * Sesi 54: selain jadi badge status budget, warna ini exact match
+     * (dengan "rounded-full p-2.5" + `tokens.text.accentStrong`) untuk
+     * ikon chip di modal -- ditemukan identik di 4 file: `Budget.tsx`,
+     * `HistoryEditModal.tsx`, `ExportSummaryModal.tsx`,
+     * `ExportFullModal.tsx` (semua dipasang sesi ini).
+     */
     badgeBgSafe: "bg-indigo-500/15 light_sakura:bg-indigo-50",
     badgeTextSafe: "text-indigo-400 light_sakura:text-indigo-600",
     badgeBgWarning: "bg-amber-500/15 light_sakura:bg-amber-50",
@@ -549,6 +577,12 @@ export const themeTokens = {
     ringHighlight: "ring-indigo-500/40 light_sakura:ring-rose-300/60",
     /** Ring fokus input pesan -- dipakai 2x. */
     inputFocusRing: "focus:ring-indigo-500 light_sakura:focus:ring-rose-400",
+    /**
+     * Sesi 54 (kebijakan tokenisasi penuh): sisa kombinasi 1x-pakai di
+     * `SupportChatWidget.tsx` (dicek cross-file, tidak ada exact match).
+     */
+    scrollFadeGradient: "pointer-events-none absolute right-0 top-0 bottom-1 w-8 bg-gradient-to-l from-slate-900 light_sakura:from-white to-transparent",
+    categoryHoverBorder: "hover:border-indigo-500/40 light_sakura:border-rose-200",
   },
   sidebar: {
     brandBg: "bg-slate-950/55 backdrop-blur-2xl backdrop-saturate-150 border-white/10 light_sakura:bg-white/70 light_sakura:backdrop-saturate-100 light_sakura:border-white/70",
@@ -563,6 +597,13 @@ export const themeTokens = {
      * (Sidebar.tsx) -- belum ditemukan duplikat di file lain.
      */
     collapsedIconBtn: "p-2 rounded-xl border border-slate-900 hover:bg-slate-900 cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100/50",
+    /**
+     * Sesi 54 (kebijakan tokenisasi penuh): sisa kombinasi 1x-pakai di
+     * `Sidebar.tsx` (dicek cross-file, tidak ada exact match).
+     */
+    outerShadow: "shadow-[8px_0_32px_rgba(0,0,0,0.35)] light_sakura:shadow-[8px_0_32px_rgba(244,63,94,0.08)]",
+    collapseBtnHover: "p-1 rounded-lg hover:bg-white/5 light_sakura:hover:bg-slate-200 cursor-pointer hidden md:block hover:text-white light_sakura:hover:text-slate-800 transition-all duration-205",
+    expandBtnBg: "bg-slate-950 border-slate-800 hover:text-white light_sakura:bg-slate-100 light_sakura:border-slate-200",
   },
   budget: {
     statusDanger: "bg-red-500/15 light_sakura:bg-red-50",
@@ -573,6 +614,13 @@ export const themeTokens = {
     emptyStateIcon: "text-slate-600 light_sakura:text-slate-400",
     /** Hover tombol close/tutup modal -- dipakai 2x. */
     closeBtnHover: "hover:bg-slate-800 hover:text-white light_sakura:hover:bg-rose-100",
+    /**
+     * Sesi 54 (kebijakan tokenisasi penuh): sisa kombinasi 1x-pakai di
+     * `Budget.tsx` (dicek cross-file, tidak ada exact match).
+     */
+    iconChipIndigoSoft: "w-11 h-11 rounded-2xl bg-indigo-500/10 flex items-center justify-center light_sakura:bg-rose-500/10 shrink-0",
+    /** Warna teks tombol batal di light mode saja (dark mode pakai warna default/inherited). */
+    cancelBtnTextLight: "light_sakura:text-slate-600",
   },
   history: {
     statExpense: "bg-red-500/8 border-red-500/15 light_sakura:bg-red-50/60 light_sakura:border-red-100",
@@ -602,6 +650,11 @@ export const themeTokens = {
     statusPendingBadge: "bg-amber-900/20 light_sakura:bg-amber-50 border-amber-800/50 light_sakura:border-amber-100 text-amber-300 light_sakura:text-amber-700",
     /** Banner peringatan (mis. broadcast tidak bisa dibatalkan). */
     warningBannerBg: "bg-amber-900/20 light_sakura:bg-amber-50 border-amber-800/50 light_sakura:border-amber-100",
+    /**
+     * Sesi 54 (kebijakan tokenisasi penuh): sisa kombinasi 1x-pakai
+     * (dicek cross-file, tidak ada exact match).
+     */
+    warningTextAmber: "text-amber-200 light_sakura:text-amber-700",
   },
 
   telegramCard: {
@@ -625,7 +678,11 @@ export const themeTokens = {
      * karena di luar cakupan target sesi 48, dicatat untuk sesi berikutnya.
      */
     cancelBtn: "bg-slate-800 hover:bg-slate-700/80 border-slate-800 light_sakura:bg-slate-100 light_sakura:hover:bg-slate-200/80 light_sakura:border-transparent",
-    /** Tombol konfirmasi/coba lagi (indigo/rose) -- dipakai 2x di file ini. */
+    /**
+     * Tombol konfirmasi/coba lagi (indigo/rose) -- dipakai 2x di file ini.
+     * Sesi 54: exact match juga di `ReceiptPreview.tsx` (tombol simpan,
+     * dipasang sesi ini).
+     */
     confirmBtn: "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/15 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400",
   },
   premiumModal: {
@@ -634,6 +691,11 @@ export const themeTokens = {
     /** Kotak info (metode bayar / detail) di dalam modal -- dipakai 2x. */
     infoBoxBg: "bg-slate-800/50 light_sakura:bg-white light_sakura:border light_sakura:border-rose-100",
     qrWrapperBorder: "light_sakura:border light_sakura:border-rose-100",
+    /**
+     * Sesi 54: teks catatan kaki (dicek cross-file, tidak ada exact
+     * match).
+     */
+    footerNoteText: "text-indigo-300 light_sakura:text-rose-500",
   },
   /**
    * Sesi 51: kelas panel modal generik (border+bg+text) untuk modal custom
@@ -656,6 +718,19 @@ export const themeTokens = {
      * class lewat `cx()`.
      */
     closeBtn: "text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer light_sakura:hover:bg-rose-100",
+    /**
+     * Sesi 54: varian panel `Modal.tsx` (komponen generik dengan prop
+     * `variant`) -- BEDA dari `panel` di atas (yang khusus modal custom
+     * non-komponen). Genuinely 1x-pakai per varian (dicek cross-file).
+     */
+    panelDanger: "border-red-500/30 dark_obsidian:bg-slate-900 light_sakura:border-red-200",
+    panelNormal: "border-indigo-500/20 dark_obsidian:bg-slate-900 light_sakura:bg-rose-50/90 light_sakura:border-rose-100",
+    /**
+     * Sesi 54: border merah tipis untuk modal konfirmasi hapus. Exact
+     * match di 2 file: `DeleteAccountModal.tsx` & `HistoryDeleteModal.tsx`
+     * (keduanya dipasang sesi ini).
+     */
+    dangerBorder: "border-red-500/30 light_sakura:border-red-200",
   },
   settings: {
     /**
@@ -801,6 +876,188 @@ export const themeTokens = {
     blackOverlayBg: "bg-black/10 hover:bg-black/15 light_sakura:bg-white/40 light_sakura:hover:bg-white/60",
     editBorderHover: "border hover:border-indigo-400/50 light_sakura:hover:border-rose-300",
     actionChipBg: "bg-indigo-500/15 hover:bg-indigo-500/25 light_sakura:bg-rose-500/15 light_sakura:hover:bg-rose-500/25",
+  },
+  /**
+   * Sesi 54: token per-file untuk `ResetPasswordModal.tsx`. Genuinely
+   * 1x-pakai (dicek cross-file, tidak ada exact match).
+   */
+  resetPasswordModal: {
+    modalShadow: "light_sakura:shadow-rose-150/10",
+    closeBtnHover: "hover:text-white rounded-full bg-slate-950/20 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:hover:text-slate-800 light_sakura:hover:bg-rose-50",
+    iconChipBg: "p-3 w-14 h-14 bg-indigo-600/10 rounded-2xl flex items-center justify-center mb-4 shadow-inner light_sakura:bg-rose-500/10",
+  },
+  /**
+   * Sesi 54: token per-file untuk `WalletTopUpModal.tsx`. Genuinely
+   * 1x-pakai (dicek cross-file, tidak ada exact match -- varian emerald
+   * dari `modal.panel` yang aksennya indigo, sengaja tidak dipaksa gabung).
+   */
+  walletTopUpModal: {
+    panelEmerald: "border border-emerald-500/20 bg-slate-900 text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100",
+  },
+  /**
+   * Sesi 54: token per-file untuk `ErrorState.tsx`. Genuinely 1x-pakai
+   * (dicek cross-file, tidak ada exact match).
+   */
+  errorState: {
+    iconCircleBg: "bg-red-500/10 light_sakura:bg-red-50",
+    retryBtn: "bg-red-500/10 hover:bg-red-500/20 text-red-300 light_sakura:bg-red-50 light_sakura:hover:bg-red-100 light_sakura:text-red-600",
+  },
+  /**
+   * Sesi 54: token per-file untuk `DashboardRecentTransactions.tsx`.
+   * Genuinely 1x-pakai (dicek cross-file, tidak ada exact match).
+   */
+  dashboardRecentTransactions: {
+    aiWebIconChip: "bg-indigo-500/15 p-2 rounded-xl light_sakura:bg-rose-50 flex items-center justify-center",
+    showAllBtnHover: "cursor-pointer px-3.5 py-2 hover:bg-slate-800 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold light_sakura:hover:bg-rose-50 flex items-center gap-1.5 transition-colors",
+    rowCardBg: "flex items-center justify-between p-4 rounded-2xl bg-slate-950/40 hover:bg-slate-950/60 border border-slate-800/40 hover:border-slate-700 transition-all duration-200 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/10",
+    dotSeparator: "w-1 h-1 rounded-full bg-slate-700 light_sakura:bg-rose-100",
+  },
+  /**
+   * Sesi 54: background pulse skeleton loading. Exact match VERBATIM 4x
+   * dalam file yang sama (`SkeletonLoader.tsx`) -- token generik karena
+   * nama filenya sendiri sudah generik/reusable (dipanggil dari banyak
+   * halaman lain).
+   */
+  skeleton: {
+    pulseBg: "bg-slate-800/60 light_sakura:bg-rose-200/60",
+  },
+  /**
+   * Sesi 54: token per-file untuk `HistoryExport.tsx`. Genuinely 1x-pakai
+   * per varian (dicek cross-file, tidak ada exact match).
+   */
+  historyExport: {
+    optionActive: "border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/15 text-amber-400 light_sakura:text-rose-600 light_sakura:border-rose-300/30 light_sakura:bg-rose-50/50",
+    optionInactive: "border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 light_sakura:text-indigo-600",
+  },
+  /**
+   * Sesi 54: token per-file untuk `DashboardHeader.tsx`. Exact match
+   * VERBATIM 2x dalam file yang sama.
+   */
+  dashboardHeader: {
+    weatherBadge: "flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium shrink-0 whitespace-nowrap light_sakura:bg-rose-50 light_sakura:border-rose-100/50 transition-colors duration-300",
+  },
+  /**
+   * Sesi 54: token untuk `ui/Card.tsx`. `borderSubtle` genuinely 1x-pakai
+   * (dicek cross-file, tidak ada exact match) -- sengaja BEDA dari
+   * `border.accent` (lihat komentar di Card.tsx: border="subtle" tetap
+   * menampilkan border rose di light_sakura meski nyaris menyatu dengan
+   * bg di dark_obsidian, ini bukan bug).
+   */
+  card: {
+    borderSubtle: "border-slate-900 light_sakura:border-rose-100",
+  },
+  /**
+   * Sesi 54: token per-file untuk `VoiceRecorder.tsx`. Genuinely 1x-pakai
+   * (dicek cross-file, tidak ada exact match).
+   */
+  voiceRecorder: {
+    micBtnActive: "bg-indigo-500/10 border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 light_sakura:bg-rose-500/10 light_sakura:border-rose-500/20 light_sakura:text-rose-500",
+  },
+  /**
+   * Sesi 54: token per-file untuk `MobileTopBar.tsx`. Genuinely 1x-pakai
+   * (dicek cross-file, tidak ada exact match).
+   */
+  mobileTopBar: {
+    headerBg: "bg-slate-950/90 text-white dark_obsidian:bg-slate-950/90 light_sakura:bg-rose-500/90 light_sakura:text-white",
+    accentGradientLine: "bg-gradient-to-r from-transparent via-indigo-400/70 to-transparent light_sakura:via-rose-200",
+  },
+  /**
+   * Sesi 54: token untuk `MaintenanceBanner.tsx`. Genuinely 1x-pakai
+   * (dicek cross-file, tidak ada exact match).
+   */
+  maintenanceBanner: {
+    bannerBg: "bg-amber-500/15 border-amber-500/40 text-amber-300 light_sakura:bg-amber-100 light_sakura:text-amber-700 light_sakura:border-amber-300",
+  },
+  /**
+   * Sesi 54: token per-file untuk `DashboardBudgetSummary.tsx`. Genuinely
+   * 1x-pakai (dicek cross-file, tidak ada exact match).
+   */
+  dashboardBudgetSummary: {
+    iconChipBg: "w-10 h-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center shrink-0 light_sakura:bg-rose-500/10",
+    chevronBtnHover: "hover:text-white light_sakura:hover:text-rose-600",
+  },
+  /**
+   * Sesi 54: token untuk `AdminBackBar.tsx`. Genuinely 1x-pakai (dicek
+   * cross-file, tidak ada exact match).
+   */
+  adminBackBar: {
+    btnBg: "bg-slate-900/60 border-slate-800 hover:bg-slate-800 hover:text-white light_sakura:bg-white light_sakura:border-rose-200 light_sakura:hover:bg-rose-100",
+  },
+  /**
+   * Sesi 54: token per-file untuk `PrivacySettings.tsx`. Genuinely
+   * 1x-pakai (dicek cross-file, tidak ada exact match).
+   */
+  privacySettings: {
+    exportBtn: "w-full cursor-pointer border border-slate-700 hover:bg-slate-800 py-2.5 rounded-xl font-sans text-xs font-semibold text-slate-200 tracking-tight transition-all disabled:opacity-50 flex items-center justify-center gap-2 light_sakura:border-rose-200 light_sakura:text-slate-700",
+  },
+  /**
+   * Sesi 54: token untuk `ui/ToggleSwitch.tsx`. Sama seperti `badge` &
+   * `buttonVariant` -- komponen ini sendiri jadi titik reuse tunggal
+   * (dipanggil dari banyak halaman), jadi warnanya dipindah ke sini
+   * meski cuma 1x dipakai di source.
+   */
+  toggleSwitch: {
+    trackActive: "bg-indigo-600 border-indigo-500 light_sakura:bg-rose-500 light_sakura:border-rose-400",
+  },
+  /**
+   * Sesi 54: token per-file untuk `WalletTransferModal.tsx`. Genuinely
+   * 1x-pakai (dicek cross-file, tidak ada exact match -- varian indigo
+   * dari `newTransaction.amountInputExpense`/`amountInputIncome`, warna
+   * beda jadi tidak dipaksa gabung).
+   */
+  walletTransferModal: {
+    summaryCardBg: "bg-indigo-500/5 border-indigo-500/20 light_sakura:bg-rose-50/40 light_sakura:border-rose-200",
+  },
+  /**
+   * Sesi 54: token untuk `UpdateCheckingIndicator.tsx`. Genuinely 1x-pakai
+   * (dicek cross-file, tidak ada exact match).
+   */
+  updateCheckingIndicator: {
+    panelBg: "bg-slate-900/95 light_sakura:bg-white/95 border-indigo-500/30 light_sakura:border-rose-300/50",
+  },
+  /**
+   * Sesi 54: token per-file untuk `AdminCategoryManager.tsx` (sisa dari
+   * sesi 46). Genuinely 1x-pakai (dicek cross-file, tidak ada exact
+   * match).
+   */
+  adminCategoryManager: {
+    saveBtn: "bg-emerald-950/40 light_sakura:bg-emerald-50 hover:bg-emerald-950/60 light_sakura:hover:bg-emerald-100 cursor-pointer",
+  },
+  /**
+   * Sesi 54: token untuk `DashboardWalletCarousel.tsx`. Genuinely 1x-pakai
+   * (dicek cross-file, tidak ada exact match).
+   */
+  dashboardWalletCarousel: {
+    dotActive: "w-3.5 bg-indigo-400 light_sakura:bg-rose-400",
+  },
+  /**
+   * Sesi 54: token tambahan untuk `SettingsMobileMenu.tsx` (sisa dari
+   * sesi 46). Genuinely 1x-pakai (dicek cross-file, tidak ada exact
+   * match).
+   */
+  settingsMobileMenuExtra: {
+    iconChipBg: "bg-slate-950/60 light_sakura:bg-rose-50",
+  },
+  /**
+   * Sesi 54: token untuk `ProviderBadge.tsx`. Genuinely 1x-pakai (dicek
+   * cross-file, tidak ada exact match).
+   */
+  providerBadge: {
+    iconChipBg: "bg-slate-700/60 light_sakura:bg-rose-100",
+  },
+  /**
+   * Sesi 54: token untuk `FeatureLockGate.tsx`. Genuinely 1x-pakai (dicek
+   * cross-file, tidak ada exact match).
+   */
+  featureLockGate: {
+    panelBorder: "border-amber-500/20 light_sakura:border-amber-200",
+  },
+  /**
+   * Sesi 54: token untuk `Breadcrumbs.tsx`. Genuinely 1x-pakai (dicek
+   * cross-file, tidak ada exact match).
+   */
+  breadcrumbs: {
+    linkHover: "hover:text-slate-200 light_sakura:hover:text-slate-800",
   },
 } as const;
 

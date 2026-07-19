@@ -109,7 +109,7 @@ export const WalletTopUpModal: React.FC<WalletTopUpModalProps> = ({
           role="dialog"
           aria-modal="true"
           tabIndex={-1}
-          className="relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-emerald-500/20 bg-slate-900 p-6 shadow-2xl outline-none text-white light_sakura:bg-rose-50/90 light_sakura:text-slate-800 light_sakura:border-rose-100"
+          className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl p-6 shadow-2xl outline-none", tokens.walletTopUpModal.panelEmerald)}
         >
           {status === "success" ? (
             <div className="flex flex-col items-center text-center py-4 gap-3">
@@ -175,7 +175,7 @@ export const WalletTopUpModal: React.FC<WalletTopUpModalProps> = ({
                 </button>
               </div>
 
-              <div className="rounded-2xl border px-4 py-3 mb-4 text-center bg-emerald-500/5 border-emerald-500/20 light_sakura:bg-emerald-50/40 light_sakura:border-emerald-200">
+              <div className={cx("rounded-2xl border px-4 py-3 mb-4 text-center", tokens.newTransaction.amountInputIncome)}>
                 <span className="font-sans font-black text-2xl tabular-nums text-emerald-400">
                   +{formatIDR(numericAmount)}
                 </span>

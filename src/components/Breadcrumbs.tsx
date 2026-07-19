@@ -226,7 +226,7 @@ export const Breadcrumbs: React.FC = () => {
                   <Link
                     to={item.path}
                     onClick={() => audioFeedback.playClick()}
-                    className={cx("flex items-center gap-1.5 font-medium transition-colors duration-200", tokens.text.muted, "hover:text-slate-200 light_sakura:hover:text-slate-800")}
+                    className={cx("flex items-center gap-1.5 font-medium transition-colors duration-200", tokens.text.muted, tokens.breadcrumbs.linkHover)}
                   >
                     {item.icon}
                     <span>{item.label}</span>

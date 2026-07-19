@@ -230,7 +230,7 @@ export const Budget: React.FC = () => {
       {/* Header */}
       <div className={cx("flex items-start justify-between gap-3.5 flex-wrap border-b pb-6", tokens.settings.sectionBorder)}>
         <div className="flex items-center gap-3.5">
-          <div className={cx("w-11 h-11 rounded-2xl bg-indigo-500/10 flex items-center justify-center light_sakura:bg-rose-500/10 shrink-0", tokens.icon.accent)}>
+          <div className={cx(tokens.budget.iconChipIndigoSoft, tokens.icon.accent)}>
             <PiggyBank size={22} />
           </div>
           <div>
@@ -357,11 +357,11 @@ export const Budget: React.FC = () => {
               role="dialog"
               aria-modal="true"
               tabIndex={-1}
-              className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border border-indigo-500/20 bg-slate-900 p-6 shadow-2xl outline-none light_sakura:bg-rose-50/90 light_sakura:border-rose-100", tokens.text.onSurface)}
+              className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl p-6 shadow-2xl outline-none", tokens.modal.panel)}
             >
               <div className="mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className={cx("rounded-full p-2.5 bg-indigo-500/15 light_sakura:bg-indigo-50", tokens.text.accentStrong)}>
+                  <div className={cx("rounded-full p-2.5", tokens.budgetProgressCard.badgeBgSafe, tokens.text.accentStrong)}>
                     <PiggyBank size={20} />
                   </div>
                   <h3 className="font-sans text-lg font-semibold tracking-tight">
@@ -415,7 +415,7 @@ export const Budget: React.FC = () => {
                 <div className="flex items-center justify-end gap-3 pt-2">
                   <button
                     onClick={closeAddModal}
-                    className={cx("rounded-xl px-4 py-2 font-sans text-sm font-medium cursor-pointer light_sakura:text-slate-600", tokens.budget.closeBtnHover)}
+                    className={cx("rounded-xl px-4 py-2 font-sans text-sm font-medium cursor-pointer", tokens.budget.cancelBtnTextLight, tokens.budget.closeBtnHover)}
                   >
                     {t("common.cancel")}
                   </button>

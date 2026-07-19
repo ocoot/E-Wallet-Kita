@@ -134,6 +134,35 @@
 > sebelumnya tidak tersedia di sesi 51) -- termasuk verifikasi retroaktif
 > perubahan sesi 51 yang belum sempat di-tsc.
 >
+> **Update 2026-07-19 (setelah sesi 54)**: Sesi 54 (seluruh 44 file sisa
+> dari audit pasca-sesi-53, masing-masing 1-6 literal) sudah dieksekusi
+> TUNTAS. Total literal turun dari **129 → 0** (66 file → 0 file yang
+> tersisa >0 literal riil di `src/views` & `src/components`). Dua sisa
+> kemunculan `light_sakura:` yang masih terdeteksi grep di `ui/Card.tsx`
+> HANYALAH teks di dalam komentar penjelas (`// Catatan fidelitas: ...`),
+> bukan class Tailwind aktif -- sudah diverifikasi manual. `npx tsc --noEmit`
+> DAN `npx vite build` dijalankan bersih (0 error) atas SELURUH project
+> setelah semua perubahan. Ini menandai **tercapainya target akhir
+> rollout**: 0 literal inline `light_sakura:` di seluruh kode komponen.
+> Sesuai kebijakan tokenisasi penuh sejak sesi 52, sebagian besar token
+> baru sesi ini genuinely 1x-pakai per file (masing-masing didokumentasikan
+> di komentar token terkait `tokens.ts` dengan penjelasan "dicek cross-file,
+> tidak ada exact match"), tapi ditemukan juga cukup banyak reuse
+> lintas-file yang terlewat dari sesi-sesi sebelumnya (`modal.panel`,
+> `modal.dangerBorder` [token baru, dipakai 3 file], `budgetProgressCard.badgeBgSafe`
+> [dipakai 4 file], `hover.textInverse` [token baru, dipakai 3 file],
+> `text.warningOrange` [token baru, dipakai 2 file], `onboarding.inputFocus`,
+> `adminSupportChat.emptyIcon`, `mobileBottomNav.footerBtn`/`sheetGrip`,
+> `installments.progressGlow`, `admin.aiMonitorSuccessProgress`,
+> `voicePreview.confirmBtn`, `adminPremium.metricAmber`, `button.cancelSlate`,
+> `settings.profileCardBgBorder`/`sectionDivider`/`innerCardBgBorder`/`otpInputBg`,
+> `newTransaction.amountInputIncome`/`amountDisplayExpense`,
+> `telegramCard.linkedAvatarRing`, `savings.btnShadow`, `errorMonitor.tableDivide`).
+> Ditemukan 1 kasus token duplikat (dua grup `premiumModal` berbeda isi di
+> `tokens.ts` akibat penambahan token baru tanpa cek nama grup existing
+> lebih dulu) -- sudah digabung & diperbaiki sebelum commit akhir. Lihat
+> log Sesi 54 di bawah untuk rincian per-file & per-token.
+>
 > **Update 2026-07-19 (setelah sesi 53)**: Sesi 53 (`SecuritySettings.tsx`,
 > `Settings.tsx`, `AdminSupportChat.tsx`, `AdminPanel.tsx`,
 > `MobileSettingsDetailPage.tsx`, `ReceiptUploader.tsx`,
@@ -183,13 +212,17 @@
 > di sesi berikutnya begitu `node_modules` tersedia** untuk memastikan
 > tidak ada `Cannot find name 'tokens'/'cx'`.
 
-Status per 2026-07-18 (setelah sesi 51): hook + token dasar sudah terpasang
-di HAMPIR SEMUA file (`useThemeTokens` sudah di-import & dipanggil), tapi
-total **247 literal inline `light_sakura:` masih tersisa di 58 file**
-(turun dari 277/60 setelah sesi 50, lihat tabel audit terbaru di bagian
-roadmap). Ini jauh lebih tinggi dari angka-angka yang tercatat di sesi-sesi
-lama karena fitur baru terus ditambahkan ke file yang sudah pernah
-"dituntaskan".
+Status per 2026-07-19 (setelah sesi 54 -- TUNTAS): hook + token sudah
+terpasang di SEMUA file, dan **0 literal inline `light_sakura:` tersisa**
+di seluruh `src/views` & `src/components` (turun dari 690 di awal rollout).
+Dua kemunculan string `light_sakura:` yang masih terdeteksi `grep` ada di
+`ui/Card.tsx` tapi keduanya adalah teks komentar penjelas, bukan class
+Tailwind aktif. **Target akhir rollout token tema sudah tercapai.** Untuk
+mencegah regresi (fitur baru menambahkan literal baru lagi seperti yang
+terjadi berkali-kali sepanjang sesi 40-53), disarankan menjalankan query
+audit `grep` di bagian roadmap ini secara berkala (mis. sebagai bagian
+dari CI/pre-commit check) alih-alih menunggu sampai jumlahnya menumpuk
+lagi sebelum dirapikan lewat sesi manual berikutnya.
 
 File yang BENAR-BENAR 0 literal saat ini (dikonfirmasi ulang via `grep`):
 `src/views/Wallets.tsx`, `src/views/Onboarding.tsx`, `src/views/Login.tsx`,
@@ -412,6 +445,8 @@ perlu pasang hook baru), kecuali disebutkan lain.
     ~~`HistoryGroupedList.tsx` (7)~~, ~~`DashboardWalletSelectorCard.tsx` (7)~~
     -- lanjut Sesi 54: seluruh sisa file (≈44 file, sebagian besar <7
     literal/file, lihat query audit di bawah untuk daftar lengkap terbaru).
+    **[SELESAI sesi 54, lihat log Sesi 54 -- 0 literal tersisa, ROLLOUT
+    TUNTAS]**
   - **Prioritas tambahan**: pasang `modal.closeBtn` (token baru sesi 51)
     ke `WalletTopUpModal.tsx` (6) & `HistoryEditModal.tsx` (4) -- sudah
     dikonfirmasi exact-match sejak sesi 51, tinggal eksekusi. **[SELESAI
@@ -475,6 +510,49 @@ done | sort -t'|' -k1 -rn
 > -- untuk status terkini, lihat paragraf status di awal dokumen dan tabel
 > roadmap "Sesi 40+" di atas, yang keduanya berbasis audit `grep` langsung
 > ke kode aktual per 2026-07-18.
+
+## Sesi 54: Seluruh Sisa File (44 File) -- Rollout Tuntas, 0 Literal
+
+**Ini adalah sesi penutup rollout token tema.** Target: seluruh 44 file
+sisa (masing-masing 1-6 literal, total 129 literal) yang tercatat di audit
+pasca-sesi-53. Diproses berurutan dari jumlah literal terbanyak ke
+tersedikit, 4 checkpoint `tsc --noEmit` di sepanjang jalan supaya error
+cepat ketahuan (2 ditemukan & diperbaiki, lihat "Insiden" di bawah).
+
+| Kelompok | File | Ringkasan |
+|---|---|---|
+| 6 literal (4 file) | `PwaSettings.tsx`, `SupportChatWidget.tsx`, `ResetPasswordModal.tsx`, `MobileBottomNav.tsx` | Semua → **0**. `PwaSettings.tsx` & sebagian besar `SupportChatWidget.tsx`/`MobileBottomNav.tsx` ternyata SUDAH punya token identik dari sesi lama (`settings.profileCardBgBorder`, `settings.sectionDivider`, `settings.innerCardBgBorder`, `supportWidget.gradientAvatar`, `telegramCard.linkedAvatarRing`, `mobileBottomNav.sheetGrip`/`footerBtn`) -- cuma belum sempat dipasang. 3 token baru: `resetPasswordModal.*` (modalShadow, closeBtnHover, iconChipBg), `supportWidget.scrollFadeGradient`/`categoryHoverBorder`, `hover.textInverse` (baru, langsung reuse 3 file). |
+| 5 literal (5 file) | `Budget.tsx`, `WalletTopUpModal.tsx`, `Sidebar.tsx`, `ErrorState.tsx`, `DashboardRecentTransactions.tsx` | Semua → **0**. Ditemukan token `modal.panel` reusable penuh untuk panel `Budget.tsx` (drop duplikasi `text.onSurface`). Token baru: `budget.iconChipIndigoSoft`/`cancelBtnTextLight`, `walletTopUpModal.panelEmerald`, `sidebar.outerShadow`/`collapseBtnHover`/`expandBtnBg`, `errorState.iconCircleBg`/`retryBtn`, `dashboardRecentTransactions.*` (4 key). Reuse silang: `newTransaction.amountInputIncome` (WalletTopUpModal), `newTransaction.amountDisplayExpense` (ErrorState). |
+| 4 literal (5 file) | `AdminBroadcast.tsx`, `SkeletonLoader.tsx`, `HistoryExport.tsx`, `DropdownField.tsx`, `DashboardHeader.tsx` | Semua → **0**. `SkeletonLoader.tsx`: 4 kemunculan identik `bg-slate-800/60 light_sakura:bg-rose-200/60` dalam 1 file → token generik baru `skeleton.pulseBg` (juga perbaiki 1 komponen `Block()` yang lupa destructure `tokens`). `DropdownField.tsx`: melengkapi `chip.badgeEmerald`/`badgeRose` (varian yang dulu sengaja dibiarkan literal di sesi awal, sekarang ditokenkan sesuai kebijakan baru). Reuse: `button.cancelSlate` (AdminBroadcast, sesuai catatan sesi 46), `adminPremium.metricAmber` (AdminBroadcast). |
+| 3 literal (11 file) | `ui/Card.tsx`, `VoiceRecorder.tsx`, `Modal.tsx`, `MobileTopBar.tsx`, `MaintenanceBanner.tsx`, `HistoryEditModal.tsx`, `ExportSummaryModal.tsx`, `ExportFullModal.tsx`, `DeleteAccountModal.tsx`, `DashboardBudgetSummary.tsx`, `AdminBackBar.tsx` | Semua → **0** (Card.tsx sisa 2 "literal" cuma teks komentar). Temuan besar: ikon chip "rounded-full p-2.5 + `budgetProgressCard.badgeBgSafe` + `text.accentStrong`" ternyata identik di 4 file (`Budget.tsx`, `HistoryEditModal.tsx`, `ExportSummaryModal.tsx`, `ExportFullModal.tsx`) -- dikonsolidasi ke 1 token, komentar diperbarui. Token baru: `card.borderSubtle`, `voiceRecorder.micBtnActive`, `modal.panelDanger`/`panelNormal`/`dangerBorder` (dangerBorder langsung reuse 2 file), `mobileTopBar.headerBg`/`accentGradientLine`, `maintenanceBanner.bannerBg`, `dashboardBudgetSummary.iconChipBg`/`chevronBtnHover`, `adminBackBar.btnBg`. Reuse: `modal.panel` (HistoryEditModal), `budgetProgressCard.badgeBgDanger` + `newTransaction.amountDisplayExpense` (DeleteAccountModal), `admin.aiMonitorSuccessProgress` (DashboardBudgetSummary). |
+| 2 literal (8 file) | `PrivacySettings.tsx`, `AdminCategoryManager.tsx`, `ui/ToggleSwitch.tsx`, `WalletTransferModal.tsx`, `UpdateCheckingIndicator.tsx`, `ReceiptPreview.tsx`, `DashboardWalletCarousel.tsx`, `DashboardInstallments.tsx` | Semua → **0**. `AdminCategoryManager.tsx` melunasi sisa dari sesi 46 (tombol simpan hijau). `ToggleSwitch.tsx` ditokenkan penuh mengikuti kebijakan "komponen primitif = titik reuse" (sama seperti Badge/Button di sesi 47). Token baru: `privacySettings.exportBtn`, `toggleSwitch.trackActive`, `walletTransferModal.summaryCardBg`, `updateCheckingIndicator.panelBg`, `adminCategoryManager.saveBtn`, `dashboardWalletCarousel.dotActive`. Reuse: `voicePreview.confirmBtn` (ReceiptPreview, token lama dipakai ulang persis), `installments.progressGlow` (DashboardInstallments), `mobileBottomNav.sheetGrip` (DashboardWalletCarousel, cabang else ternary). |
+| 1 literal (11 file) | `History.tsx`, `ui/Input.tsx`, `SettingsMobileMenu.tsx`, `VoicePreview.tsx`, `ProviderBadge.tsx`, `PremiumModal.tsx`, `HistoryDeleteModal.tsx`, `FeatureLockGate.tsx`, `EmptyState.tsx`, `DashboardBillReminders.tsx`, `Breadcrumbs.tsx` | Semua → **0**. `History.tsx` & `DashboardBillReminders.tsx` ternyata identik (`text-orange-400 light_sakura:text-orange-600`) → token baru `text.warningOrange`. `VoicePreview.tsx` & `HistoryDeleteModal.tsx` sama-sama pakai `border-red-500/30 light_sakura:border-red-200` → dipasangi `modal.dangerBorder` (token baru dari kelompok 3-literal di atas). `ui/Input.tsx` (colorMap `accent="indigo"`) ternyata exact match `onboarding.inputFocus`. `EmptyState.tsx` akhirnya dipasangi `adminSupportChat.emptyIcon` (sudah ditemukan identik sejak sesi 45, baru sekarang dieksekusi karena dulu di luar cakupan target). Token baru sisanya: `settingsMobileMenuExtra.iconChipBg`, `providerBadge.iconChipBg`, `premiumModal.footerNoteText` (digabung ke grup `premiumModal` yang SUDAH ADA, lihat insiden di bawah), `featureLockGate.panelBorder`, `breadcrumbs.linkHover`. |
+
+**Hasil**: 129 → **0 literal** di seluruh `src/views` & `src/components`
+(66 → 0 file dengan literal riil >0). `npx tsc --noEmit` & `npx vite build`
+dijalankan bersih (0 error) atas SELURUH project.
+
+**Insiden selama sesi & perbaikannya**:
+1. `DashboardWalletCarousel.tsx` sempat error `Cannot find name 'tokens'`
+   karena baris `const { cx } = useThemeTokens();` lupa destructure
+   `tokens` juga (komponen ini sebelumnya cuma pakai `cx` tanpa token
+   apa pun) -- ketahuan & diperbaiki di checkpoint `tsc` ke-4.
+2. Token baru `premiumModal.footerNoteText` sempat dibuat sebagai GRUP
+   BARU bernama `premiumModal` padahal grup dengan nama sama SUDAH ADA
+   (`modalBg`, `closeBtn`, `infoBoxBg`, `qrWrapperBorder`) -- TypeScript
+   menolak (`error TS1117: object literal cannot have multiple properties
+   with the same name`). Diperbaiki dengan menggabungkan `footerNoteText`
+   ke grup `premiumModal` yang asli dan menghapus grup duplikat. Pelajaran
+   untuk sesi berikutnya (jika ada penambahan fitur baru nanti): SELALU
+   `grep -n "namaGrupBaru" tokens.ts` dulu sebelum menambah grup baru,
+   jangan cuma andalkan ingatan dari sesi sebelumnya.
+
+**Catatan kebijakan tokenisasi penuh (berlaku sejak sesi 52)** tetap
+diikuti: token per-file pakai pola `<namaFileCamelCase>.<deskripsiSingkat>`,
+setiap token 1x-pakai diberi komentar singkat "dicek cross-file, tidak ada
+exact match", dan variasi yang MIRIP tapi beda shade/opacity TETAP dapat
+token terpisah (tidak dipaksa digabung) -- konsisten dengan aturan sejak
+sesi awal rollout.
 
 ## Sesi 53: Lanjutan Tokenisasi Penuh -- 8 File "7 Literal" (Banyak Reuse Token Lama)
 

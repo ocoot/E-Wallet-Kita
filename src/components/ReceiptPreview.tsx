@@ -357,7 +357,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
           disabled={amount <= 0 || !merchantName}
           className={cx(
             "flex-2 cursor-pointer py-3.5 px-6 text-white rounded-xl font-sans text-xs font-bold shadow-lg flex items-center justify-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none",
-            "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/15 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+            tokens.voicePreview.confirmBtn
           )}
         >
           <Check size={14} />

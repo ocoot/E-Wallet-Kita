@@ -66,8 +66,8 @@ export const PwaSettings: React.FC = () => {
 
   return (
     <MobileSettingsDetailPage title={t("settings.menu_pwa")} description={t("settings.pwa_desc")}>
-      <div className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
-        <h3 className={cx("font-sans font-bold text-sm border-b border-slate-800/10 pb-2.5 light_sakura:border-rose-100 flex items-center gap-2", tokens.text.label)}>
+      <div className={cx("p-5 rounded-2xl shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}>
+        <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.text.label, tokens.settings.sectionDivider)}>
           <Smartphone size={14} className={cx(tokens.icon.accent)} />
           <span>{t("settings.pwa_section")}</span>
         </h3>
@@ -89,7 +89,7 @@ export const PwaSettings: React.FC = () => {
             <span>{t("settings.pwa_btn_install")}</span>
           </motion.button>
         ) : (
-          <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-slate-400 text-xs leading-relaxed light_sakura:bg-rose-100/35 light_sakura:border-rose-200/50 light_sakura:text-slate-600">
+          <div className={cx("p-3 rounded-xl text-xs leading-relaxed", tokens.settings.innerCardBgBorder, tokens.text.mutedAlt)}>
             <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)]">{t("settings.pwa_not_supported")}</p>
           </div>
         )}

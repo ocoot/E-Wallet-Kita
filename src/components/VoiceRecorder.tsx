@@ -391,7 +391,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
                     "p-3 rounded-xl border transition-colors cursor-pointer",
                     isVoiceLocked
                       ? tokens.chip.accentAmberRose
-                      : "bg-indigo-500/10 border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20 light_sakura:bg-rose-500/10 light_sakura:border-rose-500/20 light_sakura:text-rose-500"
+                      : tokens.voiceRecorder.micBtnActive
                   )}
                 >
                   {isVoiceLocked ? <Lock size={24} className="animate-pulse" /> : <Mic size={24} />}

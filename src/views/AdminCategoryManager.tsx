@@ -304,7 +304,7 @@ export const AdminCategoryManager: React.FC = () => {
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button onClick={() => saveEdit(cat.key)}
-                              className={cx("p-2 rounded-xl bg-emerald-950/40 light_sakura:bg-emerald-50 hover:bg-emerald-950/60 light_sakura:hover:bg-emerald-100 cursor-pointer", tokens.text.success)}>
+                              className={cx("p-2 rounded-xl", tokens.adminCategoryManager.saveBtn, tokens.text.success)}>
                               <Check size={16} />
                             </button>
                             <button onClick={() => setEditingKey(null)}

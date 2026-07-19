@@ -50,7 +50,7 @@ interface DashboardWalletCarouselProps {
  * setelah render pertama, atau breakpoint layar berubah).
  */
 export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = ({ headerSlot, walletSlot }) => {
-  const { cx } = useThemeTokens();
+  const { tokens, cx } = useThemeTokens();
   const [activeIndex, setActiveIndex] = useState(0);
   const [stripHeight, setStripHeight] = useState<number | undefined>(undefined);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -134,7 +134,7 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
               // nyaman disentuh di layar mobile.
               className={cx(
                 "btn-exact relative h-1 rounded-full transition-all cursor-pointer before:absolute before:-inset-y-3.5 before:-inset-x-1 before:content-['']",
-                idx === activeIndex ? "w-3.5 bg-indigo-400 light_sakura:bg-rose-400" : "w-1 bg-slate-700 light_sakura:bg-rose-200"
+                idx === activeIndex ? tokens.dashboardWalletCarousel.dotActive : cx("w-1", tokens.mobileBottomNav.sheetGrip)
               )}
             />
           ))}

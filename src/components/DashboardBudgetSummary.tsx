@@ -44,7 +44,7 @@ export const DashboardBudgetSummary: React.FC = () => {
     >
       <div className="flex items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-3">
-          <div className={cx("w-10 h-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center shrink-0 light_sakura:bg-rose-500/10", tokens.text.accent)}>
+          <div className={cx(tokens.dashboardBudgetSummary.iconChipBg, tokens.text.accent)}>
             <PiggyBank size={18} />
           </div>
           <div>
@@ -61,7 +61,7 @@ export const DashboardBudgetSummary: React.FC = () => {
             audioFeedback.playClick();
             navigate("/budget");
           }}
-          className={cx("p-2 rounded-xl transition-colors cursor-pointer", tokens.surface.sunken, tokens.text.accent, "hover:text-white light_sakura:hover:text-rose-600")}
+          className={cx("p-2 rounded-xl transition-colors cursor-pointer", tokens.surface.sunken, tokens.text.accent, tokens.dashboardBudgetSummary.chevronBtnHover)}
         >
           <ChevronRight size={18} />
         </button>
@@ -93,7 +93,7 @@ export const DashboardBudgetSummary: React.FC = () => {
                       ? 'bg-red-500' 
                       : isWarning 
                         ? 'bg-amber-500' 
-                        : 'bg-indigo-500 light_sakura:bg-rose-500'
+                        : tokens.admin.aiMonitorSuccessProgress
                   }`}
                 />
               </div>
