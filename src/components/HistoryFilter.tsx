@@ -2,6 +2,7 @@ import React from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Search, Filter } from "lucide-react";
 import { DropdownField } from "./DropdownField";
+import { SegmentedControl } from "./ui/SegmentedControl";
 import { audioFeedback } from "../lib/audio";
 import { Category } from "../types";
 import { useThemeTokens } from "../hooks/useThemeTokens";
@@ -91,17 +92,19 @@ export const HistoryFilter: React.FC<HistoryFilterProps> = ({
         </div>
       </div>
 
-      {/* 4. Dynamic page sizing selector */}
+      {/* 4. Dynamic page sizing selector -- SegmentedControl (P3 3.2): opsi
+          tetap & sedikit (5/10/15/20/50/Semua), pas untuk pill iOS-style
+          dengan indikator meluncur, berbeda dari filter bulan/kategori di
+          atas yang jumlah opsinya dinamis/tidak terbatas sehingga tetap
+          pakai DropdownField. */}
       <div className="space-y-1.5">
         <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block", tokens.text.muted)}>
           {t("history.page_size")}
         </label>
-        <DropdownField
+        <SegmentedControl
+          ariaLabel={t("history.page_size")}
           value={String(pageSize)}
-          onChange={(v) => {
-            audioFeedback.playClick();
-            setPageSize(v === "all" ? "all" : parseInt(v));
-          }}
+          onChange={(v) => setPageSize(v === "all" ? "all" : parseInt(v))}
           options={[
             { value: "5", label: "5" },
             { value: "10", label: "10" },

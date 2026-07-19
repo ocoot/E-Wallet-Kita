@@ -7,6 +7,8 @@ export type { InputAccent } from "./Input";
 export { Badge } from "./Badge";
 export type { BadgeTone } from "./Badge";
 export { ToggleSwitch } from "./ToggleSwitch";
+export { SegmentedControl } from "./SegmentedControl";
+export type { SegmentedControlOption } from "./SegmentedControl";
 export { ModalShell } from "./ModalShell";
 export { BottomSheet } from "./BottomSheet";
 export { BlurOverlay } from "./BlurOverlay";

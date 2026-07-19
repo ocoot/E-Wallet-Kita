@@ -836,6 +836,13 @@ export const themeTokens = {
     divideSubtle: "divide-slate-800/50 light_sakura:divide-rose-100/40",
     expenseChip: "bg-red-500/10 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500",
     incomeChip: "bg-emerald-500/10 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-500",
+    /**
+     * P3 (3.1): tombol aksi swipe-to-delete/edit (background solid, bukan
+     * chip transparan seperti expenseChip/incomeChip) -- muncul di layer
+     * belakang saat item transaksi digeser ke kiri. Genuinely 1x-pakai.
+     */
+    swipeEditBtn: "bg-indigo-500 text-white light_sakura:bg-rose-400",
+    swipeDeleteBtn: "bg-red-500 text-white light_sakura:bg-red-500",
   },
   /**
    * Sesi 53: token per-file untuk `DashboardWalletSelectorCard.tsx`.
@@ -985,6 +992,18 @@ export const themeTokens = {
    */
   toggleSwitch: {
     trackActive: "bg-indigo-600 border-indigo-500 light_sakura:bg-rose-500 light_sakura:border-rose-400",
+  },
+  /**
+   * P3 (3.2): komponen UI baru `SegmentedControl.tsx` -- pill filter
+   * bergaya iOS dengan indikator aktif yang meluncur (`layoutId`).
+   * Cross-component sejak awal (dipakai lewat `src/components/ui/`),
+   * bukan token per-file.
+   */
+  segmentedControl: {
+    track: "bg-slate-800/60 border-slate-800 light_sakura:bg-rose-50/60 light_sakura:border-rose-100",
+    thumb: "bg-slate-700 shadow-sm light_sakura:bg-white",
+    textActive: "text-white light_sakura:text-rose-600",
+    textInactive: "text-slate-400 light_sakura:text-slate-500",
   },
   /**
    * Sesi 54: token per-file untuk `WalletTransferModal.tsx`. Genuinely
