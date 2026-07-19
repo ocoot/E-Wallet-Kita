@@ -200,6 +200,21 @@ html, body {
   display: none;
 }
 
+/*
+ * P4 4.8: crossfade halus saat berpindah tema (dark_obsidian <-> light_sakura)
+ * lewat View Transitions API (dipicu dari ThemeContext.tsx). Tanpa aturan ini,
+ * browser yang mendukung API tetap akan pakai durasi default (lebih lama /
+ * kurang pas); durasi 250ms di sini yang membuat transisinya terasa "halus"
+ * tapi tetap cepat, bukan snap instan. Browser yang belum mendukung API ini
+ * otomatis mengabaikan seluruh blok ini (tidak ada efek, fallback ke snap
+ * instan seperti sebelumnya -- lihat fallback di ThemeContext.tsx).
+ */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.25s;
+  animation-timing-function: ease-in-out;
+}
+
 /* Color theme modifications override classes */
 .dark_obsidian {
   /* Obsidian colors are natively integrated into Tailwind utility classes of slate grid */

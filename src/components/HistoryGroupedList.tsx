@@ -141,6 +141,11 @@ const HistoryTransactionRow: React.FC<HistoryTransactionRowProps> = ({
           if (isOpen) closeSwipe();
         }}
         style={{ x }}
+        // P4 4.7: long-press "lift" -- item terangkat (scale-up ringan +
+        // shadow naik) selama ditekan-tahan, tanpa context menu native
+        // sungguhan, secara visual mengesankan gestur "peek" ala native.
+        whileTap={{ scale: 1.015, boxShadow: "0 12px 28px -8px rgba(0,0,0,0.45)" }}
+        transition={{ duration: 0.15 }}
         className={cx("relative flex items-center gap-3 p-3.5 transition-colors touch-pan-y", tokens.surface.sunken, tokens.hover.sunken)}
       >
         {/* Icon lingkaran */}

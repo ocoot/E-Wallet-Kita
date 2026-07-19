@@ -5,6 +5,8 @@ import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { Button } from "./ui/Button";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { useIsDesktopViewport } from "../hooks/useIsDesktopViewport";
+import { springPresets } from "../hooks/useSpringAnimation";
 
 interface ModalProps {
   isOpen: boolean;
@@ -35,11 +37,13 @@ export const Modal: React.FC<ModalProps> = ({
   useDialogA11y(isOpen, panelRef, onCancel);
   const titleId = useId();
   const descId = useId();
+  // P4 4.3: bottom sheet di mobile, kotak dialog tetap di desktop.
+  const isDesktop = useIsDesktopViewport();
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-4 overflow-y-auto">
           {/* Overlay background */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -57,34 +61,50 @@ export const Modal: React.FC<ModalProps> = ({
             aria-labelledby={titleId}
             aria-describedby={descId}
             tabIndex={-1}
-            initial={{ scale: 0.95, opacity: 0, y: 15 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 15 }}
-            transition={{ type: "spring", duration: 0.3 }}
+            variants={isDesktop ? springPresets.variants.modal : springPresets.variants.sheet}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className={cx(
-              "relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl outline-none transition-colors duration-300",
+              "relative z-10 w-full md:max-w-md mt-auto md:my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden border p-6 shadow-2xl outline-none transition-colors duration-300",
+              "rounded-t-3xl md:rounded-2xl",
               type === "danger"
                 ? cx(tokens.modal.panelDanger, tokens.surface.card, tokens.text.onSurface)
                 : cx(tokens.modal.panelNormal, tokens.text.onSurface)
             )}
           >
+            {/* Grip handle -- afordance bottom sheet, cuma di mobile */}
+            <div className="flex md:hidden justify-center -mt-2 mb-3">
+              <div className={cx("w-10 h-1.5 rounded-full", tokens.mobileBottomNav.sheetGrip)} />
+            </div>
+
             {/* Type Icon indicator row */}
             <div className="mb-4 flex items-center gap-3">
-              <div className={cx(
-                "rounded-full p-2.5",
-                type === "danger"
-                  ? cx(tokens.budgetProgressCard.badgeBgDanger, tokens.newTransaction.amountDisplayExpense)
-                  : type === "warning"
-                    ? cx(tokens.budgetProgressCard.badgeBgWarning, tokens.text.warning)
-                    : type === "success"
-                      ? cx(tokens.budget.statusSafe, tokens.text.success)
-                      : cx(tokens.budgetProgressCard.badgeBgSafe, tokens.text.accentStrong)
-              )}>
+              <motion.div
+                // P4 4.6: kompensasi visual ketiadaan haptic -- ikon sukses
+                // "melompat" masuk dengan spring bounce yang cukup kuat
+                // secara visual, supaya tetap terasa sebagai sinyal
+                // konfirmasi meski tanpa getaran fisik. Tipe lain tetap
+                // statis (bounce cuma relevan untuk state "berhasil").
+                initial={type === "success" ? { scale: 0, rotate: -25 } : false}
+                animate={type === "success" ? { scale: 1, rotate: 0 } : undefined}
+                transition={{ type: "spring", stiffness: 420, damping: 14 }}
+                className={cx(
+                  "rounded-full p-2.5",
+                  type === "danger"
+                    ? cx(tokens.budgetProgressCard.badgeBgDanger, tokens.newTransaction.amountDisplayExpense)
+                    : type === "warning"
+                      ? cx(tokens.budgetProgressCard.badgeBgWarning, tokens.text.warning)
+                      : type === "success"
+                        ? cx(tokens.budget.statusSafe, tokens.text.success)
+                        : cx(tokens.budgetProgressCard.badgeBgSafe, tokens.text.accentStrong)
+                )}
+              >
                 {type === "danger" && <Trash2 size={22} />}
                 {type === "warning" && <AlertCircle size={22} />}
                 {type === "info" && <HelpCircle size={22} />}
                 {type === "success" && <CheckCircle size={22} />}
-              </div>
+              </motion.div>
               <h3 className="font-sans text-lg font-semibold tracking-tight" id={titleId}>
                 {title}
               </h3>

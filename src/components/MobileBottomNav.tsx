@@ -171,18 +171,24 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             <Link
               key={item.id}
               to={item.path}
-              className="flex-1 flex flex-col items-center justify-center gap-0.5 py-3 min-w-0 cursor-pointer select-none transition-transform active:scale-90"
+              className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-3 min-w-0 cursor-pointer select-none transition-transform active:scale-90"
             >
               <div className="relative">
                 <IconComp
                   size={20}
-                  className={
+                  // P4 4.1: ikon aktif jadi "filled" (bukan cuma ganti warna)
+                  // -- lucide-react tidak punya varian solid terpisah, tapi
+                  // isi fill="currentColor" di ikon outline-nya membuat
+                  // bentuknya terasa lebih "solid/aktif" ala native tab bar.
+                  fill={isActive ? "currentColor" : "none"}
+                  className={cx(
+                    "transition-[fill] duration-150",
                     isActive
                       ? tokens.text.accent
                       : locked
                         ? tokens.text.faint
                         : tokens.text.muted
-                  }
+                  )}
                 />
                 {locked && (
                   <Lock size={9} className="absolute -right-1.5 -top-1 text-amber-400" />
@@ -205,6 +211,17 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   </motion.span>
                 )}
               </AnimatePresence>
+              {/* P4 4.2: indikator pill yang "meluncur" antar tab -- layoutId
+                  yang sama dipakai lagi di tombol "Lainnya" di bawah, supaya
+                  motion menganimasikan posisinya (bukan muncul instan) saat
+                  tab aktif berpindah, termasuk saat pindah dari/ke "Lainnya". */}
+              {isActive && (
+                <motion.div
+                  layoutId="mobile-bottom-nav-active-pill"
+                  transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                  className={cx("absolute bottom-1 h-1 w-5 rounded-full", tokens.mobileBottomNav.navLinkActive)}
+                />
+              )}
             </Link>
           );
         })}
@@ -212,15 +229,15 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         {/* Tombol "Lainnya" -- membuka bottom-sheet berisi sisa menu */}
         <button
           onClick={() => setIsMoreOpen(true)}
-          className="flex-1 flex flex-col items-center justify-center gap-0.5 py-3 min-w-0 cursor-pointer select-none transition-transform active:scale-90"
+          className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-3 min-w-0 cursor-pointer select-none transition-transform active:scale-90"
         >
           <MoreHorizontal
             size={20}
-            className={
-              isMoreActive
-                ? tokens.icon.accent
-                : tokens.text.muted
-            }
+            fill={isMoreActive ? "currentColor" : "none"}
+            className={cx(
+              "transition-[fill] duration-150",
+              isMoreActive ? tokens.icon.accent : tokens.text.muted
+            )}
           />
           <AnimatePresence initial={false}>
             {isMoreActive && (
@@ -239,6 +256,13 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               </motion.span>
             )}
           </AnimatePresence>
+          {isMoreActive && (
+            <motion.div
+              layoutId="mobile-bottom-nav-active-pill"
+              transition={{ type: "spring", stiffness: 380, damping: 30 }}
+              className={cx("absolute bottom-1 h-1 w-5 rounded-full", tokens.mobileBottomNav.navLinkActive)}
+            />
+          )}
         </button>
       </nav>
 

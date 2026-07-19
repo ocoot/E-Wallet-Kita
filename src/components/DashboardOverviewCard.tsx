@@ -9,6 +9,7 @@ import { InfoTooltip } from "./InfoTooltip";
 import { audioFeedback } from "../lib/audio";
 import { useBalanceVisibility, maskCurrency } from "../contexts/BalanceVisibilityContext";
 import { Card } from "./ui/Card";
+import { AnimatedNumber } from "./ui/AnimatedNumber";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface DashboardOverviewCardProps {
@@ -145,7 +146,11 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
               <InfoTooltip text={t("dashboard.net_worth_tooltip")} align="left" />
             </p>
             <p className={`font-mono tabular-nums font-bold text-2xl sm:text-3xl tracking-tight ${isPositive ? tokens.text.primary : "text-red-400"}`}>
-              {balanceVisible ? formatIDR(netWorth) : maskCurrency(formatIDR(netWorth))}
+              {balanceVisible ? (
+                <AnimatedNumber value={netWorth} format={formatIDR} />
+              ) : (
+                maskCurrency(formatIDR(netWorth))
+              )}
             </p>
           </div>
         </div>

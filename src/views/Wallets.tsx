@@ -17,6 +17,7 @@ import { ProviderBadge } from "../components/ProviderBadge";
 import { Modal } from "../components/Modal";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
+import { AnimatedNumber } from "../components/ui/AnimatedNumber";
 import { PROVIDER_CATALOG, OTHER_PROVIDER_ID } from "../data/walletProviders";
 
 const GROUP_META: Record<Exclude<WalletType, "general">, { icon: string; labelKey: string; addKey: string; placeholderKey: string }> = {
@@ -223,7 +224,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
       ) : (
         <>
           <p className={cx("font-mono font-black text-xl tabular-nums", tokens.text.primary)}>
-            {formatIDR(wallet.balance)}
+            <AnimatedNumber value={wallet.balance} format={formatIDR} />
           </p>
           {wallet.earmarked_amount > 0 && (
             <p className="font-sans text-[10px] text-amber-400/90 -mt-2">
@@ -427,7 +428,7 @@ export const Wallets: React.FC = () => {
               {t("wallet.total_balance")}
             </p>
             <p className={cx("font-mono font-black text-3xl tabular-nums mt-1", tokens.text.primary)}>
-              {formatIDR(totalBalance)}
+              <AnimatedNumber value={totalBalance} format={formatIDR} />
             </p>
           </div>
 

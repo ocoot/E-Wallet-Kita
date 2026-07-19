@@ -133,16 +133,16 @@ export const WalletTopUpModal: React.FC<WalletTopUpModalProps> = ({
             </div>
           ) : (
             <>
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-full p-2.5 bg-emerald-500/15 text-emerald-400">
+              <div className="mb-4 flex items-center justify-between gap-2">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="rounded-full p-2.5 bg-emerald-500/15 text-emerald-400 shrink-0">
                     <Plus size={20} />
                   </div>
-                  <div>
-                    <h3 className="font-sans text-lg font-semibold tracking-tight">
+                  <div className="min-w-0">
+                    <h3 className="font-sans text-lg font-semibold tracking-tight truncate">
                       {t("walletActions.topup_title")}
                     </h3>
-                    <p className={cx("font-sans text-[11px]", tokens.text.muted)}>
+                    <p className={cx("font-sans text-[11px] truncate", tokens.text.muted)}>
                       {wallet.name}
                     </p>
                   </div>

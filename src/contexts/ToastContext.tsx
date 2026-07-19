@@ -198,7 +198,11 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         role="status"
         aria-live="polite"
         aria-atomic="false"
-        className="fixed top-4 right-4 z-[70] flex flex-col gap-2.5 max-w-sm w-full pointer-events-none"
+        // P4 4.4: di mobile, toast tampil sebagai banner penuh menempel di
+        // atas (gaya notifikasi iOS), bukan kartu kecil di pojok kanan yang
+        // terasa seperti notifikasi web. Di desktop (>=768px) posisi lama
+        // (pojok kanan-atas, lebar terbatas) dipertahankan.
+        className="fixed z-[70] flex flex-col gap-2.5 pointer-events-none inset-x-3 top-[max(1rem,env(safe-area-inset-top))] md:inset-x-auto md:top-4 md:right-4 md:max-w-sm md:w-full"
       >
         <AnimatePresence>
           {toasts.map((t) => (

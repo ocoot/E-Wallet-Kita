@@ -45,11 +45,21 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setThemeState(newTheme);
     localStorage.setItem("ewallet_theme", newTheme);
 
-    // Apply classes globally
-    const root = window.document.documentElement;
-    root.classList.remove("dark_obsidian", "light_sakura");
-    root.classList.add(newTheme);
-    
+    // Apply classes globally -- lewat View Transitions API kalau tersedia
+    // (P4 4.8) supaya perubahan warna terasa crossfade halus (~250ms),
+    // bukan "snap" instan. Browser yang belum dukung (mis. Firefox lama)
+    // otomatis fallback ke perubahan instan seperti sebelumnya.
+    const applyThemeClasses = () => {
+      const root = window.document.documentElement;
+      root.classList.remove("dark_obsidian", "light_sakura");
+      root.classList.add(newTheme);
+    };
+    if (typeof document !== "undefined" && typeof document.startViewTransition === "function") {
+      document.startViewTransition(applyThemeClasses);
+    } else {
+      applyThemeClasses();
+    }
+
     if (user) {
       try {
         await supabase
