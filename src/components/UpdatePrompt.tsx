@@ -156,12 +156,12 @@ export const UpdatePrompt: React.FC = () => {
                             v{entry.version}
                           </span>
                           {idx === 0 && (
-                            <span className={cx("px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide leading-none", tokens.updatePrompt.badge)}>
+                            <span className={cx("px-1.5 py-0.5 rounded-full text-[clamp(0.5063rem,2.34vw,0.5625rem)] font-bold uppercase tracking-wide leading-none", tokens.updatePrompt.badge)}>
                               {t("pwa.badge_new")}
                             </span>
                           )}
                           {entry.date && (
-                            <span className="text-[10px] text-slate-500 ml-auto shrink-0">{entry.date}</span>
+                            <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 ml-auto shrink-0">{entry.date}</span>
                           )}
                         </div>
                         <ul className={cx("space-y-1.5 text-xs sm:text-sm", tokens.text.label)}>
@@ -190,7 +190,7 @@ export const UpdatePrompt: React.FC = () => {
                   onClick={handleUpdate}
                   disabled={isUpdating}
                   aria-busy={isUpdating}
-                  className={cx("flex-1 order-1 sm:order-2 px-4 py-2.5 rounded-xl text-white text-xs sm:text-sm font-bold transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-80 disabled:cursor-wait", tokens.updatePrompt.btnConfirm)}
+                  className={cx("flex-1 order-1 sm:order-2 px-4 py-2.5 rounded-xl text-white text-xs sm:text-sm font-bold shadow-lg transition-colors cursor-pointer flex items-center justify-center gap-2 disabled:opacity-80 disabled:cursor-wait", tokens.updatePrompt.btnConfirm)}
                 >
                   {isUpdating && <Loader2 size={14} className="animate-spin shrink-0" />}
                   {isUpdating ? t("pwa.updating") : t("pwa.update_btn")}

@@ -517,7 +517,7 @@ export const Settings: React.FC<SettingsProps> = ({
   };
 
   const formatIDR = (num: number) => {
-    return "Rp" + Math.round(num).toLocaleString("id-ID");
+    return "Rp\u00A0" + Math.round(num).toLocaleString("id-ID");
   };
 
   return (

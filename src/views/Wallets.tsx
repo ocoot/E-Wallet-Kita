@@ -26,7 +26,7 @@ const GROUP_META: Record<Exclude<WalletType, "general">, { icon: string; labelKe
   cash: { icon: "", labelKey: "wallet.group_cash", addKey: "wallet.add_cash", placeholderKey: "wallet.field_name_placeholder_cash" },
 };
 
-const formatIDR = (n: number) => "Rp" + Math.round(n || 0).toLocaleString("id-ID");
+const formatIDR = (n: number) => "Rp\u00A0" + Math.round(n || 0).toLocaleString("id-ID");
 
 /** Sembunyikan sebagian besar digit, sisakan 4 karakter terakhir terlihat -- mis. "••• 6789". */
 const maskContact = (value: string) => {
@@ -121,7 +121,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
           <div className="min-w-0">
             <p className={cx("font-sans font-bold text-sm truncate", tokens.text.primary)}>{wallet.name}</p>
             {wallet.provider && wallet.provider !== wallet.name && (
-              <p className={cx("font-sans text-[11px] truncate", tokens.text.muted)}>{wallet.provider}</p>
+              <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] truncate", tokens.text.muted)}>{wallet.provider}</p>
             )}
           </div>
         </div>
@@ -173,7 +173,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
             className={cx("flex items-center gap-2 w-full text-left px-2.5 py-1.5 rounded-lg cursor-pointer group", tokens.surface.sunken, tokens.hover.surface)}
           >
             {wallet.type === "ewallet" ? <Phone size={12} className="text-slate-500 shrink-0" /> : <CreditCard size={12} className="text-slate-500 shrink-0" />}
-            <span className={cx("font-sans text-[11px] tabular-nums truncate group-hover:text-slate-300", tokens.text.muted)}>
+            <span className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] tabular-nums truncate group-hover:text-slate-300", tokens.text.muted)}>
               {contactValue
                 ? (isContactVisible ? contactValue : maskContact(contactValue))
                 : `+ ${contactLabel}`}
@@ -227,20 +227,20 @@ const WalletCard: React.FC<WalletCardProps> = ({
             <AnimatedNumber value={wallet.balance} format={formatIDR} />
           </p>
           {wallet.earmarked_amount > 0 && (
-            <p className="font-sans text-[10px] text-amber-400/90 -mt-2">
+            <p className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] text-amber-400/90 -mt-2">
               {t("wallet.earmarked_note", { earmarked: formatIDR(wallet.earmarked_amount), available: formatIDR(wallet.available_balance) })}
             </p>
           )}
           <div className="flex items-center gap-2 pt-1">
             <button
               onClick={() => { setEditingBalanceId(wallet.id); setBalanceInput(Math.round(wallet.balance)); }}
-              className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold cursor-pointer", tokens.surface.sunken, tokens.hover.surface, tokens.text.label)}
+              className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold cursor-pointer", tokens.surface.sunken, tokens.hover.surface, tokens.text.label)}
             >
               <Pencil size={11} /> {t("wallet.edit_balance")}
             </button>
             <button
               onClick={() => navigate("/transactions", { state: { filterWalletId: wallet.id } })}
-              className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold cursor-pointer", tokens.surface.sunken, tokens.hover.surface, tokens.text.label)}
+              className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold cursor-pointer", tokens.surface.sunken, tokens.hover.surface, tokens.text.label)}
             >
               <HistoryIcon size={11} /> {t("wallet.view_history")}
             </button>
@@ -438,7 +438,7 @@ export const Wallets: React.FC = () => {
               <h2 className={cx("font-sans text-xs font-bold uppercase tracking-wider", tokens.text.label)}>
                 {t("wallet.group_general")}
               </h2>
-              <p className={cx("font-sans text-[11px] -mt-1", tokens.text.faint)}>{t("wallet.general_desc")}</p>
+              <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] -mt-1", tokens.text.faint)}>{t("wallet.general_desc")}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <WalletCard wallet={generalWallet} {...walletCardSharedProps} />
               </div>
@@ -457,7 +457,7 @@ export const Wallets: React.FC = () => {
                   </h2>
                   <button
                     onClick={() => openCreateForm(type)}
-                    className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[11px] font-bold cursor-pointer", tokens.surface.sunken, tokens.hover.surface, tokens.text.accent)}
+                    className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold cursor-pointer", tokens.surface.sunken, tokens.hover.surface, tokens.text.accent)}
                   >
                     <Plus size={12} /> {t(meta.addKey)}
                   </button>
@@ -472,7 +472,7 @@ export const Wallets: React.FC = () => {
                     {isCatalogType(type) ? (
                       <>
                         <div>
-                          <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
+                          <label className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase block mb-1", tokens.text.muted)}>
                             {t("wallet.field_provider")}
                           </label>
                           <WalletPickerField
@@ -491,7 +491,7 @@ export const Wallets: React.FC = () => {
                         </div>
                         {isOtherSelected(type) && (
                           <div>
-                            <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
+                            <label className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase block mb-1", tokens.text.muted)}>
                               {t("wallet.field_name")}
                             </label>
                             <Input
@@ -506,7 +506,7 @@ export const Wallets: React.FC = () => {
                       </>
                     ) : (
                       <div>
-                        <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
+                        <label className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase block mb-1", tokens.text.muted)}>
                           {t("wallet.field_name")}
                         </label>
                         <Input
@@ -519,7 +519,7 @@ export const Wallets: React.FC = () => {
                       </div>
                     )}
                     <div>
-                      <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
+                      <label className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase block mb-1", tokens.text.muted)}>
                         {t("wallet.field_starting_balance")}
                       </label>
                       <Input
@@ -533,7 +533,7 @@ export const Wallets: React.FC = () => {
                     </div>
                     {isCatalogType(type) && (
                       <div>
-                        <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
+                        <label className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase block mb-1", tokens.text.muted)}>
                           {type === "ewallet" ? t("wallet.field_phone") : t("wallet.field_account_number")}
                         </label>
                         <Input

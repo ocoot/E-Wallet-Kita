@@ -12,8 +12,8 @@ import { DropdownField } from "../components/DropdownField";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { useDialogA11y } from "../hooks/useDialogA11y";
 import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
+import { ModalShell } from "../components/ui/ModalShell";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
@@ -33,7 +33,7 @@ const emptyForm = (): InstallmentFormState => ({
   name: "", category_key: "other", principal_amount: "", monthly_amount: "",
   total_months: "12", start_date: todayYMD(), notes: "", wallet_id: ""
 });
-const formatIDR = (num: number | null) => num != null ? "Rp" + Math.round(num).toLocaleString("id-ID") : "-";
+const formatIDR = (num: number | null) => num != null ? "Rp\u00A0" + Math.round(num).toLocaleString("id-ID") : "-";
 
 export const Installments: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -55,12 +55,10 @@ export const Installments: React.FC = () => {
   const [undoConfirmTarget, setUndoConfirmTarget] = useState<InstallmentWithProgress | null>(null);
 
   useLockBodyScroll(isFormOpen);
-  const formModalRef = React.useRef<HTMLDivElement>(null);
   // Menjebak swipe-back/tombol-back HP saat form modal ini terbuka, supaya
   // menutup modal (tetap di halaman Cicilan) -- bukan malah menavigasi
   // balik ke halaman sebelum Cicilan (lihat useBackGestureTrap.ts).
   const { close: closeForm } = useBackGestureTrap(isFormOpen, setIsFormOpen);
-  useDialogA11y(isFormOpen, formModalRef, closeForm);
   const [busyId, setBusyId] = useState<string | null>(null);
   // ── Formasi carousel: kartu yang sedang dipilih untuk ditampilkan detailnya ──
   const [activeInstallmentId, setActiveInstallmentId] = useState<string | null>(null);
@@ -230,7 +228,7 @@ export const Installments: React.FC = () => {
               </div>
               <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
                 <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_monthly_commitment")}</span>
-                <p className={cx("font-bold font-mono text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.onSurface)}>{formatIDR(totalMonthlyCommitment)}</p>
+                <p className={cx("font-bold font-mono text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.onSurface)}>{formatIDR(totalMonthlyCommitment)}</p>
               </div>
             </div>
           )}
@@ -364,96 +362,89 @@ export const Installments: React.FC = () => {
       </div>
 
       {/* Form modal */}
-      <AnimatePresence>
-        {isFormOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-slate-950/70 backdrop-blur-sm"
-            onClick={e => { if (e.target === e.currentTarget) closeForm(); }}>
-            <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              ref={formModalRef}
-              role="dialog"
-              aria-modal="true"
-              tabIndex={-1}
-              className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border shadow-2xl", tokens.surface.card, tokens.border.default)}>
-              <div className="h-1 w-full bg-gradient-to-r from-indigo-500 to-violet-500" />
-              <div className="p-6 space-y-4">
-                <h2 className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
-                  {editTarget ? t("installments.edit_title") : t("installments.add_title")}
-                </h2>
-                <Input
-                  type="text"
-                  label={t("installments.form_name")}
-                  value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder={t("installments.form_name_placeholder")}
-                />
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_category")}</label>
-                  <DropdownField
-                    value={form.category_key}
-                    onChange={(v) => setForm(f => ({ ...f, category_key: v }))}
-                    options={expenseCategories.map(c => ({ value: c.key, label: locale === "id" ? c.label_id || c.key : c.label_en || c.key }))}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <Input
-                    type="number"
-                    label={t("installments.form_monthly_amount")}
-                    value={form.monthly_amount}
-                    onChange={e => setForm(f => ({ ...f, monthly_amount: e.target.value }))}
-                    placeholder={t("installments.form_monthly_amount_placeholder")}
-                    min={0}
-                  />
-                  <Input
-                    type="number"
-                    label={t("installments.form_total_months")}
-                    value={form.total_months}
-                    onChange={e => setForm(f => ({ ...f, total_months: e.target.value }))}
-                    min={1}
-                  />
-                </div>
-                <Input
-                  type="number"
-                  label={t("installments.form_principal")}
-                  value={form.principal_amount}
-                  onChange={e => setForm(f => ({ ...f, principal_amount: e.target.value }))}
-                  placeholder={t("installments.form_principal_placeholder")}
-                  min={0}
-                />
-                <Input
-                  type="date"
-                  label={t("installments.form_start_date")}
-                  value={form.start_date}
-                  onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))}
-                />
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
-                  <DropdownField
-                    value={form.wallet_id}
-                    onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
-                    options={activeWallets.map((w) => {
-                      const icon = w.type === "general" ? "" : w.type === "ewallet" ? "" : w.type === "bank" ? "" : "";
-                      const label = w.type === "general" ? t("wallet.group_general") : `${w.name}${w.provider ? ` · ${w.provider}` : ""}`;
-                      return { value: w.type === "general" ? "" : w.id, label: `${icon} ${label} (${formatIDR(w.balance)})` };
-                    })}
-                  />
-                </div>
-                <Input
-                  type="text"
-                  label={t("installments.form_notes")}
-                  value={form.notes}
-                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                  placeholder={t("installments.form_notes_placeholder")}
-                />
-                <div className="flex gap-3 pt-1">
-                  <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
-                  <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ModalShell
+        isOpen={isFormOpen}
+        onClose={closeForm}
+        maxWidth="max-w-md"
+        labelledBy="installments-form-title"
+        className="overflow-hidden"
+      >
+        <div className="h-1 w-full bg-gradient-to-r from-indigo-500 to-violet-500" />
+        <div className="p-6 space-y-4">
+          <h2 id="installments-form-title" className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
+            {editTarget ? t("installments.edit_title") : t("installments.add_title")}
+          </h2>
+          <Input
+            type="text"
+            label={t("installments.form_name")}
+            value={form.name}
+            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            placeholder={t("installments.form_name_placeholder")}
+          />
+          <div>
+            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_category")}</label>
+            <DropdownField
+              value={form.category_key}
+              onChange={(v) => setForm(f => ({ ...f, category_key: v }))}
+              options={expenseCategories.map(c => ({ value: c.key, label: locale === "id" ? c.label_id || c.key : c.label_en || c.key }))}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              type="number"
+              label={t("installments.form_monthly_amount")}
+              value={form.monthly_amount}
+              onChange={e => setForm(f => ({ ...f, monthly_amount: e.target.value }))}
+              placeholder={t("installments.form_monthly_amount_placeholder")}
+              min={0}
+            />
+            <Input
+              type="number"
+              label={t("installments.form_total_months")}
+              value={form.total_months}
+              onChange={e => setForm(f => ({ ...f, total_months: e.target.value }))}
+              min={1}
+            />
+          </div>
+          <Input
+            type="number"
+            label={t("installments.form_principal")}
+            value={form.principal_amount}
+            onChange={e => setForm(f => ({ ...f, principal_amount: e.target.value }))}
+            placeholder={t("installments.form_principal_placeholder")}
+            min={0}
+          />
+          <Input
+            type="date"
+            label={t("installments.form_start_date")}
+            value={form.start_date}
+            onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))}
+          />
+          <div>
+            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
+            <DropdownField
+              value={form.wallet_id}
+              onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
+              options={activeWallets.map((w) => {
+                const icon = w.type === "general" ? "" : w.type === "ewallet" ? "" : w.type === "bank" ? "" : "";
+                const label = w.type === "general" ? t("wallet.group_general") : `${w.name}${(w.provider && w.provider !== w.name) ? ` · ${w.provider}` : ""}`;
+                return { value: w.type === "general" ? "" : w.id, label: `${icon} ${label} (${formatIDR(w.balance)})` };
+              })}
+            />
+          </div>
+          <Input
+            type="text"
+            label={t("installments.form_notes")}
+            value={form.notes}
+            onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+            placeholder={t("installments.form_notes_placeholder")}
+          />
+          <div className="flex gap-3 pt-1">
+            <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
+            <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
+          </div>
+        </div>
+      </ModalShell>
 
       <Modal isOpen={!!deleteTarget} title={t("installments.delete_confirm_title")} description={t("installments.delete_confirm_desc", { name: deleteTarget?.name ?? "" })} type="danger" confirmLabel={t("common.delete")} cancelLabel={t("common.cancel")} onConfirm={handleDeleteConfirmed} onCancel={() => setDeleteTarget(null)} confirmDisabled={isDeleting} />
 

@@ -380,13 +380,13 @@ export const AdminBackup: React.FC = () => {
         {latest ? (
           <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className={tokens.adminBackup.cardBgBorder}>
-              <p className={cx("text-[10px] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
+              <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
                 {t("admin.backup_last_status")}
               </p>
               {statusBadge(latest.status)}
             </div>
             <div className={tokens.adminBackup.cardBgBorder}>
-              <p className={cx("text-[10px] uppercase font-black tracking-wider flex items-center gap-1", tokens.text.mutedAlt)}>
+              <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider flex items-center gap-1", tokens.text.mutedAlt)}>
                 <Clock className="w-3 h-3" /> {t("admin.backup_last_time")}
               </p>
               <p className={tokens.adminBackup.cardText}>
@@ -394,7 +394,7 @@ export const AdminBackup: React.FC = () => {
               </p>
             </div>
             <div className={tokens.adminBackup.cardBgBorder}>
-              <p className={cx("text-[10px] uppercase font-black tracking-wider flex items-center gap-1", tokens.text.mutedAlt)}>
+              <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider flex items-center gap-1", tokens.text.mutedAlt)}>
                 <HardDrive className="w-3 h-3" /> {t("admin.backup_size")}
               </p>
               <p className={tokens.adminBackup.cardText}>
@@ -402,7 +402,7 @@ export const AdminBackup: React.FC = () => {
               </p>
             </div>
             <div className={tokens.adminBackup.cardBgBorder}>
-              <p className={cx("text-[10px] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
+              <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
                 {t("admin.backup_destination")}
               </p>
               <p className={cx(tokens.adminBackup.cardText, "capitalize")}>
@@ -630,7 +630,7 @@ export const AdminBackup: React.FC = () => {
                   <span className={tokens.adminBackup.labelSpan}>
                     {t("admin.backup_restore_scope_full")}
                   </span>
-                  <span className="block text-[11px] text-slate-500 mt-0.5">
+                  <span className="block text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">
                     {t("admin.backup_restore_warning_full")}
                   </span>
                 </span>
@@ -648,7 +648,7 @@ export const AdminBackup: React.FC = () => {
                   <span className={tokens.adminBackup.labelSpan}>
                     {t("admin.backup_restore_scope_table")}
                   </span>
-                  <span className="block text-[11px] text-slate-500 mt-0.5">
+                  <span className="block text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">
                     {t("admin.backup_restore_warning_table")}
                   </span>
                 </span>
@@ -657,11 +657,11 @@ export const AdminBackup: React.FC = () => {
 
             {restoreScope === "table" && (
               <div className="mb-4">
-                <p className="text-[10px] uppercase font-black tracking-wider text-slate-400 mb-2">
+                <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider text-slate-400 mb-2">
                   {t("admin.backup_restore_select_tables")}
                 </p>
                 {restorableTables.length === 0 ? (
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500">
                     {t("admin.backup_restorable_table_fetch_error")}
                   </p>
                 ) : (
@@ -678,7 +678,7 @@ export const AdminBackup: React.FC = () => {
                           className="w-3.5 h-3.5 rounded accent-amber-500 cursor-pointer"
                         />
                         {restorableLabel(tbl)}
-                        <span className="text-slate-600 font-mono text-[10px]">
+                        <span className="text-slate-600 font-mono text-[clamp(0.5625rem,2.6vw,0.625rem)]">
                           ({tbl.table_name})
                         </span>
                       </label>
@@ -688,7 +688,7 @@ export const AdminBackup: React.FC = () => {
               </div>
             )}
 
-            <div className="mb-5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-400 leading-relaxed">
+            <div className="mb-5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-amber-400 leading-relaxed">
               {t("admin.backup_restore_maintenance_notice")}
             </div>
 

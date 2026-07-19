@@ -142,7 +142,7 @@ export const WalletTopUpModal: React.FC<WalletTopUpModalProps> = ({
                     <h3 className="font-sans text-lg font-semibold tracking-tight truncate">
                       {t("walletActions.topup_title")}
                     </h3>
-                    <p className={cx("font-sans text-[11px] truncate", tokens.text.muted)}>
+                    <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] truncate", tokens.text.muted)}>
                       {wallet.name}
                     </p>
                   </div>

@@ -159,7 +159,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   };
 
   // ── Helpers ──────────────────────────────────────────────────────────
-  const formatIDR = (num: number) => "Rp" + Math.round(num).toLocaleString("id-ID");
+  const formatIDR = (num: number) => "Rp\u00A0" + Math.round(num).toLocaleString("id-ID");
 
   const triggerShake = async () => {
     await shakeControls.start({ x: [-5, 5, -5, 5, 0], transition: { duration: 0.4 } });
@@ -462,7 +462,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                   <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                     {t("transaction.label_category")}
                   </label>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-nowrap md:flex-wrap gap-2 overflow-x-auto md:overflow-visible scrollbar-hide -mx-1 px-1 pb-1 md:pb-0 md:mx-0 md:px-0">
                     {activeCategories.map((cat) => {
                       const isSelected = category === cat.key;
                       return (
@@ -474,7 +474,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                             audioFeedback.playClick();
                             setCategory(cat.key);
                           }}
-                          className={cx(isSelected ? (isExpense ? tokens.newTransaction.categoryPillSelectedExpense : tokens.newTransaction.categoryPillSelectedIncome) : cx(tokens.newTransaction.categoryPillInactive, tokens.text.muted))}
+                          className={cx("shrink-0", isSelected ? (isExpense ? tokens.newTransaction.categoryPillSelectedExpense : tokens.newTransaction.categoryPillSelectedIncome) : cx(tokens.newTransaction.categoryPillInactive, tokens.text.muted))}
                         >
                           <span className="text-sm leading-none">{getCategoryEmoji(cat.key)}</span>
                           <span>{locale === "id" ? cat.label_id || cat.key : cat.label_en || cat.key}</span>
@@ -496,7 +496,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                     placeholder={t("wallet.label_pos")}
                     options={activeWallets.map((w) => {
                       const icon = w.type === "general" ? "" : w.type === "ewallet" ? "" : w.type === "bank" ? "" : "";
-                      return { value: w.id, label: `${icon} ${w.name}${w.provider ? ` · ${w.provider}` : ""} (${formatIDR(w.balance)})` };
+                      return { value: w.id, label: `${icon} ${w.name}${(w.provider && w.provider !== w.name) ? ` · ${w.provider}` : ""} (${formatIDR(w.balance)})` };
                     })}
                   />
                 </div>

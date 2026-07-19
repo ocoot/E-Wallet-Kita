@@ -85,7 +85,7 @@ const StatChip: React.FC<{ label: string; value: string; delay?: number }> = ({ 
         tokens.login.statChip
       )}
     >
-      <span className={cx("text-[10px] font-semibold tabular-nums", tokens.login.statChipVal)}>{value}</span>
+      <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold tabular-nums", tokens.login.statChipVal)}>{value}</span>
       <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.login.statChipLbl)}>{label}</span>
     </motion.div>
   );

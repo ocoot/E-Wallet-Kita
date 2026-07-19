@@ -487,7 +487,7 @@ export const Onboarding: React.FC = () => {
                               )}
                             >
                               {tx.type === "income" ? "+" : "-"}
-                              Rp{tx.amount.toLocaleString()}
+                              Rp{"\u00A0"}{tx.amount.toLocaleString()}
                             </span>
                           </div>
                         ))

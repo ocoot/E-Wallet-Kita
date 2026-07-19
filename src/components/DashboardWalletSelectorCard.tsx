@@ -217,7 +217,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                 terpisah lagi) + dropdown pemilih pos di kanan. */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-1.5 min-w-0">
-                <p className={cx("font-sans text-[10px] uppercase tracking-wider font-bold truncate", mutedTextClass)}>
+                <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-wider font-bold truncate", mutedTextClass)}>
                   {t("wallet.your_balance")}
                 </p>
                 <button
@@ -263,7 +263,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                 <div
                   onClick={(e) => { e.stopPropagation(); setContactVisible((v) => !v); }}
                   className={cx(
-                    "mt-2 inline-flex items-center gap-1.5 text-[11px] tabular-nums cursor-pointer w-fit px-2 py-1 rounded-lg",
+                    "mt-2 inline-flex items-center gap-1.5 text-[clamp(0.6188rem,2.86vw,0.6875rem)] tabular-nums cursor-pointer w-fit px-2 py-1 rounded-lg",
                     mutedTextClass,
                     hasLogoBg ? "bg-black/25 hover:bg-black/35" : tokens.dashboardWalletSelectorCard.blackOverlayBg
                   )}
@@ -289,7 +289,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   <TrendingUp size={13} />
                 </span>
                 <div className="min-w-0">
-                  <p className={cx("text-[9.5px] uppercase font-bold tracking-wide truncate", mutedTextClass)}>
+                  <p className={cx("text-[clamp(0.5344rem,2.47vw,0.5938rem)] uppercase font-bold tracking-wide truncate", mutedTextClass)}>
                     {t("dashboard.income")}
                   </p>
                   <p className="font-mono text-xs font-bold text-emerald-400 tabular-nums truncate">
@@ -307,7 +307,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   <TrendingDown size={13} />
                 </span>
                 <div className="min-w-0">
-                  <p className={cx("text-[9.5px] uppercase font-bold tracking-wide truncate", mutedTextClass)}>
+                  <p className={cx("text-[clamp(0.5344rem,2.47vw,0.5938rem)] uppercase font-bold tracking-wide truncate", mutedTextClass)}>
                     {t("dashboard.expense")}
                   </p>
                   <p className="font-mono text-xs font-bold text-red-400 tabular-nums truncate">
@@ -331,7 +331,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                 )}
               >
                 <History size={16} />
-                <span className="text-[10px] font-semibold leading-none whitespace-nowrap">{t("wallet.action_history_short")}</span>
+                <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold leading-none whitespace-nowrap">{t("wallet.action_history_short")}</span>
               </button>
 
               <div className="flex items-center gap-2">
@@ -342,7 +342,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer select-none bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-[transform,background-color] active:scale-[0.94]"
                 >
                   <Plus size={16} />
-                  <span className="text-[10px] font-semibold leading-none whitespace-nowrap">{t("wallet.action_topup_short")}</span>
+                  <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold leading-none whitespace-nowrap">{t("wallet.action_topup_short")}</span>
                 </button>
                 <button
                   type="button"
@@ -355,7 +355,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   )}
                 >
                   <Send size={15} />
-                  <span className="text-[10px] font-semibold leading-none whitespace-nowrap">{t("wallet.action_transfer_short")}</span>
+                  <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold leading-none whitespace-nowrap">{t("wallet.action_transfer_short")}</span>
                 </button>
               </div>
             </div>

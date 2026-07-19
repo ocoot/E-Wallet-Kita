@@ -108,7 +108,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
                   { value: "", label: t("export.wallet_filter_all") },
                   ...activeWallets.map((w) => {
                     const icon = w.type === "general" ? "" : w.type === "ewallet" ? "" : w.type === "bank" ? "" : "";
-                    return { value: w.id, label: `${icon} ${w.name}${w.provider ? ` · ${w.provider}` : ""}` };
+                    return { value: w.id, label: `${icon} ${w.name}${(w.provider && w.provider !== w.name) ? ` · ${w.provider}` : ""}` };
                   })
                 ]}
               />

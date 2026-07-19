@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Bell, BellOff, Loader2 } from "lucide-react";
+import { Bell, BellOff, BellRing, Loader2, ShieldAlert } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useToast } from "../../contexts/ToastContext";
@@ -7,8 +7,12 @@ import { useThemeTokens } from "../../hooks/useThemeTokens";
 import { usePremium } from "../../hooks/usePremium";
 import { useNotificationPreferences, NotificationPreferenceKey } from "../../hooks/useNotificationPreferences";
 import { supabase } from "../../lib/supabase";
+import { requestFcmToken, saveFcmToken } from "../../lib/firebase";
 import { ToggleSwitch } from "../../components/ui/ToggleSwitch";
+import { Button } from "../../components/ui/Button";
 import { MobileSettingsDetailPage } from "../../components/settings/MobileSettingsDetailPage";
+
+type BrowserPermState = "granted" | "denied" | "default" | "unsupported";
 
 /** Halaman detail "Notifikasi" (mobile) -- push & Telegram, per kategori. */
 export const NotificationSettings: React.FC = () => {
@@ -21,6 +25,33 @@ export const NotificationSettings: React.FC = () => {
   const isTelegramLocked = isGuest || !isPremium;
 
   const [isTelegramLinked, setIsTelegramLinked] = useState(false);
+
+  // Item 6 (permission handling audit): status izin notifikasi browser
+  // ditampilkan apa adanya di sini, dan permintaan izin HANYA dipicu saat
+  // user menekan tombol "Aktifkan Notifikasi" di bawah -- bukan otomatis
+  // saat login (lihat App.tsx untuk perubahan terkait).
+  const [permStatus, setPermStatus] = useState<BrowserPermState>(
+    typeof Notification === "undefined" ? "unsupported" : (Notification.permission as BrowserPermState)
+  );
+  const [isRequestingPerm, setIsRequestingPerm] = useState(false);
+
+  const handleEnablePushNotifications = async () => {
+    if (!user || isRequestingPerm) return;
+    setIsRequestingPerm(true);
+    try {
+      const token = await requestFcmToken();
+      const nextStatus: BrowserPermState = typeof Notification === "undefined" ? "unsupported" : (Notification.permission as BrowserPermState);
+      setPermStatus(nextStatus);
+      if (token) {
+        await saveFcmToken(supabase, user.id, token);
+        showToast(t("settings.notif_permission_granted_toast"), "success");
+      } else if (nextStatus === "denied") {
+        showToast(t("settings.notif_permission_denied_toast"), "error");
+      }
+    } finally {
+      setIsRequestingPerm(false);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -56,6 +87,39 @@ export const NotificationSettings: React.FC = () => {
           </div>
         ) : (
           <>
+            {/* Item 6: status & kontrol izin notifikasi browser -- ditaruh
+                paling atas supaya user paham kenapa toggle di bawah
+                mungkin belum efektif kalau izin belum diberikan. */}
+            {permStatus === "unsupported" ? null : permStatus === "granted" ? (
+              <div className={cx("flex items-center gap-2.5 p-3.5 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)]", "bg-emerald-500/10 text-emerald-400")}>
+                <BellRing size={15} className="shrink-0" />
+                <span>{t("settings.notif_permission_granted_desc")}</span>
+              </div>
+            ) : permStatus === "denied" ? (
+              <div className={cx("flex items-start gap-2.5 p-3.5 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed", "bg-red-500/10 text-red-400")}>
+                <ShieldAlert size={15} className="shrink-0 mt-0.5" />
+                <span>{t("settings.notif_permission_denied_desc")}</span>
+              </div>
+            ) : (
+              <div className={cx("flex flex-col gap-2.5 p-3.5 rounded-xl", tokens.settings.innerCardBgBorder)}>
+                <div className="flex items-start gap-2.5">
+                  <Bell size={15} className={cx("shrink-0 mt-0.5", tokens.text.muted)} />
+                  <span className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed", tokens.text.muted)}>
+                    {t("settings.notif_permission_prompt_desc")}
+                  </span>
+                </div>
+                <Button
+                  variant="primary"
+                  onClick={handleEnablePushNotifications}
+                  disabled={isRequestingPerm}
+                  isLoading={isRequestingPerm}
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold"
+                >
+                  {t("settings.notif_permission_enable_btn")}
+                </Button>
+              </div>
+            )}
+
             <div className="space-y-1.5">
               <span className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-wider">
                 {t("settings.notif_group_push")}

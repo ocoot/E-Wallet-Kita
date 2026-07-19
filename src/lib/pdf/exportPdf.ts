@@ -122,7 +122,7 @@ function resolveWalletLabel(walletId: string | null, wallets: PdfWalletInfo[] | 
   return `${WALLET_TYPE_ICON[w.type] || ""} ${w.name}${w.provider ? ` · ${w.provider}` : ""}`;
 }
 
-const formatIDR = (num: number) => "Rp" + Math.round(num).toLocaleString("id-ID");
+const formatIDR = (num: number) => "Rp " + Math.round(num).toLocaleString("id-ID");
 
 const monthName = (t: TFunc, monthIndex1to12: number) => t(`months.m${monthIndex1to12}`);
 

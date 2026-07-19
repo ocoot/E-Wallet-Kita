@@ -8,16 +8,15 @@ import { useBudgets } from "../hooks/useBudgets";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
-import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { PiggyBank, Plus, X, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { BudgetProgressCard } from "../components/BudgetProgressCard";
 import { DropdownField } from "../components/DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { useDialogA11y } from "../hooks/useDialogA11y";
 import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { Input } from "../components/ui/Input";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { ModalShell } from "../components/ui/ModalShell";
 
 export const Budget: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -48,7 +47,7 @@ export const Budget: React.FC = () => {
 
   useLockBodyScroll(isAddOpen || !!deleteTarget);
 
-  const formatIDR = (num: number) => "Rp" + Math.round(num).toLocaleString("id-ID");
+  const formatIDR = (num: number) => "Rp\u00A0" + Math.round(num).toLocaleString("id-ID");
 
   const getLabel = (key: string) => {
     const cat = categories.find((c) => c.key === key);
@@ -129,8 +128,6 @@ export const Budget: React.FC = () => {
     closeAddModalHistory();
   };
 
-  const addModalPanelRef = React.useRef<HTMLDivElement>(null);
-  useDialogA11y(isAddOpen, addModalPanelRef, closeAddModal);
 
   const handleAddSave = async () => {
     if (!user) return;
@@ -338,100 +335,83 @@ export const Budget: React.FC = () => {
       </div>{/* end header card */}
 
       {/* Modal: Tambah Anggaran — pilih kategori dari yang belum dianggarkan */}
-      <AnimatePresence>
-        {isAddOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeAddModal}
-              className="fixed inset-0 bg-black/60 backdrop-blur-xs"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              transition={{ type: "spring", duration: 0.3 }}
-              ref={addModalPanelRef}
-              role="dialog"
-              aria-modal="true"
-              tabIndex={-1}
-              className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl p-6 shadow-2xl outline-none", tokens.modal.panel)}
-            >
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={cx("rounded-full p-2.5", tokens.budgetProgressCard.badgeBgSafe, tokens.text.accentStrong)}>
-                    <PiggyBank size={20} />
-                  </div>
-                  <h3 className="font-sans text-lg font-semibold tracking-tight">
-                    {t("budget.add_modal_title")}
-                  </h3>
-                </div>
-                <button
-                  onClick={closeAddModal}
-                  className={cx("p-1.5 rounded-lg text-slate-400 cursor-pointer", tokens.budget.closeBtnHover)}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-medium block mb-1.5", tokens.text.muted)}>
-                    {t("budget.select_category_label")}
-                  </label>
-                  <DropdownField
-                    value={addCategoryKey}
-                    onChange={setAddCategoryKey}
-                    placeholder={t("budget.select_category_placeholder")}
-                    options={availableCategories.map((c) => ({
-                      value: c.key,
-                      label: locale === "id" ? c.label_id || c.key : c.label_en || c.key,
-                    }))}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2.5">
-                  <Input
-                    type="number"
-                    min={1}
-                    label={t("budget.monthly_limit_label")}
-                    value={addLimit}
-                    onChange={(e) => setAddLimit(e.target.value)}
-                    placeholder="500000"
-                  />
-                  <Input
-                    type="number"
-                    min={1}
-                    max={100}
-                    label={t("budget.alert_threshold_label")}
-                    value={addThreshold}
-                    onChange={(e) => setAddThreshold(e.target.value)}
-                    placeholder="80"
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-3 pt-2">
-                  <button
-                    onClick={closeAddModal}
-                    className={cx("rounded-xl px-4 py-2 font-sans text-sm font-medium cursor-pointer", tokens.budget.cancelBtnTextLight, tokens.budget.closeBtnHover)}
-                  >
-                    {t("common.cancel")}
-                  </button>
-                  <button
-                    onClick={handleAddSave}
-                    disabled={isAdding}
-                    className={cx("rounded-xl px-4.5 py-2 font-sans text-sm font-semibold text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer", tokens.budget.addBtn)}
-                  >
-                    {t("budget.save")}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
+      <ModalShell
+        isOpen={isAddOpen}
+        onClose={closeAddModal}
+        maxWidth="max-w-md"
+        labelledBy="budget-add-modal-title"
+        className="p-6"
+      >
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className={cx("rounded-full p-2.5", tokens.budgetProgressCard.badgeBgSafe, tokens.text.accentStrong)}>
+              <PiggyBank size={20} />
+            </div>
+            <h3 id="budget-add-modal-title" className="font-sans text-lg font-semibold tracking-tight">
+              {t("budget.add_modal_title")}
+            </h3>
           </div>
-        )}
-      </AnimatePresence>
+          <button
+            onClick={closeAddModal}
+            className={cx("p-1.5 rounded-lg text-slate-400 cursor-pointer", tokens.budget.closeBtnHover)}
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-medium block mb-1.5", tokens.text.muted)}>
+              {t("budget.select_category_label")}
+            </label>
+            <DropdownField
+              value={addCategoryKey}
+              onChange={setAddCategoryKey}
+              placeholder={t("budget.select_category_placeholder")}
+              options={availableCategories.map((c) => ({
+                value: c.key,
+                label: locale === "id" ? c.label_id || c.key : c.label_en || c.key,
+              }))}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2.5">
+            <Input
+              type="number"
+              min={1}
+              label={t("budget.monthly_limit_label")}
+              value={addLimit}
+              onChange={(e) => setAddLimit(e.target.value)}
+              placeholder="500000"
+            />
+            <Input
+              type="number"
+              min={1}
+              max={100}
+              label={t("budget.alert_threshold_label")}
+              value={addThreshold}
+              onChange={(e) => setAddThreshold(e.target.value)}
+              placeholder="80"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button
+              onClick={closeAddModal}
+              className={cx("rounded-xl px-4 py-2 font-sans text-sm font-medium cursor-pointer", tokens.budget.cancelBtnTextLight, tokens.budget.closeBtnHover)}
+            >
+              {t("common.cancel")}
+            </button>
+            <button
+              onClick={handleAddSave}
+              disabled={isAdding}
+              className={cx("rounded-xl px-4.5 py-2 font-sans text-sm font-semibold text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer", tokens.budget.addBtn)}
+            >
+              {t("budget.save")}
+            </button>
+          </div>
+        </div>
+      </ModalShell>
 
       <Modal
         isOpen={!!deleteTarget}

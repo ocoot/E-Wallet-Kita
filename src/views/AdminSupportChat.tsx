@@ -374,11 +374,11 @@ export const AdminSupportChat: React.FC = () => {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
                         <p className={cx("text-xs font-bold truncate", tokens.text.heading)}>{label}</p>
-                        <span className="text-[10px] text-slate-500 shrink-0">
+                        <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 shrink-0">
                           {formatRelativeTime(s.last_message_at || s.created_at, t)}
                         </span>
                       </div>
-                      <p className={cx("text-[11px] truncate mt-0.5", tokens.text.faint)}>
+                      <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] truncate mt-0.5", tokens.text.faint)}>
                         {s.last_message_preview
                           ? `${s.last_message_sender === "admin" ? "↩ " : ""}${s.last_message_preview}`
                           : `#${s.short_code}`}
@@ -413,7 +413,7 @@ export const AdminSupportChat: React.FC = () => {
                   <p className={cx("text-sm font-bold truncate", tokens.text.heading)}>
                     {selectedSession.user_display_name || t("admin_support_chat.unknown_user")}
                   </p>
-                  <p className={cx("text-[11px]", tokens.text.faint)}>
+                  <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)]", tokens.text.faint)}>
                     #{selectedSession.short_code}
                     {selectedSession.user_email ? ` · ${selectedSession.user_email}` : ""}
                   </p>
@@ -467,7 +467,7 @@ export const AdminSupportChat: React.FC = () => {
                         )}
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5 px-1">
-                        <span className={cx("text-[11px]", tokens.supportWidget.timestamp)}>
+                        <span className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)]", tokens.supportWidget.timestamp)}>
                           {formatMsgTime(msg.created_at, locale)}
                         </span>
                         {msg.sender === "admin" && (

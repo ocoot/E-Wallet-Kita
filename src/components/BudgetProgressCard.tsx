@@ -91,7 +91,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
   const animPercent = useCountUp(Math.round(budget.percent));
   const animClamp = Math.min(100, animPercent);
 
-  const formatIDR = (n: number) => "Rp" + Math.round(n).toLocaleString("id-ID");
+  const formatIDR = (n: number) => "Rp\u00A0" + Math.round(n).toLocaleString("id-ID");
 
   const dashOffset = CIRC - (animClamp / 100) * CIRC;
   const remaining = Math.max(0, budget.monthly_limit - budget.spent);
@@ -244,7 +244,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
                   Terpakai
                 </p>
                 <p
-                  className="font-mono text-[10.5px] font-black leading-tight whitespace-nowrap tabular-nums tracking-tight"
+                  className="font-mono text-[clamp(0.5906rem,2.73vw,0.6563rem)] font-black leading-tight whitespace-nowrap tabular-nums tracking-tight"
                   style={{ color: cfg.barFrom }}
                 >
                   {formatIDR(budget.spent)}
@@ -254,7 +254,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
                 <p className={cx("text-[clamp(0.5062rem,2.34vw,0.5625rem)] uppercase tracking-wider font-bold mb-0.5", tokens.text.faint)}>
                   {overBudget ? "Melebihi" : "Sisa"}
                 </p>
-                <p className={`font-mono text-[10.5px] font-black leading-tight whitespace-nowrap tabular-nums tracking-tight ${overBudget ? "text-red-400" : "text-emerald-400"}`}>
+                <p className={`font-mono text-[clamp(0.5906rem,2.73vw,0.6563rem)] font-black leading-tight whitespace-nowrap tabular-nums tracking-tight ${overBudget ? "text-red-400" : "text-emerald-400"}`}>
                   {overBudget
                     ? `+${formatIDR(budget.spent - budget.monthly_limit)}`
                     : formatIDR(remaining)}

@@ -203,7 +203,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                     exit={{ opacity: 0, height: 0 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
                     className={cx(
-                      "font-sans text-[10px] font-medium truncate max-w-full px-0.5 overflow-hidden",
+                      "font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-medium truncate max-w-full px-0.5 overflow-hidden",
                       tokens.text.accent
                     )}
                   >
@@ -248,7 +248,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 exit={{ opacity: 0, height: 0 }}
                 transition={{ duration: 0.18, ease: "easeOut" }}
                 className={cx(
-                  "font-sans text-[10px] font-medium truncate max-w-full px-0.5 overflow-hidden",
+                  "font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-medium truncate max-w-full px-0.5 overflow-hidden",
                   tokens.text.accent
                 )}
               >

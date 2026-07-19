@@ -480,7 +480,7 @@ export const themeTokens = {
     iconContainer: "bg-indigo-500/15 light_sakura:bg-rose-500/10",
     badge: "bg-indigo-500 text-white light_sakura:bg-rose-500",
     btnCancel: "light_sakura:bg-black/5 light_sakura:hover:bg-black/10",
-    btnConfirm: "light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400",
+    btnConfirm: "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/15 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400",
   },
   mobileBottomNav: {
     navContainer: "bg-slate-950/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 shadow-[0_12px_32px_rgba(0,0,0,0.45)] rounded-full light_sakura:bg-white/85 light_sakura:backdrop-saturate-100 light_sakura:border-white/60 light_sakura:shadow-[0_12px_32px_rgba(30, 122, 99,0.18)]",

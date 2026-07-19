@@ -78,11 +78,11 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
   const isExpense = draft.type === "expense";
   const categoryOptions = categories.filter((c) => c.type === draft.type || c.type === "both");
   const activeWallets = wallets.filter((w) => !w.is_archived);
-  const formatIDR = (n: number) => "Rp" + Math.round(n || 0).toLocaleString("id-ID");
+  const formatIDR = (n: number) => "Rp\u00A0" + Math.round(n || 0).toLocaleString("id-ID");
   const confirmBlockedByDuplicate = !!duplicateWarning && !duplicateAcknowledged;
 
   const walletLabel = (w: WalletWithBalance) =>
-    `${WALLET_TYPE_ICON[w.type]} ${w.name}${w.provider ? " · " + w.provider : ""}`;
+    `${WALLET_TYPE_ICON[w.type]} ${w.name}${(w.provider && w.provider !== w.name) ? " · " + w.provider : ""}`;
 
   return (
     <ModalShell
@@ -101,7 +101,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
                 <h3 className="font-sans text-lg font-semibold tracking-tight">
                   {t("confirm.save_transaction_title")}
                 </h3>
-                <p className={cx("font-sans text-[11px]", tokens.text.muted)}>
+                <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)]", tokens.text.muted)}>
                   {t("confirm.review_before_save")}
                 </p>
               </div>
@@ -188,7 +188,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
           </div>
 
           {duplicateChecking && (
-            <div className="rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-2 mb-3 text-[11px] text-slate-400 flex items-center gap-2">
+            <div className="rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-2 mb-3 text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 flex items-center gap-2">
               <span className="w-3 h-3 rounded-full border-2 border-slate-500 border-t-transparent animate-spin shrink-0" />
               {t("confirm.duplicate_checking")}
             </div>
@@ -196,12 +196,12 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
 
           {duplicateWarning && (
             <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 mb-3 space-y-2">
-              <p className="text-[11px] text-amber-400 leading-relaxed">
+              <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-amber-400 leading-relaxed">
                 {t("confirm.duplicate_warning_desc", {
                   time: new Date(duplicateWarning.createdAt).toLocaleString(locale === "id" ? "id-ID" : "en-US"),
                 })}
               </p>
-              <label className="flex items-start gap-2 text-[11px] text-amber-300 cursor-pointer">
+              <label className="flex items-start gap-2 text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-amber-300 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={!!duplicateAcknowledged}

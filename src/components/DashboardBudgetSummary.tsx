@@ -29,7 +29,7 @@ export const DashboardBudgetSummary: React.FC = () => {
   };
 
   const formatIDR = (num: number) => {
-    return "Rp" + Math.round(num).toLocaleString("id-ID");
+    return "Rp\u00A0" + Math.round(num).toLocaleString("id-ID");
   };
 
   // Sort by highest percentage used to show most critical ones first

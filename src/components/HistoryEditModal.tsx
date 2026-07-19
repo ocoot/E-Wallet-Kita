@@ -118,7 +118,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
                 onChange={(v) => setWalletId(v || null)}
                 options={activeWallets.map((w) => ({
                   value: w.id,
-                  label: `${WALLET_TYPE_ICON[w.type]} ${w.name}${w.provider ? ` · ${w.provider}` : ""}`
+                  label: `${WALLET_TYPE_ICON[w.type]} ${w.name}${(w.provider && w.provider !== w.name) ? ` · ${w.provider}` : ""}`
                 }))}
               />
             </div>

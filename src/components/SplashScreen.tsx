@@ -61,7 +61,7 @@ export const SplashScreen: React.FC = () => {
           <p className={cx("font-sans font-extrabold text-base tracking-tight", tokens.text.primary)}>
             E-Wallet <span className={cx(tokens.text.accent)}>Kita</span>
           </p>
-          <p className={cx("font-mono text-[10.5px] tracking-wider uppercase", tokens.text.muted)}>
+          <p className={cx("font-mono text-[clamp(0.5906rem,2.73vw,0.6563rem)] tracking-wider uppercase", tokens.text.muted)}>
             {t("auth.loading_app_desc")}
           </p>
         </div>

@@ -185,7 +185,7 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
                     <h3 className="font-sans text-lg font-semibold tracking-tight truncate">
                       {t("walletActions.transfer_title")}
                     </h3>
-                    <p className={cx("font-sans text-[11px] truncate", tokens.text.muted)}>
+                    <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] truncate", tokens.text.muted)}>
                       {t("walletActions.transfer_from_label")}: {sourceWallet.name}
                     </p>
                   </div>
@@ -268,7 +268,7 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
                       className="py-2.5"
                     />
                     {insufficientBalance && numericAmount > 0 && (
-                      <p className="text-[11px] text-red-400">{t("walletActions.transfer_insufficient")}</p>
+                      <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-red-400">{t("walletActions.transfer_insufficient")}</p>
                     )}
                   </div>
                 </div>

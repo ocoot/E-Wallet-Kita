@@ -12,8 +12,8 @@ import { DropdownField } from "../components/DropdownField";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { useDialogA11y } from "../hooks/useDialogA11y";
 import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
+import { ModalShell } from "../components/ui/ModalShell";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
@@ -52,7 +52,7 @@ interface PocketFormState {
 const emptyForm = (): PocketFormState => ({
   name: "", pocket_type: "goal", target_amount: "", target_date: "", notes: "", wallet_id: ""
 });
-const formatIDR = (num: number | null) => num != null ? "Rp" + Math.round(num).toLocaleString("id-ID") : "-";
+const formatIDR = (num: number | null) => num != null ? "Rp\u00A0" + Math.round(num).toLocaleString("id-ID") : "-";
 
 export const Savings: React.FC = () => {
   const { t } = useLanguage();
@@ -86,17 +86,13 @@ export const Savings: React.FC = () => {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   useLockBodyScroll(isFormOpen || !!moveTarget || !!deleteTarget);
-  const formModalRef = React.useRef<HTMLDivElement>(null);
   // Menjebak swipe-back/tombol-back HP saat modal ini terbuka, supaya
   // menutup modal (tetap di halaman Tabungan) -- bukan malah menavigasi
   // balik ke halaman sebelum Tabungan (lihat useBackGestureTrap.ts).
   const { close: closeForm } = useBackGestureTrap(isFormOpen, setIsFormOpen);
-  useDialogA11y(isFormOpen, formModalRef, closeForm);
-  const moveModalRef = React.useRef<HTMLDivElement>(null);
   const isMoveOpen = !!moveTarget;
   const setIsMoveOpen = (open: boolean) => { if (!open) setMoveTarget(null); };
   const { close: closeMoveModal } = useBackGestureTrap(isMoveOpen, setIsMoveOpen);
-  useDialogA11y(isMoveOpen, moveModalRef, closeMoveModal);
 
   const activePockets = useMemo(() => pockets.filter(p => !p.is_archived), [pockets]);
   const archivedPockets = useMemo(() => pockets.filter(p => p.is_archived), [pockets]);
@@ -315,11 +311,11 @@ export const Savings: React.FC = () => {
           <div className="grid grid-cols-3 gap-2">
             <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_total_saved")}</span>
-              <p className={cx("font-bold font-mono text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.success)}>{formatIDR(summary.total_saved)}</p>
+              <p className={cx("font-bold font-mono text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.success)}>{formatIDR(summary.total_saved)}</p>
             </div>
             <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_available_balance")}</span>
-              <p className={cx("font-bold font-mono text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.accentStrong)}>{availableBalance != null ? formatIDR(availableBalance) : "-"}</p>
+              <p className={cx("font-bold font-mono text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.accentStrong)}>{availableBalance != null ? formatIDR(availableBalance) : "-"}</p>
             </div>
             <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_pocket_count")}</span>
@@ -352,151 +348,141 @@ export const Savings: React.FC = () => {
       </div>
 
       {/* Add/Edit pocket form modal */}
-      <AnimatePresence>
-        {isFormOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-slate-950/70 backdrop-blur-sm"
-            onClick={e => { if (e.target === e.currentTarget) closeForm(); }}>
-            <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              ref={formModalRef}
-              role="dialog"
-              aria-modal="true"
-              tabIndex={-1}
-              className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border shadow-2xl", tokens.surface.card, tokens.border.strong)}>
-              <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-indigo-500" />
-              <div className="p-6 space-y-4">
-                <h2 className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
-                  {editTarget ? t("savings.edit_title") : t("savings.add_title")}
-                </h2>
-                <Input
-                  type="text"
-                  label={t("savings.form_name")}
-                  value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder={t("savings.form_name_placeholder")}
-                />
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_type")}</label>
-                  <DropdownField
-                    value={form.pocket_type}
-                    onChange={(v) => setForm(f => ({ ...f, pocket_type: v as SavingsPocketType }))}
-                    options={POCKET_TYPES.map(pt => ({ value: pt, label: t(`savings.pocket_type_${pt}`) }))}
-                  />
-                  <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5 leading-relaxed">{t(`savings.pocket_type_${form.pocket_type}_desc`)}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <Input
-                    type="number"
-                    label={t("savings.form_target_amount")}
-                    value={form.target_amount}
-                    onChange={e => setForm(f => ({ ...f, target_amount: e.target.value }))}
-                    placeholder={t("savings.form_target_amount_placeholder")}
-                    min={0}
-                  />
-                  <Input
-                    type="date"
-                    label={t("savings.form_target_date")}
-                    value={form.target_date}
-                    onChange={e => setForm(f => ({ ...f, target_date: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
-                  <DropdownField
-                    value={form.wallet_id}
-                    onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
-                    options={activeWallets.map((w) => {
-                      const icon = w.type === "general" ? "" : w.type === "ewallet" ? "" : w.type === "bank" ? "" : "";
-                      const label = w.type === "general" ? t("wallet.group_general") : `${w.name}${w.provider ? ` · ${w.provider}` : ""}`;
-                      return { value: w.type === "general" ? "" : w.id, label: `${icon} ${label} (${formatIDR(w.balance)})` };
-                    })}
-                  />
-                </div>
-                <Input
-                  type="text"
-                  label={t("savings.form_notes")}
-                  value={form.notes}
-                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                  placeholder={t("savings.form_notes_placeholder")}
-                />
-                <div className="flex gap-3 pt-1">
-                  <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
-                  <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ModalShell
+        isOpen={isFormOpen}
+        onClose={closeForm}
+        maxWidth="max-w-md"
+        labelledBy="savings-form-title"
+        className="overflow-hidden"
+      >
+        <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-indigo-500" />
+        <div className="p-6 space-y-4">
+          <h2 id="savings-form-title" className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
+            {editTarget ? t("savings.edit_title") : t("savings.add_title")}
+          </h2>
+          <Input
+            type="text"
+            label={t("savings.form_name")}
+            value={form.name}
+            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            placeholder={t("savings.form_name_placeholder")}
+          />
+          <div>
+            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_type")}</label>
+            <DropdownField
+              value={form.pocket_type}
+              onChange={(v) => setForm(f => ({ ...f, pocket_type: v as SavingsPocketType }))}
+              options={POCKET_TYPES.map(pt => ({ value: pt, label: t(`savings.pocket_type_${pt}`) }))}
+            />
+            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5 leading-relaxed">{t(`savings.pocket_type_${form.pocket_type}_desc`)}</p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              type="number"
+              label={t("savings.form_target_amount")}
+              value={form.target_amount}
+              onChange={e => setForm(f => ({ ...f, target_amount: e.target.value }))}
+              placeholder={t("savings.form_target_amount_placeholder")}
+              min={0}
+            />
+            <Input
+              type="date"
+              label={t("savings.form_target_date")}
+              value={form.target_date}
+              onChange={e => setForm(f => ({ ...f, target_date: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
+            <DropdownField
+              value={form.wallet_id}
+              onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
+              options={activeWallets.map((w) => {
+                const icon = w.type === "general" ? "" : w.type === "ewallet" ? "" : w.type === "bank" ? "" : "";
+                const label = w.type === "general" ? t("wallet.group_general") : `${w.name}${(w.provider && w.provider !== w.name) ? ` · ${w.provider}` : ""}`;
+                return { value: w.type === "general" ? "" : w.id, label: `${icon} ${label} (${formatIDR(w.balance)})` };
+              })}
+            />
+          </div>
+          <Input
+            type="text"
+            label={t("savings.form_notes")}
+            value={form.notes}
+            onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+            placeholder={t("savings.form_notes_placeholder")}
+          />
+          <div className="flex gap-3 pt-1">
+            <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
+            <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
+          </div>
+        </div>
+      </ModalShell>
 
       {/* Deposit/Withdraw modal */}
-      <AnimatePresence>
+      <ModalShell
+        isOpen={!!moveTarget}
+        onClose={closeMoveModal}
+        maxWidth="max-w-sm"
+        labelledBy="savings-move-title"
+        className="overflow-hidden"
+      >
         {moveTarget && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-slate-950/70 backdrop-blur-sm"
-            onClick={e => { if (e.target === e.currentTarget) closeMoveModal(); }}>
-            <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              ref={moveModalRef}
-              role="dialog"
-              aria-modal="true"
-              tabIndex={-1}
-              className={cx("w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border shadow-2xl", tokens.surface.card, tokens.border.strong)}>
-              <div className={`h-1 w-full ${moveTarget.direction === "deposit" ? "bg-emerald-500" : "bg-indigo-500"}`} />
-              <div className="p-6 space-y-4">
-                <div>
-                  <h2 className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
-                    {t(moveTarget.direction === "deposit" ? "savings.deposit_title" : "savings.withdraw_title", { name: moveTarget.pocket.name })}
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-1">
-                    {t(moveTarget.direction === "deposit" ? "savings.deposit_desc" : "savings.withdraw_desc")}
-                  </p>
-                </div>
-                <div>
-                  <Input
-                    type="number"
-                    label={t("savings.form_amount")}
-                    value={moveAmount}
-                    onChange={e => setMoveAmount(e.target.value)}
-                    placeholder={t("savings.form_amount_placeholder")}
-                    min={0}
-                    autoFocus
-                  />
-                  {moveTarget.direction === "deposit" && availableBalance != null && (
-                    <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5">{t("savings.available_balance_hint", { amount: formatIDR(availableBalance) })}</p>
-                  )}
-                  {moveTarget.direction === "withdraw" && (
-                    <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5">{t("savings.pocket_balance_hint", { amount: formatIDR(moveTarget.pocket.current_amount) })}</p>
-                  )}
-                </div>
-                <Input
-                  type="date"
-                  label={t("savings.form_entry_date")}
-                  value={moveDate}
-                  onChange={e => setMoveDate(e.target.value)}
-                />
-                <Input
-                  type="text"
-                  label={t("savings.form_entry_note")}
-                  value={moveNote}
-                  onChange={e => setMoveNote(e.target.value)}
-                />
-                <div className="flex gap-3 pt-1">
-                  <Button variant="secondary" onClick={closeMoveModal} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
-                  <Button
-                    variant="success"
-                    onClick={executeMove}
-                    disabled={isMoving}
-                    isLoading={isMoving}
-                    className="flex-1 py-3 rounded-2xl font-semibold text-sm"
-                  >
-                    {t(moveTarget.direction === "deposit" ? "savings.deposit_button" : "savings.withdraw_button")}
-                  </Button>
-                </div>
+          <>
+            <div className={`h-1 w-full ${moveTarget.direction === "deposit" ? "bg-emerald-500" : "bg-indigo-500"}`} />
+            <div className="p-6 space-y-4">
+              <div>
+                <h2 id="savings-move-title" className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
+                  {t(moveTarget.direction === "deposit" ? "savings.deposit_title" : "savings.withdraw_title", { name: moveTarget.pocket.name })}
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  {t(moveTarget.direction === "deposit" ? "savings.deposit_desc" : "savings.withdraw_desc")}
+                </p>
               </div>
-            </motion.div>
-          </motion.div>
+              <div>
+                <Input
+                  type="number"
+                  label={t("savings.form_amount")}
+                  value={moveAmount}
+                  onChange={e => setMoveAmount(e.target.value)}
+                  placeholder={t("savings.form_amount_placeholder")}
+                  min={0}
+                  autoFocus
+                />
+                {moveTarget.direction === "deposit" && availableBalance != null && (
+                  <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5">{t("savings.available_balance_hint", { amount: formatIDR(availableBalance) })}</p>
+                )}
+                {moveTarget.direction === "withdraw" && (
+                  <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5">{t("savings.pocket_balance_hint", { amount: formatIDR(moveTarget.pocket.current_amount) })}</p>
+                )}
+              </div>
+              <Input
+                type="date"
+                label={t("savings.form_entry_date")}
+                value={moveDate}
+                onChange={e => setMoveDate(e.target.value)}
+              />
+              <Input
+                type="text"
+                label={t("savings.form_entry_note")}
+                value={moveNote}
+                onChange={e => setMoveNote(e.target.value)}
+              />
+              <div className="flex gap-3 pt-1">
+                <Button variant="secondary" onClick={closeMoveModal} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
+                <Button
+                  variant="success"
+                  onClick={executeMove}
+                  disabled={isMoving}
+                  isLoading={isMoving}
+                  className="flex-1 py-3 rounded-2xl font-semibold text-sm"
+                >
+                  {t(moveTarget.direction === "deposit" ? "savings.deposit_button" : "savings.withdraw_button")}
+                </Button>
+              </div>
+            </div>
+          </>
         )}
-      </AnimatePresence>
+      </ModalShell>
 
       <Modal isOpen={!!deleteTarget} title={t("savings.delete_confirm_title")} description={t("savings.delete_confirm_desc", { name: deleteTarget?.name ?? "" })} type="danger" confirmLabel={t("common.delete")} cancelLabel={t("common.cancel")} onConfirm={handleDeleteConfirmed} onCancel={() => setDeleteTarget(null)} confirmDisabled={isDeleting} />
     </motion.div>

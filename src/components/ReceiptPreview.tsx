@@ -77,7 +77,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
 
   // Format IDR Helper
   const formatIDR = (num: number) => {
-    return "Rp" + Math.round(num).toLocaleString("id-ID");
+    return "Rp\u00A0" + Math.round(num).toLocaleString("id-ID");
   };
 
   const handleUpdateItem = (index: number, field: keyof ReceiptItem, val: string | number) => {

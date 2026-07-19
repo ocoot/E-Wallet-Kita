@@ -214,7 +214,7 @@ export const History: React.FC<HistoryProps> = ({
     finally { setIsLoading(false); }
   };
 
-  const formatIDR = (num: number) => "Rp" + Math.round(num).toLocaleString("id-ID");
+  const formatIDR = (num: number) => "Rp\u00A0" + Math.round(num).toLocaleString("id-ID");
   const formatDateLabel = (dateStr: string) => {
     try {
       const parts = dateStr.split("-");
@@ -264,17 +264,6 @@ export const History: React.FC<HistoryProps> = ({
 
   return (
     <div className="space-y-5">
-      {/* Judul halaman khusus mobile (item 2.3/P2 sudah dicabut --
-          sebelumnya versi collapsing/animasi via CollapsingHeader.tsx). */}
-      <div className="md:hidden">
-        <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
-          {t("history.title")}
-        </h1>
-        <p className={cx("font-sans text-xs mt-1", tokens.text.muted)}>
-          {t("history.desc")}
-        </p>
-      </div>
-
       {/* ── Header card ─────────────────────────────────────────────── */}
       <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
         {/* Accent stripe */}
@@ -296,21 +285,21 @@ export const History: React.FC<HistoryProps> = ({
             <div className="grid grid-cols-3 gap-2">
               <div className={cx("rounded-2xl border px-3 py-3", tokens.history.statExpense)}>
                 <div className="flex items-start gap-1.5 mb-1 min-h-[1.9rem]">
-                  <span className={cx("text-[10px] font-bold uppercase tracking-wider leading-tight break-words", tokens.text.faint)}>
+                  <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider leading-tight break-words", tokens.text.faint)}>
                     {t("dashboard.expense")}
                   </span>
                 </div>
-                <p className={cx("font-bold font-mono text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.danger)}>
+                <p className={cx("font-bold font-mono text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.danger)}>
                   −{formatIDR(stats.expense)}
                 </p>
               </div>
               <div className={cx("rounded-2xl border px-3 py-3", tokens.history.statIncome)}>
                 <div className="flex items-start gap-1.5 mb-1 min-h-[1.9rem]">
-                  <span className={cx("text-[10px] font-bold uppercase tracking-wider leading-tight break-words", tokens.text.faint)}>
+                  <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider leading-tight break-words", tokens.text.faint)}>
                     {t("dashboard.income")}
                   </span>
                 </div>
-                <p className={cx("font-bold font-mono text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.success)}>
+                <p className={cx("font-bold font-mono text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.success)}>
                   +{formatIDR(stats.income)}
                 </p>
               </div>
@@ -320,11 +309,11 @@ export const History: React.FC<HistoryProps> = ({
                   : tokens.history.statBalanceNegative
               }`}>
                 <div className="flex items-start gap-1.5 mb-1 min-h-[1.9rem]">
-                  <span className={cx("text-[10px] font-bold uppercase tracking-wider leading-tight break-words", tokens.text.faint)}>
+                  <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider leading-tight break-words", tokens.text.faint)}>
                     {t("dashboard.balance")}
                   </span>
                 </div>
-                <p className={`font-bold font-mono text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight ${
+                <p className={`font-bold font-mono text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-tight whitespace-nowrap tabular-nums tracking-tight ${
                   stats.net >= 0 ? tokens.text.accentStrong : tokens.text.warningOrange
                 }`}>
                   {stats.net >= 0 ? "+" : ""}{formatIDR(stats.net)}

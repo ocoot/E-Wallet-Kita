@@ -107,7 +107,7 @@ const HistoryTransactionRow: React.FC<HistoryTransactionRowProps> = ({
           )}
         >
           <Pencil size={16} />
-          <span className="text-[10px] font-bold">{t("common.edit")}</span>
+          <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold">{t("common.edit")}</span>
         </button>
         <button
           type="button"
@@ -124,7 +124,7 @@ const HistoryTransactionRow: React.FC<HistoryTransactionRowProps> = ({
           )}
         >
           <Trash2 size={16} />
-          <span className="text-[10px] font-bold">{t("common.delete")}</span>
+          <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold">{t("common.delete")}</span>
         </button>
       </div>
 
@@ -146,7 +146,7 @@ const HistoryTransactionRow: React.FC<HistoryTransactionRowProps> = ({
         // sungguhan, secara visual mengesankan gestur "peek" ala native.
         whileTap={{ scale: 1.015, boxShadow: "0 12px 28px -8px rgba(0,0,0,0.45)" }}
         transition={{ duration: 0.15 }}
-        className={cx("relative flex items-center gap-3 p-3.5 transition-colors touch-pan-y", tokens.surface.sunken, tokens.hover.sunken)}
+        className={cx("relative flex items-center gap-3 p-3.5 transition-colors touch-pan-y", tokens.surface.card, tokens.hover.sunken)}
       >
         {/* Icon lingkaran */}
         <div className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center ${

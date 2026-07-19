@@ -12,7 +12,7 @@ import { DropdownField } from "../components/DropdownField";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { useDialogA11y } from "../hooks/useDialogA11y";
+import { ModalShell } from "../components/ui/ModalShell";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { motion, AnimatePresence } from "motion/react";
@@ -34,7 +34,7 @@ interface BillFormState {
   recurrence_type: RecurrenceType; due_day: string; due_date: string; notes: string; wallet_id: string;
 }
 const emptyForm = (): BillFormState => ({ name: "", category_key: "other", amount: "", recurrence_type: "monthly", due_day: "1", due_date: "", notes: "", wallet_id: "" });
-const formatIDR = (num: number | null) => num != null ? "Rp" + Math.round(num).toLocaleString("id-ID") : "-";
+const formatIDR = (num: number | null) => num != null ? "Rp\u00A0" + Math.round(num).toLocaleString("id-ID") : "-";
 
 export const BillReminders: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -51,12 +51,10 @@ export const BillReminders: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<BillReminderWithUrgency | null>(null);
   useLockBodyScroll(isFormOpen);
-  const formModalRef = React.useRef<HTMLDivElement>(null);
   // Menjebak swipe-back/tombol-back HP saat form modal ini terbuka, supaya
   // menutup modal (tetap di halaman Pengingat Tagihan) -- bukan malah
   // menavigasi balik ke halaman sebelumnya (lihat useBackGestureTrap.ts).
   const { close: closeForm } = useBackGestureTrap(isFormOpen, setIsFormOpen);
-  useDialogA11y(isFormOpen, formModalRef, closeForm);
   const [isDeleting, setIsDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [toggleConfirmTarget, setToggleConfirmTarget] = useState<BillReminderWithUrgency | null>(null);
@@ -348,113 +346,106 @@ export const BillReminders: React.FC = () => {
       </div>
 
       {/* ── Form modal ──────────────────────────────────────────────── */}
-      <AnimatePresence>
-        {isFormOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-slate-950/70 backdrop-blur-sm"
-            onClick={e => { if (e.target === e.currentTarget) closeForm(); }}>
-            <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              ref={formModalRef}
-              role="dialog"
-              aria-modal="true"
-              tabIndex={-1}
-              className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border shadow-2xl", tokens.surface.card, tokens.border.default)}>
-              <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-teal-400" />
-              <div className="p-6 space-y-4">
-                <h2 className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
-                  {editTarget ? t("bill_reminders.edit_title") : t("bill_reminders.add_title")}
-                </h2>
-                {/* Name */}
-                <Input
-                  type="text"
-                  label={t("bill_reminders.form_name")}
-                  value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder={t("bill_reminders.form_name_placeholder")}
-                />
-                {/* Category */}
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_category")}</label>
-                  <DropdownField
-                    value={form.category_key}
-                    onChange={(v) => setForm(f => ({ ...f, category_key: v }))}
-                    options={expenseCategories.map(c => ({ value: c.key, label: locale === "id" ? c.label_id || c.key : c.label_en || c.key }))}
-                  />
-                </div>
-                {/* Amount */}
-                <Input
-                  type="number"
-                  label={t("bill_reminders.form_amount")}
-                  value={form.amount}
-                  onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
-                  placeholder={t("bill_reminders.form_amount_placeholder")}
-                  min={0}
-                />
-                {/* Recurrence */}
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_recurrence")}</label>
-                  <div className="flex gap-2">
-                    {(["monthly", "yearly", "one_time"] as RecurrenceType[]).map(type => (
-                      <button key={type} onClick={() => setForm(f => ({ ...f, recurrence_type: type }))}
-                        className={cx(
-                          "flex-1 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer",
-                          form.recurrence_type === type
-                            ? "bg-emerald-500 hover:bg-emerald-400 text-white light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
-                            : cx(tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)
-                        )}>
-                        {type === "monthly" ? t("bill_reminders.recurrence_monthly") : type === "yearly" ? t("bill_reminders.recurrence_yearly") : t("bill_reminders.recurrence_one_time")}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {/* Due day/date */}
-                {form.recurrence_type === "monthly" ? (
-                  <Input
-                    type="number"
-                    label={t("bill_reminders.form_due_day")}
-                    value={form.due_day}
-                    onChange={e => setForm(f => ({ ...f, due_day: e.target.value }))}
-                    min={1}
-                    max={31}
-                  />
-                ) : (
-                  <Input
-                    type="date"
-                    label={t("bill_reminders.form_due_date")}
-                    value={form.due_date}
-                    onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))}
-                  />
-                )}
-                {/* Notes */}
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
-                  <DropdownField
-                    value={form.wallet_id}
-                    onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
-                    options={activeWallets.map((w) => {
-                      const icon = w.type === "general" ? "" : w.type === "ewallet" ? "" : w.type === "bank" ? "" : "";
-                      const label = w.type === "general" ? t("wallet.group_general") : `${w.name}${w.provider ? ` · ${w.provider}` : ""}`;
-                      return { value: w.type === "general" ? "" : w.id, label: `${icon} ${label} (${formatIDR(w.balance)})` };
-                    })}
-                  />
-                </div>
-                <Input
-                  type="text"
-                  label={t("bill_reminders.form_notes")}
-                  value={form.notes}
-                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                  placeholder={t("bill_reminders.form_notes_placeholder")}
-                />
-                {/* Actions */}
-                <div className="flex gap-3 pt-1">
-                  <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
-                  <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ModalShell
+        isOpen={isFormOpen}
+        onClose={closeForm}
+        maxWidth="max-w-md"
+        labelledBy="bill-reminder-form-title"
+        className="overflow-hidden"
+      >
+        <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-teal-400" />
+        <div className="p-6 space-y-4">
+          <h2 id="bill-reminder-form-title" className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
+            {editTarget ? t("bill_reminders.edit_title") : t("bill_reminders.add_title")}
+          </h2>
+          {/* Name */}
+          <Input
+            type="text"
+            label={t("bill_reminders.form_name")}
+            value={form.name}
+            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            placeholder={t("bill_reminders.form_name_placeholder")}
+          />
+          {/* Category */}
+          <div>
+            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_category")}</label>
+            <DropdownField
+              value={form.category_key}
+              onChange={(v) => setForm(f => ({ ...f, category_key: v }))}
+              options={expenseCategories.map(c => ({ value: c.key, label: locale === "id" ? c.label_id || c.key : c.label_en || c.key }))}
+            />
+          </div>
+          {/* Amount */}
+          <Input
+            type="number"
+            label={t("bill_reminders.form_amount")}
+            value={form.amount}
+            onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
+            placeholder={t("bill_reminders.form_amount_placeholder")}
+            min={0}
+          />
+          {/* Recurrence */}
+          <div>
+            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_recurrence")}</label>
+            <div className="flex gap-2">
+              {(["monthly", "yearly", "one_time"] as RecurrenceType[]).map(type => (
+                <button key={type} onClick={() => setForm(f => ({ ...f, recurrence_type: type }))}
+                  className={cx(
+                    "flex-1 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer",
+                    form.recurrence_type === type
+                      ? "bg-emerald-500 hover:bg-emerald-400 text-white light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
+                      : cx(tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)
+                  )}>
+                  {type === "monthly" ? t("bill_reminders.recurrence_monthly") : type === "yearly" ? t("bill_reminders.recurrence_yearly") : t("bill_reminders.recurrence_one_time")}
+                </button>
+              ))}
+            </div>
+          </div>
+          {/* Due day/date */}
+          {form.recurrence_type === "monthly" ? (
+            <Input
+              type="number"
+              label={t("bill_reminders.form_due_day")}
+              value={form.due_day}
+              onChange={e => setForm(f => ({ ...f, due_day: e.target.value }))}
+              min={1}
+              max={31}
+            />
+          ) : (
+            <Input
+              type="date"
+              label={t("bill_reminders.form_due_date")}
+              value={form.due_date}
+              onChange={e => setForm(f => ({ ...f, due_date: e.target.value }))}
+            />
+          )}
+          {/* Notes */}
+          <div>
+            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
+            <DropdownField
+              value={form.wallet_id}
+              onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
+              options={activeWallets.map((w) => {
+                const icon = w.type === "general" ? "" : w.type === "ewallet" ? "" : w.type === "bank" ? "" : "";
+                const label = w.type === "general" ? t("wallet.group_general") : `${w.name}${(w.provider && w.provider !== w.name) ? ` · ${w.provider}` : ""}`;
+                return { value: w.type === "general" ? "" : w.id, label: `${icon} ${label} (${formatIDR(w.balance)})` };
+              })}
+            />
+          </div>
+          <Input
+            type="text"
+            label={t("bill_reminders.form_notes")}
+            value={form.notes}
+            onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+            placeholder={t("bill_reminders.form_notes_placeholder")}
+          />
+          {/* Actions */}
+          <div className="flex gap-3 pt-1">
+            <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
+            <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
+          </div>
+        </div>
+      </ModalShell>
 
       <Modal isOpen={!!deleteTarget} title={t("bill_reminders.delete_confirm_title")} description={t("bill_reminders.delete_confirm_desc", { name: deleteTarget?.name ?? "" })} type="danger" confirmLabel={t("common.delete")} cancelLabel={t("common.cancel")} onConfirm={handleDeleteConfirmed} onCancel={() => setDeleteTarget(null)} />
       <Modal isOpen={!!toggleConfirmTarget} title={toggleConfirmTarget?.is_paid ? t("bill_reminders.unmark_confirm_title") : t("bill_reminders.mark_confirm_title")} description={toggleConfirmTarget?.is_paid ? t("bill_reminders.unmark_confirm_desc", { name: toggleConfirmTarget?.name ?? "" }) : toggleConfirmTarget?.amount != null ? t("bill_reminders.mark_confirm_desc_with_amount", { name: toggleConfirmTarget?.name ?? "", amount: formatIDR(toggleConfirmTarget?.amount ?? null) }) : t("bill_reminders.mark_confirm_desc_no_amount", { name: toggleConfirmTarget?.name ?? "" })} type="warning" confirmLabel={t("bill_reminders.mark_confirm_button")} cancelLabel={t("common.cancel")} onConfirm={executeTogglePaid} onCancel={() => setToggleConfirmTarget(null)} confirmDisabled={togglingId === toggleConfirmTarget?.id} />

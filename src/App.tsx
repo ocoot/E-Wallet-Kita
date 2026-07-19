@@ -212,6 +212,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   // this was a contributing factor to token churn / duplicate device rows.
   useEffect(() => {
     if (!user) return;
+    // Item 6 (permission handling audit): jangan lagi memicu dialog izin
+    // notifikasi browser secara otomatis di sini -- ini "momen yang salah"
+    // (baru login, belum tentu user mau notifikasi). requestFcmToken()
+    // internally calls Notification.requestPermission(), yang akan
+    // menampilkan prompt browser kalau statusnya masih 'default'.
+    // Sekarang HANYA auto-refresh token untuk user yang SUDAH pernah
+    // granted sebelumnya (supaya token tetap valid/tidak stale setelah
+    // reinstall/clear storage) -- user yang belum memutuskan ('default')
+    // atau sudah menolak ('denied') tidak lagi diprompt otomatis. Mereka
+    // baru diprompt saat menekan aksi eksplisit "Aktifkan Notifikasi" di
+    // Pengaturan > Notifikasi (lihat NotificationSettings.tsx).
+    if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
     const setupFcm = async () => {
       const token = await requestFcmToken();
       if (token) {
@@ -552,12 +564,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
             >
               <div className="relative w-14 h-14 flex items-center justify-center mb-4">
                 <div className={cx(
-                  "absolute inset-0 border-[3px] rounded-full opacity-25",
-                  tokens.border.accent
+                  "absolute inset-0 border-[3px] rounded-full",
+                  tokens.login.spinnerRing1
                 )} />
                 <div className={cx(
-                  "absolute inset-0 border-[3px] rounded-full animate-spin",
-                  tokens.text.accent.replace(/text-/g, "border-t-")
+                  "absolute inset-0 border-[3px] border-transparent rounded-full animate-spin",
+                  tokens.login.spinnerRing2
                 )} />
                 <img
                   src={logoUrl}

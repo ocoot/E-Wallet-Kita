@@ -62,7 +62,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
     }
   }, [type, activeCategories]);
 
-  const formatIDR = (num: number) => "Rp" + Math.round(num || 0).toLocaleString("id-ID");
+  const formatIDR = (num: number) => "Rp\u00A0" + Math.round(num || 0).toLocaleString("id-ID");
 
   const isOpen = status !== null;
   const canConfirm = status === "success" && amount > 0 && !!category;

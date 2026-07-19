@@ -12,8 +12,8 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { InfoTooltip } from "../components/InfoTooltip";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { useDialogA11y } from "../hooks/useDialogA11y";
 import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
+import { ModalShell } from "../components/ui/ModalShell";
 import { DropdownField } from "../components/DropdownField";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
@@ -28,7 +28,7 @@ import {
 // supaya user tidak bisa membuat pos untuk brand yang sudah tidak lagi
 // disinkron gold-price-sync (lihat cakupan yang dipersempit ke 4 brand).
 
-const formatIDR = (num: number | null) => num != null ? "Rp" + Math.round(num).toLocaleString("id-ID") : "-";
+const formatIDR = (num: number | null) => num != null ? "Rp\u00A0" + Math.round(num).toLocaleString("id-ID") : "-";
 const formatGrams = (num: number) => `${num.toLocaleString("id-ID", { maximumFractionDigits: 4 })} gr`;
 
 // Format price_date (kolom DATE, contoh "2026-07-04") jadi label panjang
@@ -105,14 +105,10 @@ export const GoldSavings: React.FC = () => {
   // Menjebak swipe-back/tombol-back HP saat modal ini terbuka, supaya
   // menutup modal (tetap di halaman Tabungan Emas) -- bukan malah
   // menavigasi balik ke halaman sebelumnya (lihat useBackGestureTrap.ts).
-  const formModalRef = React.useRef<HTMLDivElement>(null);
   const { close: closeForm } = useBackGestureTrap(isFormOpen, setIsFormOpen);
-  useDialogA11y(isFormOpen, formModalRef, closeForm);
-  const moveModalRef = React.useRef<HTMLDivElement>(null);
   const isMoveOpen = !!moveTarget;
   const setIsMoveOpen = (open: boolean) => { if (!open) setMoveTarget(null); };
   const { close: closeMoveModal } = useBackGestureTrap(isMoveOpen, setIsMoveOpen);
-  useDialogA11y(isMoveOpen, moveModalRef, closeMoveModal);
   const [busyId, setBusyId] = useState<string | null>(null);
   // Kartu emas "fisik" (Konsep D): id pos yang sedang di-flip (nampilkan sisi
   // aksi). Set (bukan single value) supaya beberapa kartu bisa flip
@@ -331,7 +327,7 @@ export const GoldSavings: React.FC = () => {
                   sempit -- itulah penyebab teks yang tadinya bertabrakan/
                   saling tumpang tindih. */}
               <div className="relative z-[1] flex flex-col gap-1">
-                <p className="text-[10px] font-bold font-mono text-amber-950 leading-tight tabular-nums tracking-tight break-words">
+                <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold font-mono text-amber-950 leading-tight tabular-nums tracking-tight break-words">
                   {marketValue != null ? formatIDR(marketValue) : t("gold.price_unavailable_short")}
                 </p>
                 {isEstimated && <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-amber-900/60 leading-snug">{t("gold.est_from_sell_price_note")}</p>}
@@ -562,143 +558,133 @@ export const GoldSavings: React.FC = () => {
       </div>
 
       {/* Add/Edit pocket form modal */}
-      <AnimatePresence>
-        {isFormOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-slate-950/70 backdrop-blur-sm"
-            onClick={e => { if (e.target === e.currentTarget) closeForm(); }}>
-            <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              ref={formModalRef}
-              role="dialog"
-              aria-modal="true"
-              tabIndex={-1}
-              className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border shadow-2xl", tokens.border.strong, tokens.surface.card)}>
-              <div className="h-1 w-full bg-gradient-to-r from-amber-500 to-yellow-500" />
-              <div className="p-6 space-y-4">
-                <h2 className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
-                  {editTarget ? t("gold.edit_title") : t("gold.add_title")}
-                </h2>
-                <Input
-                  type="text"
-                  label={t("gold.form_name")}
-                  value={form.name}
-                  onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder={t("gold.form_name_placeholder")}
-                  accent="amber"
-                />
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_brand")}</label>
-                  <DropdownField
-                    accent="amber"
-                    value={form.brand}
-                    disabled={!!editTarget}
-                    onChange={(v) => setForm(f => ({ ...f, brand: v as GoldBrand }))}
-                    options={formBrandOptions.map(b => ({ value: b, label: t(`gold.brand_${b}`) }))}
-                  />
-                  <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5 leading-relaxed">
-                    {editTarget ? t("gold.form_brand_locked_hint") : t("gold.form_brand_hint")}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
-                  <DropdownField
-                    accent="amber"
-                    value={form.wallet_id}
-                    onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
-                    options={activeWallets.map((w) => {
-                      const icon = w.type === "general" ? "" : w.type === "ewallet" ? "" : w.type === "bank" ? "" : "";
-                      const label = w.type === "general" ? t("wallet.group_general") : `${w.name}${w.provider ? ` · ${w.provider}` : ""}`;
-                      return { value: w.type === "general" ? "" : w.id, label: `${icon} ${label} (${formatIDR(w.balance)})` };
-                    })}
-                  />
-                </div>
-                <Input
-                  type="text"
-                  label={t("gold.form_notes")}
-                  value={form.notes}
-                  onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
-                  placeholder={t("gold.form_notes_placeholder")}
-                  accent="amber"
-                />
-                <div className="flex gap-3 pt-1">
-                  <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
-                  <Button variant="warning" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ModalShell
+        isOpen={isFormOpen}
+        onClose={closeForm}
+        maxWidth="max-w-md"
+        labelledBy="gold-form-title"
+        className="overflow-hidden"
+      >
+        <div className="h-1 w-full bg-gradient-to-r from-amber-500 to-yellow-500" />
+        <div className="p-6 space-y-4">
+          <h2 id="gold-form-title" className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
+            {editTarget ? t("gold.edit_title") : t("gold.add_title")}
+          </h2>
+          <Input
+            type="text"
+            label={t("gold.form_name")}
+            value={form.name}
+            onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+            placeholder={t("gold.form_name_placeholder")}
+            accent="amber"
+          />
+          <div>
+            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_brand")}</label>
+            <DropdownField
+              accent="amber"
+              value={form.brand}
+              disabled={!!editTarget}
+              onChange={(v) => setForm(f => ({ ...f, brand: v as GoldBrand }))}
+              options={formBrandOptions.map(b => ({ value: b, label: t(`gold.brand_${b}`) }))}
+            />
+            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5 leading-relaxed">
+              {editTarget ? t("gold.form_brand_locked_hint") : t("gold.form_brand_hint")}
+            </p>
+          </div>
+          <div>
+            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
+            <DropdownField
+              accent="amber"
+              value={form.wallet_id}
+              onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
+              options={activeWallets.map((w) => {
+                const icon = w.type === "general" ? "" : w.type === "ewallet" ? "" : w.type === "bank" ? "" : "";
+                const label = w.type === "general" ? t("wallet.group_general") : `${w.name}${(w.provider && w.provider !== w.name) ? ` · ${w.provider}` : ""}`;
+                return { value: w.type === "general" ? "" : w.id, label: `${icon} ${label} (${formatIDR(w.balance)})` };
+              })}
+            />
+          </div>
+          <Input
+            type="text"
+            label={t("gold.form_notes")}
+            value={form.notes}
+            onChange={e => setForm(f => ({ ...f, notes: e.target.value }))}
+            placeholder={t("gold.form_notes_placeholder")}
+            accent="amber"
+          />
+          <div className="flex gap-3 pt-1">
+            <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
+            <Button variant="warning" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
+          </div>
+        </div>
+      </ModalShell>
 
       {/* Buy/Sell/Manual adjust modal */}
-      <AnimatePresence>
+      <ModalShell
+        isOpen={!!(moveTarget && copy)}
+        onClose={closeMoveModal}
+        maxWidth="max-w-sm"
+        labelledBy="gold-move-title"
+        className="overflow-hidden"
+      >
         {moveTarget && copy && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto bg-slate-950/70 backdrop-blur-sm"
-            onClick={e => { if (e.target === e.currentTarget) closeMoveModal(); }}>
-            <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-              ref={moveModalRef}
-              role="dialog"
-              aria-modal="true"
-              tabIndex={-1}
-              className={cx("w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none rounded-3xl border shadow-2xl", tokens.border.strong, tokens.surface.card)}>
-              <div className={`h-1 w-full ${copy.barClass}`} />
-              <div className="p-6 space-y-4">
-                <div>
-                  <h2 className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
-                    {t(copy.title, { name: moveTarget.pocket.name })}
-                  </h2>
-                  <p className="text-xs text-slate-400 mt-1">{t(copy.desc)}</p>
-                </div>
-                {/* Disclaimer simulasi -- HANYA untuk buy/sell (isSimulated),
-                    karena manual_add/manual_remove tidak menyentuh harga
-                    acuan app sama sekali (murni catat kepemilikan fisik).
-                    Ditaruh di titik keputusan terakhir sebelum saldo
-                    berubah, bukan cuma di banner atas halaman, supaya user
-                    tidak bisa terlewat membacanya persis sebelum konfirmasi. */}
-                {copy.isSimulated && (
-                  <div className="flex items-start gap-2.5 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3.5 py-3">
-                    <AlertTriangle size={14} className="text-amber-400 shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-amber-300 leading-relaxed">{t("gold.sim_disclaimer_title")}</p>
-                      <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] text-amber-300/80 leading-relaxed mt-0.5">{t("gold.sim_disclaimer_text")}</p>
-                    </div>
+          <>
+            <div className={`h-1 w-full ${copy.barClass}`} />
+            <div className="p-6 space-y-4">
+              <div>
+                <h2 id="gold-move-title" className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
+                  {t(copy.title, { name: moveTarget.pocket.name })}
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">{t(copy.desc)}</p>
+              </div>
+              {/* Disclaimer simulasi -- HANYA untuk buy/sell (isSimulated),
+                  karena manual_add/manual_remove tidak menyentuh harga
+                  acuan app sama sekali (murni catat kepemilikan fisik).
+                  Ditaruh di titik keputusan terakhir sebelum saldo
+                  berubah, bukan cuma di banner atas halaman, supaya user
+                  tidak bisa terlewat membacanya persis sebelum konfirmasi. */}
+              {copy.isSimulated && (
+                <div className="flex items-start gap-2.5 rounded-2xl border border-amber-500/25 bg-amber-500/10 px-3.5 py-3">
+                  <AlertTriangle size={14} className="text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-amber-300 leading-relaxed">{t("gold.sim_disclaimer_title")}</p>
+                    <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] text-amber-300/80 leading-relaxed mt-0.5">{t("gold.sim_disclaimer_text")}</p>
                   </div>
-                )}
-                <div>
-                  <Input
-                    type="number"
-                    label={isGramInput ? t("gold.form_grams") : t("gold.form_idr_amount")}
-                    value={moveValue}
-                    onChange={e => setMoveValue(e.target.value)}
-                    placeholder={isGramInput ? t("gold.form_grams_placeholder") : t("gold.form_idr_amount_placeholder")}
-                    min={0}
-                    step={isGramInput ? "0.0001" : "1000"}
-                    autoFocus
-                    accent="amber"
-                  />
-                  {(moveTarget.direction === "sell" || moveTarget.direction === "manual_remove") && (
-                    <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5">{t("gold.owned_grams_hint", { amount: formatGrams(moveTarget.pocket.grams_owned) })}</p>
-                  )}
                 </div>
+              )}
+              <div>
                 <Input
-                  type="text"
-                  label={t("gold.form_entry_note")}
-                  value={moveNote}
-                  onChange={e => setMoveNote(e.target.value)}
+                  type="number"
+                  label={isGramInput ? t("gold.form_grams") : t("gold.form_idr_amount")}
+                  value={moveValue}
+                  onChange={e => setMoveValue(e.target.value)}
+                  placeholder={isGramInput ? t("gold.form_grams_placeholder") : t("gold.form_idr_amount_placeholder")}
+                  min={0}
+                  step={isGramInput ? "0.0001" : "1000"}
+                  autoFocus
                   accent="amber"
                 />
-                <div className="flex gap-3 pt-1">
-                  <Button variant="secondary" onClick={closeMoveModal} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
-                  <Button variant={copy.buttonVariant} onClick={executeMove} disabled={isMoving} isLoading={isMoving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">
-                    {t(copy.button)}
-                  </Button>
-                </div>
+                {(moveTarget.direction === "sell" || moveTarget.direction === "manual_remove") && (
+                  <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5">{t("gold.owned_grams_hint", { amount: formatGrams(moveTarget.pocket.grams_owned) })}</p>
+                )}
               </div>
-            </motion.div>
-          </motion.div>
+              <Input
+                type="text"
+                label={t("gold.form_entry_note")}
+                value={moveNote}
+                onChange={e => setMoveNote(e.target.value)}
+                accent="amber"
+              />
+              <div className="flex gap-3 pt-1">
+                <Button variant="secondary" onClick={closeMoveModal} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
+                <Button variant={copy.buttonVariant} onClick={executeMove} disabled={isMoving} isLoading={isMoving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">
+                  {t(copy.button)}
+                </Button>
+              </div>
+            </div>
+          </>
         )}
-      </AnimatePresence>
+      </ModalShell>
 
       <Modal isOpen={!!deleteTarget} title={t("gold.delete_confirm_title")} description={t("gold.delete_confirm_desc", { name: deleteTarget?.name ?? "" })} type="danger" confirmLabel={t("common.delete")} cancelLabel={t("common.cancel")} onConfirm={handleDeleteConfirmed} onCancel={() => setDeleteTarget(null)} confirmDisabled={isDeleting} />
     </motion.div>

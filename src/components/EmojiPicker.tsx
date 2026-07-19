@@ -55,7 +55,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ isOpen, onClose, onEmo
             <div className="max-h-[260px] overflow-y-auto p-3 space-y-2">
               {EMOJI_GROUPS.map((group) => (
                 <div key={group.label}>
-                  <p className={cx("text-[10px] font-semibold uppercase tracking-wider mb-1", tokens.text.muted)}>
+                  <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold uppercase tracking-wider mb-1", tokens.text.muted)}>
                     {group.label}
                   </p>
                   <div className="flex flex-wrap gap-1">
