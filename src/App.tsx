@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, Suspense, lazy } from "react";
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { LanguageProvider, useLanguage } from "./contexts/LanguageContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { ToastProvider, useToast } from "./contexts/ToastContext";
@@ -115,12 +115,51 @@ interface MainLayoutProps {
   signOut: () => Promise<void>;
 }
 
+/**
+ * Item 2.4 (P2) -- varian slide "push/pop" ala navigasi stack native.
+ * `custom` (1 = maju/push, -1 = mundur/pop) menentukan dari sisi mana
+ * halaman baru masuk & ke sisi mana halaman lama keluar, meniru pola
+ * push-in-from-right / pop-out-to-right khas iOS & Android, bukan sekadar
+ * fade/ganti konten polos ala web.
+ */
+const pageTransitionVariants = {
+  enter: (direction: number) => ({
+    opacity: 0,
+    x: direction >= 0 ? 28 : -28,
+  }),
+  center: {
+    opacity: 1,
+    x: 0,
+  },
+  exit: (direction: number) => ({
+    opacity: 0,
+    x: direction >= 0 ? -28 : 28,
+  }),
+};
+
 const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   const { tokens, cx } = useThemeTokens();
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
+  const location = useLocation();
   const { showToast } = useToast();
   const { t } = useLanguage();
+
+  // ── Item 2.4 (P2): arah transisi antar halaman ala navigasi stack ───
+  // Heuristik sederhana murni visual: bandingkan "kedalaman" path
+  // (jumlah segmen) sebelum & sesudah pindah route. Pindah ke path yang
+  // LEBIH DALAM (mis. /settings -> /settings/profile) dianggap "masuk ke
+  // detail" -> slide dari kanan (push). Pindah ke path yang SAMA/LEBIH
+  // DANGKAL (mis. /settings/profile -> /settings, atau ganti tab bawah)
+  // dianggap "kembali" -> slide dari kiri (pop). Tidak ada logika
+  // navigasi baru yang disimpan/di-refactor, murni derived dari pathname
+  // yang sudah ada di URL.
+  const pathDepth = (pathname: string) => pathname.split("/").filter(Boolean).length;
+  const prevPathDepthRef = useRef(pathDepth(location.pathname));
+  const pageDirection = pathDepth(location.pathname) >= prevPathDepthRef.current ? 1 : -1;
+  useEffect(() => {
+    prevPathDepthRef.current = pathDepth(location.pathname);
+  }, [location.pathname]);
 
   // Durasi minimum splash screen tampil (ms). Sesi Supabase kadang sudah
   // ter-resolve dari cache/localStorage dalam hitungan puluhan milidetik
@@ -371,9 +410,18 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
         <div className="p-4 sm:p-6 lg:p-8 pb-24 md:pb-40">
           <div className="max-w-7xl mx-auto w-full">
             <Breadcrumbs />
-            <AnimatePresence mode="wait">
-              <Suspense fallback={<SkeletonByRoute />}>
-                <Routes>
+            <AnimatePresence mode="wait" custom={pageDirection}>
+              <motion.div
+                key={location.pathname}
+                custom={pageDirection}
+                variants={pageTransitionVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
+              >
+                <Suspense fallback={<SkeletonByRoute />}>
+                  <Routes location={location}>
                   <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} />} />
                   <Route path="/transactions/new" element={<FeatureLockGate featureKey="new_transaction"><NewTransaction onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
                   <Route path="/transactions" element={<FeatureLockGate featureKey="history"><History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
@@ -439,8 +487,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                     adminLoading ? <AdminSkeleton /> : isAdmin ? <AdminBackup /> : <Navigate to="/dashboard" replace />
                   } />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                </Routes>
-              </Suspense>
+                  </Routes>
+                </Suspense>
+              </motion.div>
             </AnimatePresence>
 
             {/* Footer Copyright */}

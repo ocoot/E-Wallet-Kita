@@ -46,6 +46,7 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { useNotificationPreferences, NotificationPreferenceKey } from "../hooks/useNotificationPreferences";
 import { SettingsMobileMenu } from "../components/settings/SettingsMobileMenu";
+import { CollapsingHeader } from "../components/ui/CollapsingHeader";
 
 interface SettingsProps {
   onUserPrefUpdated: (user: UserSession) => void;
@@ -522,6 +523,12 @@ export const Settings: React.FC<SettingsProps> = ({
 
   return (
     <div className="max-w-3xl mx-auto space-y-5 pb-24">
+
+      {/* Item 2.3 (P2): large-title header yang mengecil + menempel saat
+          discroll, khusus mobile -- lihat CollapsingHeader.tsx. Menggantikan
+          judul statis yang sebelumnya ada di dalam kartu pertama
+          SettingsMobileMenu (dihapus di sana supaya tidak duplikat). */}
+      <CollapsingHeader title={t("nav.settings")} description={t("settings.desc")} />
 
       {/* ── Mobile-only redesign: menu list ala "Profile/Akun" ──────────
           Menggantikan grid form raksasa di atas KHUSUS untuk breakpoint

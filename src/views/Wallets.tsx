@@ -222,7 +222,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
         </div>
       ) : (
         <>
-          <p className={cx("font-sans font-black text-xl tabular-nums", tokens.text.primary)}>
+          <p className={cx("font-mono font-black text-xl tabular-nums", tokens.text.primary)}>
             {formatIDR(wallet.balance)}
           </p>
           {wallet.earmarked_amount > 0 && (
@@ -426,7 +426,7 @@ export const Wallets: React.FC = () => {
             <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
               {t("wallet.total_balance")}
             </p>
-            <p className={cx("font-sans font-black text-3xl tabular-nums mt-1", tokens.text.primary)}>
+            <p className={cx("font-mono font-black text-3xl tabular-nums mt-1", tokens.text.primary)}>
               {formatIDR(totalBalance)}
             </p>
           </div>

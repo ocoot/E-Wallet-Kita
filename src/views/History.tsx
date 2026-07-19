@@ -29,6 +29,7 @@ import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { ErrorState } from "../components/ErrorState";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { BottomSheet } from "../components/ui/BottomSheet";
+import { CollapsingHeader } from "../components/ui/CollapsingHeader";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -264,6 +265,9 @@ export const History: React.FC<HistoryProps> = ({
 
   return (
     <div className="space-y-5">
+      {/* Item 2.3 (P2): large-title header yang mengecil + menempel saat
+          discroll, khusus mobile -- lihat CollapsingHeader.tsx. */}
+      <CollapsingHeader title={t("history.title")} description={t("history.desc")} />
 
       {/* ── Header card ─────────────────────────────────────────────── */}
       <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>

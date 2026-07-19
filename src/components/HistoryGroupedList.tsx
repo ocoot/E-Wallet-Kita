@@ -99,7 +99,7 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
 
                     {/* Nominal + actions */}
                     <div className="flex items-center gap-1 shrink-0">
-                      <span className={`font-mono font-bold text-sm ${isExpense ? tokens.text.danger : tokens.text.success}`}>
+                      <span className={`font-mono tabular-nums font-bold text-sm ${isExpense ? tokens.text.danger : tokens.text.success}`}>
                         {isExpense ? "-" : "+"}{formatIDR(tx.amount)}
                       </span>
                       <button

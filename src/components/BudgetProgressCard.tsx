@@ -192,7 +192,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
           <div className="flex-1 space-y-3 min-w-0">
             {/* Segmented progress bar */}
             <div className="space-y-1">
-              <div className={cx("flex justify-between text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.text.faint)}>
+              <div className={cx("flex justify-between text-[clamp(0.5625rem,2.6vw,0.625rem)] font-mono tabular-nums", tokens.text.faint)}>
                 <span>Rp0</span>
                 <span>{formatIDR(budget.monthly_limit)}</span>
               </div>
@@ -244,7 +244,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
                   Terpakai
                 </p>
                 <p
-                  className="text-[10.5px] font-black leading-tight whitespace-nowrap tabular-nums tracking-tight"
+                  className="font-mono text-[10.5px] font-black leading-tight whitespace-nowrap tabular-nums tracking-tight"
                   style={{ color: cfg.barFrom }}
                 >
                   {formatIDR(budget.spent)}
@@ -254,7 +254,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
                 <p className={cx("text-[clamp(0.5062rem,2.34vw,0.5625rem)] uppercase tracking-wider font-bold mb-0.5", tokens.text.faint)}>
                   {overBudget ? "Melebihi" : "Sisa"}
                 </p>
-                <p className={`text-[10.5px] font-black leading-tight whitespace-nowrap tabular-nums tracking-tight ${overBudget ? "text-red-400" : "text-emerald-400"}`}>
+                <p className={`font-mono text-[10.5px] font-black leading-tight whitespace-nowrap tabular-nums tracking-tight ${overBudget ? "text-red-400" : "text-emerald-400"}`}>
                   {overBudget
                     ? `+${formatIDR(budget.spent - budget.monthly_limit)}`
                     : formatIDR(remaining)}
@@ -269,7 +269,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
           <div className="flex items-center gap-2">
             <TrendingUp size={11} className="text-slate-500 shrink-0" />
             <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.text.faint)}>
-              Anggaran bulanan: <span className={cx("font-semibold", tokens.text.label)}>{formatIDR(budget.monthly_limit)}</span>
+              Anggaran bulanan: <span className={cx("font-mono tabular-nums font-semibold", tokens.text.label)}>{formatIDR(budget.monthly_limit)}</span>
               {" · "}Peringatan di <span className={cx("font-semibold", tokens.text.label)}>{budget.alert_threshold_percent}%</span>
             </p>
           </div>

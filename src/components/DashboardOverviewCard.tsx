@@ -144,7 +144,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
               {t("dashboard.accumulated_balance_label")}
               <InfoTooltip text={t("dashboard.net_worth_tooltip")} align="left" />
             </p>
-            <p className={`font-sans font-bold text-2xl sm:text-3xl tracking-tight ${isPositive ? tokens.text.primary : "text-red-400"}`}>
+            <p className={`font-mono tabular-nums font-bold text-2xl sm:text-3xl tracking-tight ${isPositive ? tokens.text.primary : "text-red-400"}`}>
               {balanceVisible ? formatIDR(netWorth) : maskCurrency(formatIDR(netWorth))}
             </p>
           </div>
@@ -164,15 +164,15 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
           <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide">
             <div className="flex items-center gap-1.5">
               <TrendingUp size={12} className="text-emerald-400 shrink-0" />
-              <span className="text-xs font-bold text-emerald-400 whitespace-nowrap">{balanceVisible ? formatIDR(monthlySummary.income) : maskCurrency(formatIDR(monthlySummary.income))}</span>
+              <span className="font-mono tabular-nums text-xs font-bold text-emerald-400 whitespace-nowrap">{balanceVisible ? formatIDR(monthlySummary.income) : maskCurrency(formatIDR(monthlySummary.income))}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <TrendingDown size={12} className="text-red-400 shrink-0" />
-              <span className="text-xs font-bold text-red-400 whitespace-nowrap">{balanceVisible ? formatIDR(monthlySummary.expense) : maskCurrency(formatIDR(monthlySummary.expense))}</span>
+              <span className="font-mono tabular-nums text-xs font-bold text-red-400 whitespace-nowrap">{balanceVisible ? formatIDR(monthlySummary.expense) : maskCurrency(formatIDR(monthlySummary.expense))}</span>
             </div>
             <div className={cx("flex items-center gap-1.5 pl-3 border-l", tokens.border.accent)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 shrink-0">{t("dashboard.balance")}</span>
-              <span className={`text-xs font-bold whitespace-nowrap ${monthlySummary.balance >= 0 ? tokens.text.success : "text-red-400"}`}>
+              <span className={`font-mono tabular-nums text-xs font-bold whitespace-nowrap ${monthlySummary.balance >= 0 ? tokens.text.success : "text-red-400"}`}>
                 {balanceVisible ? formatIDR(monthlySummary.balance) : maskCurrency(formatIDR(monthlySummary.balance))}
               </span>
             </div>
@@ -212,7 +212,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                           {t("dashboard.total_savings_label")}
                           <InfoTooltip text={t("dashboard.earmarked_note_tooltip")} align="right" />
                         </p>
-                        <p className={cx("text-xs font-bold whitespace-nowrap tabular-nums tracking-tight", tokens.text.primary)}>{balanceVisible ? formatIDR(savedAmount) : maskCurrency(formatIDR(savedAmount))}</p>
+                        <p className={cx("font-mono text-xs font-bold whitespace-nowrap tabular-nums tracking-tight", tokens.text.primary)}>{balanceVisible ? formatIDR(savedAmount) : maskCurrency(formatIDR(savedAmount))}</p>
                       </div>
                     </div>
                   )}
@@ -226,8 +226,8 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                           {t("dashboard.total_gold_label")}
                           <InfoTooltip text={t("dashboard.total_gold_tooltip")} align="right" />
                         </p>
-                        <p className={cx("text-xs font-bold whitespace-nowrap tabular-nums tracking-tight", tokens.text.primary)}>{balanceVisible ? formatIDR(goldMarketValue) : maskCurrency(formatIDR(goldMarketValue))}</p>
-                        <p className={`text-[clamp(0.5344rem,2.47vw,0.5938rem)] font-semibold ${goldGainLoss >= 0 ? "text-emerald-400" : "text-red-400"}`}>
+                        <p className={cx("font-mono text-xs font-bold whitespace-nowrap tabular-nums tracking-tight", tokens.text.primary)}>{balanceVisible ? formatIDR(goldMarketValue) : maskCurrency(formatIDR(goldMarketValue))}</p>
+                        <p className={`font-mono tabular-nums text-[clamp(0.5344rem,2.47vw,0.5938rem)] font-semibold ${goldGainLoss >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                           {goldGainLoss >= 0 ? "▲" : "▼"} {balanceVisible ? formatIDR(Math.abs(goldGainLoss)) : maskCurrency(formatIDR(Math.abs(goldGainLoss)))}
                         </p>
                       </div>
@@ -239,7 +239,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                     </div>
                     <div className="min-w-0">
                       <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_income_label")}</p>
-                      <p className={cx("text-xs font-bold whitespace-nowrap tabular-nums tracking-tight", tokens.text.primary)}>{balanceVisible ? formatIDR(data.income_total) : maskCurrency(formatIDR(data.income_total))}</p>
+                      <p className={cx("font-mono text-xs font-bold whitespace-nowrap tabular-nums tracking-tight", tokens.text.primary)}>{balanceVisible ? formatIDR(data.income_total) : maskCurrency(formatIDR(data.income_total))}</p>
                     </div>
                   </div>
                   <div className={cx("flex items-center gap-2.5 rounded-2xl border px-3.5 py-2.5", tokens.surface.sunken, tokens.border.accent)}>
@@ -248,7 +248,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
                     </div>
                     <div className="min-w-0">
                       <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase font-semibold">{t("dashboard.accumulated_expense_label")}</p>
-                      <p className={cx("text-xs font-bold whitespace-nowrap tabular-nums tracking-tight", tokens.text.primary)}>{balanceVisible ? formatIDR(data.expense_total) : maskCurrency(formatIDR(data.expense_total))}</p>
+                      <p className={cx("font-mono text-xs font-bold whitespace-nowrap tabular-nums tracking-tight", tokens.text.primary)}>{balanceVisible ? formatIDR(data.expense_total) : maskCurrency(formatIDR(data.expense_total))}</p>
                     </div>
                   </div>
                 </div>
