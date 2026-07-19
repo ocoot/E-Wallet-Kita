@@ -992,6 +992,8 @@
       "handoff_message": "Oke, aku sambungkan ke tim admin ya — mereka bisa bantu lebih lanjut",
       "identity_name": "Admin E-Wallet Kita",
       "identity_status": "Siap membantu",
+      "identity_status_online": "Online sekarang",
+      "identity_status_away": "Sedang tidak di tempat",
       "start_button": "Mulai chat dengan admin",
       "placeholder": "Tulis pesan untuk admin...",
       "send": "Kirim",
@@ -1005,7 +1007,17 @@
       "confirm_close_desc": "Riwayat chat ini akan dihapus setelah ditutup dan tidak bisa dibuka lagi.",
       "session_closed_toast": "Sesi chat telah ditutup.",
       "error_send_failed": "Gagal mengirim pesan, coba lagi.",
-      "error_session_closed": "Sesi sudah ditutup, tidak bisa mengirim pesan."
+      "error_session_closed": "Sesi sudah ditutup, tidak bisa mengirim pesan.",
+      "message_sent": "Terkirim",
+      "message_delivered": "Terikirim",
+      "message_read": "Dibaca",
+      "admin_typing": "Admin sedang mengetik",
+      "operating_hours": "Jam operasional",
+      "operating_hours_value": "08.00–22.00 WIB",
+      "sla_response": "Biasanya membalas",
+      "sla_response_value": "< 3 menit",
+      "today": "Hari ini",
+      "yesterday": "Kemarin"
     }
   },
   "admin_support_chat": {

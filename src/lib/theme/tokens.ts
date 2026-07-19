@@ -570,6 +570,7 @@ export const themeTokens = {
   supportWidget: {
     fabButton: "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-900/40 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-900/20",
     chatBubbleUser: "bg-indigo-600 text-white light_sakura:bg-rose-500",
+    chatBubbleAdmin: "bg-slate-800 text-slate-100 light_sakura:bg-slate-100 light_sakura:text-slate-800",
     closeBtn: "text-slate-400 hover:text-white light_sakura:text-slate-500 light_sakura:hover:text-slate-900",
     /** Gradient avatar bot/agent -- dipakai 5x (header, bubble chat, avatar list, dsb). */
     gradientAvatar: "bg-gradient-to-br from-indigo-600 to-indigo-400 light_sakura:from-rose-500 light_sakura:to-rose-300",
@@ -577,6 +578,11 @@ export const themeTokens = {
     ringHighlight: "ring-indigo-500/40 light_sakura:ring-rose-300/60",
     /** Ring fokus input pesan -- dipakai 2x. */
     inputFocusRing: "focus:ring-indigo-500 light_sakura:focus:ring-rose-400",
+    /** Timestamp warna lebih jelas (#7A8294) -- dipakai di semua pesan admin. */
+    timestamp: "text-[#7A8294] text-[11px]",
+    /** Warna checkmark read indicator. */
+    checkmarkSent: "text-slate-500",
+    checkmarkRead: "text-indigo-400 light_sakura:text-rose-500",
     /**
      * Sesi 54 (kebijakan tokenisasi penuh): sisa kombinasi 1x-pakai di
      * `SupportChatWidget.tsx` (dicek cross-file, tidak ada exact match).

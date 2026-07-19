@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { MessageCircle, X, Send, Loader2, XCircle, Bot, UserRound, LayoutDashboard, PlusCircle, History, Tags, Link2, Crown } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, XCircle, Bot, UserRound, Clock, LayoutDashboard, PlusCircle, History, Tags, Link2, Crown, Paperclip, Smile, Camera, Check, CheckCheck, ImageIcon } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
 import { matchSupportFaqTopic, SUPPORT_FAQ_TOPICS } from "../lib/supportFaq";
 import { Modal } from "./Modal";
+import { EmojiPicker } from "./EmojiPicker";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { audioFeedback } from "../lib/audio";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { uploadChatAttachment, AttachmentValidationError } from "../lib/chatAttachment";
 
 type WidgetTab = "faq" | "admin";
 
@@ -30,13 +32,34 @@ interface SupportMessageRow {
   sender: "user" | "admin";
   content: string;
   created_at: string;
+  image_url?: string;
 }
 
 function formatMsgTime(iso: string, locale: string): string {
   return new Date(iso).toLocaleTimeString(locale === "id" ? "id-ID" : "en-US", {
     hour: "2-digit",
     minute: "2-digit",
+    hour12: false,
   });
+}
+
+function formatDateSeparator(iso: string, t: (k: string) => string): string {
+  const msgDate = new Date(iso);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  if (msgDate.toDateString() === today.toDateString()) return t("support.admin_chat.today");
+  if (msgDate.toDateString() === yesterday.toDateString()) return t("support.admin_chat.yesterday");
+
+  return msgDate.toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+}
+
+function shouldShowDateSeparator(current: string, previous: string | null): boolean {
+  if (!previous) return true;
+  const curr = new Date(current);
+  const prev = new Date(previous);
+  return curr.toDateString() !== prev.toDateString();
 }
 
 // Ikon per topik FAQ -- murni kosmetik (scanability), tidak mengubah data/keyword matching di supportFaq.ts.
@@ -122,11 +145,16 @@ export const SupportChatWidget: React.FC = () => {
   const [isStarting, setIsStarting] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
+  const [isAdminTyping, setIsAdminTyping] = useState(false);
+  const [isEmojiOpen, setIsEmojiOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatBodyRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const loadExistingSession = useCallback(async () => {
     if (!user) return;
-    // Auto-clear sesi closed milik user ini (on-demand, tanpa cron -- sesuai keputusan).
     await supabase.rpc("cleanup_closed_support_sessions");
 
     const { data, error } = await supabase
@@ -151,6 +179,25 @@ export const SupportChatWidget: React.FC = () => {
     }
   }, [isOpen, tab, loadExistingSession]);
 
+  // Simulate admin typing indicator when session is claimed but no reply yet
+  useEffect(() => {
+    if (!session || session.status !== "claimed") {
+      setIsAdminTyping(false);
+      return;
+    }
+    const hasAdminReply = messages.some((m) => m.sender === "admin");
+    if (hasAdminReply) {
+      setIsAdminTyping(false);
+      return;
+    }
+    const timer = setTimeout(() => setIsAdminTyping(true), 3000);
+    const hideTimer = setTimeout(() => setIsAdminTyping(false), 12000);
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(hideTimer);
+    };
+  }, [session?.status, session?.id, messages.length]);
+
   // Load histori pesan saat session tersedia, lalu subscribe realtime khusus session itu.
   useEffect(() => {
     if (!session) return;
@@ -169,12 +216,8 @@ export const SupportChatWidget: React.FC = () => {
     };
     loadMessages();
 
-    // Dedupe id pesan admin yang sudah dibunyikan -- realtime kadang
-    // mengirim ulang event yang sama (reconnect dsb), jangan sampai
-    // suara notifikasi ikut bunyi dobel untuk pesan yang sama.
     const chimedMessageIds = new Set<string>();
 
-    // Filter ketat by session_id supaya 3 sesi paralel tidak saling bocor di client manapun.
     const channel = supabase
       .channel(`support-session-${session.id}`)
       .on(
@@ -186,10 +229,6 @@ export const SupportChatWidget: React.FC = () => {
             if (prev.some((m) => m.id === incoming.id)) return prev;
             return [...prev, incoming];
           });
-          // Suara notifikasi hanya untuk balasan admin (bukan echo pesan
-          // sendiri) -- webpush untuk kasus ini sudah di-skip lewat flag
-          // user_viewing (lihat efek di bawah), jadi suara ini yang jadi
-          // sinyal utama selagi widget sedang dibuka.
           if (incoming.sender === "admin" && !chimedMessageIds.has(incoming.id)) {
             chimedMessageIds.add(incoming.id);
             audioFeedback.playChime();
@@ -218,13 +257,6 @@ export const SupportChatWidget: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Laporkan ke backend apakah user SEDANG membuka widget chat untuk
-  // sesi ini (tab "admin" terbuka + halaman visible) lewat kolom
-  // support_sessions.user_viewing. Trigger DB notify_support_reply_push()
-  // (lihat migration 20260819010000_support_reply_webpush.sql) memakai
-  // flag ini untuk skip pengiriman webpush kalau user sudah pasti lihat
-  // balasan admin lewat Realtime + suara chime di atas -- menghindari
-  // notifikasi dobel (in-app dan push muncul bersamaan).
   useEffect(() => {
     if (!session) return;
 
@@ -241,15 +273,9 @@ export const SupportChatWidget: React.FC = () => {
 
     setViewing(isCurrentlyViewing());
 
-    // Tab di-minimize/di-switch tanpa widget ditutup (isOpen tetap true)
-    // tetap harus dihitung "tidak sedang dilihat", makanya visibilitychange
-    // dipantau terpisah dari isOpen/tab.
     const handleVisibilityChange = () => setViewing(isCurrentlyViewing());
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    // Best-effort: tangkap kasus tab/app benar-benar ditutup (bukan cuma
-    // di-switch) supaya flag tidak "nyangkut" true selamanya kalau cleanup
-    // effect normal di bawah tidak sempat jalan.
     const handlePageHide = () => setViewing(false);
     window.addEventListener("pagehide", handlePageHide);
 
@@ -265,10 +291,6 @@ export const SupportChatWidget: React.FC = () => {
     try {
       const { data, error } = await supabase.rpc("create_support_session");
       if (error) throw error;
-      // RPC dideklarasikan `RETURNS SETOF public.support_sessions`, jadi
-      // supabase-js SELALU mengembalikan array (walau isinya 1 baris) --
-      // bukan object tunggal. Tanpa unwrap ini, session.id/short_code jadi
-      // undefined dan pesan pertama gagal terkirim (session_id null).
       const newSession = Array.isArray(data) ? data[0] : data;
       if (!newSession) throw new Error("Sesi tidak ditemukan setelah dibuat.");
       setSession(newSession as SupportSessionRow);
@@ -279,6 +301,8 @@ export const SupportChatWidget: React.FC = () => {
     }
   };
 
+  const [sendBtnState, setSendBtnState] = useState<"idle" | "loading" | "success">("idle");
+
   const handleSendAdminMessage = async () => {
     const content = adminInput.trim();
     if (!content || !session) return;
@@ -286,7 +310,7 @@ export const SupportChatWidget: React.FC = () => {
       showToast(t("support.admin_chat.error_session_closed"), "error");
       return;
     }
-    setIsSending(true);
+    setSendBtnState("loading");
     setAdminInput("");
     try {
       const { data: invokeData, error } = await supabase.functions.invoke("support-bridge", {
@@ -299,10 +323,11 @@ export const SupportChatWidget: React.FC = () => {
           return [...prev, invokeData.data as SupportMessageRow];
         });
       }
+      setSendBtnState("success");
+      setTimeout(() => setSendBtnState("idle"), 1200);
     } catch (err: any) {
       showToast(err.message || t("support.admin_chat.error_send_failed"), "error");
-    } finally {
-      setIsSending(false);
+      setSendBtnState("idle");
     }
   };
 
@@ -320,6 +345,61 @@ export const SupportChatWidget: React.FC = () => {
     }
   };
 
+  const lastAdminMessageTime = useMemo(() => {
+    const adminMsgs = messages.filter((m) => m.sender === "admin");
+    if (adminMsgs.length === 0) return null;
+    return adminMsgs[adminMsgs.length - 1].created_at;
+  }, [messages]);
+
+  const adminOnline = session?.status === "claimed" || !!lastAdminMessageTime;
+
+  const handleFileSelect = async (file: File | null) => {
+    if (!file || !session || !user) return;
+    setIsUploading(true);
+    try {
+      const url = await uploadChatAttachment(user.id, session.id, file);
+      const content = url;
+      setSendBtnState("loading");
+      const { data: invokeData, error } = await supabase.functions.invoke("support-bridge", {
+        body: { mode: "user_message", session_id: session.id, content },
+      });
+      if (error) throw error;
+      if (invokeData?.data) {
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === invokeData.data.id)) return prev;
+          return [...prev, { ...invokeData.data, image_url: url } as SupportMessageRow];
+        });
+      }
+      setSendBtnState("success");
+      setTimeout(() => setSendBtnState("idle"), 1200);
+    } catch (err: any) {
+      if (err instanceof AttachmentValidationError) {
+        showToast(err.code === "TOO_LARGE" ? "File terlalu besar (maks 5 MB)" : "Format file tidak didukung", "error");
+      } else {
+        showToast(err.message || t("support.admin_chat.error_send_failed"), "error");
+      }
+      setSendBtnState("idle");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleAttachmentClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleCameraClick = () => {
+    cameraInputRef.current?.click();
+  };
+
+  const handleEmojiSelect = (emoji: string) => {
+    setAdminInput((prev) => prev + emoji);
+  };
+
+  const isImageUrl = (text: string): boolean => {
+    return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|heic|heif)(\?.*)?$/i.test(text.trim());
+  };
+
   return (
     <>
       {/* Floating Action Button */}
@@ -329,7 +409,7 @@ export const SupportChatWidget: React.FC = () => {
         onClick={() => setIsOpen((prev) => !prev)}
         whileTap={{ scale: 0.92 }}
         className={cx(
-          "fixed bottom-24 sm:bottom-32 right-6 z-30 flex items-center justify-center w-14 h-14 rounded-full text-white shadow-2xl transition-colors duration-200",
+          "fixed bottom-32 sm:bottom-32 right-6 z-30 flex items-center justify-center w-14 h-14 rounded-full text-white shadow-2xl transition-colors duration-200",
           tokens.supportWidget.fabButton
         )}
         style={{ marginBottom: "env(safe-area-inset-bottom)" }}
@@ -347,7 +427,7 @@ export const SupportChatWidget: React.FC = () => {
         </AnimatePresence>
       </motion.button>
 
-      {/* Backdrop -- blur & redupkan konten di belakang panel supaya panel tidak terasa "menimpa" begitu saja */}
+      {/* Backdrop */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -368,33 +448,34 @@ export const SupportChatWidget: React.FC = () => {
             initial={{ opacity: 0, y: 16, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 16, scale: 0.97 }}
-            className={cx("fixed z-40 top-20 bottom-24 left-4 right-4 sm:top-auto sm:bottom-52 sm:left-auto sm:right-6 sm:w-96 sm:max-h-[70vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden", tokens.surface.card, tokens.border.accent)}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className={cx("fixed z-40 top-20 bottom-32 left-4 right-4 sm:top-auto sm:bottom-56 sm:left-auto sm:right-6 sm:w-96 sm:max-h-[70vh] flex flex-col rounded-3xl border shadow-2xl overflow-hidden", tokens.surface.card, tokens.border.accent)}
           >
             {/* Header */}
-            <div className={cx("px-4 py-3.5 border-b flex items-center gap-3", tokens.border.accent)}>
+            <div className={cx("px-4 py-3.5 border-b flex items-center gap-3 shrink-0", tokens.border.accent)}>
               <div className={cx(
                 "relative w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-lg",
                 cx(tokens.savings.btnShadow, tokens.supportWidget.gradientAvatar)
               )}>
                 <Bot size={18} className="text-white" />
-                <span className={cx("absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2", tokens.telegramCard.linkedAvatarRing)} />
+                <span className={cx(
+                  "absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border-2 chat-online-pulse",
+                  tokens.telegramCard.linkedAvatarRing
+                )} />
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>
                   {t("support.title")}
                 </h3>
-                <p className={cx("flex items-center gap-1.5 text-[11px] font-medium", tokens.text.success)}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_0_3px_rgba(16,185,129,0.18)]" />
-                  {t("support.widget_status")}
-                </p>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 chat-online-pulse shrink-0" />
+                  <span className={cx("text-[11px] font-medium", tokens.text.success)}>
+                    {tab === "admin" && session
+                      ? (adminOnline ? t("support.admin_chat.identity_status_online") : t("support.admin_chat.identity_status"))
+                      : t("support.widget_status")}
+                  </span>
+                </div>
               </div>
-              {/* Tombol tutup panel -- DIBUTUHKAN karena FAB toggle di pojok
-                  kanan-bawah layar (yang biasanya jadi tombol X saat panel
-                  terbuka) posisinya bertumpuk PERSIS dengan sudut kanan-bawah
-                  panel ini sendiri (z-index FAB lebih rendah dari panel &
-                  backdrop), jadi FAB itu jadi tertutup/tidak bisa dipencet
-                  selama panel terbuka. Tombol X di header ini jadi satu-nya
-                  cara yang selalu terlihat & terjangkau untuk menutup panel. */}
               <button
                 type="button"
                 onClick={() => { audioFeedback.playClick(); setIsOpen(false); }}
@@ -410,7 +491,8 @@ export const SupportChatWidget: React.FC = () => {
               </button>
             </div>
 
-            <div className={cx("flex gap-1.5 px-4 pt-3 pb-3 border-b", tokens.border.accent)}>
+            {/* Tabs */}
+            <div className={cx("flex gap-1.5 px-4 pt-3 pb-3 border-b shrink-0", tokens.border.accent)}>
               <button
                 type="button"
                 onClick={() => setTab("faq")}
@@ -445,24 +527,48 @@ export const SupportChatWidget: React.FC = () => {
               </button>
             </div>
 
+            {/* Operating hours & SLA info bar */}
+            {tab === "admin" && (
+              <div className={cx("px-4 py-2 border-b flex items-center gap-3 shrink-0", tokens.border.accent, tokens.surface.subtle)}>
+                <div className="flex items-center gap-1.5 text-[10px] font-medium" style={{ color: "#7A8294" }}>
+                  <Clock size={11} className="shrink-0" style={{ color: "#7A8294" }} />
+                  <span>{t("support.admin_chat.operating_hours")}:</span>
+                  <span className="font-semibold text-emerald-400">{t("support.admin_chat.operating_hours_value")}</span>
+                </div>
+                <span className="shrink-0" style={{ color: "#7A8294" }}>·</span>
+                <div className="flex items-center gap-1 text-[10px] font-medium" style={{ color: "#7A8294" }}>
+                  <span>{t("support.admin_chat.sla_response")}</span>
+                  <span className="font-semibold text-emerald-400">{t("support.admin_chat.sla_response_value")}</span>
+                </div>
+              </div>
+            )}
+
             {/* Body */}
-            <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
+            <div
+              ref={chatBodyRef}
+              className="flex-1 overflow-y-auto p-4 flex flex-col gap-3 chat-scrollarea"
+            >
               {tab === "faq" && (
                 <>
                   {/* Bot greeting bubble */}
-                  <div className="flex items-start gap-2">
+                  <motion.div
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-start gap-2"
+                  >
                     <div className={cx(
                       "w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
                       tokens.supportWidget.gradientAvatar
                     )}>
                       <Bot size={12} className="text-white" />
                     </div>
-                    <div className={cx("max-w-[85%] px-3 py-2 rounded-2xl rounded-tl-md text-xs leading-relaxed", tokens.surface.subtle, tokens.text.secondary)}>
+                    <div className={cx("max-w-[85%] px-3 py-2 rounded-[18px] rounded-tl-[4px] text-xs leading-relaxed", tokens.surface.subtle, tokens.text.secondary)}>
                       {t("support.faq.bot_greeting")}
                     </div>
-                  </div>
+                  </motion.div>
 
-                  {/* Topik -- digeser horizontal supaya tidak makan tinggi panel & terasa seperti quick-reply chat */}
+                  {/* Topik */}
                   <div className="relative -mx-4">
                     <div
                       ref={chipsRef}
@@ -492,9 +598,8 @@ export const SupportChatWidget: React.FC = () => {
                         );
                       })}
                     </div>
-                    {/* Fade di tepi kanan -- sinyal visual bahwa masih ada chip lain untuk di-scroll */}
                     {chipCanScroll && (
-                    <div className={tokens.supportWidget.scrollFadeGradient} />
+                      <div className={tokens.supportWidget.scrollFadeGradient} />
                     )}
                   </div>
 
@@ -518,26 +623,36 @@ export const SupportChatWidget: React.FC = () => {
                   <div className="flex flex-col gap-2 mt-1">
                     {faqBubbles.map((bubble) =>
                       bubble.role === "user" ? (
-                        <div
+                        <motion.div
+                          key={bubble.id}
+                          initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          transition={{ duration: 0.2 }}
                           className={cx(
-                            "self-end max-w-[85%] px-3 py-2 rounded-2xl rounded-br-md text-xs leading-relaxed text-white",
+                            "self-end max-w-[85%] px-3 py-2 rounded-[18px] rounded-br-[4px] text-xs leading-relaxed text-white",
                             tokens.supportWidget.chatBubbleUser
                           )}
                         >
                           {bubble.text}
-                        </div>
+                        </motion.div>
                       ) : (
-                        <div key={bubble.id} className="flex items-start gap-2 self-start max-w-[85%]">
+                        <motion.div
+                          key={bubble.id}
+                          initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          transition={{ duration: 0.2 }}
+                          className="flex items-start gap-2 self-start max-w-[85%]"
+                        >
                           <div className={cx(
                             "w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
                             tokens.supportWidget.gradientAvatar
                           )}>
                             <Bot size={12} className="text-white" />
                           </div>
-                          <div className={cx("px-3 py-2 rounded-2xl rounded-tl-md text-xs leading-relaxed", tokens.surface.subtle, tokens.text.secondary)}>
+                          <div className={cx("px-3 py-2 rounded-[18px] rounded-tl-[4px] text-xs leading-relaxed", tokens.surface.subtle, tokens.text.secondary)}>
                             {bubble.text}
                           </div>
-                        </div>
+                        </motion.div>
                       )
                     )}
                     <div ref={faqEndRef} />
@@ -549,21 +664,29 @@ export const SupportChatWidget: React.FC = () => {
                 <>
                   {!session && (
                     <div className="flex flex-col gap-2 py-1">
-                      <div className="flex items-start gap-2">
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex items-start gap-2"
+                      >
                         <div className={cx(
                           "w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
                           tokens.supportWidget.gradientAvatar
                         )}>
                           <Bot size={12} className="text-white" />
                         </div>
-                        <div className={cx("max-w-[85%] px-3 py-2 rounded-2xl rounded-tl-md text-xs leading-relaxed", tokens.surface.subtle, tokens.text.secondary)}>
+                        <div className={cx("max-w-[85%] px-3 py-2 rounded-[18px] rounded-tl-[4px] text-xs leading-relaxed", tokens.surface.subtle, tokens.text.secondary)}>
                           {t("support.admin_chat.handoff_message")}
                         </div>
-                      </div>
+                      </motion.div>
 
-                      {/* Kartu handoff -- pesan, identitas admin, dan CTA digabung jadi satu unit visual
-                          (bukan 3 blok terpisah) supaya jelas ini satu alur yang sama. */}
-                      <div className={cx("ml-8 rounded-2xl border overflow-hidden", tokens.surface.subtle, tokens.border.accent)}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ duration: 0.2, delay: 0.1 }}
+                        className={cx("ml-8 rounded-2xl border overflow-hidden", tokens.surface.subtle, tokens.border.accent)}
+                      >
                         <div className="flex items-center gap-3 px-3.5 py-3">
                           <div className={cx(
                             "relative w-10 h-10 rounded-full flex items-center justify-center shrink-0",
@@ -577,13 +700,11 @@ export const SupportChatWidget: React.FC = () => {
                               {t("support.admin_chat.identity_name")}
                             </p>
                             <p className={cx("text-[11px] font-medium", tokens.text.success)}>
-                              {t("support.admin_chat.identity_status")}
+                              {t("support.admin_chat.identity_status_online")}
                             </p>
                           </div>
                         </div>
-
                         <div className={cx("h-px", tokens.border.accent)} />
-
                         <button
                           type="button"
                           onClick={handleStartSession}
@@ -602,12 +723,13 @@ export const SupportChatWidget: React.FC = () => {
                             </>
                           )}
                         </button>
-                      </div>
+                      </motion.div>
                     </div>
                   )}
 
                   {session && (
                     <>
+                      {/* Session status bar */}
                       <div className={cx("flex items-center justify-between text-xs", tokens.text.muted)}>
                         <span>
                           {session.status === "claimed"
@@ -627,62 +749,102 @@ export const SupportChatWidget: React.FC = () => {
                         </button>
                       </div>
 
+                      {/* Messages */}
                       {messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center gap-2 py-8 text-center">
                           <p className={cx("text-xs max-w-[220px]", tokens.text.faint)}>
                             {t("support.admin_chat.prompt_first_message")}
                           </p>
                         </div>
-                      ) : !messages.some((m) => m.sender === "admin") ? (
-                        <div className="flex flex-col gap-1 mt-1">
-                          {messages.map((msg) => (
-                            <div
-                              key={msg.id}
-                              className={`flex flex-col max-w-[85%] ${msg.sender === "user" ? "self-end items-end" : "self-start items-start"}`}
-                            >
-                              <div
-                                className={`px-3 py-2 rounded-2xl text-xs leading-relaxed ${
-                                  msg.sender === "user"
-                                    ? cx("rounded-br-md", tokens.supportWidget.chatBubbleUser)
-                                    : cx("rounded-tl-md", tokens.surface.subtle, tokens.text.secondary)
-                                }`}
-                              >
-                                {msg.content}
-                              </div>
-                              <span className={cx("text-[10px] mt-0.5 px-1", tokens.text.faint)}>
-                                {formatMsgTime(msg.created_at, locale)}
-                              </span>
-                            </div>
-                          ))}
-                          <div className="flex flex-col items-center justify-center gap-2 py-4 text-center">
-                            <Loader2 size={20} className={cx("animate-spin", tokens.text.accent)} />
-                            <p className={cx("text-xs max-w-[220px]", tokens.text.faint)}>
-                              {t("support.admin_chat.waiting_first_reply")}
-                            </p>
-                          </div>
-                          <div ref={messagesEndRef} />
-                        </div>
                       ) : (
                         <div className="flex flex-col gap-1 mt-1">
-                          {messages.map((msg) => (
-                            <div
-                              key={msg.id}
-                              className={`flex flex-col max-w-[85%] ${msg.sender === "user" ? "self-end items-end" : "self-start items-start"}`}
+                          {messages.map((msg, idx) => {
+                            const prevMsg = idx > 0 ? messages[idx - 1] : null;
+                            const showDateSep = shouldShowDateSeparator(msg.created_at, prevMsg?.created_at ?? null);
+                            const isLastMsg = idx === messages.length - 1;
+                            return (
+                              <React.Fragment key={msg.id}>
+                                {showDateSep && (
+                                  <div className="flex items-center gap-3 py-2">
+                                    <div className="flex-1 h-px bg-slate-700/50 light_sakura:bg-rose-200/50" />
+                                    <span className="text-[11px] font-semibold shrink-0" style={{ color: "#7A8294" }}>
+                                      {formatDateSeparator(msg.created_at, t)}
+                                    </span>
+                                    <div className="flex-1 h-px bg-slate-700/50 light_sakura:bg-rose-200/50" />
+                                  </div>
+                                )}
+                                <motion.div
+                                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                                  transition={{ duration: 0.2 }}
+                                  className={`flex flex-col max-w-[85%] ${msg.sender === "user" ? "self-end items-end" : "self-start items-start"}`}
+                                >
+                                  <div
+                                    className={`${
+                                      isImageUrl(msg.content) ? "p-1" : "px-3 py-2"
+                                    } text-xs leading-relaxed ${
+                                      msg.sender === "user"
+                                        ? cx("rounded-[18px] rounded-br-[4px]", tokens.supportWidget.chatBubbleUser)
+                                        : cx("rounded-[18px] rounded-tl-[4px]", tokens.supportWidget.chatBubbleAdmin)
+                                    }`}
+                                  >
+                                    {isImageUrl(msg.content) ? (
+                                      <img
+                                        src={msg.content.trim()}
+                                        alt="Shared image"
+                                        className="max-w-full rounded-xl object-cover cursor-pointer"
+                                        style={{ maxHeight: 200 }}
+                                        loading="lazy"
+                                        onClick={() => window.open(msg.content.trim(), "_blank")}
+                                      />
+                                    ) : (
+                                      msg.content
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-1.5 mt-0.5 px-1">
+                                    <span className={cx("text-[11px]", tokens.supportWidget.timestamp)}>
+                                      {formatMsgTime(msg.created_at, locale)}
+                                    </span>
+                                    {msg.sender === "user" && (
+                                      <span className={cx("flex items-center", tokens.supportWidget.checkmarkRead)}>
+                                        <CheckCheck size={11} strokeWidth={2.5} />
+                                      </span>
+                                    )}
+                                  </div>
+                                </motion.div>
+                              </React.Fragment>
+                            );
+                          })}
+
+                          {/* Admin typing indicator */}
+                          {isAdminTyping && (
+                            <motion.div
+                              initial={{ opacity: 0, y: 6 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="flex items-start gap-2 self-start max-w-[85%] mt-1"
                             >
-                              <div
-                                className={`px-3 py-2 rounded-2xl text-xs leading-relaxed ${
-                                  msg.sender === "user"
-                                    ? cx("rounded-br-md", tokens.supportWidget.chatBubbleUser)
-                                    : cx("rounded-tl-md", tokens.surface.subtle, tokens.text.secondary)
-                                }`}
-                              >
-                                {msg.content}
+                              <div className={cx(
+                                "w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5",
+                                tokens.supportWidget.gradientAvatar
+                              )}>
+                                <Bot size={12} className="text-white" />
                               </div>
-                              <span className={cx("text-[10px] mt-0.5 px-1", tokens.text.faint)}>
-                                {formatMsgTime(msg.created_at, locale)}
-                              </span>
-                            </div>
-                          ))}
+                              <div className={cx("px-3 py-2.5 rounded-[18px] rounded-tl-[4px]", tokens.supportWidget.chatBubbleAdmin)}>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[11px] font-medium" style={{ color: "#7A8294" }}>
+                                    {t("support.admin_chat.admin_typing")}
+                                  </span>
+                                  <div className="flex items-center gap-1">
+                                    <span className="chat-typing-dot bg-indigo-400 light_sakura:bg-rose-400" />
+                                    <span className="chat-typing-dot bg-indigo-400 light_sakura:bg-rose-400" />
+                                    <span className="chat-typing-dot bg-indigo-400 light_sakura:bg-rose-400" />
+                                  </div>
+                                </div>
+                              </div>
+                            </motion.div>
+                          )}
+
                           <div ref={messagesEndRef} />
                         </div>
                       )}
@@ -694,7 +856,7 @@ export const SupportChatWidget: React.FC = () => {
 
             {/* Footer input */}
             {tab === "faq" && (
-              <div className={cx("p-3 border-t flex gap-2", tokens.border.accent)}>
+              <div className={cx("p-3 border-t flex gap-2 shrink-0", tokens.border.accent)}>
                 <input
                   value={faqInput}
                   onChange={(e) => setFaqInput(e.target.value)}
@@ -720,37 +882,147 @@ export const SupportChatWidget: React.FC = () => {
             )}
 
             {tab === "admin" && session && session.status !== "closed" && (
-              <div className={cx("p-3 border-t flex gap-2", tokens.border.accent)}>
+              <div className={cx("p-3 border-t flex flex-col gap-2 shrink-0", tokens.border.accent)}>
+                {/* Attachment bar */}
+                <div className="flex items-center gap-2 px-1 relative">
+                  <button
+                    type="button"
+                    onClick={handleAttachmentClick}
+                    disabled={isUploading}
+                    className="p-1.5 rounded-lg transition-colors duration-200 hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50 cursor-pointer disabled:opacity-50"
+                    aria-label="Attach file"
+                    title="Upload image"
+                  >
+                    {isUploading ? (
+                      <Loader2 size={16} className="animate-spin text-indigo-400" />
+                    ) : (
+                      <Paperclip size={16} className="text-slate-500" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEmojiOpen((prev) => !prev);
+                      audioFeedback.playClick();
+                    }}
+                    disabled={isUploading}
+                    className="p-1.5 rounded-lg transition-colors duration-200 hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50 cursor-pointer disabled:opacity-50"
+                    aria-label="Add emoji"
+                    title="Emoji"
+                  >
+                    <Smile size={16} className="text-slate-500" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCameraClick}
+                    disabled={isUploading}
+                    className="p-1.5 rounded-lg transition-colors duration-200 hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50 cursor-pointer disabled:opacity-50"
+                    aria-label="Open camera"
+                    title="Take photo"
+                  >
+                    <Camera size={16} className="text-slate-500" />
+                  </button>
+                  <div className="flex-1" />
+
+                  {/* Emoji picker */}
+                  <EmojiPicker
+                    isOpen={isEmojiOpen}
+                    onClose={() => setIsEmojiOpen(false)}
+                    onEmojiSelect={handleEmojiSelect}
+                  />
+                </div>
+
+                {/* Hidden file inputs */}
                 <input
-                  value={adminInput}
-                  onChange={(e) => setAdminInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSendAdminMessage()}
-                  placeholder={t("support.admin_chat.placeholder")}
-                  disabled={isSending}
-                  className={cx(
-                    cx("flex-1 px-3 py-2 rounded-full text-xs outline-none focus:ring-2 disabled:opacity-60", tokens.supportWidget.inputFocusRing),
-                    tokens.surface.subtle,
-                    tokens.text.primary
-                  )}
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    handleFileSelect(file);
+                    e.target.value = "";
+                  }}
                 />
-                <button
-                  type="button"
-                  onClick={handleSendAdminMessage}
-                  disabled={isSending}
-                  className={cx(
-                    "w-9 h-9 flex items-center justify-center rounded-full text-white transition-colors duration-200 disabled:opacity-60",
-                    tokens.budget.addBtn
-                  )}
-                >
-                  {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                </button>
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] || null;
+                    handleFileSelect(file);
+                    e.target.value = "";
+                  }}
+                />
+
+                {/* Input row */}
+                <div className="flex gap-2 items-end">
+                  <input
+                    value={adminInput}
+                    onChange={(e) => setAdminInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendAdminMessage()}
+                    placeholder={t("support.admin_chat.placeholder")}
+                    disabled={sendBtnState !== "idle"}
+                    className={cx(
+                      cx("flex-1 px-3 py-2 rounded-full text-xs outline-none focus:ring-2 disabled:opacity-60", tokens.supportWidget.inputFocusRing),
+                      tokens.surface.subtle,
+                      tokens.text.primary
+                    )}
+                  />
+                  <div className="relative">
+                    <motion.button
+                      type="button"
+                      onClick={handleSendAdminMessage}
+                      disabled={sendBtnState !== "idle" || !adminInput.trim()}
+                      whileTap={sendBtnState === "idle" && adminInput.trim() ? { scale: 0.85 } : {}}
+                      className={cx(
+                        "relative w-10 h-10 flex items-center justify-center rounded-full text-white transition-colors duration-200 disabled:opacity-50 shrink-0 overflow-hidden",
+                        tokens.budget.addBtn
+                      )}
+                    >
+                      <AnimatePresence mode="wait">
+                        {sendBtnState === "loading" ? (
+                          <motion.span
+                            key="loading"
+                            initial={{ opacity: 0, rotate: -90 }}
+                            animate={{ opacity: 1, rotate: 0 }}
+                            exit={{ opacity: 0, rotate: 90 }}
+                          >
+                            <Loader2 size={16} className="animate-spin" />
+                          </motion.span>
+                        ) : sendBtnState === "success" ? (
+                          <motion.span
+                            key="success"
+                            initial={{ opacity: 0, scale: 0.3 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.3 }}
+                            transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                          >
+                            <Check size={16} strokeWidth={3} />
+                          </motion.span>
+                        ) : (
+                          <motion.span
+                            key="send"
+                            initial={{ opacity: 0, rotate: -90 }}
+                            animate={{ opacity: 1, rotate: 0 }}
+                            exit={{ opacity: 0, rotate: 90 }}
+                          >
+                            <Send size={16} />
+                          </motion.span>
+                        )}
+                      </AnimatePresence>
+                    </motion.button>
+                  </div>
+                </div>
               </div>
             )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Modal konfirmasi tutup sesi -- WAJIB sesuai aturan UX §8.1 untuk aksi yang mengubah data */}
+      {/* Modal konfirmasi tutup sesi */}
       <Modal
         isOpen={isConfirmCloseOpen}
         title={t("support.admin_chat.confirm_close_title")}

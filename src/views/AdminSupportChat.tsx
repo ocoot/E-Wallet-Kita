@@ -16,6 +16,7 @@ import {
   XCircle,
   RefreshCw,
   UserRound,
+  CheckCheck,
 } from "lucide-react";
 
 /**
@@ -367,7 +368,7 @@ export const AdminSupportChat: React.FC = () => {
               </div>
 
               {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-1.5 max-h-[460px]">
+              <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-1.5 max-h-[460px] chat-scrollarea">
                 {messagesLoading ? (
                   <div className="flex-1 flex items-center justify-center">
                     <Loader2 className={cx("animate-spin", tokens.adminSupportChat.spinnerText)} size={22} />
@@ -383,17 +384,24 @@ export const AdminSupportChat: React.FC = () => {
                       className={`flex flex-col max-w-[75%] ${msg.sender === "admin" ? "self-end items-end" : "self-start items-start"}`}
                     >
                       <div
-                        className={`px-3.5 py-2 rounded-2xl text-xs leading-relaxed ${
+                        className={`px-3.5 py-2 text-xs leading-relaxed ${
                           msg.sender === "admin"
-                            ? cx("rounded-br-md", tokens.supportWidget.chatBubbleUser)
-                            : cx("rounded-tl-md", tokens.adminSupportChat.bubbleOtherBg)
+                            ? cx("rounded-[18px] rounded-br-[4px]", tokens.supportWidget.chatBubbleUser)
+                            : cx("rounded-[18px] rounded-tl-[4px]", tokens.adminSupportChat.bubbleOtherBg)
                         }`}
                       >
                         {msg.content}
                       </div>
-                      <span className={cx("text-[10px] mt-0.5 px-1", tokens.budget.emptyStateIcon)}>
-                        {formatMsgTime(msg.created_at, locale)}
-                      </span>
+                      <div className="flex items-center gap-1.5 mt-0.5 px-1">
+                        <span className={cx("text-[11px]", tokens.supportWidget.timestamp)}>
+                          {formatMsgTime(msg.created_at, locale)}
+                        </span>
+                        {msg.sender === "admin" && (
+                          <span className={cx("flex items-center", tokens.supportWidget.checkmarkRead)}>
+                            <CheckCheck size={11} strokeWidth={2.5} />
+                          </span>
+                        )}
+                      </div>
                     </div>
                   ))
                 )}

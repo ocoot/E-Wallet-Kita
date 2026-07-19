@@ -992,6 +992,8 @@
       "handoff_message": "Alright, connecting you to our admin team — they can help further",
       "identity_name": "E-Wallet Kita Admin",
       "identity_status": "Ready to help",
+      "identity_status_online": "Online now",
+      "identity_status_away": "Away",
       "start_button": "Start chat with admin",
       "placeholder": "Type a message for admin...",
       "send": "Send",
@@ -1005,7 +1007,17 @@
       "confirm_close_desc": "This chat history will be deleted once closed and cannot be reopened.",
       "session_closed_toast": "Chat session has been closed.",
       "error_send_failed": "Failed to send message, please try again.",
-      "error_session_closed": "Session is already closed, cannot send messages."
+      "error_session_closed": "Session is already closed, cannot send messages.",
+      "message_sent": "Sent",
+      "message_delivered": "Delivered",
+      "message_read": "Read",
+      "admin_typing": "Admin is typing",
+      "operating_hours": "Operating hours",
+      "operating_hours_value": "08:00–22:00 WIB",
+      "sla_response": "Usually replies within",
+      "sla_response_value": "< 3 minutes",
+      "today": "Today",
+      "yesterday": "Yesterday"
     }
   },
   "admin_support_chat": {
