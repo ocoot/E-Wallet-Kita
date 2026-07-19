@@ -78,16 +78,16 @@ export const AdminPanel: React.FC = () => {
       {/* Hero card -- disamakan dengan pola kartu utama halaman Akun desktop
           (lihat Settings.tsx: rounded-3xl + bar gradient tipis di atas +
           judul/deskripsi dengan border-b di dalam kartu putih/slate). */}
-      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, "border-slate-800/60 light_sakura:border-rose-100/40")}>
+      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.settings.cardBorder)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
 
           {/* Page title */}
-          <div className="flex flex-col border-b pb-6 border-slate-800/50 light_sakura:border-rose-100/30">
+          <div className={cx("flex flex-col border-b pb-6", tokens.settings.sectionBorder)}>
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
               {t("nav.admin_panel")}
             </h1>
-            <p className="font-sans text-sm text-slate-400 mt-1 light_sakura:text-slate-500 font-medium">
+            <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.muted)}>
               {t("admin.panel_desc")}
             </p>
           </div>
@@ -126,7 +126,7 @@ export const AdminPanel: React.FC = () => {
               <span className="px-1 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest text-slate-500">
                 {t(group.captionKey)}
               </span>
-              <div className={cx("rounded-2xl border divide-y overflow-hidden", tokens.surface.sunken, "border-slate-800/60 light_sakura:border-rose-100/50", "divide-slate-800/60 light_sakura:divide-rose-100/60")}>
+              <div className={cx("rounded-2xl border divide-y overflow-hidden", tokens.surface.sunken, tokens.border.subtleRose, tokens.divide.subtleRose)}>
                 {group.tabs.map(tab => (
                   <button
                     key={tab.key}
@@ -137,7 +137,8 @@ export const AdminPanel: React.FC = () => {
                     )}
                   >
                     <span className={cx(
-                      "shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-slate-900 light_sakura:bg-white",
+                      "shrink-0 w-9 h-9 rounded-xl flex items-center justify-center",
+                      tokens.surface.card,
                       tokens.icon.accent
                     )}>
                       {tab.icon}
@@ -153,7 +154,7 @@ export const AdminPanel: React.FC = () => {
                       )}
                     </span>
                     <span className="shrink-0 flex items-center">
-                      <ChevronRight size={16} className="text-slate-600 light_sakura:text-slate-300" />
+                      <ChevronRight size={16} className={tokens.icon.subtle} />
                     </span>
                   </button>
                 ))}

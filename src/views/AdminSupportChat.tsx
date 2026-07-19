@@ -260,7 +260,7 @@ export const AdminSupportChat: React.FC = () => {
               audioFeedback.playClick();
               loadSessions();
             }}
-            className={cx("shrink-0 flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100", tokens.text.secondary)}
+            className={cx("shrink-0 flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl", tokens.adminSupportChat.filterBtnBorder, tokens.text.secondary)}
           >
             <RefreshCw size={13} />
             {t("admin_support_chat.refresh")}
@@ -299,8 +299,8 @@ export const AdminSupportChat: React.FC = () => {
                     }}
                     className={`w-full text-left px-4 py-3.5 flex items-start gap-3 transition-colors cursor-pointer ${
                       isSelected
-                        ? "bg-indigo-500/10 light_sakura:bg-rose-100/60"
-                        : "hover:bg-slate-800/50 light_sakura:hover:bg-slate-50"
+                        ? tokens.adminSupportChat.sessionRowActiveBg
+                        : tokens.adminSupportChat.sessionRowHoverBg
                     }`}
                   >
                     <div className={cx("w-9 h-9 rounded-full flex items-center justify-center shrink-0", tokens.supportWidget.gradientAvatar)}>
@@ -386,7 +386,7 @@ export const AdminSupportChat: React.FC = () => {
                         className={`px-3.5 py-2 rounded-2xl text-xs leading-relaxed ${
                           msg.sender === "admin"
                             ? cx("rounded-br-md", tokens.supportWidget.chatBubbleUser)
-                            : "rounded-tl-md bg-slate-800 text-slate-100 light_sakura:bg-slate-100 light_sakura:text-slate-700"
+                            : cx("rounded-tl-md", tokens.adminSupportChat.bubbleOtherBg)
                         }`}
                       >
                         {msg.content}
@@ -408,7 +408,7 @@ export const AdminSupportChat: React.FC = () => {
                   onKeyDown={(e) => e.key === "Enter" && handleSendReply()}
                   placeholder={t("admin_support_chat.reply_placeholder")}
                   disabled={isSending}
-                  className={cx("flex-1 px-3.5 py-2.5 rounded-full text-xs text-slate-100 outline-none focus:ring-2 disabled:opacity-60 light_sakura:text-slate-800", tokens.surface.subtle, tokens.supportWidget.inputFocusRing)}
+                  className={cx("flex-1 px-3.5 py-2.5 rounded-full text-xs outline-none focus:ring-2 disabled:opacity-60", tokens.adminSupportChat.inputText, tokens.surface.subtle, tokens.supportWidget.inputFocusRing)}
                 />
                 <button
                   type="button"

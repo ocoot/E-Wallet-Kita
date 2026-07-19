@@ -54,16 +54,16 @@ export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> =
       transition={{ duration: 0.18 }}
       className="max-w-3xl mx-auto space-y-5 pb-24 md:hidden"
     >
-      <div className={cx("rounded-3xl border border-slate-800/60 light_sakura:border-rose-100/40 shadow-lg overflow-hidden", tokens.surface.card)}>
+      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-5 space-y-5">
           {/* Header: back button + title */}
-          <div className="flex items-center gap-3 border-b border-slate-800/50 pb-4 light_sakura:border-rose-100/30">
+          <div className={cx("flex items-center gap-3 border-b pb-4", tokens.settings.sectionBorder)}>
             <button
               type="button"
               onClick={handleBack}
               aria-label="back"
-              className="shrink-0 w-9 h-9 rounded-xl flex items-center justify-center bg-slate-950/60 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer light_sakura:bg-rose-50 light_sakura:border-rose-100 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100"
+              className={cx("shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer", tokens.mobileSettingsDetailPage.backBtn)}
             >
               <ChevronLeft size={18} />
             </button>
@@ -72,7 +72,7 @@ export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> =
                 {title}
               </h1>
               {description && (
-                <p className="font-sans text-xs text-slate-400 light_sakura:text-slate-500 truncate">
+                <p className={cx("font-sans text-xs truncate", tokens.text.muted)}>
                   {description}
                 </p>
               )}

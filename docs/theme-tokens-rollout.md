@@ -134,6 +134,27 @@
 > sebelumnya tidak tersedia di sesi 51) -- termasuk verifikasi retroaktif
 > perubahan sesi 51 yang belum sempat di-tsc.
 >
+> **Update 2026-07-19 (setelah sesi 53)**: Sesi 53 (`SecuritySettings.tsx`,
+> `Settings.tsx`, `AdminSupportChat.tsx`, `AdminPanel.tsx`,
+> `MobileSettingsDetailPage.tsx`, `ReceiptUploader.tsx`,
+> `HistoryGroupedList.tsx`, `DashboardWalletSelectorCard.tsx` -- 8 file
+> target sesi 53, masing-masing 7 literal) sudah dieksekusi TUNTAS. Total
+> literal turun dari 187 → **129** (44 file). Semua 8 file mencapai
+> **0 literal penuh**. Temuan penting sesi ini: banyak token dari sesi
+> 45/46/49 SUDAH ADA di `tokens.ts` tapi belum sempat dipasang ke file-file
+> ini (`settings.cardBorder`, `settings.sectionBorder`, `settings.avatarBg`,
+> `settings.premiumBadge`, `text.muted`, `border.subtleRose`,
+> `divide.subtleRose`, `surface.card`, `icon.subtle`, `chip.accentIndigo`,
+> `hover.textAccent`, `text.danger`, `text.success`, `toggle.inactiveTrack`)
+> -- jadi sebagian besar pekerjaan sesi ini adalah *pemasangan ulang token
+> lama* (audit ulang menemukan reuse yang terlewat), bukan cuma bikin token
+> baru. Ditemukan juga 1 pasang exact-match baru lintas-file:
+> `settings.sunkenBorderPanel` (Settings.tsx L1028 & TelegramSettings.tsx
+> L213, keduanya dipasang -- TelegramSettings.tsx sbg "prioritas tambahan"
+> di luar 8 file target utama). `npx tsc --noEmit -p tsconfig.json`
+> dijalankan bersih (0 error) atas SELURUH project setelah semua perubahan.
+> Lihat log Sesi 53 di bawah untuk rincian per-baris & per-token.
+>
 > **Update 2026-07-18 (setelah sesi 51)**: Sesi 51 (`NotificationSettings.tsx`,
 > `WalletTransferModal.tsx`, `Modal.tsx`, `DashboardRecentTransactions.tsx`,
 > `ConfirmTransactionModal.tsx` -- 5 file target teratas dari daftar "8
@@ -345,17 +366,17 @@ perlu pasang hook baru), kecuali disebutkan lain.
   sesi 49-50, lihat catatan roadmap lama) -- dipindah ke Sesi 52 bersama
   seluruh sisa file 1-7 literal.
 - **Sesi 52: PERUBAHAN STRATEGI -- Tokenisasi Penuh untuk Kesiapan Migrasi Tema**
-  **[SELESAI SEBAGIAN]** 5 file target teratas dieksekusi: `AdminMaintenance.tsx`
+  **[SELESAI]** 5 file target teratas dieksekusi: `AdminMaintenance.tsx`
   15 → **0**, `AdminPremiumMonitor.tsx` 14 → **0**, `NewTransaction.tsx`
   10 → **0**, `Dashboard.tsx` 10 → **0**, `DashboardOverviewCard.tsx`
   9 → **0**. Plus prioritas tambahan `modal.closeBtn` dipasang ke
   `WalletTopUpModal.tsx` 6 → 5 & `HistoryEditModal.tsx` 4 → 3. Total turun
-  dari 247 → **187** (53 file). Sisa target roadmap sesi ini yang BELUM
-  disentuh: `SecuritySettings.tsx` (7), `Settings.tsx` (7),
-  `AdminSupportChat.tsx` (7), `AdminPanel.tsx` (7),
-  `MobileSettingsDetailPage.tsx` (7), `ReceiptUploader.tsx` (7),
-  `HistoryGroupedList.tsx` (7), `DashboardWalletSelectorCard.tsx` (7) +
-  seluruh sisa file (~45 file) -- dipindah ke Sesi 53. Lihat log Sesi 52
+  dari 247 → **187** (53 file). Sisa target roadmap sesi ini (8 file
+  "7 literal": `SecuritySettings.tsx`, `Settings.tsx`,
+  `AdminSupportChat.tsx`, `AdminPanel.tsx`, `MobileSettingsDetailPage.tsx`,
+  `ReceiptUploader.tsx`, `HistoryGroupedList.tsx`,
+  `DashboardWalletSelectorCard.tsx`) dipindah ke **Sesi 53 -- sudah
+  dieksekusi tuntas, lihat ringkasan Sesi 53 di bawah**. Lihat log Sesi 52
   di bawah untuk rincian per-baris.
   - **⚠️ Strategi berubah total mulai sesi ini** (atas konfirmasi user
     2026-07-18, lihat kotak peringatan di bagian "Kapan menambah token
@@ -384,12 +405,13 @@ perlu pasang hook baru), kecuali disebutkan lain.
     harus ditoken-kan sebagai token per-file): ~~`AdminMaintenance.tsx` (15)~~,
     ~~`AdminPremiumMonitor.tsx` (14)~~, ~~`NewTransaction.tsx` (10)~~,
     ~~`Dashboard.tsx` (10)~~, ~~`DashboardOverviewCard.tsx` (9)~~ **[SELESAI
-    sesi 52, lihat log Sesi 52]** -- lanjut Sesi 53:
-    `SecuritySettings.tsx` (7), `Settings.tsx` (7), `AdminSupportChat.tsx` (7),
-    `AdminPanel.tsx` (7), `MobileSettingsDetailPage.tsx` (7),
-    `ReceiptUploader.tsx` (7), `HistoryGroupedList.tsx` (7),
-    `DashboardWalletSelectorCard.tsx` (7) + seluruh sisa file (≈45 file,
-    lihat query audit di bawah untuk daftar lengkap terbaru).
+    sesi 52, lihat log Sesi 52]** -- lanjut Sesi 53 (SELESAI, lihat log
+    Sesi 53): ~~`SecuritySettings.tsx` (7)~~, ~~`Settings.tsx` (7)~~,
+    ~~`AdminSupportChat.tsx` (7)~~, ~~`AdminPanel.tsx` (7)~~,
+    ~~`MobileSettingsDetailPage.tsx` (7)~~, ~~`ReceiptUploader.tsx` (7)~~,
+    ~~`HistoryGroupedList.tsx` (7)~~, ~~`DashboardWalletSelectorCard.tsx` (7)~~
+    -- lanjut Sesi 54: seluruh sisa file (≈44 file, sebagian besar <7
+    literal/file, lihat query audit di bawah untuk daftar lengkap terbaru).
   - **Prioritas tambahan**: pasang `modal.closeBtn` (token baru sesi 51)
     ke `WalletTopUpModal.tsx` (6) & `HistoryEditModal.tsx` (4) -- sudah
     dikonfirmasi exact-match sejak sesi 51, tinggal eksekusi. **[SELESAI
@@ -411,6 +433,25 @@ perlu pasang hook baru), kecuali disebutkan lain.
     (ganti palet/tambah tema baru) baru aman dilakukan HANYA dengan edit
     `tokens.ts` -- tidak perlu lagi menyentuh file komponen satu-satu.
     Itu jadi milestone terpisah, bukan bagian dari rollout token ini.
+- **Sesi 53: Lanjutan Tokenisasi Penuh -- 8 File "7 Literal"**
+  **[SELESAI]** Semua 8 file target dieksekusi tuntas ke 0 literal:
+  `SecuritySettings.tsx` 7 → **0**, `Settings.tsx` 7 → **0**,
+  `AdminSupportChat.tsx` 7 → **0**, `AdminPanel.tsx` 7 → **0**,
+  `MobileSettingsDetailPage.tsx` 7 → **0**, `ReceiptUploader.tsx` 7 → **0**,
+  `HistoryGroupedList.tsx` 7 → **0**, `DashboardWalletSelectorCard.tsx`
+  7 → **0**. Total turun dari 187 → **129** (44 file). Temuan kunci sesi
+  ini: BANYAK token dari sesi 45/46/49 sudah ada di `tokens.ts` tapi
+  belum pernah dipasang ke file-file ini (komentar "belum dipasang, di
+  luar cakupan sesi X" di `border.subtleRose`, `divide.subtleRose`,
+  `icon.subtle`, `chip.accentIndigo`, `toggle.inactiveTrack`,
+  `settings.avatarBg`, `settings.premiumBadge`) -- jadi audit ulang
+  cross-file di sesi ini WAJIB dicek dulu ke token yang SUDAH ADA sebelum
+  bikin token baru per-file, bukan cuma cross-check antar 8 file target.
+  Ditemukan juga exact-match baru lintas-file: `settings.sunkenBorderPanel`
+  (Settings.tsx L1028 ⇄ `TelegramSettings.tsx` L213, keduanya dipasang --
+  yang kedua sebagai "prioritas tambahan" di luar 8 file target). `npx tsc
+  --noEmit` bersih 0 error atas SELURUH project. Lihat log Sesi 53 di
+  bawah untuk rincian per-baris & daftar lengkap token yang dipasang/dibuat.
 
 
 Jalankan query ini di root repo untuk data terbaru sebelum tiap sesi (versi
@@ -434,6 +475,30 @@ done | sort -t'|' -k1 -rn
 > -- untuk status terkini, lihat paragraf status di awal dokumen dan tabel
 > roadmap "Sesi 40+" di atas, yang keduanya berbasis audit `grep` langsung
 > ke kode aktual per 2026-07-18.
+
+## Sesi 53: Lanjutan Tokenisasi Penuh -- 8 File "7 Literal" (Banyak Reuse Token Lama)
+
+| File | Sebelum | Sesudah | Catatan |
+|---|---|---|---|
+| `src/views/settings/SecuritySettings.tsx` | 7 | **0** | 100% pakai token yang SUDAH ADA di `tokens.ts` (tidak ada token baru sama sekali): `settings.profileCardBgBorder` (panel form ganti password), `settings.sectionHeadingBorder` (heading "Keamanan Akun"), `settings.otpInputBg` (×3, background 3 kotak input password lama/baru/konfirmasi -- dipasang lewat 1x `sed` karena literal-nya identik persis di 3 tempat). |
+| `src/views/Settings.tsx` | 7 | **0** | Campuran token lama & baru. Token lama yang akhirnya dipasang (sebelumnya "belum dipasang" di komentar sesi 46): `settings.avatarBg` (avatar bulat inisial user), `settings.premiumBadge` (badge "Premium"). Token baru (genuinely 1x-pakai, ditambahkan ke grup `settings.*`): `langToggleBtnBg` (tombol toggle bahasa header), `unlinkBtnBorder` (border tombol putuskan Telegram -- MIRIP tapi TIDAK exact match dengan tombol sejenis di `PrivacySettings.tsx` karena versi itu membakar warna teks di dalam class-nya, jadi tetap token terpisah), `sunkenBorderPanel` (kotak info fitur Telegram -- **exact match baru ditemukan** dengan `TelegramSettings.tsx` L213, dipasang ke keduanya). |
+| `src/views/AdminSupportChat.tsx` | 7 | **0** | Semua 5 kombinasi genuinely 1x-pakai (dicek cross-file). Token baru ditambahkan ke grup `adminSupportChat.*` yang sudah ada sejak sesi 45 (5 key baru): `filterBtnBorder`, `sessionRowActiveBg`, `sessionRowHoverBg`, `bubbleOtherBg`, `inputText`. |
+| `src/views/AdminPanel.tsx` | 7 | **0** | 100% reuse token LAMA yang sudah ditulis sejak sesi 45/46 tapi baru dipasang sekarang: `settings.cardBorder`, `settings.sectionBorder`, `text.muted`, `border.subtleRose` (komentar token secara eksplisit sudah menyebut "AdminPanel.tsx belum dipasang" sejak sesi 46), `divide.subtleRose` (sama), `surface.card`, `icon.subtle` (sama). Tidak ada token baru dibuat untuk file ini. |
+| `src/components/settings/MobileSettingsDetailPage.tsx` | 7 | **0** | Border/teks-nya reuse token yang SAMA dengan `AdminPanel.tsx` di atas (`settings.cardBorder`, `settings.sectionBorder`, `text.muted` -- exact match ditemukan antar 2 file ini juga). Tombol back (ChevronLeft) genuinely 1x-pakai → token baru grup baru `mobileSettingsDetailPage.*` (1 key): `backBtn`. |
+| `src/components/ReceiptUploader.tsx` | 7 | **0** | Semua 4 kombinasi genuinely 1x-pakai (dicek cross-file, termasuk terhadap `chip.accentAmberRose` yang sudah dipakai file ini sejak sesi 49 -- tidak tumpang tindih). Token baru grup baru `receiptUploader.*` (4 key): `dropzoneBorder`, `iconBoxBorder`, `captionText`, `lockIcon`. |
+| `src/components/HistoryGroupedList.tsx` | 7 | **0** | 2 kombinasi (chip ikon expense/income) genuinely 1x-pakai → token baru grup baru `historyGroupedList.*` (3 key: `divideSubtle`, `expenseChip`, `incomeChip`). 1 kombinasi lagi (nominal merah/hijau) TERNYATA sudah exact match dengan token generik `text.danger` / `text.success` yang sudah ada -- dipasang langsung pakai token itu, TIDAK dibuatkan token per-file baru. |
+| `src/components/DashboardWalletSelectorCard.tsx` | 7 | **0** | Campuran: ikon chip indigo (`chip.accentIndigo`, sudah ada sejak sesi 49, jadi pemakai ke-3) & hover label (`hover.textAccent`, sudah ada) ternyata exact match dengan token lama. 3 kombinasi sisanya genuinely 1x-pakai → token baru grup baru `dashboardWalletSelectorCard.*` (3 key): `blackOverlayBg`, `editBorderHover`, `actionChipBg`. |
+| `src/views/settings/TelegramSettings.tsx` | 2 | **0** | **Prioritas tambahan** (bukan bagian 8 file target utama, ditemukan saat audit `Settings.tsx` L1028): kotak info fitur Telegram exact match dengan `Settings.tsx`, keduanya dipasang pakai token baru `settings.sunkenBorderPanel`. |
+
+**Token baru ditambahkan sesi ini** (di `tokens.ts`):
+- Grup baru: `mobileSettingsDetailPage` (1 key), `receiptUploader` (4 key), `historyGroupedList` (3 key), `dashboardWalletSelectorCard` (3 key).
+- Ditambahkan ke grup lama: `settings` (+5 key: `langToggleBtnBg`, `unlinkBtnBorder`, `sunkenBorderPanel`, plus komentar `avatarBg`/`premiumBadge`/`cardBorder`/`sectionBorder`/`otpInputBg` diperbarui jadi "dipasang sesi 53"), `adminSupportChat` (+5 key).
+
+**Token LAMA yang akhirnya dipasang sesi ini** (sudah ada di `tokens.ts` sejak sesi 45/46/49, komentarnya sempat bilang "belum dipasang, di luar cakupan target sesi X" -- sekarang semua sudah terpasang, komentar diperbarui): `border.subtleRose`, `divide.subtleRose`, `icon.subtle`, `chip.accentIndigo`, `toggle.inactiveTrack` (ternyata sudah terpasang sejak sesi 52, komentarnya saja yang telat diperbarui), `settings.avatarBg`, `settings.premiumBadge`, `settings.cardBorder`, `settings.sectionBorder`, `settings.otpInputBg`.
+
+**Pelajaran metodologis sesi ini**: audit cross-file untuk kebijakan tokenisasi penuh (sesi 52+) TIDAK CUKUP hanya membandingkan antar file-file target sesi berjalan -- harus juga di-grep ulang ke SELURUH `tokens.ts` yang sudah ada, karena banyak sesi lama (45/46/49) sudah menemukan & mencatat exact-match tapi belum sempat memasangnya karena file targetnya di luar cakupan sesi saat itu. Query yang dipakai: `grep -n '"<literal-string-persis>"' src/lib/theme/tokens.ts` untuk tiap kombinasi sebelum memutuskan bikin token baru.
+
+**Catatan lingkungan sesi 53**: `node_modules` masih tersedia dari sesi 52 (tidak perlu `npm install` ulang). `npx tsc --noEmit -p tsconfig.json` dijalankan bersih (0 error) atas SELURUH project setelah semua perubahan sesi ini.
 
 ## Sesi 52: Tokenisasi Penuh -- 5 File Target Teratas + Prioritas Tambahan
 

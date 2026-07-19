@@ -79,8 +79,8 @@ export const SecuritySettings: React.FC = () => {
 
   return (
     <MobileSettingsDetailPage title={t("settings.menu_security")} description={t("settings.security_section_desc")}>
-      <form onSubmit={handleChangePassword} className="p-5 rounded-2xl border bg-slate-950/40 border-slate-800/60 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 shadow-sm space-y-4">
-        <h3 className="font-sans font-bold text-sm text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100 flex items-center gap-2">
+      <form onSubmit={handleChangePassword} className={cx("p-5 rounded-2xl shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}>
+        <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.settings.sectionHeadingBorder)}>
           <ShieldCheck size={14} className={cx(tokens.icon.accent)} />
           <span>{t("settings.security_section")}</span>
         </h3>
@@ -94,7 +94,7 @@ export const SecuritySettings: React.FC = () => {
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
           leftIcon={<Lock size={14} />}
-          className={cx("bg-slate-950 text-xs light_sakura:bg-slate-50", tokens.border.accent)}
+          className={cx("text-xs", tokens.settings.otpInputBg, tokens.border.accent)}
           rightElement={
             <button
               type="button"
@@ -118,7 +118,7 @@ export const SecuritySettings: React.FC = () => {
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           leftIcon={<Key size={14} />}
-          className={cx("bg-slate-950 text-xs light_sakura:bg-slate-50", tokens.border.accent)}
+          className={cx("text-xs", tokens.settings.otpInputBg, tokens.border.accent)}
           rightElement={
             <button
               type="button"
@@ -142,7 +142,7 @@ export const SecuritySettings: React.FC = () => {
           value={confirmNewPassword}
           onChange={(e) => setConfirmNewPassword(e.target.value)}
           leftIcon={<Key size={14} />}
-          className={cx("bg-slate-950 text-xs light_sakura:bg-slate-50", tokens.border.accent)}
+          className={cx("text-xs", tokens.settings.otpInputBg, tokens.border.accent)}
           rightElement={
             <button
               type="button"

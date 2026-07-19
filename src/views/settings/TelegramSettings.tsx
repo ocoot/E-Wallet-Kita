@@ -210,7 +210,7 @@ export const TelegramSettings: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 space-y-3">
+            <div className={cx("p-4 rounded-2xl space-y-3", tokens.settings.sunkenBorderPanel)}>
               <h4 className={cx("font-sans font-bold text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest flex items-center gap-1.5", tokens.text.muted)}>
                 <Sparkles size={12} className="text-amber-400" />
                 <span>{t("settings.telegram_features_title")}</span>

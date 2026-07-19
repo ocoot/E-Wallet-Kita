@@ -285,7 +285,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
         className={`relative overflow-hidden cursor-pointer p-6 rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center min-h-[160px] text-center
           ${isDragActive 
             ? "border-indigo-500 bg-indigo-500/5" 
-            : "border-slate-800 bg-slate-900/60 hover:border-slate-700 light_sakura:border-rose-200 light_sakura:bg-rose-50/10 light_sakura:hover:border-rose-400"
+            : tokens.receiptUploader.dropzoneBorder
           }
           ${isUploading ? "pointer-events-none opacity-80" : ""}
         `}
@@ -332,13 +332,13 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
                   <Lock size={24} className="animate-pulse" />
                 </div>
               ) : (
-                <div className={cx("p-3 bg-indigo-500/5 rounded-xl border border-indigo-500/10 light_sakura:bg-rose-100/30 light_sakura:border-rose-100/50", tokens.icon.accent)}>
+                <div className={cx("p-3 rounded-xl", tokens.receiptUploader.iconBoxBorder, tokens.icon.accent)}>
                   <UploadCloud size={24} />
                 </div>
               )}
               <div className="space-y-1">
-                <p className="font-sans text-xs font-bold text-slate-200 light_sakura:text-slate-700 flex items-center justify-center gap-1.5">
-                  {isOcrLocked && <Lock size={12} className="text-amber-400 light_sakura:text-rose-500" />}
+                <p className={cx("font-sans text-xs font-bold flex items-center justify-center gap-1.5", tokens.receiptUploader.captionText)}>
+                  {isOcrLocked && <Lock size={12} className={tokens.receiptUploader.lockIcon} />}
                   <span>{t("dashboard.ocr_drag_drop")}</span>
                 </p>
                 <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)]", tokens.text.faint)}>

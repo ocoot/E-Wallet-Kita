@@ -570,7 +570,7 @@ export const Settings: React.FC<SettingsProps> = ({
             onClick={handleAvatarClick}
             disabled={isGuest || isUploadingAvatar}
             aria-label={t("settings.avatar_change_label")}
-            className={`relative group w-11 h-11 shrink-0 rounded-full overflow-hidden bg-indigo-600 light_sakura:bg-rose-500 text-white flex items-center justify-center font-sans font-bold text-lg ${!isGuest ? "cursor-pointer" : "cursor-default"}`}
+            className={`relative group w-11 h-11 shrink-0 rounded-full overflow-hidden text-white flex items-center justify-center font-sans font-bold text-lg ${tokens.settings.avatarBg} ${!isGuest ? "cursor-pointer" : "cursor-default"}`}
           >
             {avatarUrl ? (
               <img src={avatarUrl} alt={displayName || "avatar"} className="w-full h-full object-cover" />
@@ -604,12 +604,12 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
           {!isGuest && (
             isPremium ? (
-              <span className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold bg-amber-500/15 text-amber-400 light_sakura:bg-rose-100 light_sakura:text-rose-600">
+              <span className={cx("shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold", tokens.settings.premiumBadge)}>
                 <Sparkles size={11} /> {t("premium.badge_active")}
               </span>
             ) : (
               <button onClick={() => { audioFeedback.playClick(); setIsPremiumOpen(true); }}
-                className={cx("shrink-0 cursor-pointer px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold bg-slate-800 hover:text-slate-200 transition-colors light_sakura:bg-slate-100", tokens.text.muted)}>
+                className={cx("shrink-0 cursor-pointer px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold transition-colors", tokens.settings.langToggleBtnBg, tokens.text.muted)}>
                 {t("premium.menu_label")}
               </button>
             )
@@ -910,7 +910,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   type="button"
                   onClick={handleExportMyData}
                   disabled={isExportingData}
-                  className={cx("w-full cursor-pointer border border-slate-700 hover:bg-slate-800 py-2.5 rounded-xl font-sans text-xs font-semibold tracking-tight transition-all disabled:opacity-50 flex items-center justify-center gap-2 light_sakura:border-rose-200", tokens.telegramCard.linkedLabelText, tokens.surface.card)}
+                  className={cx("w-full cursor-pointer py-2.5 rounded-xl font-sans text-xs font-semibold tracking-tight transition-all disabled:opacity-50 flex items-center justify-center gap-2", tokens.settings.unlinkBtnBorder, tokens.telegramCard.linkedLabelText, tokens.surface.card)}
                 >
                   <Download size={13} />
                   <span>{isExportingData ? t("common.loading") : t("settings.privacy_export_button")}</span>
@@ -1025,7 +1025,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 </div>
 
                 {/* Features Highlight */}
-                <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50 space-y-3">
+                <div className={cx("p-4 rounded-2xl space-y-3", tokens.settings.sunkenBorderPanel)}>
                   <h4 className={cx("font-sans font-bold text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest flex items-center gap-1.5", tokens.text.muted)}>
                     <Sparkles size={12} className="text-amber-400" />
                     <span>{t("settings.telegram_features_title")}</span>

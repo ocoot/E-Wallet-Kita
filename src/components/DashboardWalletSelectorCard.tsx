@@ -146,7 +146,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
           tokens.border.accent
         )}
       >
-        <span className={cx("inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-indigo-500/15 shrink-0 light_sakura:bg-rose-500/15", tokens.icon.accent)}>
+        <span className={cx("inline-flex items-center justify-center w-11 h-11 rounded-2xl shrink-0", tokens.chip.accentIndigo, tokens.icon.accent)}>
           <WalletIcon size={20} />
         </span>
         <p className={cx("text-xs leading-relaxed", tokens.text.muted)}>{t("wallet.selector_card_empty")}</p>
@@ -227,7 +227,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   aria-label={balanceVisible ? t("common.hide_balance") : t("common.show_balance")}
                   className={cx(
                     "shrink-0 p-1 -m-1 rounded-md cursor-pointer transition-colors",
-                    hasLogoBg ? "text-white/70 hover:text-white" : cx(mutedTextClass, "hover:text-indigo-400 light_sakura:hover:text-rose-500")
+                    hasLogoBg ? "text-white/70 hover:text-white" : cx(mutedTextClass, tokens.hover.textAccent)
                   )}
                 >
                   {balanceVisible ? <Eye size={12} /> : <EyeOff size={12} />}
@@ -265,7 +265,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   className={cx(
                     "mt-2 inline-flex items-center gap-1.5 text-[11px] tabular-nums cursor-pointer w-fit px-2 py-1 rounded-lg",
                     mutedTextClass,
-                    hasLogoBg ? "bg-black/25 hover:bg-black/35" : "bg-black/10 hover:bg-black/15 light_sakura:bg-white/40 light_sakura:hover:bg-white/60"
+                    hasLogoBg ? "bg-black/25 hover:bg-black/35" : tokens.dashboardWalletSelectorCard.blackOverlayBg
                   )}
                 >
                   <span className="truncate">{contactVisible ? contactValue : maskContact(contactValue)}</span>
@@ -327,7 +327,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                 aria-label={t("wallet.action_history")}
                 className={cx(
                   "flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer transition-colors",
-                  hasLogoBg ? "bg-black/20 text-white/85 hover:bg-black/30" : cx("border hover:border-indigo-400/50 light_sakura:hover:border-rose-300", tokens.border.accent, tokens.surface.sunken, mutedTextClass)
+                  hasLogoBg ? "bg-black/20 text-white/85 hover:bg-black/30" : cx(tokens.dashboardWalletSelectorCard.editBorderHover, tokens.border.accent, tokens.surface.sunken, mutedTextClass)
                 )}
               >
                 <History size={16} />
@@ -349,7 +349,8 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   onClick={() => { audioFeedback.playClick(); setIsTransferOpen(true); }}
                   aria-label={t("wallet.action_transfer")}
                   className={cx(
-                    "flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer transition-colors bg-indigo-500/15 hover:bg-indigo-500/25 light_sakura:bg-rose-500/15 light_sakura:hover:bg-rose-500/25",
+                    "flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer transition-colors",
+                    tokens.dashboardWalletSelectorCard.actionChipBg,
                     tokens.icon.accent
                   )}
                 >

@@ -62,7 +62,7 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
           <div className={cx("text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-bold uppercase tracking-widest mb-2 px-1", tokens.text.muted)}>
             {formatDateLabel(date)}
           </div>
-          <div className={cx("rounded-2xl border overflow-hidden divide-y", tokens.border.accent, tokens.surface.sunken, "divide-slate-800/50 light_sakura:divide-rose-100/40")}>
+          <div className={cx("rounded-2xl border overflow-hidden divide-y", tokens.border.accent, tokens.surface.sunken, tokens.historyGroupedList.divideSubtle)}>
             <AnimatePresence mode="popLayout">
               {txs.map(tx => {
                 const isExpense = tx.type === "expense";
@@ -76,8 +76,8 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
                   >
                     {/* Icon lingkaran */}
                     <div className={`w-9 h-9 shrink-0 rounded-xl flex items-center justify-center ${
-                      isExpense ? "bg-red-500/10 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-500"
-                                : "bg-emerald-500/10 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-500"
+                      isExpense ? tokens.historyGroupedList.expenseChip
+                                : tokens.historyGroupedList.incomeChip
                     }`}>
                       {isExpense ? <ArrowUpRight size={15} /> : <ArrowDownLeft size={15} />}
                     </div>
@@ -99,7 +99,7 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
 
                     {/* Nominal + actions */}
                     <div className="flex items-center gap-1 shrink-0">
-                      <span className={`font-mono font-bold text-sm ${isExpense ? "text-red-400 light_sakura:text-red-600" : "text-emerald-400 light_sakura:text-emerald-600"}`}>
+                      <span className={`font-mono font-bold text-sm ${isExpense ? tokens.text.danger : tokens.text.success}`}>
                         {isExpense ? "-" : "+"}{formatIDR(tx.amount)}
                       </span>
                       <button
