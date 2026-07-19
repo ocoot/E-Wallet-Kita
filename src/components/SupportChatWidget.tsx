@@ -781,21 +781,21 @@ export const SupportChatWidget: React.FC = () => {
                                 >
                                   <div
                                     className={`${
-                                      isImageUrl(msg.content) ? "p-1" : "px-3 py-2"
+                                      (msg.image_url || isImageUrl(msg.content)) ? "p-1" : "px-3 py-2"
                                     } text-xs leading-relaxed ${
                                       msg.sender === "user"
                                         ? cx("rounded-[18px] rounded-br-[4px]", tokens.supportWidget.chatBubbleUser)
                                         : cx("rounded-[18px] rounded-tl-[4px]", tokens.supportWidget.chatBubbleAdmin)
                                     }`}
                                   >
-                                    {isImageUrl(msg.content) ? (
+                                    {(msg.image_url || isImageUrl(msg.content)) ? (
                                       <img
-                                        src={msg.content.trim()}
+                                        src={(msg.image_url || msg.content).trim()}
                                         alt="Shared image"
                                         className="max-w-full rounded-xl object-cover cursor-pointer"
                                         style={{ maxHeight: 200 }}
                                         loading="lazy"
-                                        onClick={() => window.open(msg.content.trim(), "_blank")}
+                                        onClick={() => window.open((msg.image_url || msg.content).trim(), "_blank")}
                                       />
                                     ) : (
                                       msg.content
