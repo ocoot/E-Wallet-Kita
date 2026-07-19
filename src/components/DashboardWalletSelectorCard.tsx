@@ -326,7 +326,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                 }}
                 aria-label={t("wallet.action_history")}
                 className={cx(
-                  "flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer transition-colors",
+                  "flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer select-none transition-[transform,background-color] active:scale-[0.94]",
                   hasLogoBg ? "bg-black/20 text-white/85 hover:bg-black/30" : cx(tokens.dashboardWalletSelectorCard.editBorderHover, tokens.border.accent, tokens.surface.sunken, mutedTextClass)
                 )}
               >
@@ -339,7 +339,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   type="button"
                   onClick={() => { audioFeedback.playClick(); setIsTopUpOpen(true); }}
                   aria-label={t("wallet.action_topup")}
-                  className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors"
+                  className="flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer select-none bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-[transform,background-color] active:scale-[0.94]"
                 >
                   <Plus size={16} />
                   <span className="text-[10px] font-semibold leading-none whitespace-nowrap">{t("wallet.action_topup_short")}</span>
@@ -349,7 +349,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   onClick={() => { audioFeedback.playClick(); setIsTransferOpen(true); }}
                   aria-label={t("wallet.action_transfer")}
                   className={cx(
-                    "flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer transition-colors",
+                    "flex flex-col items-center gap-1 px-3 py-2 rounded-xl cursor-pointer select-none transition-[transform,background-color] active:scale-[0.94]",
                     tokens.dashboardWalletSelectorCard.actionChipBg,
                     tokens.icon.accent
                   )}

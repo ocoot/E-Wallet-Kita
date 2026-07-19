@@ -133,7 +133,7 @@ export const DashboardWalletCarousel: React.FC<DashboardWalletCarouselProps> = (
               // secara transparan lewat pseudo-element ::before supaya tetap
               // nyaman disentuh di layar mobile.
               className={cx(
-                "btn-exact relative h-1 rounded-full transition-all cursor-pointer before:absolute before:-inset-y-3.5 before:-inset-x-1 before:content-['']",
+                "btn-exact relative h-1 rounded-full transition-all cursor-pointer active:scale-90 before:absolute before:-inset-y-3.5 before:-inset-x-1 before:content-['']",
                 idx === activeIndex ? tokens.dashboardWalletCarousel.dotActive : cx("w-1", tokens.mobileBottomNav.sheetGrip)
               )}
             />

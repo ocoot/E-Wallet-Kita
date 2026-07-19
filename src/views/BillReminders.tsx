@@ -219,7 +219,7 @@ export const BillReminders: React.FC = () => {
 
           {/* ── Counter stats: formasi strip chip horizontal ─────────── */}
           {reminders.length > 0 && (
-            <div className="flex items-center gap-2.5 overflow-x-auto pb-1 -mx-1 px-1">
+            <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
               <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl border bg-red-500/5", tokens.border.default)}>
                 <AlertCircle size={13} className={cx(tokens.text.danger)} />
                 <span className={cx("font-bold text-lg leading-none", tokens.text.danger)}>{overdueCount}</span>

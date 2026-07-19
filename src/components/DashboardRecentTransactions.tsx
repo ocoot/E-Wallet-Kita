@@ -70,7 +70,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
             audioFeedback.playClick();
             onNavigateToHistory();
           }}
-          className={cx(tokens.dashboardRecentTransactions.showAllBtnHover, tokens.text.accent)}
+          className={cx("select-none transition-transform active:scale-95", tokens.dashboardRecentTransactions.showAllBtnHover, tokens.text.accent)}
         >
           <span>{t("history.show_all")}</span>
           <ArrowRight size={13} />

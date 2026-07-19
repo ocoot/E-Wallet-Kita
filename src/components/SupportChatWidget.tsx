@@ -574,8 +574,7 @@ export const SupportChatWidget: React.FC = () => {
                     <div
                       ref={chipsRef}
                       onScroll={handleChipsScroll}
-                      className="flex gap-2 overflow-x-auto pb-1 px-4"
-                      style={{ scrollbarWidth: "none" }}
+                      className="flex gap-2 overflow-x-auto pb-1 px-4 scrollbar-hide"
                     >
                       {SUPPORT_FAQ_TOPICS.map((topic) => {
                         const Icon = FAQ_TOPIC_ICONS[topic.key] ?? MessageCircle;

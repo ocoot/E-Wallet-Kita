@@ -66,7 +66,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={cx("inline-flex items-center justify-center transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none", sizeClasses[size], variantClasses[variant], fullWidth && "w-full", className)}
+        className={cx("inline-flex items-center justify-center select-none transition-[transform,background-color,opacity] duration-150 cursor-pointer active:scale-[0.97] active:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none disabled:active:scale-100", sizeClasses[size], variantClasses[variant], fullWidth && "w-full", className)}
         {...rest}
       >
         {isLoading ? (

@@ -105,14 +105,14 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
                       <button
                         onClick={() => onEditItem(tx)}
                         aria-label={t("common.edit")}
-                        className="btn-mobile-target p-2 rounded-lg text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors cursor-pointer"
+                        className="btn-mobile-target p-2 rounded-lg text-slate-500 select-none hover:text-indigo-400 hover:bg-indigo-500/10 transition-[transform,background-color,color] cursor-pointer active:scale-90"
                       >
                         <Pencil size={13} />
                       </button>
                       <button
                         onClick={() => onDeleteItem(tx.id)}
                         aria-label={t("common.delete")}
-                        className="btn-mobile-target p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer"
+                        className="btn-mobile-target p-2 rounded-lg text-slate-500 select-none hover:text-red-400 hover:bg-red-500/10 transition-[transform,background-color,color] cursor-pointer active:scale-90"
                       >
                         <Trash2 size={13} />
                       </button>

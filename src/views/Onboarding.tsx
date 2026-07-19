@@ -432,7 +432,7 @@ export const Onboarding: React.FC = () => {
                     </div>
 
                     {/* Filter Category Tabs */}
-                    <div className="flex gap-1 overflow-x-auto pb-1 sm:pb-0">
+                    <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
                       {[
                         { key: "all", label: t("onboarding.history_filter_all") },
                         { key: "food_drink", label: t("categories.food_drink") },

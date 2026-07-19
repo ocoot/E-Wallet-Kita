@@ -144,7 +144,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 key={item.id}
                 to={item.path}
                 aria-label={item.label}
-                className="flex-1 flex flex-col items-center justify-center min-w-0 cursor-pointer"
+                className="flex-1 flex flex-col items-center justify-center min-w-0 cursor-pointer select-none"
               >
                 <div className="relative -translate-y-4">
                   <div
@@ -171,7 +171,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             <Link
               key={item.id}
               to={item.path}
-              className="flex-1 flex flex-col items-center justify-center gap-0.5 py-3 min-w-0 cursor-pointer"
+              className="flex-1 flex flex-col items-center justify-center gap-0.5 py-3 min-w-0 cursor-pointer select-none transition-transform active:scale-90"
             >
               <div className="relative">
                 <IconComp
@@ -212,7 +212,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         {/* Tombol "Lainnya" -- membuka bottom-sheet berisi sisa menu */}
         <button
           onClick={() => setIsMoreOpen(true)}
-          className="flex-1 flex flex-col items-center justify-center gap-0.5 py-3 min-w-0 cursor-pointer"
+          className="flex-1 flex flex-col items-center justify-center gap-0.5 py-3 min-w-0 cursor-pointer select-none transition-transform active:scale-90"
         >
           <MoreHorizontal
             size={20}

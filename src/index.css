@@ -144,6 +144,15 @@ html, body {
   transition: background-color 300ms ease;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+  /*
+   * Mencegah scroll "bocor" ke browser (mis. memicu pull-to-refresh
+   * bawaan Chrome/Safari saat mentok di atas). Aman dipasang bersama
+   * `overflow-x: clip` di atas -- overscroll-behavior tidak ikut memicu
+   * aturan pasangan overflow-x/overflow-y seperti kasus `overflow-x:
+   * hidden` yang dijelaskan di komentar atas, jadi tidak merusak
+   * `position: sticky`.
+   */
+  overscroll-behavior-y: contain;
 }
 
 /* Scrollbar customizations */
@@ -163,6 +172,24 @@ html, body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(63, 190, 155, 0.45);
+}
+
+/*
+ * Utility scrollbar-hide -- dipakai di area scroll horizontal bergaya
+ * "native" (carousel wallet, chip filter, tab horizontal) yang secara
+ * visual TIDAK boleh menampilkan scrollbar bawaan browser (native app
+ * tidak pernah menampilkan scrollbar di komponen semacam ini). Jangan
+ * dipakai di data table desktop (mis. ScrollableTableWrapper,
+ * AdminVoucherManager) karena scrollbar di situ justru membantu
+ * affordance "konten ini bisa digeser".
+ */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
 
 /* Color theme modifications override classes */

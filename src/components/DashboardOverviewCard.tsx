@@ -161,7 +161,7 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
           <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 shrink-0">
             {t("dashboard.this_month")}
           </span>
-          <div className="flex items-center gap-4 overflow-x-auto">
+          <div className="flex items-center gap-4 overflow-x-auto scrollbar-hide">
             <div className="flex items-center gap-1.5">
               <TrendingUp size={12} className="text-emerald-400 shrink-0" />
               <span className="text-xs font-bold text-emerald-400 whitespace-nowrap">{balanceVisible ? formatIDR(monthlySummary.income) : maskCurrency(formatIDR(monthlySummary.income))}</span>
