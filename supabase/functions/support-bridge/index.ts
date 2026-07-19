@@ -66,9 +66,10 @@ serve(async (req) => {
         }
       }
 
+      const isImageMessage = isImageUrl(content);
       const { data: msgData, error: msgError } = await supabase
         .from("support_messages")
-        .insert({ session_id, sender: "user", content })
+        .insert({ session_id, sender: "user", content, image_url: isImageMessage ? content.trim() : null })
         .select()
         .single();
       if (msgError) throw msgError;
@@ -209,8 +210,12 @@ serve(async (req) => {
           if (upErr) throw upErr;
           const { data: publicUrlData } = supabase.storage.from("chat-attachments").getPublicUrl(path);
           return `${publicUrlData.publicUrl}?v=${Date.now()}`;
-        } catch (err) {
+        } catch (err: any) {
           console.error("[support-bridge] Gagal upload foto Telegram:", err);
+          await logWarning(supabase, "Gagal upload foto Telegram ke chat-attachments (soft-fail, pesan lanjut tanpa gambar).", {
+            file_id: fileId,
+            error: err?.message ? String(err.message) : String(err),
+          });
           return null;
         }
       };
@@ -359,6 +364,13 @@ async function downloadTelegramFile(token: string, fileId: string): Promise<Arra
   if (!fileJson.ok) throw new Error("Gagal mendapatkan file path dari Telegram");
   const filePath: string = fileJson.result.file_path;
   const res = await fetch(`https://api.telegram.org/bot${token}/${filePath}`);
+  if (!res.ok) {
+    throw new Error(`Gagal download file dari Telegram (status ${res.status}): kemungkinan file_path sudah expired atau tidak valid.`);
+  }
+  const contentType = res.headers.get("content-type") || "";
+  if (!contentType.startsWith("image/")) {
+    throw new Error(`Respons file dari Telegram bukan gambar (content-type: ${contentType || "tidak diketahui"}).`);
+  }
   return res.arrayBuffer();
 }
 

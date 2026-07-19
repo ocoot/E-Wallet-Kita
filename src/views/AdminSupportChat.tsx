@@ -253,11 +253,11 @@ export const AdminSupportChat: React.FC = () => {
     setIsUploading(true);
     try {
       const url = await uploadChatAttachment("admin", selectedId, file);
-      const content = url;
       setIsSending(true);
       const { data, error } = await supabase.rpc("admin_reply_support_session", {
         p_session_id: selectedId,
-        p_content: content,
+        p_content: "",
+        p_image_url: url,
       });
       if (error) throw error;
       if (data) {
@@ -267,7 +267,7 @@ export const AdminSupportChat: React.FC = () => {
       loadSessions();
       try {
         await supabase.functions.invoke("support-bridge", {
-          body: { mode: "admin_web_reply", session_id: selectedId, content },
+          body: { mode: "admin_web_reply", session_id: selectedId, content: url },
         });
       } catch (mirrorErr) {
         console.error("[AdminSupportChat] Gagal mirror balasan ke Telegram:", mirrorErr);
