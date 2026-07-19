@@ -7,8 +7,10 @@ import { useAdmin } from "../hooks/useAdmin";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { Modal } from "../components/Modal";
+import { EmojiPicker } from "../components/EmojiPicker";
 import { audioFeedback } from "../lib/audio";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { uploadChatAttachment, AttachmentValidationError } from "../lib/chatAttachment";
 import {
   MessagesSquare,
   Send,
@@ -17,6 +19,10 @@ import {
   RefreshCw,
   UserRound,
   CheckCheck,
+  Paperclip,
+  Smile,
+  Camera,
+  Check,
 } from "lucide-react";
 
 /**
@@ -93,7 +99,11 @@ export const AdminSupportChat: React.FC = () => {
   const [replyInput, setReplyInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [isConfirmCloseOpen, setIsConfirmCloseOpen] = useState(false);
+  const [isEmojiOpen, setIsEmojiOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const selectedSession = sessions.find((s) => s.id === selectedId) || null;
 
@@ -235,6 +245,58 @@ export const AdminSupportChat: React.FC = () => {
     } catch (err: any) {
       showToast(err.message || t("admin_support_chat.toast_error"), "error");
     }
+  };
+
+  const handleAdminFileSelect = async (file: File | null) => {
+    if (!file || !selectedId) return;
+    setIsUploading(true);
+    try {
+      const url = await uploadChatAttachment("admin", selectedId, file);
+      const content = url;
+      setIsSending(true);
+      const { data, error } = await supabase.rpc("admin_reply_support_session", {
+        p_session_id: selectedId,
+        p_content: content,
+      });
+      if (error) throw error;
+      if (data) {
+        setMessages((prev) => (prev.some((m) => m.id === (data as MessageRow).id) ? prev : [...prev, { ...data, image_url: url } as MessageRow]));
+      }
+      audioFeedback.playChime();
+      loadSessions();
+      try {
+        await supabase.functions.invoke("support-bridge", {
+          body: { mode: "admin_web_reply", session_id: selectedId, content },
+        });
+      } catch (mirrorErr) {
+        console.error("[AdminSupportChat] Gagal mirror balasan ke Telegram:", mirrorErr);
+      }
+    } catch (err: any) {
+      if (err instanceof AttachmentValidationError) {
+        showToast(err.code === "TOO_LARGE" ? "File terlalu besar (maks 5 MB)" : "Format file tidak didukung", "error");
+      } else {
+        showToast(err.message || t("admin_support_chat.toast_error"), "error");
+      }
+    } finally {
+      setIsSending(false);
+      setIsUploading(false);
+    }
+  };
+
+  const handleAdminAttachmentClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleAdminCameraClick = () => {
+    cameraInputRef.current?.click();
+  };
+
+  const handleAdminEmojiSelect = (emoji: string) => {
+    setReplyInput((prev) => prev + emoji);
+  };
+
+  const isImageUrl = (text: string): boolean => {
+    return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|heic|heif)(\?.*)?$/i.test(text.trim());
   };
 
   if (!isAdmin) return null;
@@ -384,13 +446,26 @@ export const AdminSupportChat: React.FC = () => {
                       className={`flex flex-col max-w-[75%] ${msg.sender === "admin" ? "self-end items-end" : "self-start items-start"}`}
                     >
                       <div
-                        className={`px-3.5 py-2 text-xs leading-relaxed ${
+                        className={`${
+                          isImageUrl(msg.content) ? "p-1" : "px-3.5 py-2"
+                        } text-xs leading-relaxed ${
                           msg.sender === "admin"
                             ? cx("rounded-[18px] rounded-br-[4px]", tokens.supportWidget.chatBubbleUser)
                             : cx("rounded-[18px] rounded-tl-[4px]", tokens.adminSupportChat.bubbleOtherBg)
                         }`}
                       >
-                        {msg.content}
+                        {isImageUrl(msg.content) ? (
+                          <img
+                            src={msg.content.trim()}
+                            alt="Shared image"
+                            className="max-w-full rounded-xl object-cover cursor-pointer"
+                            style={{ maxHeight: 200 }}
+                            loading="lazy"
+                            onClick={() => window.open(msg.content.trim(), "_blank")}
+                          />
+                        ) : (
+                          msg.content
+                        )}
                       </div>
                       <div className="flex items-center gap-1.5 mt-0.5 px-1">
                         <span className={cx("text-[11px]", tokens.supportWidget.timestamp)}>
@@ -409,23 +484,97 @@ export const AdminSupportChat: React.FC = () => {
               </div>
 
               {/* Reply input */}
-              <div className={cx("p-3 border-t flex gap-2", tokens.border.default)}>
+              <div className={cx("p-3 border-t flex flex-col gap-2", tokens.border.default)}>
+                {/* Hidden file inputs */}
                 <input
-                  value={replyInput}
-                  onChange={(e) => setReplyInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSendReply()}
-                  placeholder={t("admin_support_chat.reply_placeholder")}
-                  disabled={isSending}
-                  className={cx("flex-1 px-3.5 py-2.5 rounded-full text-xs outline-none focus:ring-2 disabled:opacity-60", tokens.adminSupportChat.inputText, tokens.surface.subtle, tokens.supportWidget.inputFocusRing)}
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif"
+                  className="hidden"
+                  onChange={(e) => {
+                    handleAdminFileSelect(e.target.files?.[0] || null);
+                    e.target.value = "";
+                  }}
                 />
-                <button
-                  type="button"
-                  onClick={handleSendReply}
-                  disabled={isSending || !replyInput.trim()}
-                  className={cx("w-10 h-10 flex items-center justify-center rounded-full text-white transition-colors duration-200 disabled:opacity-50 shrink-0", tokens.budget.addBtn)}
-                >
-                  {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                </button>
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={(e) => {
+                    handleAdminFileSelect(e.target.files?.[0] || null);
+                    e.target.value = "";
+                  }}
+                />
+
+                {/* Attachment bar */}
+                <div className="flex items-center gap-2 px-1 relative">
+                  <button
+                    type="button"
+                    onClick={handleAdminAttachmentClick}
+                    disabled={isUploading}
+                    className="p-1.5 rounded-lg transition-colors duration-200 hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50 cursor-pointer disabled:opacity-50"
+                    aria-label="Attach file"
+                    title="Upload image"
+                  >
+                    {isUploading ? (
+                      <Loader2 size={16} className="animate-spin text-indigo-400" />
+                    ) : (
+                      <Paperclip size={16} className="text-slate-500" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEmojiOpen((prev) => !prev);
+                      audioFeedback.playClick();
+                    }}
+                    disabled={isUploading}
+                    className="p-1.5 rounded-lg transition-colors duration-200 hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50 cursor-pointer disabled:opacity-50"
+                    aria-label="Add emoji"
+                    title="Emoji"
+                  >
+                    <Smile size={16} className="text-slate-500" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAdminCameraClick}
+                    disabled={isUploading}
+                    className="p-1.5 rounded-lg transition-colors duration-200 hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50 cursor-pointer disabled:opacity-50"
+                    aria-label="Open camera"
+                    title="Take photo"
+                  >
+                    <Camera size={16} className="text-slate-500" />
+                  </button>
+                  <div className="flex-1" />
+
+                  <EmojiPicker
+                    isOpen={isEmojiOpen}
+                    onClose={() => setIsEmojiOpen(false)}
+                    onEmojiSelect={handleAdminEmojiSelect}
+                  />
+                </div>
+
+                {/* Input row */}
+                <div className="flex gap-2 items-end">
+                  <input
+                    value={replyInput}
+                    onChange={(e) => setReplyInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendReply()}
+                    placeholder={t("admin_support_chat.reply_placeholder")}
+                    disabled={isSending}
+                    className={cx("flex-1 px-3.5 py-2.5 rounded-full text-xs outline-none focus:ring-2 disabled:opacity-60", tokens.adminSupportChat.inputText, tokens.surface.subtle, tokens.supportWidget.inputFocusRing)}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleSendReply}
+                    disabled={isSending || (!replyInput.trim() && !isUploading)}
+                    className={cx("w-10 h-10 flex items-center justify-center rounded-full text-white transition-colors duration-200 disabled:opacity-50 shrink-0", tokens.budget.addBtn)}
+                  >
+                    {isSending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+                  </button>
+                </div>
               </div>
             </>
           )}

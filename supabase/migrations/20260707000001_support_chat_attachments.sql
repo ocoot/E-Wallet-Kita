@@ -20,25 +20,46 @@ on conflict (id) do nothing;
 alter table public.support_messages add column if not exists image_url text;
 
 -- 3. RLS — semua user bisa baca file publik
-create policy "chat_attachments_public_select"
-  on storage.objects for select
-  using ( bucket_id = 'chat-attachments' );
+do $$ begin
+  create policy "chat_attachments_public_select"
+    on storage.objects for select
+    using ( bucket_id = 'chat-attachments' );
+exception
+  when duplicate_object then null;
+end $$;
 
--- RLS — user/login saja yang bisa upload ke folder sendiri
-create policy "chat_attachments_auth_insert"
-  on storage.objects for insert
-  with check (
-    bucket_id = 'chat-attachments'
-    and auth.role() = 'authenticated'
-  );
+do $$ begin
+  create policy "chat_attachments_auth_insert"
+    on storage.objects for insert
+    with check (
+      bucket_id = 'chat-attachments'
+      and auth.role() = 'authenticated'
+    );
+exception
+  when duplicate_object then null;
+end $$;
 
--- RLS — pemilik file bisa hapus
-create policy "chat_attachments_owner_delete"
-  on storage.objects for delete
-  using (
-    bucket_id = 'chat-attachments'
-    and auth.uid()::text = (storage.foldername(name))[1]
-  );
+do $$ begin
+  create policy "chat_attachments_owner_delete"
+    on storage.objects for delete
+    using (
+      bucket_id = 'chat-attachments'
+      and auth.uid()::text = (storage.foldername(name))[1]
+    );
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$ begin
+  create policy "chat_attachments_service_insert"
+    on storage.objects for insert
+    with check (
+      bucket_id = 'chat-attachments'
+      and (storage.foldername(name))[1] = 'telegram'
+    );
+exception
+  when duplicate_object then null;
+end $$;
 
 -- 4. Perbarui RPC admin_reply_support_session untuk dukung image_url
 --    (drop dulu, create ulang dengan parameter image_url opsional)

@@ -35,11 +35,6 @@ serve(async (req) => {
         return jsonResponse({ error: "session_id dan content wajib diisi." }, 400);
       }
 
-      // This function runs on service_role (bypasses RLS), so ownership
-      // of session_id MUST be verified manually here -- otherwise anyone
-      // who knows (or guesses) a session_id could post messages into a
-      // stranger's support session and trigger the Telegram notification
-      // below on their behalf.
       const caller = await getAuthorizedCaller(req, supabaseUrl);
       if (!caller) {
         return jsonResponse({ error: "Unauthorized" }, 401);
@@ -58,18 +53,11 @@ serve(async (req) => {
         return jsonResponse({ error: "Sesi sudah ditutup." }, 400);
       }
 
-      // Rate limit (per session, DB-backed — see migration
-      // 20260823000000_receipt_and_support_rate_limiting.sql). Without
-      // this, a single session could be used to spam-insert messages and
-      // fire the Telegram notification below on every request.
       const { data: rlRows, error: rlError } = await supabase.rpc(
         "check_and_increment_support_message_rate_limit",
         { p_session_id: session_id, p_limit: 10, p_window_seconds: 60 }
       );
       if (rlError) {
-        // Fail-open on a DB hiccup, same tradeoff used elsewhere in this
-        // codebase (api/parse.ts) — don't block legit users over a
-        // transient rate-limit table issue.
         console.error("[support-bridge] rate limit check failed, failing open:", rlError);
       } else {
         const rl = rlRows?.[0];
@@ -98,11 +86,17 @@ serve(async (req) => {
       if (adminChatId && token) {
         const threadId = await ensureForumTopic(supabase, token, adminChatId, sessData as SessionForTopic, userLabel);
 
-        const messageText = threadId
-          ? `${userLabel ? `*${userLabel}*\n` : ""} ${content}`
-          : `*Pesan Baru${userLabel ? ` dari ${userLabel}` : ""}*\nSesi #${sessData.short_code}\n ${content}`;
-
-        await sendTelegram(token, adminChatId, messageText, threadId ?? undefined);
+        if (isImageUrl(content)) {
+          const caption = threadId
+            ? `${userLabel ? `${userLabel}` : ""}`
+            : `*Pesan Baru${userLabel ? ` dari ${userLabel}` : ""}*\nSesi #${sessData.short_code}`;
+          await sendTelegramPhoto(token, adminChatId, content.trim(), caption || undefined, threadId ?? undefined);
+        } else {
+          const messageText = threadId
+            ? `${userLabel ? `*${userLabel}*\n` : ""} ${content}`
+            : `*Pesan Baru${userLabel ? ` dari ${userLabel}` : ""}*\nSesi #${sessData.short_code}\n ${content}`;
+          await sendTelegram(token, adminChatId, messageText, threadId ?? undefined);
+        }
       } else {
         await logWarning(supabase, "Notifikasi admin tidak terkirim: support_admin_chat_id atau SUPPORT_TELEGRAM_BOT_TOKEN belum dikonfigurasi.", { session_id, short_code: sessData.short_code });
       }
@@ -111,18 +105,10 @@ serve(async (req) => {
     }
 
     // 2. Mirror balasan admin dari web dashboard (AdminSupportChat.tsx) ke
-    //    topic Telegram sesi yang bersangkutan, supaya riwayat di kedua
-    //    sisi (web & Telegram) selalu sinkron, apapun channel yang dipakai
-    //    admin. Pesan ke `support_messages` SUDAH diinsert lewat RPC
-    //    `admin_reply_support_session` sebelum edge function ini dipanggil
-    //    -- tugas di sini murni mengirim salinannya ke Telegram.
+    //    topic Telegram sesi yang bersangkutan.
     if (body.mode === "admin_web_reply") {
       const { session_id, content } = body;
 
-      // Edge function pakai service_role (bypass RLS), jadi identitas &
-      // role admin/owner HARUS diverifikasi manual di sini -- kalau tidak,
-      // siapa saja yang tahu endpoint ini bisa mengirim pesan mengatasnamakan
-      // admin ke topic Telegram manapun.
       const caller = await getAuthorizedAdmin(req, supabaseUrl);
       if (!caller) {
         return jsonResponse({ error: "Unauthorized" }, 401);
@@ -144,8 +130,13 @@ serve(async (req) => {
 
       if (adminChatId && token) {
         const threadId = await ensureForumTopic(supabase, token, adminChatId, sessData as SessionForTopic, userLabel);
-        const messageText = `*Admin (Web)*\n${content}`;
-        await sendTelegram(token, adminChatId, messageText, threadId ?? undefined);
+
+        if (isImageUrl(content)) {
+          await sendTelegramPhoto(token, adminChatId, content.trim(), "*Admin (Web)*", threadId ?? undefined);
+        } else {
+          const messageText = `*Admin (Web)*\n${content}`;
+          await sendTelegram(token, adminChatId, messageText, threadId ?? undefined);
+        }
       } else {
         await logWarning(supabase, "Balasan admin dari web tidak ter-mirror ke Telegram: support_admin_chat_id atau SUPPORT_TELEGRAM_BOT_TOKEN belum dikonfigurasi.", { session_id, short_code: sessData.short_code });
       }
@@ -155,15 +146,6 @@ serve(async (req) => {
 
     // 3. Handle incoming updates from the Telegram Support Bot webhook (admin replies or commands)
     if (body.message) {
-      // Validasi ini WAJIB sebelum memproses apapun dari body.message --
-      // tanpa ini, siapapun yang tahu URL function ini bisa mengirim
-      // "update Telegram" palsu (mis. menyamar jadi admin membalas sesi
-      // orang lain). Header ini HANYA dikirim oleh Telegram sendiri kalau
-      // secret_token di-set lewat setWebhook (lihat
-      // scripts/setup-support-telegram-webhook.ts). Mode lain
-      // (`user_message`, `admin_web_reply`) berasal dari frontend kita
-      // sendiri via supabase.functions.invoke, bukan dari Telegram, jadi
-      // TIDAK divalidasi dengan header ini.
       const secretHeader = req.headers.get("x-telegram-bot-api-secret-token");
       const expectedSecret = Deno.env.get("SUPPORT_TELEGRAM_WEBHOOK_SECRET") ?? "";
 
@@ -179,10 +161,14 @@ serve(async (req) => {
       const message = body.message;
       const chatId = message.chat.id;
       const text = message.text ? message.text.trim() : "";
+      const caption = message.caption ? message.caption.trim() : "";
       const threadId: number | undefined = message.message_thread_id;
+      const photo = message.photo;
+
+      const effectiveText = text || caption;
 
       // Commands: /register to link this Telegram (super)group as the Admin Support channel
-      if (text.startsWith("/register")) {
+      if (effectiveText.startsWith("/register")) {
         const { error: upsertError } = await supabase
           .from("app_settings")
           .upsert({ key: "support_admin_chat_id", value: String(chatId), updated_at: new Date().toISOString() });
@@ -195,13 +181,41 @@ serve(async (req) => {
         return new Response("ok", { status: 200 });
       }
 
-      if (!text) {
+      if (!effectiveText && !photo) {
         return new Response("ok", { status: 200 });
       }
 
-      // Live Chat Reply -- jalur utama (Forum Topics): setiap sesi punya
-      // topic sendiri, jadi cukup cocokkan message_thread_id dari Telegram
-      // ke telegram_thread_id di database.
+      // Helper: insert admin message (text + optional image) into DB
+      const insertAdminMessage = async (sessionId: string, imageUrl?: string) => {
+        const payload: Record<string, unknown> = { session_id: sessionId, sender: "admin", content: caption || text || "" };
+        if (imageUrl) payload.image_url = imageUrl;
+        const { error: insertError } = await supabase.from("support_messages").insert(payload);
+        if (insertError) {
+          await sendTelegram(token, chatId, `Gagal menyimpan pesan: ${insertError.message}`, threadId);
+          return false;
+        }
+        return true;
+      };
+
+      // Helper: upload Telegram photo to Supabase Storage
+      const uploadPhoto = async (fileId: string): Promise<string | null> => {
+        try {
+          const buffer = await downloadTelegramFile(token, fileId);
+          const ext = "jpg";
+          const path = `telegram/${Date.now()}_${fileId.slice(0, 8)}.${ext}`;
+          const { error: upErr } = await supabase.storage
+            .from("chat-attachments")
+            .upload(path, buffer, { contentType: "image/jpeg", upsert: false });
+          if (upErr) throw upErr;
+          const { data: publicUrlData } = supabase.storage.from("chat-attachments").getPublicUrl(path);
+          return `${publicUrlData.publicUrl}?v=${Date.now()}`;
+        } catch (err) {
+          console.error("[support-bridge] Gagal upload foto Telegram:", err);
+          return null;
+        }
+      };
+
+      // Live Chat Reply via Forum Topics
       if (threadId) {
         const { data: session, error: sessError } = await supabase
           .from("support_sessions")
@@ -216,14 +230,14 @@ serve(async (req) => {
         }
 
         if (session) {
-          const { error: insertError } = await supabase
-            .from("support_messages")
-            .insert({ session_id: session.id, sender: "admin", content: text });
-
-          if (insertError) {
-            await sendTelegram(token, chatId, `Gagal menyimpan pesan: ${insertError.message}`, threadId);
-            return new Response("ok", { status: 200 });
+          let imageUrl: string | undefined;
+          if (photo && photo.length > 0) {
+            const largest = photo.reduce((a, b) => (a.file_size > b.file_size ? a : b));
+            imageUrl = await uploadPhoto(largest.file_id) || undefined;
           }
+
+          const ok = await insertAdminMessage(session.id, imageUrl);
+          if (!ok) return new Response("ok", { status: 200 });
 
           if (session.status === "open") {
             await supabase.from("support_sessions").update({ status: "claimed" }).eq("id", session.id);
@@ -235,10 +249,9 @@ serve(async (req) => {
         return new Response("ok", { status: 200 });
       }
 
-      // Fallback untuk pesan di luar topic manapun (mis. General topic) --
-      // pakai cara lama: admin reply ke pesan yang berisi kode sesi.
+      // Fallback via reply_to_message
       if (message.reply_to_message) {
-        const repliedText = message.reply_to_message.text || "";
+        const repliedText = message.reply_to_message.text || message.reply_to_message.caption || "";
         const match = repliedText.match(/#([A-Z0-9]+)/);
 
         if (match) {
@@ -261,14 +274,14 @@ serve(async (req) => {
             return new Response("ok", { status: 200 });
           }
 
-          const { error: insertError } = await supabase
-            .from("support_messages")
-            .insert({ session_id: session.id, sender: "admin", content: text });
-
-          if (insertError) {
-            await sendTelegram(token, chatId, `Gagal menyimpan pesan: ${insertError.message}`);
-            return new Response("ok", { status: 200 });
+          let imageUrl: string | undefined;
+          if (photo && photo.length > 0) {
+            const largest = photo.reduce((a, b) => (a.file_size > b.file_size ? a : b));
+            imageUrl = await uploadPhoto(largest.file_id) || undefined;
           }
+
+          const ok = await insertAdminMessage(session.id, imageUrl);
+          if (!ok) return new Response("ok", { status: 200 });
 
           if (session.status === "open") {
             await supabase.from("support_sessions").update({ status: "claimed" }).eq("id", session.id);
@@ -306,6 +319,49 @@ function jsonResponse(payload: unknown, status = 200) {
   });
 }
 
+function isImageUrl(text: string): boolean {
+  return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|heic|heif)(\?.*)?$/i.test(text.trim());
+}
+
+async function sendTelegram(token: string, chatId: string | number, text: string, messageThreadId?: number) {
+  if (!token) return;
+  const payload: Record<string, unknown> = {
+    chat_id: chatId,
+    text,
+    parse_mode: "Markdown",
+  };
+  if (messageThreadId) payload.message_thread_id = messageThreadId;
+  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+async function sendTelegramPhoto(token: string, chatId: string | number, photoUrl: string, caption?: string, messageThreadId?: number) {
+  if (!token) return;
+  const payload: Record<string, unknown> = {
+    chat_id: chatId,
+    photo: photoUrl,
+  };
+  if (caption) payload.caption = caption;
+  if (messageThreadId) payload.message_thread_id = messageThreadId;
+  await fetch(`https://api.telegram.org/bot${token}/sendPhoto`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+}
+
+async function downloadTelegramFile(token: string, fileId: string): Promise<ArrayBuffer> {
+  const fileRes = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`);
+  const fileJson = await fileRes.json();
+  if (!fileJson.ok) throw new Error("Gagal mendapatkan file path dari Telegram");
+  const filePath: string = fileJson.result.file_path;
+  const res = await fetch(`https://api.telegram.org/bot${token}/${filePath}`);
+  return res.arrayBuffer();
+}
+
 async function getUserLabel(supabase: any, userId: string | null): Promise<string> {
   if (!userId) return "";
   const { data } = await supabase.from("users").select("display_name").eq("id", userId).maybeSingle();
@@ -325,12 +381,6 @@ async function logWarning(supabase: any, message: string, context: Record<string
   }
 }
 
-/**
- * Pastikan sesi punya Telegram Forum Topic. Kalau belum ada, buat sekarang
- * (lazy create) dan simpan `telegram_thread_id`-nya. Dipakai baik dari
- * pesan pertama user maupun balasan pertama admin dari web (jaga-jaga
- * kalau admin sempat balas dari web sebelum user kirim pesan apapun).
- */
 async function ensureForumTopic(
   supabase: any,
   token: string,
@@ -367,14 +417,6 @@ async function ensureForumTopic(
   return null;
 }
 
-/**
- * Verifikasi Authorization header (dikirim otomatis oleh
- * supabase.functions.invoke) benar-benar JWT user yang valid & login.
- * Dipakai sebagai dasar baik untuk cek "apakah caller pemilik sesi ini"
- * (`user_message`) maupun "apakah caller admin/owner" (`admin_web_reply`)
- * di bawah -- edge function ini pakai service_role client yang bypass
- * RLS, jadi identitas caller HARUS diverifikasi manual di setiap mode.
- */
 async function getAuthorizedCaller(req: Request, supabaseUrl: string): Promise<{ id: string } | null> {
   const authHeader = req.headers.get("Authorization") ?? "";
   const jwt = authHeader.replace(/^Bearer\s+/i, "");
@@ -391,12 +433,6 @@ async function getAuthorizedCaller(req: Request, supabaseUrl: string): Promise<{
   return { id: userRes.user.id };
 }
 
-/**
- * Sama seperti getAuthorizedCaller, tapi juga mewajibkan role admin/owner.
- * WAJIB dipanggil sebelum mengizinkan mode yang bertindak atas nama admin
- * (`admin_web_reply`) -- tanpa ini, siapa saja yang tahu endpoint ini bisa
- * mengirim pesan mengatasnamakan admin ke topic Telegram manapun.
- */
 async function getAuthorizedAdmin(req: Request, supabaseUrl: string): Promise<{ id: string } | null> {
   const caller = await getAuthorizedCaller(req, supabaseUrl);
   if (!caller) return null;
@@ -408,19 +444,4 @@ async function getAuthorizedAdmin(req: Request, supabaseUrl: string): Promise<{ 
   if (!profile || !["admin", "owner"].includes(profile.role)) return null;
 
   return caller;
-}
-
-async function sendTelegram(token: string, chatId: string | number, text: string, messageThreadId?: number) {
-  if (!token) return;
-  const payload: Record<string, unknown> = {
-    chat_id: chatId,
-    text,
-    parse_mode: "Markdown",
-  };
-  if (messageThreadId) payload.message_thread_id = messageThreadId;
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
 }
