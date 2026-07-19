@@ -57,9 +57,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         "bg-red-600 hover:bg-red-500 text-white font-bold shadow-lg shadow-red-600/10"
       ),
       "danger-ghost": cx(tokens.buttonVariant.dangerGhost),
-      success: cx(
-        "bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-600/20"
-      ),
+      success: cx(tokens.buttonVariant.success),
       ghost: cx(tokens.buttonVariant.ghost),
     };
 

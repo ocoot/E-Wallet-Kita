@@ -18,6 +18,7 @@ import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
 import {
   Bell, Plus, Trash2, CheckCircle2, Circle, AlertCircle, Clock,
   Edit2, CalendarDays, Send, Info, AlertTriangle
@@ -206,10 +207,14 @@ export const BillReminders: React.FC = () => {
                 {t("bill_reminders.page_subtitle")}
               </p>
             </div>
-            <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              className={cx("flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold text-sm transition-colors shrink-0 shadow-md cursor-pointer", tokens.button.accentEmerald)}>
-              <Plus size={16} /> {t("bill_reminders.add_button")}
-            </button>
+            <Button
+              variant="success"
+              onClick={() => { audioFeedback.playClick(); openAddForm(); }}
+              icon={<Plus size={16} />}
+              className="shrink-0"
+            >
+              {t("bill_reminders.add_button")}
+            </Button>
           </div>
 
           {/* ── Counter stats: formasi strip chip horizontal ─────────── */}
@@ -248,7 +253,7 @@ export const BillReminders: React.FC = () => {
                     className={cx(
                       "cursor-pointer px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-colors disabled:opacity-50",
                       billReminderHour === hour
-                        ? cx("text-white shadow-sm", tokens.button.accentEmerald)
+                        ? "bg-emerald-500 hover:bg-emerald-400 text-white shadow-sm light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
                         : cx(tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)
                     )}>
                     {String(hour).padStart(2, "0")}.00
@@ -394,7 +399,7 @@ export const BillReminders: React.FC = () => {
                         className={cx(
                           "flex-1 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer",
                           form.recurrence_type === type
-                            ? tokens.button.accentEmerald
+                            ? "bg-emerald-500 hover:bg-emerald-400 text-white light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
                             : cx(tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)
                         )}>
                         {type === "monthly" ? t("bill_reminders.recurrence_monthly") : type === "yearly" ? t("bill_reminders.recurrence_yearly") : t("bill_reminders.recurrence_one_time")}
@@ -442,8 +447,8 @@ export const BillReminders: React.FC = () => {
                 />
                 {/* Actions */}
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeForm} className={cx("flex-1 py-3 rounded-2xl font-semibold text-sm transition-colors cursor-pointer", tokens.surface.subtle, tokens.hover.surface, tokens.text.label)}>{t("common.cancel")}</button>
-                  <button onClick={handleSave} disabled={isSaving} className={cx("flex-1 py-3 rounded-2xl text-white font-semibold text-sm transition-colors disabled:opacity-50 cursor-pointer", tokens.button.accentEmerald)}>{isSaving ? t("common.loading") : t("common.save")}</button>
+                  <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
+                  <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
                 </div>
               </div>
             </motion.div>

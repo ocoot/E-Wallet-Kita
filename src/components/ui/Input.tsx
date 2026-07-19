@@ -2,6 +2,7 @@ import React, { useId } from "react";
 import { useThemeTokens } from "../../hooks/useThemeTokens";
 
 export type InputAccent = "indigo" | "amber" | "emerald" | "rose" | "danger";
+export type InputSize = "default" | "compact";
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   /** Label kecil huruf besar di atas field (opsional; caller yang mengisi teksnya lewat i18n). */
@@ -10,6 +11,12 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: React.ReactNode;
   /** Warna aksen saat fokus -- disesuaikan tema halaman (indigo default, amber untuk Tabungan Emas, dst). */
   accent?: InputAccent;
+  /**
+   * Ukuran padding & radius:
+   * - "default" (bawaan): px-4 py-3 rounded-2xl — form utama, modal
+   * - "compact": px-3 py-2 rounded-xl — input tabel inline, filter bar, form ramping
+   */
+  size?: InputSize;
   containerClassName?: string;
   /** Ikon kiri (mis. Lock untuk password field). */
   leftIcon?: React.ReactNode;
@@ -27,7 +34,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
  * sepenuhnya lewat props yang dioper caller (biasanya dari i18n `t(...)`).
  */
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, accent = "indigo", className = "", containerClassName = "", id, leftIcon, rightElement, ...rest }, ref) => {
+  ({ label, error, accent = "indigo", size = "default", className = "", containerClassName = "", id, leftIcon, rightElement, ...rest }, ref) => {
     const { tokens, cx } = useThemeTokens();
     const generatedId = useId();
     const inputId = id || generatedId;
@@ -38,6 +45,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       emerald: "focus:border-emerald-500",
       rose: "focus:border-rose-400",
       danger: "focus:border-red-500",
+    };
+
+    const sizeClasses: Record<InputSize, string> = {
+      default: "px-4 py-3 rounded-2xl",
+      compact: "px-3 py-2 rounded-xl",
     };
 
     return (
@@ -62,7 +74,8 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             aria-invalid={!!error}
             aria-describedby={error ? `${inputId}-error` : undefined}
             className={cx(
-              "w-full px-4 py-3 rounded-2xl text-sm border outline-none placeholder:text-slate-500 transition-colors",
+              "w-full text-sm border outline-none placeholder:text-slate-500 transition-colors",
+              sizeClasses[size],
               tokens.surface.subtle,
               tokens.text.heading,
               tokens.border.strong,

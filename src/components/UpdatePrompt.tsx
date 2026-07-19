@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { RefreshCw, X, Sparkles, Loader2 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { supabase } from "../lib/supabase";
 import { CHANGELOG_TABLE, type ChangelogEntry } from "../data/changelog";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { ModalShell } from "./ui/ModalShell";
 
 /**
  * Banner "Versi baru tersedia" yang muncul otomatis saat service worker
@@ -94,34 +93,16 @@ export const UpdatePrompt: React.FC = () => {
     setVisible(false);
   };
 
-  useLockBodyScroll(visible);
-
   return (
-    <AnimatePresence>
-      {visible && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={isUpdating ? undefined : handleDismiss}
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-          />
-
-          {/* Modal — di tengah layar, ukuran menyesuaikan mobile/tablet/desktop */}
-          <motion.div
-            initial={{ scale: 0.92, opacity: 0, y: 12 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.92, opacity: 0, y: 12 }}
-            transition={{ type: "spring", stiffness: 300, damping: 28 }}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="update-prompt-title"
-            className="relative w-full max-w-[22rem] sm:max-w-sm md:max-w-md my-auto max-h-[85vh] overflow-y-auto"
-          >
-            <div className={cx("relative flex flex-col gap-4 p-5 sm:p-6 rounded-2xl shadow-2xl border", tokens.updatePrompt.cardBorder, tokens.surface.card, tokens.text.onSurface)}>
+    <ModalShell
+      isOpen={visible}
+      onClose={isUpdating ? undefined : handleDismiss}
+      maxWidth="max-w-[22rem] sm:max-w-sm md:max-w-md"
+      elevated
+      backdropLocked={isUpdating}
+      labelledBy="update-prompt-title"
+      className="relative flex flex-col gap-4 p-5 sm:p-6"
+    >
               <button
                 onClick={handleDismiss}
                 disabled={isUpdating}
@@ -215,10 +196,6 @@ export const UpdatePrompt: React.FC = () => {
                   {isUpdating ? t("pwa.updating") : t("pwa.update_btn")}
                 </button>
               </div>
-            </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+        </ModalShell>
   );
 };

@@ -18,6 +18,7 @@ import { VoiceRecorder } from "../components/VoiceRecorder";
 import { useCategories } from "../hooks/useCategories";
 import { useWallets } from "../hooks/useWallets";
 import { checkSingleCategoryBudget } from "../hooks/useBudgets";
+import { Button } from "../components/ui/Button";
 import { ConfirmTransactionModal, ConfirmTransactionDraft } from "../components/ConfirmTransactionModal";
 
 // Emoji map for category keys — fallback to if key not found
@@ -543,18 +544,15 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                       </span>
                     </div>
                   )}
-                  <button
+                  <Button
                     type="submit"
+                    variant={isExpense ? "danger" : "success"}
                     disabled={isLoading || amount === "" || amount === 0}
-                    className={`ml-auto cursor-pointer py-3 px-6 text-white rounded-xl font-sans text-xs font-bold flex items-center gap-2 transition-all disabled:opacity-30 disabled:pointer-events-none active:scale-[0.98] ${
-                      isExpense
-                        ? tokens.newTransaction.submitBtnExpense
-                        : "bg-emerald-600 hover:bg-emerald-500 shadow-lg shadow-emerald-900/20"
-                    }`}
+                    isLoading={isLoading}
+                    className="ml-auto rounded-xl py-3 px-6 text-xs"
                   >
-                    <span className="text-sm leading-none"> </span>
-                    <span>{t("transaction.btn_submit")}</span>
-                  </button>
+                    {t("transaction.btn_submit")}
+                  </Button>
                 </div>
 
               </form>

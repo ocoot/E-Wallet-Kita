@@ -15,6 +15,8 @@ import { ErrorState } from "../components/ErrorState";
 import { WalletPickerField } from "../components/WalletPickerField";
 import { ProviderBadge } from "../components/ProviderBadge";
 import { Modal } from "../components/Modal";
+import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
 import { PROVIDER_CATALOG, OTHER_PROVIDER_ID } from "../data/walletProviders";
 
 const GROUP_META: Record<Exclude<WalletType, "general">, { icon: string; labelKey: string; addKey: string; placeholderKey: string }> = {
@@ -136,28 +138,32 @@ const WalletCard: React.FC<WalletCardProps> = ({
       {canHaveContact && (
         editingContactId === wallet.id ? (
           <div className="space-y-2">
-            <input
+            <Input
+              size="compact"
               autoFocus
               value={contactInput}
               onChange={(e) => setContactInput(e.target.value)}
               placeholder={contactLabel}
-              className={tokens.form.input}
               {...contactKeyboardProps}
             />
             <div className="flex gap-2">
-              <button
+              <Button
+                size="sm"
+                variant="primary"
                 onClick={() => handleSaveContact(wallet)}
                 disabled={busy}
-                className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-50"
+                className="flex-1 py-1.5 rounded-lg text-xs"
               >
                 {t("common.save")}
-              </button>
-              <button
+              </Button>
+              <Button
+                size="sm"
+                variant="secondary"
                 onClick={() => setEditingContactId(null)}
-                className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
+                className="flex-1 py-1.5 rounded-lg text-xs"
               >
                 {t("common.cancel")}
-              </button>
+              </Button>
             </div>
           </div>
         ) : (
@@ -186,28 +192,32 @@ const WalletCard: React.FC<WalletCardProps> = ({
 
       {editingBalanceId === wallet.id ? (
         <div className="space-y-2">
-          <input
+          <Input
+            size="compact"
             type="number"
             inputMode="decimal"
             autoFocus
             value={balanceInput}
             onChange={(e) => setBalanceInput(e.target.value === "" ? "" : Number(e.target.value))}
-            className={tokens.form.input}
           />
           <div className="flex gap-2">
-            <button
+            <Button
+              size="sm"
+              variant="primary"
               onClick={() => handleSaveBalance(wallet.id)}
               disabled={busy}
-              className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-50"
+              className="flex-1 py-1.5 rounded-lg text-xs"
             >
               {t("common.save")}
-            </button>
-            <button
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
               onClick={() => setEditingBalanceId(null)}
-              className="flex-1 py-1.5 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
+              className="flex-1 py-1.5 rounded-lg text-xs"
             >
               {t("common.cancel")}
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
@@ -483,12 +493,12 @@ export const Wallets: React.FC = () => {
                             <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
                               {t("wallet.field_name")}
                             </label>
-                            <input
+                            <Input
+                              size="compact"
                               autoFocus
                               value={newName}
                               onChange={(e) => setNewName(e.target.value)}
                               placeholder={t(meta.placeholderKey)}
-                              className={tokens.form.input}
                             />
                           </div>
                         )}
@@ -498,12 +508,12 @@ export const Wallets: React.FC = () => {
                         <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
                           {t("wallet.field_name")}
                         </label>
-                        <input
+                        <Input
+                          size="compact"
                           autoFocus
                           value={newName}
                           onChange={(e) => setNewName(e.target.value)}
                           placeholder={t(meta.placeholderKey)}
-                          className={tokens.form.input}
                         />
                       </div>
                     )}
@@ -511,13 +521,13 @@ export const Wallets: React.FC = () => {
                       <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
                         {t("wallet.field_starting_balance")}
                       </label>
-                      <input
+                      <Input
+                        size="compact"
                         type="number"
                         inputMode="decimal"
                         value={newStartBalance}
                         onChange={(e) => setNewStartBalance(e.target.value === "" ? "" : Number(e.target.value))}
                         placeholder="0"
-                        className={tokens.form.input}
                       />
                     </div>
                     {isCatalogType(type) && (
@@ -525,29 +535,33 @@ export const Wallets: React.FC = () => {
                         <label className={cx("text-[11px] font-bold uppercase block mb-1", tokens.text.muted)}>
                           {type === "ewallet" ? t("wallet.field_phone") : t("wallet.field_account_number")}
                         </label>
-                        <input
+                        <Input
+                          size="compact"
                           value={newContact}
                           onChange={(e) => setNewContact(e.target.value)}
                           placeholder={type === "ewallet" ? "08xxxxxxxxxx" : "1234567890"}
-                          className={tokens.form.input}
                           {...(type === "ewallet" ? CONTACT_KEYBOARD_PROPS_PHONE : CONTACT_KEYBOARD_PROPS_ACCOUNT)}
                         />
                       </div>
                     )}
                     <div className="flex gap-2">
-                      <button
+                      <Button
+                        size="sm"
+                        variant="primary"
                         onClick={() => handleCreateWallet(type)}
                         disabled={busy || !isFormValid(type)}
-                        className="flex-1 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer disabled:opacity-50"
+                        className="flex-1 py-2 rounded-xl text-xs"
                       >
                         {t("wallet.btn_save_wallet")}
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
                         onClick={() => setCreatingType(null)}
-                        className="flex-1 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 cursor-pointer"
+                        className="flex-1 py-2 rounded-xl text-xs"
                       >
                         {t("wallet.btn_cancel")}
-                      </button>
+                      </Button>
                     </div>
                   </motion.div>
                 )}

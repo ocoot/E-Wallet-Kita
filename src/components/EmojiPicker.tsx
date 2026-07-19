@@ -55,7 +55,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ isOpen, onClose, onEmo
             <div className="max-h-[260px] overflow-y-auto p-3 space-y-2">
               {EMOJI_GROUPS.map((group) => (
                 <div key={group.label}>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider mb-1 text-slate-500 light_sakura:text-slate-400">
+                  <p className={cx("text-[10px] font-semibold uppercase tracking-wider mb-1", tokens.text.muted)}>
                     {group.label}
                   </p>
                   <div className="flex flex-wrap gap-1">
@@ -67,7 +67,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ isOpen, onClose, onEmo
                           onEmojiSelect(emoji);
                           onClose();
                         }}
-                        className="w-9 h-9 flex items-center justify-center text-lg rounded-lg hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50 transition-colors duration-150 cursor-pointer"
+                        className={cx("w-9 h-9 flex items-center justify-center text-lg rounded-lg transition-colors duration-150 cursor-pointer", tokens.hover.hoverSubtle)}
                       >
                         {emoji}
                       </button>

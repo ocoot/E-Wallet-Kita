@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { FileText, X } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useWallets } from "../hooks/useWallets";
 import { DropdownField } from "./DropdownField";
-import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { useDialogA11y } from "../hooks/useDialogA11y";
 import { Button } from "./ui/Button";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { ModalShell } from "./ui/ModalShell";
 
 interface ExportSummaryModalProps {
   isOpen: boolean;
@@ -33,33 +31,14 @@ export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
     if (isOpen) setWalletId("");
   }, [isOpen]);
 
-  useLockBodyScroll(isOpen);
-  const panelRef = React.useRef<HTMLDivElement>(null);
-  useDialogA11y(isOpen, panelRef, onCancel);
-
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onCancel}
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs"
-          />
-
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 15 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 15 }}
-            transition={{ type: "spring", duration: 0.3 }}
-            ref={panelRef}
-            role="dialog"
-            aria-modal="true"
-            tabIndex={-1}
-            className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl outline-none", tokens.surface.card, tokens.border.accent, tokens.text.onSurface)}
-          >
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onCancel}
+      maxWidth="max-w-md"
+      ariaLabel={t("export.summary_confirm_title")}
+      className="p-6"
+    >
             <button
               onClick={onCancel}
               aria-label="Tutup"
@@ -119,9 +98,6 @@ export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
                 {t("export.confirm_export")}
               </Button>
             </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+        </ModalShell>
   );
 };

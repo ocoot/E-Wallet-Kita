@@ -1,13 +1,12 @@
 import React from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, X } from "lucide-react";
 import { Category, WalletWithBalance, WalletType } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
 import { DropdownField } from "./DropdownField";
-import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { useDialogA11y } from "../hooks/useDialogA11y";
 import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { ModalShell } from "./ui/ModalShell";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   food_drink: "", transport: "", shopping: "", health: "",
@@ -74,10 +73,6 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
   const { t, locale } = useLanguage();
   const { tokens, cx } = useThemeTokens();
 
-  useLockBodyScroll(isOpen && !!draft);
-  const panelRef = React.useRef<HTMLDivElement>(null);
-  useDialogA11y(isOpen && !!draft, panelRef, onCancel);
-
   if (!isOpen || !draft) return null;
 
   const isExpense = draft.type === "expense";
@@ -90,27 +85,13 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
     `${WALLET_TYPE_ICON[w.type]} ${w.name}${w.provider ? " · " + w.provider : ""}`;
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onCancel}
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs"
-        />
-
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0, y: 15 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 15 }}
-          transition={{ type: "spring", duration: 0.3 }}
-          ref={panelRef}
-          role="dialog"
-          aria-modal="true"
-          tabIndex={-1}
-          className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl p-6 shadow-2xl outline-none", tokens.modal.panel)}
-        >
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onCancel}
+      maxWidth="max-w-md"
+      ariaLabel={t("confirm.save_transaction_title")}
+      className="p-6"
+    >
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`rounded-full p-2.5 ${isExpense ? "bg-red-500/15 text-red-400" : "bg-emerald-500/15 text-emerald-400"}`}>
@@ -150,12 +131,13 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
               <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block mb-1.5", tokens.text.muted)}>
                 {t("transaction.label_amount")}
               </label>
-              <input
+              <Input
+                size="compact"
                 type="number"
                 min={1}
                 value={draft.amount}
                 onChange={(e) => onChange({ ...draft, amount: Number(e.target.value) || 0 })}
-                className={tokens.form.inputLg}
+                className="py-2.5"
               />
             </div>
 
@@ -194,12 +176,13 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
               <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block mb-1.5", tokens.text.muted)}>
                 {t("transaction.label_date")}
               </label>
-              <input
+              <Input
+                size="compact"
                 type="date"
                 value={draft.date}
                 max={new Date().toISOString().split("T")[0]}
                 onChange={(e) => onChange({ ...draft, date: e.target.value })}
-                className={tokens.form.inputLg}
+                className="py-2.5"
               />
             </div>
           </div>
@@ -251,8 +234,6 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
               {t("common.confirm")}
             </Button>
           </div>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+        </ModalShell>
   );
 };

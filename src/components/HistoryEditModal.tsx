@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { Pencil, X } from "lucide-react";
 import { Transaction, WalletWithBalance } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useCategories } from "../hooks/useCategories";
 import { useWallets } from "../hooks/useWallets";
 import { DropdownField } from "./DropdownField";
-import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { Button } from "./ui/Button";
-import { useDialogA11y } from "../hooks/useDialogA11y";
+import { Input } from "./ui/Input";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { ModalShell } from "./ui/ModalShell";
 
 interface HistoryEditModalProps {
   transaction: Transaction | null;
@@ -35,10 +34,6 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
   const [transactionDate, setTransactionDate] = useState("");
   const [walletId, setWalletId] = useState<string | null>(null);
 
-  useLockBodyScroll(!!transaction);
-  const panelRef = React.useRef<HTMLDivElement>(null);
-  useDialogA11y(!!transaction, panelRef, onClose);
-
   useEffect(() => {
     if (transaction) {
       setCategory(transaction.category);
@@ -60,27 +55,13 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
   };
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs"
-        />
-
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0, y: 15 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 15 }}
-          transition={{ type: "spring", duration: 0.3 }}
-          ref={panelRef}
-          role="dialog"
-          aria-modal="true"
-          tabIndex={-1}
-          className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl p-6 shadow-2xl outline-none", tokens.modal.panel)}
-        >
+    <ModalShell
+      isOpen={!!transaction}
+      onClose={onClose}
+      maxWidth="max-w-md"
+      ariaLabel={t("transaction.edit_title")}
+      className="p-6"
+    >
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={cx("rounded-full p-2.5", tokens.budgetProgressCard.badgeBgSafe, tokens.text.accentStrong)}>
@@ -118,12 +99,13 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
               <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block mb-1.5", tokens.text.muted)}>
                 {t("transaction.label_date")}
               </label>
-              <input
+              <Input
+                size="compact"
                 type="date"
                 value={transactionDate}
                 onChange={e => setTransactionDate(e.target.value)}
                 max={new Date().toISOString().split("T")[0]}
-                className={tokens.form.inputLg}
+                className="py-2.5"
               />
             </div>
 
@@ -145,12 +127,13 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
               <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block mb-1.5", tokens.text.muted)}>
                 {t("transaction.label_amount")}
               </label>
-              <input
+              <Input
+                size="compact"
                 type="number"
                 min={1}
                 value={amount}
                 onChange={e => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
-                className={tokens.form.inputLg}
+                className="py-2.5"
               />
             </div>
 
@@ -174,8 +157,6 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
               </Button>
             </div>
           </form>
-        </motion.div>
-      </div>
-    </AnimatePresence>
+        </ModalShell>
   );
 };

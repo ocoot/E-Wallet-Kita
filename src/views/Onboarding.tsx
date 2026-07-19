@@ -28,6 +28,8 @@ import {
 } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
 import { DropdownField } from "../components/DropdownField";
+import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
 
 export const Onboarding: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -273,24 +275,25 @@ export const Onboarding: React.FC = () => {
                       <label className={cx("block text-xs font-medium mb-1", tokens.text.mutedAlt)}>
                         {t("onboarding.catat_practice_note")}
                       </label>
-                      <input
+                      <Input
+                        size="compact"
                         type="text"
                         placeholder={t("onboarding.practice_note_placeholder")}
                         value={practiceNote}
                         onChange={(e) => setPracticeNote(e.target.value)}
                         disabled={hasPracticedCatat}
-                        className={cx(tokens.form.input, "disabled:opacity-50")}
                       />
                     </div>
 
                     {!hasPracticedCatat ? (
-                      <button
+                      <Button
                         type="submit"
-                        className={cx("w-full py-2.5 px-4 rounded-xl text-sm font-semibold transition-colors flex items-center justify-center gap-2", tokens.onboarding.btnShadow, tokens.button.accentEmerald)}
+                        variant="success"
+                        icon={<Plus size={16} />}
+                        fullWidth
                       >
-                        <Plus size={16} />
                         {t("onboarding.catat_practice_btn")}
-                      </button>
+                      </Button>
                     ) : (
                       <div className={cx("p-3 rounded-xl flex items-center gap-2.5 text-xs sm:text-sm font-medium", tokens.onboarding.practiceSuccessBgBorder)}>
                         <CheckCircle2 size={18} className={cx("flex-shrink-0", tokens.text.successStrong)} />
@@ -828,16 +831,17 @@ export const Onboarding: React.FC = () => {
                         <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase tracking-wider">{t("bill_reminders.amount_label")}</p>
                         <p className={cx("text-sm font-mono font-bold", tokens.text.onSurface)}>Rp350.000</p>
                       </div>
-                      <button 
+                      <Button 
                         type="button"
+                        size="sm"
+                        variant="success"
                         onClick={() => {
                           playSuccess();
                           showToast(t("bill_reminders.marked_paid"), "success");
                         }}
-                        className={cx("px-3 py-1.5 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold transition-colors", tokens.button.accentEmerald)}
                       >
                         {t("bill_reminders.mark_paid")}
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -889,13 +893,14 @@ export const Onboarding: React.FC = () => {
               </button>
             )}
 
-            <button
+            <Button
+              variant="success"
               onClick={handleNext}
-              className={cx("py-2 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-colors flex items-center gap-1.5", tokens.onboarding.btnShadow, tokens.button.accentEmerald)}
+              className="py-2 px-4 rounded-xl text-xs sm:text-sm font-semibold"
             >
               <span>{currentStep === stepsCount - 1 ? t("onboarding.btn_finish") : t("onboarding.btn_next")}</span>
               <ArrowRight size={16} />
-            </button>
+            </Button>
           </div>
         </div>
       </div>

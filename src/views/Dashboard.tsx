@@ -22,6 +22,7 @@ import { ErrorState } from "../components/ErrorState";
 import { DashboardWalletCarousel } from "../components/DashboardWalletCarousel";
 import { DashboardWalletSelectorCard } from "../components/DashboardWalletSelectorCard";
 import { useCategories } from "../hooks/useCategories";
+import { Button } from "../components/ui/Button";
 
 interface DashboardProps {
   transactionsUpdatedTrigger: number;
@@ -301,15 +302,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
             >
               {t("onboarding.dashboard_banner_btn_dismiss")}
             </button>
-            <button
+            <Button
+              size="sm"
+              variant="success"
               onClick={() => {
                 audioFeedback.playClick();
                 navigate("/onboarding");
               }}
-              className={cx("px-4 py-2 text-xs font-bold rounded-xl shadow-lg shadow-emerald-500/10 flex items-center gap-1.5 transition-colors", tokens.button.accentEmerald)}
             >
-              <span>{t("onboarding.dashboard_banner_btn_start")}</span>
-            </button>
+              {t("onboarding.dashboard_banner_btn_start")}
+            </Button>
           </div>
         </motion.div>
       )}

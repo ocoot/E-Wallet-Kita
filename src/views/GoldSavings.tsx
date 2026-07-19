@@ -18,6 +18,7 @@ import { DropdownField } from "../components/DropdownField";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
 import {
   Coins, Plus, Trash2, Edit2, ArrowDownCircle, ArrowUpCircle,
   Archive, ArchiveRestore, Info, AlertTriangle, PackagePlus, PackageMinus
@@ -262,11 +263,11 @@ export const GoldSavings: React.FC = () => {
   // menampilkan disclaimer tambahan (lihat sim_disclaimer_title/text) yang
   // TIDAK relevan untuk manual_add/manual_remove karena dua arah itu murni
   // pencatatan kepemilikan fisik, tidak menyentuh harga acuan app sama sekali.
-  const moveModalCopy: Record<MoveDirection, { title: string; desc: string; button: string; barClass: string; buttonClass: string; isSimulated: boolean }> = {
-    buy: { title: "gold.buy_title", desc: "gold.buy_desc", button: "gold.buy_button_confirm", barClass: "bg-emerald-500", buttonClass: "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20", isSimulated: true },
-    sell: { title: "gold.sell_title", desc: "gold.sell_desc", button: "gold.sell_button_confirm", barClass: "bg-indigo-500", buttonClass: "bg-indigo-600 hover:bg-indigo-500 shadow-indigo-600/20", isSimulated: true },
-    manual_add: { title: "gold.manual_add_title", desc: "gold.manual_add_desc", button: "gold.manual_add_button", barClass: "bg-sky-500", buttonClass: "bg-sky-600 hover:bg-sky-500 shadow-sky-600/20", isSimulated: false },
-    manual_remove: { title: "gold.manual_remove_title", desc: "gold.manual_remove_desc", button: "gold.manual_remove_button", barClass: "bg-amber-500", buttonClass: "bg-amber-600 hover:bg-amber-500 shadow-amber-600/20", isSimulated: false },
+  const moveModalCopy: Record<MoveDirection, { title: string; desc: string; button: string; barClass: string; buttonVariant: "primary" | "secondary" | "danger" | "danger-ghost" | "success" | "ghost"; isSimulated: boolean }> = {
+    buy: { title: "gold.buy_title", desc: "gold.buy_desc", button: "gold.buy_button_confirm", barClass: "bg-emerald-500", buttonVariant: "success", isSimulated: true },
+    sell: { title: "gold.sell_title", desc: "gold.sell_desc", button: "gold.sell_button_confirm", barClass: "bg-indigo-500", buttonVariant: "primary", isSimulated: true },
+    manual_add: { title: "gold.manual_add_title", desc: "gold.manual_add_desc", button: "gold.manual_add_button", barClass: "bg-sky-500", buttonVariant: "primary", isSimulated: false },
+    manual_remove: { title: "gold.manual_remove_title", desc: "gold.manual_remove_desc", button: "gold.manual_remove_button", barClass: "bg-amber-500", buttonVariant: "danger", isSimulated: false },
   };
 
   const renderPocketCard = (p: GoldPocket) => {
@@ -688,11 +689,10 @@ export const GoldSavings: React.FC = () => {
                   accent="amber"
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeMoveModal} className={cx("flex-1 py-3 rounded-2xl font-semibold text-sm transition-colors cursor-pointer", tokens.gold.cancelBtn, tokens.text.label)}>{t("common.cancel")}</button>
-                  <button onClick={executeMove} disabled={isMoving}
-                    className={`flex-1 py-3 rounded-2xl text-white font-semibold text-sm transition-colors shadow-lg disabled:opacity-50 cursor-pointer ${copy.buttonClass}`}>
-                    {isMoving ? t("common.loading") : t(copy.button)}
-                  </button>
+                  <Button variant="secondary" onClick={closeMoveModal} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
+                  <Button variant={copy.buttonVariant} onClick={executeMove} disabled={isMoving} isLoading={isMoving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">
+                    {t(copy.button)}
+                  </Button>
                 </div>
               </div>
             </motion.div>

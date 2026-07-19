@@ -23,12 +23,12 @@
  *   <p className={tokens.text.muted}>...</p>
  *   <div className={cx(tokens.surface.card, tokens.border.default, "p-4")}>
  *
- * ATURAN PENAMBAHAN TOKEN BARU:
- * Sebelum menulis pasangan "warna-dark light_sakura:warna-light" baru
- * langsung di komponen, cek dulu apakah polanya sudah ada di sini. Kalau
- * belum ada DAN dipakai >1 tempat, tambahkan sebagai token baru di sini
- * alih-alih hardcode lagi. Token di bawah sudah mencakup ~80% pasangan yang
- * paling sering dipakai di codebase (diambil dari analisis frekuensi).
+ * ATURAN PENAMBAHAN TOKEN BARU (STRICT GOVERNANCE):
+ * 1. Token baru HANYA boleh ditambah kalau pola dipakai di ≥2 file DAN tidak
+ *    bisa dicapai lewat prop baru di komponen UI bersama yang sudah ada (mis. Input, Button, Badge).
+ * 2. DILARANG keras membuat token "jalan pintas" (escape hatch) seperti tokens.form.input
+ *    atau tokens.button.accentEmerald untuk melegitimasi duplikasi di luar komponen.
+ *    Jika butuh variasi styling, tambahkan prop resmi di komponen UI-nya (mis. size="compact", variant="success").
  */
 
 export const themeTokens = {
@@ -123,6 +123,7 @@ export const themeTokens = {
      * `ExportFullModal.tsx` (semua dipasang sesi ini).
      */
     textInverse: "hover:text-white light_sakura:hover:text-slate-900",
+    hoverSubtle: "hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50",
   },
 
   icon: {
@@ -204,17 +205,6 @@ export const themeTokens = {
 
   button: {
     /**
-     * Tombol CTA solid emerald (dark) / rose (light) dengan teks putih di
-     * kedua tema -- dipakai di luar `ui/Button.tsx` (tombol custom inline,
-     * bukan lewat komponen Button). Exact match diverifikasi di 3 file:
-     * Onboarding.tsx (3x), BillReminders.tsx, Dashboard.tsx. Shadow/ukuran/
-     * radius TIDAK termasuk token ini karena bervariasi per pemakaian --
-     * tetap ditulis literal di pemanggil (mis. "shadow-lg shadow-emerald-
-     * 500/20 light_sakura:shadow-rose-500/20").
-     */
-    accentEmerald:
-      "bg-emerald-500 hover:bg-emerald-400 text-white light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400",
-    /**
      * Tombol slate netral (batal/hapus/edit sekunder) dengan hover lebih
      * terang. Exact match di AdminCategoryManager.tsx (1x, dipasang sesi
      * ini) & AdminBroadcast.tsx (1x, kelas sama tapi diselingi `border` --
@@ -237,6 +227,7 @@ export const themeTokens = {
     primary: "bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-600/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-500/20",
     secondary: "bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold border border-slate-700 light_sakura:bg-white light_sakura:hover:bg-slate-50 light_sakura:text-slate-600 light_sakura:border-slate-200",
     dangerGhost: "bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold light_sakura:bg-red-50 light_sakura:hover:bg-red-100 light_sakura:text-red-500",
+    success: "bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-600/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-500/20",
     ghost: "bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold border border-slate-700 light_sakura:bg-white light_sakura:hover:bg-slate-50 light_sakura:text-slate-700 light_sakura:border-slate-200",
   },
 
@@ -256,30 +247,6 @@ export const themeTokens = {
      * (toggle sandbox QRIS).
      */
     inactiveIconBorder: "border-slate-700 light_sakura:border-slate-100 text-slate-500",
-  },
-
-  form: {
-    /**
-     * Styling standar <input> teks/angka di form (nama pos, saldo awal,
-     * kontak, dst). Ditemukan berulang VERBATIM 5x hanya di Wallets.tsx
-     * saja -- indikasi kuat pola ini juga muncul di form-form lain
-     * (NewTransaction, Savings, Installments, dll). Kalau app ini nanti
-     * pindah ke `ui/Input.tsx` sepenuhnya untuk semua field, token ini bisa
-     * dipensiunkan; sampai saat itu, dipakai untuk <input> polos yang belum
-     * migrasi ke komponen `Input`.
-     */
-    input:
-      "w-full px-3 py-2 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700",
-    /**
-     * Varian `input` dengan `py-2.5` (bukan `py-2`) -- awalnya dicatat di
-     * sesi 11 sebagai "mirip tapi tidak persis" (1 kemunculan di
-     * `ConfirmTransactionModal.tsx`, tidak dipaksa jadi token). Sesi 13
-     * menemukan kemunculan identik ke-2 di `HistoryEditModal.tsx` (2x),
-     * total 4x di 2 file berbeda -- memenuhi syarat "≥2 file" untuk token
-     * baru, jadi ditambahkan di sini.
-     */
-    inputLg:
-      "w-full px-3 py-2.5 rounded-xl text-sm bg-slate-800 border border-slate-700 text-slate-200 focus:outline-none focus:border-indigo-500 light_sakura:bg-white light_sakura:border-rose-200 light_sakura:text-slate-700",
   },
 
   login: {

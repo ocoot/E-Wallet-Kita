@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { ShieldCheck, Loader2, CheckCircle2, XCircle, Clock, Download, Sparkles, X, Mail } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -15,9 +14,8 @@ import { sendPremiumReceiptEmail } from "../lib/email";
 import { Modal } from "./Modal";
 import { Button } from "./ui/Button";
 import { getPremiumBasePrice } from "../lib/settings";
-import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { useDialogA11y } from "../hooks/useDialogA11y";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { ModalShell } from "./ui/ModalShell";
 
 type Step = "terms" | "qris" | "checking" | "success" | "expired" | "failed";
 
@@ -28,9 +26,6 @@ interface PremiumModalProps {
 }
 
 export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onPremiumActivated }) => {
-  useLockBodyScroll(isOpen);
-  const panelRef = React.useRef<HTMLDivElement>(null);
-  useDialogA11y(isOpen, panelRef, onClose);
   const { t } = useLanguage();
   const { user } = useAuth();
   const { showToast } = useToast();
@@ -205,19 +200,13 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
   if (!isOpen) return null;
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
-      >
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-          ref={panelRef}
-          role="dialog"
-          aria-modal="true"
-          tabIndex={-1}
-          className={cx("border rounded-3xl w-full max-w-sm my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden outline-none p-6 relative", tokens.premiumModal.modalBg, tokens.text.onSurface, tokens.border.accent)}
-        >
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-sm"
+      ariaLabel={t("premium.title")}
+      className="p-6 relative"
+    >
           {(step === "terms" || step === "expired" || step === "failed") && (
             <button onClick={onClose} aria-label="Tutup" className={cx("absolute top-4 right-4 rounded-lg p-0.5", tokens.premiumModal.closeBtn)}>
               <X size={18} />
@@ -390,8 +379,6 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               <Button variant="primary" fullWidth onClick={() => setStep("terms")} className="mt-6 rounded-xl">{t("premium.retry")}</Button>
             </div>
           )}
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        </ModalShell>
   );
 };

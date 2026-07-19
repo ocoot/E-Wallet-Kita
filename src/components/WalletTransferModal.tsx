@@ -1,17 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { Send, X, CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useThemeTokens } from "../hooks/useThemeTokens";
-import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { useDialogA11y } from "../hooks/useDialogA11y";
 import { audioFeedback } from "../lib/audio";
 import { dbService } from "../lib/db";
 import { WalletWithBalance } from "../types";
 import { walletDisplayLabel } from "../lib/walletLabel";
 import { Button } from "./ui/Button";
 import { DropdownField } from "./DropdownField";
+import { ModalShell } from "./ui/ModalShell";
+import { Input } from "./ui/Input";
 
 type Status = "idle" | "loading" | "success" | "error";
 
@@ -65,10 +64,6 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
   const [status, setStatus] = useState<Status>("idle");
 
   const isBusy = status === "loading";
-  const panelRef = React.useRef<HTMLDivElement>(null);
-
-  useLockBodyScroll(isOpen);
-  useDialogA11y(isOpen, panelRef, isBusy ? undefined : onClose);
 
   const targetOptions = useMemo(
     () => wallets.filter((w) => w.id !== sourceWallet?.id),
@@ -132,27 +127,14 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
   };
 
   return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={handleClose}
-          className="fixed inset-0 bg-black/60 backdrop-blur-xs"
-        />
-
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0, y: 15 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 15 }}
-          transition={{ type: "spring", duration: 0.3 }}
-          ref={panelRef}
-          role="dialog"
-          aria-modal="true"
-          tabIndex={-1}
-          className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl p-6 shadow-2xl outline-none", tokens.modal.panel)}
-        >
+    <ModalShell
+      isOpen={isOpen}
+      onClose={handleClose}
+      maxWidth="max-w-md"
+      backdropLocked={isBusy}
+      ariaLabel={t("walletActions.transfer_title")}
+      className="p-6"
+    >
           {status === "success" ? (
             <div className="flex flex-col items-center text-center py-4 gap-3">
               <div className={cx("rounded-full p-3 bg-indigo-500/15", tokens.icon.accent)}>
@@ -274,7 +256,8 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
                     <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block", tokens.text.muted)}>
                       {t("walletActions.transfer_amount_label")}
                     </label>
-                    <input
+                    <Input
+                      size="compact"
                       type="number"
                       inputMode="numeric"
                       min={1}
@@ -282,7 +265,7 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
                       placeholder={t("walletActions.topup_amount_placeholder")}
                       value={amount}
                       onChange={(e) => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
-                      className={tokens.form.inputLg}
+                      className="py-2.5"
                     />
                     {insufficientBalance && numericAmount > 0 && (
                       <p className="text-[11px] text-red-400">{t("walletActions.transfer_insufficient")}</p>
@@ -308,8 +291,6 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
               </div>
             </>
           )}
-        </motion.div>
-      </div>
-    </AnimatePresence>
+        </ModalShell>
   );
 };

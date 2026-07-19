@@ -281,7 +281,7 @@ export const TelegramSettings: React.FC = () => {
                       whileTap={{ scale: 0.9 }}
                       onClick={handleCopyLinkCommand}
                       aria-label={copied ? t("common.copied") : t("common.copy")}
-                      className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition-colors"
+                      className={cx("p-2.5 rounded-xl text-slate-400 transition-colors", tokens.surface.sunken, tokens.border.default, tokens.hover.textInverse)}
                     >
                       {copied ? <CheckCircle size={18} className="text-emerald-500" /> : <Copy size={18} />}
                     </motion.button>

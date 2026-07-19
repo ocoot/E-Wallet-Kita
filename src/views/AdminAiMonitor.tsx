@@ -57,12 +57,6 @@ interface AiUsageSummary {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const PROVIDER_COLORS: Record<string, { badge: string; bar: string }> = {
-  gemini:    { badge: "bg-blue-500/10 border-blue-500/30 text-blue-400",    bar: "bg-blue-500" },
-  openai:    { badge: "bg-emerald-500/10 border-emerald-500/30 text-emerald-400", bar: "bg-emerald-500" },
-  anthropic: { badge: "bg-purple-500/10 border-purple-500/30 text-purple-400", bar: "bg-purple-500" },
-};
-
 const PERIOD_OPTIONS = [7, 14, 30, 90] as const;
 type PeriodOption = typeof PERIOD_OPTIONS[number];
 

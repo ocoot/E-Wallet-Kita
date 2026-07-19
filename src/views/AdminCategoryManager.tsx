@@ -9,6 +9,7 @@ import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ErrorState } from "../components/ErrorState";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { DropdownField } from "../components/DropdownField";
+import { Button } from "../components/ui/Button";
 import { Tag, Plus, Pencil, Check, X, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Category {
@@ -178,12 +179,15 @@ export const AdminCategoryManager: React.FC = () => {
             >
               <RefreshCw size={16} />
             </button>
-            <button
+            <Button
+              variant="primary"
+              size="sm"
               onClick={() => setShowAddForm(v => !v)}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer transition-colors"
+              icon={<Plus size={16} />}
+              className="rounded-xl"
             >
-              <Plus size={16} /> {t("admin.add_category")}
-            </button>
+              {t("admin.add_category")}
+            </Button>
           </div>
         </div>
       </div>
@@ -219,14 +223,20 @@ export const AdminCategoryManager: React.FC = () => {
               onChange={v => setAddForm(f => ({ ...f, priority: Number(v) || 0 }))} placeholder="100" />
           </div>
           <div className="flex gap-2 justify-end">
-            <button onClick={() => setShowAddForm(false)}
-              className={cx("px-6 py-3 text-sm font-semibold rounded-xl cursor-pointer", tokens.text.mutedAlt, tokens.hover.surface)}>
+            <Button
+              variant="secondary"
+              onClick={() => setShowAddForm(false)}
+              className="px-6 py-3 text-sm rounded-xl"
+            >
               {t("admin.cancel_btn")}
-            </button>
-            <button onClick={handleAdd}
-              className="px-6 py-3 text-sm font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 cursor-pointer">
+            </Button>
+            <Button
+              variant="primary"
+              onClick={handleAdd}
+              className="px-6 py-3 text-sm rounded-xl"
+            >
               {t("admin.save_category_btn")}
-            </button>
+            </Button>
           </div>
         </div>
       )}

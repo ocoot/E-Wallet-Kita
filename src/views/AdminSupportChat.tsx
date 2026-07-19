@@ -7,6 +7,7 @@ import { useAdmin } from "../hooks/useAdmin";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { Modal } from "../components/Modal";
+import { Badge } from "../components/ui/Badge";
 import { EmojiPicker } from "../components/EmojiPicker";
 import { audioFeedback } from "../lib/audio";
 import { useThemeTokens } from "../hooks/useThemeTokens";
@@ -382,15 +383,12 @@ export const AdminSupportChat: React.FC = () => {
                           ? `${s.last_message_sender === "admin" ? "↩ " : ""}${s.last_message_preview}`
                           : `#${s.short_code}`}
                       </p>
-                      <span
-                        className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          s.status === "open"
-                            ? "bg-amber-500/15 text-amber-400"
-                            : "bg-emerald-500/15 text-emerald-400"
-                        }`}
+                      <Badge
+                        tone={s.status === "open" ? "warning" : "success"}
+                        className="mt-1.5"
                       >
                         {s.status === "open" ? t("admin_support_chat.status_open") : t("admin_support_chat.status_claimed")}
-                      </span>
+                      </Badge>
                     </div>
                   </button>
                 );
@@ -515,7 +513,7 @@ export const AdminSupportChat: React.FC = () => {
                     type="button"
                     onClick={handleAdminAttachmentClick}
                     disabled={isUploading}
-                    className="p-1.5 rounded-lg transition-colors duration-200 hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50 cursor-pointer disabled:opacity-50"
+                    className={cx("p-1.5 rounded-lg transition-colors duration-200 cursor-pointer disabled:opacity-50", tokens.hover.hoverSubtle)}
                     aria-label="Attach file"
                     title="Upload image"
                   >
@@ -532,7 +530,7 @@ export const AdminSupportChat: React.FC = () => {
                       audioFeedback.playClick();
                     }}
                     disabled={isUploading}
-                    className="p-1.5 rounded-lg transition-colors duration-200 hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50 cursor-pointer disabled:opacity-50"
+                    className={cx("p-1.5 rounded-lg transition-colors duration-200 cursor-pointer disabled:opacity-50", tokens.hover.hoverSubtle)}
                     aria-label="Add emoji"
                     title="Emoji"
                   >
@@ -542,7 +540,7 @@ export const AdminSupportChat: React.FC = () => {
                     type="button"
                     onClick={handleAdminCameraClick}
                     disabled={isUploading}
-                    className="p-1.5 rounded-lg transition-colors duration-200 hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50 cursor-pointer disabled:opacity-50"
+                    className={cx("p-1.5 rounded-lg transition-colors duration-200 cursor-pointer disabled:opacity-50", tokens.hover.hoverSubtle)}
                     aria-label="Open camera"
                     title="Take photo"
                   >

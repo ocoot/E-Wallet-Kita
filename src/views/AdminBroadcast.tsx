@@ -6,6 +6,7 @@ import { useToast } from "../contexts/ToastContext";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
+import { Button } from "../components/ui/Button";
 import { Send, Users, MessageSquare, AlertTriangle, Bell, RefreshCw } from "lucide-react";
 
 type BroadcastChannel = "telegram" | "push" | "both";
@@ -318,20 +319,21 @@ export const AdminBroadcast: React.FC = () => {
         )}
 
         {/* Trigger button */}
-        <button
+        <Button
+          variant="primary"
           disabled={sending || message.trim().length < 5 || (effectiveCount ?? 0) === 0}
           onClick={handleSend}
-          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl font-semibold text-sm bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
+          isLoading={sending}
+          icon={<Send size={18} />}
+          fullWidth
+          className="py-4"
         >
-          <Send size={18} />
-          {sending
-            ? t("admin.sending_broadcast")
-            : channel === "telegram"
+          {channel === "telegram"
             ? t("admin.send_broadcast_btn", { count: linkedCount ?? 0 })
             : channel === "push"
             ? t("admin.send_push_broadcast_btn", { count: pushTokenCount ?? 0 })
             : t("admin.send_both_broadcast_btn", { telegramCount: linkedCount ?? 0, pushCount: pushTokenCount ?? 0 })}
-        </button>
+        </Button>
 
         {/* Results banner */}
         {lastResult && (

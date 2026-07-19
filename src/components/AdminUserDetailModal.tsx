@@ -2,12 +2,11 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { UserProfile } from "../types";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { useDialogA11y } from "../hooks/useDialogA11y";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import {
   X, Shield, Ban, Crown, Mail, MessageCircle, Calendar, Hash, Wallet, TrendingUp, TrendingDown
 } from "lucide-react";
+import { ModalShell } from "./ui/ModalShell";
 
 interface UserDetail extends UserProfile {
   telegram_chat_id?: number | null;
@@ -29,10 +28,6 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
   const [detail, setDetail] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
-
-  useLockBodyScroll(!!user);
-  const panelRef = React.useRef<HTMLDivElement>(null);
-  useDialogA11y(!!user, panelRef, onClose);
 
   useEffect(() => {
     if (!user) return;
@@ -96,20 +91,12 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Modal Card */}
-      <div ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        tabIndex={-1}
-        className={cx("relative z-10 w-full max-w-md my-auto max-h-[85vh] flex flex-col border rounded-3xl shadow-2xl overflow-hidden outline-none", tokens.surface.card, tokens.border.accent)}>
-
+    <ModalShell
+      isOpen={!!user}
+      onClose={onClose}
+      maxWidth="max-w-md"
+      ariaLabel={user?.display_name}
+    >
         {/* Header */}
         <div className={cx("shrink-0 flex items-center justify-between px-6 py-4 border-b", tokens.border.accent, tokens.surface.sunken)}>
           <div className="flex items-center gap-3">
@@ -220,8 +207,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
           <div className="py-16 text-center text-slate-500 text-sm">{t("toast.error_general")}</div>
         )}
 
-      </div>
-    </div>
+      </ModalShell>
   );
 };
 

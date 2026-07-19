@@ -10,6 +10,7 @@ import { ErrorState } from "../components/ErrorState";
 import { EmptyState } from "../components/EmptyState";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
 import { Input } from "../components/ui/Input";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
@@ -312,20 +313,20 @@ export const AdminBackup: React.FC = () => {
   const statusBadge = (status: "running" | "success" | "failed") => {
     if (status === "success")
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-          <CheckCircle2 className="w-3 h-3" /> {t("admin.backup_status_success")}
-        </span>
+        <Badge tone="success" icon={<CheckCircle2 className="w-3 h-3" />}>
+          {t("admin.backup_status_success")}
+        </Badge>
       );
     if (status === "failed")
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-red-500/10 text-red-400 border border-red-500/20">
-          <XCircle className="w-3 h-3" /> {t("admin.backup_status_failed")}
-        </span>
+        <Badge tone="danger" icon={<XCircle className="w-3 h-3" />}>
+          {t("admin.backup_status_failed")}
+        </Badge>
       );
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-500/10 text-amber-400 border border-amber-500/20">
-        <Loader2 className="w-3 h-3 animate-spin" /> {t("admin.backup_status_running")}
-      </span>
+      <Badge tone="warning" icon={<Loader2 className="w-3 h-3 animate-spin" />}>
+        {t("admin.backup_status_running")}
+      </Badge>
     );
   };
 
@@ -362,14 +363,17 @@ export const AdminBackup: React.FC = () => {
               <RefreshCw className="w-3.5 h-3.5" />
               {t("admin.refresh")}
             </button>
-            <button
+            <Button
+              variant="primary"
+              size="sm"
               onClick={handleTriggerBackup}
               disabled={triggering || latest?.status === "running"}
-              className="px-4 py-2 text-xs font-black rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+              isLoading={triggering}
+              icon={<DatabaseBackup className="w-3.5 h-3.5" />}
+              className="rounded-xl"
             >
-              <DatabaseBackup className="w-3.5 h-3.5" />
               {t("admin.backup_trigger_now")}
-            </button>
+            </Button>
           </div>
         </div>
 
@@ -489,9 +493,9 @@ export const AdminBackup: React.FC = () => {
                       </td>
                       <td className="py-2.5 pr-4">
                         {row.deleted_at ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black bg-slate-500/10 text-slate-400 border border-slate-500/20">
+                          <Badge tone="neutral">
                             {t("admin.backup_deleted_badge")}
-                          </span>
+                          </Badge>
                         ) : (
                           statusBadge(row.status)
                         )}

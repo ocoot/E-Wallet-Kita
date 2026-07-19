@@ -6,6 +6,7 @@ import { useToast } from "../../contexts/ToastContext";
 import { useThemeTokens } from "../../hooks/useThemeTokens";
 import { audioFeedback } from "../../lib/audio";
 import { MobileSettingsDetailPage } from "../../components/settings/MobileSettingsDetailPage";
+import { Button } from "../../components/ui/Button";
 
 /** Halaman detail "Instalasi Aplikasi" / PWA (mobile). */
 export const PwaSettings: React.FC = () => {
@@ -78,16 +79,16 @@ export const PwaSettings: React.FC = () => {
             <span className="font-sans text-xs font-semibold">{t("settings.pwa_installed")}</span>
           </div>
         ) : canInstall ? (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+          <Button
             type="button"
+            variant="primary"
             onClick={handleInstallClick}
-            className="w-full cursor-pointer py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/20 flex items-center justify-center gap-2 transition-all"
+            icon={<Smartphone size={14} />}
+            fullWidth
+            className="py-3 rounded-xl text-xs font-bold"
           >
-            <Smartphone size={14} />
-            <span>{t("settings.pwa_btn_install")}</span>
-          </motion.button>
+            {t("settings.pwa_btn_install")}
+          </Button>
         ) : (
           <div className={cx("p-3 rounded-xl text-xs leading-relaxed", tokens.settings.innerCardBgBorder, tokens.text.mutedAlt)}>
             <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)]">{t("settings.pwa_not_supported")}</p>

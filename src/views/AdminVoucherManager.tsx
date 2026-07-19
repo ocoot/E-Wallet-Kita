@@ -8,6 +8,7 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Modal } from "../components/Modal";
 import { DropdownField } from "../components/DropdownField";
+import { Button } from "../components/ui/Button";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { LoadingOverlay } from "../components/LoadingOverlay";
@@ -266,13 +267,15 @@ export const AdminVoucherManager: React.FC = () => {
               className={cx("w-full border p-3 rounded-xl placeholder-slate-500 focus:ring-2 focus:ring-indigo-500", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)} 
             />
           </div>
-          <button 
+          <Button 
+            variant="primary"
             onClick={savePremiumPrice} 
             disabled={isSavingPrice}
-            className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3.5 rounded-xl font-semibold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 transition-all shadow-md active:scale-95"
+            isLoading={isSavingPrice}
+            className="w-full sm:w-auto px-6 py-3.5 rounded-xl font-semibold shadow-md active:scale-95"
           >
             {t("common.save")}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -287,17 +290,16 @@ export const AdminVoucherManager: React.FC = () => {
             <label className={cx("block text-sm font-medium mb-1.5", tokens.text.secondary)}>{t("voucher.discount_percent")}</label>
             <input placeholder="50" type="number" value={percent} onChange={e => setPercent(e.target.value)} className={cx("w-full border p-3 rounded-xl placeholder-slate-500 focus:ring-2 focus:ring-indigo-500", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)} />
           </div>
-          <button
+          <Button
+            variant="primary"
             onClick={createVoucher}
             disabled={isCreating}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold flex items-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-            {isCreating ? (
-              <Loader2 size={20} className="animate-spin" />
-            ) : (
-              <PlusCircle size={20} />
-            )}{" "}
+            isLoading={isCreating}
+            icon={<PlusCircle size={20} />}
+            className="px-6 py-3 rounded-xl font-semibold"
+          >
             {t("voucher.create")}
-          </button>
+          </Button>
         </div>
       </div>
 

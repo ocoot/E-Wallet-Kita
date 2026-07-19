@@ -765,15 +765,15 @@ export const SupportChatWidget: React.FC = () => {
                             const isLastMsg = idx === messages.length - 1;
                             return (
                               <React.Fragment key={msg.id}>
-                                {showDateSep && (
-                                  <div className="flex items-center gap-3 py-2">
-                                    <div className="flex-1 h-px bg-slate-700/50 light_sakura:bg-rose-200/50" />
-                                    <span className="text-[11px] font-semibold shrink-0" style={{ color: "#6B8378" }}>
-                                      {formatDateSeparator(msg.created_at, t)}
-                                    </span>
-                                    <div className="flex-1 h-px bg-slate-700/50 light_sakura:bg-rose-200/50" />
-                                  </div>
-                                )}
+                                  {showDateSep && (
+                                    <div className="flex items-center gap-3 py-2">
+                                      <div className="flex-1 h-px bg-slate-800 light_sakura:bg-rose-100" />
+                                      <span className="text-[11px] font-semibold shrink-0" style={{ color: "#6B8378" }}>
+                                        {formatDateSeparator(msg.created_at, t)}
+                                      </span>
+                                      <div className="flex-1 h-px bg-slate-800 light_sakura:bg-rose-100" />
+                                    </div>
+                                  )}
                                 <motion.div
                                   initial={{ opacity: 0, y: 8, scale: 0.96 }}
                                   animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -837,9 +837,9 @@ export const SupportChatWidget: React.FC = () => {
                                     {t("support.admin_chat.admin_typing")}
                                   </span>
                                   <div className="flex items-center gap-1">
-                                    <span className="chat-typing-dot bg-indigo-400 light_sakura:bg-rose-400" />
-                                    <span className="chat-typing-dot bg-indigo-400 light_sakura:bg-rose-400" />
-                                    <span className="chat-typing-dot bg-indigo-400 light_sakura:bg-rose-400" />
+                                    <span className="chat-typing-dot bg-indigo-500 light_sakura:bg-rose-500" />
+                                    <span className="chat-typing-dot bg-indigo-500 light_sakura:bg-rose-500" />
+                                    <span className="chat-typing-dot bg-indigo-500 light_sakura:bg-rose-500" />
                                   </div>
                                 </div>
                               </div>
@@ -890,7 +890,7 @@ export const SupportChatWidget: React.FC = () => {
                     type="button"
                     onClick={handleAttachmentClick}
                     disabled={isUploading}
-                    className="p-1.5 rounded-lg transition-colors duration-200 hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50 cursor-pointer disabled:opacity-50"
+                    className={cx("p-1.5 rounded-lg transition-colors duration-200 cursor-pointer disabled:opacity-50", tokens.hover.hoverSubtle)}
                     aria-label="Attach file"
                     title="Upload image"
                   >
@@ -907,7 +907,7 @@ export const SupportChatWidget: React.FC = () => {
                       audioFeedback.playClick();
                     }}
                     disabled={isUploading}
-                    className="p-1.5 rounded-lg transition-colors duration-200 hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50 cursor-pointer disabled:opacity-50"
+                    className={cx("p-1.5 rounded-lg transition-colors duration-200 cursor-pointer disabled:opacity-50", tokens.hover.hoverSubtle)}
                     aria-label="Add emoji"
                     title="Emoji"
                   >
@@ -917,7 +917,7 @@ export const SupportChatWidget: React.FC = () => {
                     type="button"
                     onClick={handleCameraClick}
                     disabled={isUploading}
-                    className="p-1.5 rounded-lg transition-colors duration-200 hover:bg-slate-800/50 light_sakura:hover:bg-rose-100/50 cursor-pointer disabled:opacity-50"
+                    className={cx("p-1.5 rounded-lg transition-colors duration-200 cursor-pointer disabled:opacity-50", tokens.hover.hoverSubtle)}
                     aria-label="Open camera"
                     title="Take photo"
                   >

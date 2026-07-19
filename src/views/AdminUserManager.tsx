@@ -26,6 +26,8 @@ import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { AdminUserDetailModal } from "../components/AdminUserDetailModal";
+import { Input } from "../components/ui/Input";
+import { Badge } from "../components/ui/Badge";
 
 /**
  * Halaman "Manajemen User" -- sebelumnya adalah tab "users" yang dirender
@@ -521,12 +523,13 @@ export const AdminUserManager: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="relative">
             <Search className={cx("absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500", tokens.text.accent)} size={16} />
-            <input
+            <Input
+              size="compact"
               type="text"
               placeholder={t("admin.search_placeholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className={cx("w-full pl-10 pr-4 py-2.5 rounded-xl font-sans text-xs focus:outline-none", tokens.form.input)}
+              className="pl-10 font-sans text-xs"
             />
           </div>
 
@@ -694,13 +697,13 @@ export const AdminUserManager: React.FC = () => {
                           title={t("admin.refresh")}
                         >
                           {user.is_premium ? (
-                            <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider border rounded-lg flex items-center gap-1 inline-flex transition-colors bg-amber-500/15 border-amber-500/30 hover:bg-amber-500/25", tokens.text.warning)}>
-                             {t("admin.premium_active")}
-                            </span>
+                            <Badge tone="warning" className="normal-case">
+                              {t("admin.premium_active")}
+                            </Badge>
                           ) : (
-                            <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider border rounded-lg inline-flex transition-colors", tokens.surface.subtle, tokens.border.strong, tokens.text.mutedAlt)}>
+                            <Badge tone="neutral" className="normal-case">
                               {t("admin.premium_lite")}
-                            </span>
+                            </Badge>
                           )}
                         </button>
                       </td>
@@ -708,27 +711,30 @@ export const AdminUserManager: React.FC = () => {
                       {/* Role column */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider rounded-lg uppercase border",
-                            user.role === "owner" ? tokens.admin.roleOwner :
-                              user.role === "admin" ? tokens.admin.roleAdmin :
-                              cx(tokens.surface.subtle, tokens.border.strong, tokens.text.muted))}>
+                          <Badge
+                            tone={
+                              user.role === "owner"
+                                ? "danger"
+                                : user.role === "admin"
+                                ? "info"
+                                : "neutral"
+                            }
+                          >
                             {user.role}
-                          </span>
+                          </Badge>
                         </div>
                       </td>
 
                       {/* Suspend Status */}
                       <td className="px-6 py-4">
                         {user.is_banned ? (
-                          <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider rounded-lg flex items-center gap-1 inline-flex uppercase", tokens.admin.statusSuspended)}>
-                            <XCircle size={10} />
+                          <Badge tone="danger" icon={<XCircle size={10} />}>
                             {t("admin.status_suspended")}
-                          </span>
+                          </Badge>
                         ) : (
-                          <span className={cx("px-2 py-1 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-extrabold tracking-wider rounded-lg flex items-center gap-1 inline-flex uppercase", tokens.admin.statusActive)}>
-                            <CheckCircle size={10} />
+                          <Badge tone="success" icon={<CheckCircle size={10} />}>
                             {t("admin.status_active")}
-                          </span>
+                          </Badge>
                         )}
                       </td>
 

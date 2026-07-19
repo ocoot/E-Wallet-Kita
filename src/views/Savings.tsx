@@ -17,6 +17,7 @@ import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
 import {
   PiggyBank, Plus, Trash2, Edit2, ArrowDownCircle, ArrowUpCircle,
   Siren, Target, GraduationCap, Umbrella, TrendingUp, Archive, ArchiveRestore, Info
@@ -301,14 +302,14 @@ export const Savings: React.FC = () => {
                 {t("savings.page_subtitle")}
               </p>
             </div>
-             <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              className={cx(
-                "flex items-center gap-2 px-5 py-2.5 rounded-2xl text-white font-semibold text-sm transition-colors shadow-lg shrink-0 cursor-pointer",
-                tokens.savings.btnShadow,
-                tokens.button.accentEmerald
-              )}>
-              <Plus size={16} /> {t("savings.add_button")}
-            </button>
+            <Button
+              variant="success"
+              onClick={() => { audioFeedback.playClick(); openAddForm(); }}
+              icon={<Plus size={16} />}
+              className="shrink-0"
+            >
+              {t("savings.add_button")}
+            </Button>
           </div>
 
           <div className="grid grid-cols-3 gap-2">
@@ -419,8 +420,8 @@ export const Savings: React.FC = () => {
                   placeholder={t("savings.form_notes_placeholder")}
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeForm} className={cx("flex-1 py-3 rounded-2xl font-semibold text-sm transition-colors cursor-pointer", tokens.surface.subtle, tokens.hover.surface, tokens.text.label)}>{t("common.cancel")}</button>
-                  <button onClick={handleSave} disabled={isSaving} className={cx("flex-1 py-3 rounded-2xl text-white font-semibold text-sm transition-colors disabled:opacity-50 cursor-pointer", tokens.button.accentEmerald)}>{isSaving ? t("common.loading") : t("common.save")}</button>
+                  <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
+                  <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
                 </div>
               </div>
             </motion.div>
@@ -480,16 +481,16 @@ export const Savings: React.FC = () => {
                   onChange={e => setMoveNote(e.target.value)}
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeMoveModal} className={cx("flex-1 py-3 rounded-2xl font-semibold text-sm transition-colors cursor-pointer", tokens.surface.subtle, tokens.hover.surface, tokens.text.label)}>{t("common.cancel")}</button>
-                  <button onClick={executeMove} disabled={isMoving}
-                    className={cx(
-                      "flex-1 py-3 rounded-2xl text-white font-semibold text-sm transition-colors disabled:opacity-50 cursor-pointer shadow-lg",
-                       moveTarget.direction === "deposit"
-                        ? "bg-emerald-600 hover:bg-emerald-500 shadow-emerald-600/20"
-                        : cx(tokens.savings.btnShadow, tokens.button.accentEmerald)
-                    )}>
-                    {isMoving ? t("common.loading") : t(moveTarget.direction === "deposit" ? "savings.deposit_button" : "savings.withdraw_button")}
-                  </button>
+                  <Button variant="secondary" onClick={closeMoveModal} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
+                  <Button
+                    variant="success"
+                    onClick={executeMove}
+                    disabled={isMoving}
+                    isLoading={isMoving}
+                    className="flex-1 py-3 rounded-2xl font-semibold text-sm"
+                  >
+                    {t(moveTarget.direction === "deposit" ? "savings.deposit_button" : "savings.withdraw_button")}
+                  </Button>
                 </div>
               </div>
             </motion.div>

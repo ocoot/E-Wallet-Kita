@@ -18,6 +18,7 @@ import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
+import { Button } from "../components/ui/Button";
 import {
   Landmark, Plus, Trash2, CheckCircle2, Edit2, RotateCcw, PartyPopper
 } from "lucide-react";
@@ -206,14 +207,14 @@ export const Installments: React.FC = () => {
                 {t("installments.page_subtitle")}
               </p>
             </div>
-            <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              className={cx(
-                "flex items-center gap-2 px-5 py-2.5 rounded-2xl text-white font-semibold text-sm transition-colors shadow-lg shrink-0 cursor-pointer",
-                tokens.installments.btnShadow,
-                tokens.button.accentEmerald
-              )}>
-              <Plus size={16} /> {t("installments.add_button")}
-            </button>
+            <Button
+              variant="success"
+              onClick={() => { audioFeedback.playClick(); openAddForm(); }}
+              icon={<Plus size={16} />}
+              className="shrink-0"
+            >
+              {t("installments.add_button")}
+            </Button>
           </div>
 
           {/* Summary */}
@@ -445,8 +446,8 @@ export const Installments: React.FC = () => {
                   placeholder={t("installments.form_notes_placeholder")}
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeForm} className={cx("flex-1 py-3 rounded-2xl font-semibold text-sm transition-colors cursor-pointer", tokens.surface.subtle, tokens.hover.surface, tokens.text.label)}>{t("common.cancel")}</button>
-                  <button onClick={handleSave} disabled={isSaving} className={cx("flex-1 py-3 rounded-2xl text-white font-semibold text-sm transition-colors disabled:opacity-50 cursor-pointer", tokens.button.accentEmerald)}>{isSaving ? t("common.loading") : t("common.save")}</button>
+                  <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
+                  <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
                 </div>
               </div>
             </motion.div>

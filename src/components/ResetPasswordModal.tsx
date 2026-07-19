@@ -4,12 +4,11 @@ import { supabase } from "../lib/supabase";
 import { useToast } from "../contexts/ToastContext";
 import { audioFeedback } from "../lib/audio";
 import { Lock, Eye, EyeOff, Save, CheckCircle2, ShieldCheck, X } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
-import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { useDialogA11y } from "../hooks/useDialogA11y";
+import { motion } from "motion/react";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
+import { ModalShell } from "./ui/ModalShell";
 
 interface ResetPasswordModalProps {
   isOpen: boolean;
@@ -20,9 +19,6 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
   const { tokens, cx } = useThemeTokens();
   const { t } = useLanguage();
   const { showToast } = useToast();
-  useLockBodyScroll(isOpen);
-  const panelRef = React.useRef<HTMLDivElement>(null);
-  useDialogA11y(isOpen, panelRef, onClose);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -75,54 +71,36 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-      {/* Dark modern backdrop */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={() => {
-          audioFeedback.playClick();
-          onClose();
-        }}
-        className="absolute inset-0 bg-slate-950/80 backdrop-blur-md"
-      />
-
+    <ModalShell
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-md"
+      ariaLabel={t("auth.reset_password_title")}
+      backdropLocked={isLoading}
+      className="p-8 relative"
+    >
       {/* Decorative colored glow orbs */}
       <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Main card viewport */}
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95, y: 15 }}
-        animate={{ 
-          opacity: 1, 
-          scale: 1, 
-          y: 0,
-          x: shakeTrigger ? [0, -6, 6, -6, 6, 0] : 0
+      {/* Close Button */}
+      <button
+        onClick={() => {
+          audioFeedback.playClick();
+          onClose();
         }}
-        transition={{ 
-          x: { duration: 0.4, ease: "easeInOut" },
-          default: { duration: 0.3, ease: "easeOut" }
-        }}
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        tabIndex={-1}
-        className={cx("w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden border rounded-3xl p-8 shadow-2xl outline-none flex flex-col relative z-20", tokens.surface.card, tokens.border.accent, tokens.resetPasswordModal.modalShadow)}
+        aria-label="Tutup"
+        className={cx("absolute top-5 right-5 p-1.5 z-10", tokens.text.muted, tokens.resetPasswordModal.closeBtnHover)}
       >
-        {/* Close Button */}
-        <button
-          onClick={() => {
-            audioFeedback.playClick();
-            onClose();
-          }}
-          aria-label="Tutup"
-          className={cx("absolute top-5 right-5 p-1.5", tokens.text.muted, tokens.resetPasswordModal.closeBtnHover)}
-        >
-          <X size={16} />
-        </button>
+        <X size={16} />
+      </button>
 
+      {/* Content with shake animation */}
+      <motion.div
+        animate={{ x: shakeTrigger ? [0, -6, 6, -6, 6, 0] : 0 }}
+        transition={{ x: { duration: 0.4, ease: "easeInOut" } }}
+        className="relative z-10 flex flex-col"
+      >
         {/* Brand visual header */}
         <div className="flex flex-col items-center text-center mb-6">
           <div className={cx(tokens.resetPasswordModal.iconChipBg, tokens.icon.accent)}>
@@ -216,6 +194,6 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
           </Button>
         </form>
       </motion.div>
-    </div>
+    </ModalShell>
   );
 };

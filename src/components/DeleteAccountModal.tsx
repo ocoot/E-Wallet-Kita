@@ -1,12 +1,10 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { AlertTriangle, X } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
-import { useDialogA11y } from "../hooks/useDialogA11y";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { ModalShell } from "./ui/ModalShell";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -50,36 +48,15 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
     onCancel();
   };
 
-  useLockBodyScroll(isOpen);
-  const panelRef = React.useRef<HTMLDivElement>(null);
-  useDialogA11y(isOpen, panelRef, handleClose);
-
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={handleClose}
-            className="fixed inset-0 bg-black/70 backdrop-blur-sm"
-          />
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 15 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 15 }}
-            transition={{ type: "spring", duration: 0.3 }}
-            ref={panelRef}
-            role="dialog"
-            aria-modal="true"
-            tabIndex={-1}
-            className={cx(
-              "relative z-10 w-full max-w-md my-auto max-h-[85vh] overflow-y-auto overflow-x-hidden rounded-2xl border p-6 shadow-2xl outline-none",
-              tokens.modal.dangerBorder,
-              tokens.surface.card
-            )}
-          >
+    <ModalShell
+      isOpen={isOpen}
+      onClose={handleClose}
+      maxWidth="max-w-md"
+      backdropLocked={isDeleting}
+      ariaLabel={t("settings.privacy_delete_title")}
+      className="p-6"
+    >
             <button
               onClick={handleClose}
               disabled={isDeleting}
@@ -150,9 +127,6 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
                 {isDeleting ? t("common.loading") : t("settings.privacy_delete_confirm_button")}
               </Button>
             </div>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+        </ModalShell>
   );
 };
