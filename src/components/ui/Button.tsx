@@ -2,7 +2,7 @@ import React from "react";
 import { Loader2 } from "lucide-react";
 import { useThemeTokens } from "../../hooks/useThemeTokens";
 
-export type ButtonVariant = "primary" | "secondary" | "danger" | "danger-ghost" | "success" | "ghost";
+export type ButtonVariant = "primary" | "secondary" | "danger" | "danger-ghost" | "success" | "warning" | "ghost";
 export type ButtonSize = "sm" | "md" | "lg";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -58,6 +58,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       ),
       "danger-ghost": cx(tokens.buttonVariant.dangerGhost),
       success: cx(tokens.buttonVariant.success),
+      warning: cx(tokens.buttonVariant.warning),
       ghost: cx(tokens.buttonVariant.ghost),
     };
 

@@ -54,7 +54,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
   };
 
   return (
-    <Card id="recent-transactions-panel" padding="lg" border="subtle" elevation="lg" className="space-y-6">
+    <Card id="recent-transactions-panel" padding="lg" border="subtle" elevation="ambient" className="space-y-6">
       <div className={cx("flex items-center justify-between border-b pb-5", tokens.settings.sectionBorder)}>
         <div>
           <h3 className={cx("font-sans font-bold text-base tracking-tight", tokens.text.onSurface)}>

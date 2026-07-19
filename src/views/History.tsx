@@ -9,7 +9,7 @@ import { useToast } from "../contexts/ToastContext";
 import { Modal } from "../components/Modal";
 import { ExportFullModal } from "../components/ExportFullModal";
 import { ExportSummaryModal } from "../components/ExportSummaryModal";
-import { Trash2 } from "lucide-react";
+import { Trash2, Filter } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { exportSummaryPdf, exportFullPdf } from "../lib/pdf/exportPdf";
@@ -28,6 +28,7 @@ import { useWallets } from "../hooks/useWallets";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { ErrorState } from "../components/ErrorState";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { BottomSheet } from "../components/ui/BottomSheet";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -97,6 +98,7 @@ export const History: React.FC<HistoryProps> = ({
   const [isSummaryConfirmOpen, setIsSummaryConfirmOpen] = useState(false);
   const [isFullExportOpen, setIsFullExportOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
   const monthOptions = (() => {
     const list = [];
@@ -355,18 +357,31 @@ export const History: React.FC<HistoryProps> = ({
             </div>
           )}
 
-          <HistoryFilter
-            filterMonth={filterMonth}
-            setFilterMonth={setFilterMonth}
-            monthOptions={monthOptions}
-            search={search}
-            setSearch={setSearch}
-            pageSize={pageSize}
-            setPageSize={setPageSize}
-            filterCategory={filterCategory}
-            setFilterCategory={setFilterCategory}
-            categories={categories}
-          />
+          {/* Filter: inline di desktop, BottomSheet di mobile */}
+          <div className="hidden sm:block">
+            <HistoryFilter
+              filterMonth={filterMonth}
+              setFilterMonth={setFilterMonth}
+              monthOptions={monthOptions}
+              search={search}
+              setSearch={setSearch}
+              pageSize={pageSize}
+              setPageSize={setPageSize}
+              filterCategory={filterCategory}
+              setFilterCategory={setFilterCategory}
+              categories={categories}
+            />
+          </div>
+
+          <div className="sm:hidden">
+            <button
+              onClick={() => setIsFilterSheetOpen(true)}
+              className={cx("w-full flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold cursor-pointer transition-colors", tokens.surface.sunken, tokens.border.accent, tokens.text.onSurface)}
+            >
+              <Filter size={16} />
+              <span>{t("history.filter_title") ?? "Filter"}</span>
+            </button>
+          </div>
 
           {historyError ? (
             <ErrorState onRetry={loadTransactions} />
@@ -452,6 +467,26 @@ export const History: React.FC<HistoryProps> = ({
       </AnimatePresence>
 
       <PremiumModal isOpen={isPremiumOpen} onClose={() => setIsPremiumOpen(false)} onPremiumActivated={() => { refreshPremium(); }} />
+
+      {/* BottomSheet filter untuk mobile */}
+      <BottomSheet
+        isOpen={isFilterSheetOpen}
+        onClose={() => setIsFilterSheetOpen(false)}
+        title={t("history.filter_title") ?? "Filter"}
+      >
+        <HistoryFilter
+          filterMonth={filterMonth}
+          setFilterMonth={setFilterMonth}
+          monthOptions={monthOptions}
+          search={search}
+          setSearch={setSearch}
+          pageSize={pageSize}
+          setPageSize={setPageSize}
+          filterCategory={filterCategory}
+          setFilterCategory={setFilterCategory}
+          categories={categories}
+        />
+      </BottomSheet>
     </div>
   );
 };

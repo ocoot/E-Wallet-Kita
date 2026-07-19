@@ -39,7 +39,7 @@ export const DashboardBudgetSummary: React.FC = () => {
     <MotionCard
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      elevation="lg"
+      elevation="ambient"
       className="overflow-hidden relative"
     >
       <div className="flex items-center justify-between gap-3 mb-6">

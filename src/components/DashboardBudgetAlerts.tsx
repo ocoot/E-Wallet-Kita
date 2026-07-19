@@ -40,7 +40,7 @@ export const DashboardBudgetAlerts: React.FC = () => {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       border="subtle"
-      elevation="lg"
+      elevation="ambient"
     >
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="flex items-center gap-2.5">

@@ -228,6 +228,7 @@ export const themeTokens = {
     secondary: "bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold border border-slate-700 light_sakura:bg-white light_sakura:hover:bg-slate-50 light_sakura:text-slate-600 light_sakura:border-slate-200",
     dangerGhost: "bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold light_sakura:bg-red-50 light_sakura:hover:bg-red-100 light_sakura:text-red-500",
     success: "bg-emerald-600 hover:bg-emerald-500 text-white font-semibold shadow-lg shadow-emerald-600/20 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:shadow-rose-500/20",
+    warning: "bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold shadow-lg shadow-amber-500/20 light_sakura:bg-amber-500 light_sakura:hover:bg-amber-400 light_sakura:text-slate-950 light_sakura:shadow-amber-500/20",
     ghost: "bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold border border-slate-700 light_sakura:bg-white light_sakura:hover:bg-slate-50 light_sakura:text-slate-700 light_sakura:border-slate-200",
   },
 
@@ -915,9 +916,22 @@ export const themeTokens = {
    * `border.accent` (lihat komentar di Card.tsx: border="subtle" tetap
    * menampilkan border rose di light_sakura meski nyaris menyatu dengan
    * bg di dark_obsidian, ini bukan bug).
+   *
+   * Sesudahnya (sesi mockup native): `ambientBorder` dipakai saat elevation
+   * "ambient" aktif -- di dark ia memberi refractive 0.5px border via shadow
+   * (bukan border CSS), di light tidak ada border (hanya shadow).
    */
   card: {
     borderSubtle: "border-slate-900 light_sakura:border-rose-100",
+  },
+
+  /**
+   * Bayangan untuk kartu ambient (elevation="ambient" di Card.tsx).
+   * Dark: 0.5px refractive border (shadow tipis menyatu dgn bg).
+   * Light: shadow merah muda lembut + micro shadow hitam.
+   */
+  shadow: {
+    ambient: "shadow-[0_0_0_0.5px_rgba(255,255,255,0.06)] light_sakura:shadow-[0_2px_20px_rgba(240,150,170,0.08),0_1px_3px_rgba(0,0,0,0.03)]",
   },
   /**
    * Sesi 54: token per-file untuk `VoiceRecorder.tsx`. Genuinely 1x-pakai

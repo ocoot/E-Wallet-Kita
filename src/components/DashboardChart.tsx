@@ -76,7 +76,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
   };
 
   return (
-    <Card id="dashboard-trends-panel" padding="lg" border="subtle" elevation="lg" className="space-y-6">
+    <Card id="dashboard-trends-panel" padding="lg" border="subtle" elevation="ambient" className="space-y-6">
       {/* Chart Header & Tab Options */}
       <div className={cx("flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b pb-5", tokens.border.accent)}>
         <div>

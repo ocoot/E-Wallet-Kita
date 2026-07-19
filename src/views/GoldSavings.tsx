@@ -621,8 +621,8 @@ export const GoldSavings: React.FC = () => {
                   accent="amber"
                 />
                 <div className="flex gap-3 pt-1">
-                  <button onClick={closeForm} className={cx("flex-1 py-3 rounded-2xl font-semibold text-sm transition-colors cursor-pointer", tokens.gold.cancelBtn, tokens.text.label)}>{t("common.cancel")}</button>
-                  <button onClick={handleSave} disabled={isSaving} className="flex-1 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm transition-colors shadow-lg shadow-amber-500/20 disabled:opacity-50 cursor-pointer">{isSaving ? t("common.loading") : t("common.save")}</button>
+                  <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
+                  <Button variant="warning" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
                 </div>
               </div>
             </motion.div>

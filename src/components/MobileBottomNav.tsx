@@ -23,6 +23,7 @@ import { useDialogA11y } from "../hooks/useDialogA11y";
 import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { useNavItems, MOBILE_PRIMARY_NAV_IDS } from "../hooks/useNavItems";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { SafeArea } from "./ui/SafeArea";
 import { audioFeedback } from "../lib/audio";
 
 interface MobileBottomNavProps {
@@ -360,9 +361,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               </div>
 
               {/* Footer -- kontrol bahasa/tema/suara + keluar */}
-              <div className={cx("shrink-0 px-6 py-4 space-y-4 border-t", tokens.border.accent)}
-                style={{ paddingBottom: "calc(1rem + env(safe-area-inset-bottom))" }}
-              >
+              <SafeArea inset="bottom" basePadding={16} className={cx("shrink-0 px-6 py-4 space-y-4 border-t", tokens.border.accent)}>
                 <div className="grid grid-cols-3 gap-1.5">
                   <button
                     onClick={toggleLanguage}
@@ -414,7 +413,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   <LogOut size={16} />
                   <span>{t("nav.logout")}</span>
                 </button>
-              </div>
+              </SafeArea>
             </motion.div>
           </div>
         )}

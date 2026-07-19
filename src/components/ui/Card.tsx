@@ -2,7 +2,7 @@ import React from "react";
 import { useThemeTokens } from "../../hooks/useThemeTokens";
 
 export type CardPadding = "none" | "sm" | "md" | "lg";
-export type CardElevation = "flat" | "xs" | "sm" | "lg" | "xl";
+export type CardElevation = "flat" | "xs" | "sm" | "lg" | "xl" | "ambient";
 export type CardBorder = "default" | "subtle";
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -50,6 +50,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       sm: "shadow-sm",
       lg: "shadow-lg",
       xl: "shadow-xl",
+      ambient: cx(tokens.shadow.ambient),
     };
 
     // Catatan fidelitas: versi asli SELALU menambahkan light_sakura:border-rose-100
@@ -62,13 +63,16 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       subtle: tokens.card.borderSubtle,
     };
 
+    const isAmbient = elevation === "ambient";
+
     return (
       <div
         ref={ref}
         className={cx(
-          "rounded-3xl border",
+          "rounded-3xl",
+          isAmbient ? "" : "border",
           tokens.surface.card,
-          borderClasses[border],
+          isAmbient ? "" : borderClasses[border],
           tokens.text.onSurface,
           "transition-colors duration-300",
           paddingClasses[padding],

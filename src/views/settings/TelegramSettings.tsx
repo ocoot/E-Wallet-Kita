@@ -247,7 +247,7 @@ export const TelegramSettings: React.FC = () => {
               <div className="space-y-3.5">
                 {[1, 2, 3].map((step) => (
                   <div key={step} className="flex gap-3 items-start group">
-                    <div className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-indigo-400 shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300">
+                    <div className={cx("w-5 h-5 rounded-full flex items-center justify-center text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors duration-300", tokens.surface.sunken, tokens.border.default, tokens.text.accent)}>
                       {step}
                     </div>
                     <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-normal pt-0.5", tokens.text.mutedAlt)}>
