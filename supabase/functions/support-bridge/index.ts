@@ -201,12 +201,15 @@ serve(async (req) => {
       // Helper: upload Telegram photo to Supabase Storage
       const uploadPhoto = async (fileId: string): Promise<string | null> => {
         try {
-          const buffer = await downloadTelegramFile(token, fileId);
-          const ext = "jpg";
+          const { buffer, filePath } = await downloadTelegramFile(token, fileId);
+          const extMatch = filePath.match(/\.([a-zA-Z0-9]+)$/);
+          const rawExt = extMatch ? extMatch[1].toLowerCase() : "jpg";
+          const ext = rawExt === "jpeg" ? "jpg" : rawExt;
+          const contentType = getImageContentType(ext);
           const path = `telegram/${Date.now()}_${fileId.slice(0, 8)}.${ext}`;
           const { error: upErr } = await supabase.storage
             .from("chat-attachments")
-            .upload(path, buffer, { contentType: "image/jpeg", upsert: false });
+            .upload(path, buffer, { contentType, upsert: false });
           if (upErr) throw upErr;
           const { data: publicUrlData } = supabase.storage.from("chat-attachments").getPublicUrl(path);
           return `${publicUrlData.publicUrl}?v=${Date.now()}`;
@@ -358,20 +361,72 @@ async function sendTelegramPhoto(token: string, chatId: string | number, photoUr
   });
 }
 
-async function downloadTelegramFile(token: string, fileId: string): Promise<ArrayBuffer> {
+async function downloadTelegramFile(token: string, fileId: string): Promise<{ buffer: ArrayBuffer; filePath: string }> {
   const fileRes = await fetch(`https://api.telegram.org/bot${token}/getFile?file_id=${fileId}`);
   const fileJson = await fileRes.json();
   if (!fileJson.ok) throw new Error("Gagal mendapatkan file path dari Telegram");
   const filePath: string = fileJson.result.file_path;
-  const res = await fetch(`https://api.telegram.org/bot${token}/${filePath}`);
+  const res = await fetch(`https://api.telegram.org/file/bot${token}/${filePath}`);
   if (!res.ok) {
-    throw new Error(`Gagal download file dari Telegram (status ${res.status}): kemungkinan file_path sudah expired atau tidak valid.`);
+    throw new Error(`Gagal download file dari Telegram (status ${res.status}).`);
   }
-  const contentType = res.headers.get("content-type") || "";
-  if (!contentType.startsWith("image/")) {
-    throw new Error(`Respons file dari Telegram bukan gambar (content-type: ${contentType || "tidak diketahui"}).`);
+  const buffer = await res.arrayBuffer();
+
+  // Telegram's file server commonly responds with a generic
+  // "application/octet-stream" content-type for photo files, even though the
+  // downloaded bytes are a valid image. Relying on that header alone (as
+  // before) rejected legitimate photos. Instead, trust the file extension
+  // reported by getFile and, if that's inconclusive, sniff the file's magic
+  // bytes before giving up.
+  const extMatch = filePath.match(/\.([a-zA-Z0-9]+)$/);
+  const ext = extMatch ? extMatch[1].toLowerCase() : "";
+  const knownImageExts = new Set(["jpg", "jpeg", "png", "webp", "gif", "bmp"]);
+  const isImageByExt = knownImageExts.has(ext);
+  const isImageByMagic = looksLikeImageFile(buffer);
+
+  if (!isImageByExt && !isImageByMagic) {
+    const contentType = res.headers.get("content-type") || "tidak diketahui";
+    throw new Error(`Respons file dari Telegram bukan gambar (content-type: ${contentType}).`);
   }
-  return res.arrayBuffer();
+
+  return { buffer, filePath };
+}
+
+// Sniff the first bytes of a file to check for common image signatures.
+function looksLikeImageFile(buffer: ArrayBuffer): boolean {
+  const bytes = new Uint8Array(buffer.slice(0, 12));
+  // JPEG: FF D8 FF
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return true;
+  // PNG: 89 50 4E 47 0D 0A 1A 0A
+  if (bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) return true;
+  // GIF: "GIF87a" / "GIF89a"
+  if (bytes[0] === 0x47 && bytes[1] === 0x49 && bytes[2] === 0x46) return true;
+  // WEBP: "RIFF"....'WEBP'
+  if (
+    bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+    bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50
+  ) return true;
+  // BMP: "BM"
+  if (bytes[0] === 0x42 && bytes[1] === 0x4d) return true;
+  return false;
+}
+
+// Map a file extension to the appropriate image content-type for storage upload.
+function getImageContentType(ext: string): string {
+  switch (ext) {
+    case "png":
+      return "image/png";
+    case "webp":
+      return "image/webp";
+    case "gif":
+      return "image/gif";
+    case "bmp":
+      return "image/bmp";
+    case "jpg":
+    case "jpeg":
+    default:
+      return "image/jpeg";
+  }
 }
 
 async function getUserLabel(supabase: any, userId: string | null): Promise<string> {
