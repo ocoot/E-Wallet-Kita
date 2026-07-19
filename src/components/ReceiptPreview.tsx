@@ -314,11 +314,11 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                       <p className={cx("font-bold truncate", tokens.text.onSurface)}>
                         {item.name}
                       </p>
-                      <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.text.faint)}>
+                      <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-mono tabular-nums", tokens.text.faint)}>
                         {item.qty} pcs x {formatIDR(item.unit_price)}
                       </p>
                     </div>
-                    <span className={cx("font-semibold self-center", tokens.text.secondary)}>
+                    <span className={cx("font-semibold font-mono tabular-nums self-center", tokens.text.secondary)}>
                       {formatIDR(item.subtotal)}
                     </span>
                   </div>
@@ -331,7 +331,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
         {/* Paper tearing bottom effect deco */}
         <div className={cx("pt-2 border-t border-dashed flex justify-between font-bold", tokens.border.accent, tokens.text.onSurface)}>
           <span>{t("transaction.sum_label")}</span>
-          <span className="text-emerald-400">{formatIDR(amount)}</span>
+          <span className="text-emerald-400 font-mono tabular-nums">{formatIDR(amount)}</span>
         </div>
       </div>
 

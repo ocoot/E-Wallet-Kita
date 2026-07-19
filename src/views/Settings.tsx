@@ -46,7 +46,6 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { useNotificationPreferences, NotificationPreferenceKey } from "../hooks/useNotificationPreferences";
 import { SettingsMobileMenu } from "../components/settings/SettingsMobileMenu";
-import { CollapsingHeader } from "../components/ui/CollapsingHeader";
 
 interface SettingsProps {
   onUserPrefUpdated: (user: UserSession) => void;
@@ -524,11 +523,16 @@ export const Settings: React.FC<SettingsProps> = ({
   return (
     <div className="max-w-3xl mx-auto space-y-5 pb-24">
 
-      {/* Item 2.3 (P2): large-title header yang mengecil + menempel saat
-          discroll, khusus mobile -- lihat CollapsingHeader.tsx. Menggantikan
-          judul statis yang sebelumnya ada di dalam kartu pertama
-          SettingsMobileMenu (dihapus di sana supaya tidak duplikat). */}
-      <CollapsingHeader title={t("nav.settings")} description={t("settings.desc")} />
+      {/* Judul halaman khusus mobile (item 2.3/P2 sudah dicabut --
+          sebelumnya versi collapsing/animasi via CollapsingHeader.tsx). */}
+      <div className="md:hidden">
+        <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+          {t("nav.settings")}
+        </h1>
+        <p className={cx("font-sans text-xs mt-1", tokens.text.muted)}>
+          {t("settings.desc")}
+        </p>
+      </div>
 
       {/* ── Mobile-only redesign: menu list ala "Profile/Akun" ──────────
           Menggantikan grid form raksasa di atas KHUSUS untuk breakpoint

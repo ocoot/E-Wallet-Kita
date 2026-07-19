@@ -256,7 +256,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                 dipindah ke baris header di atas, jadi di sini cuma angka
                 besarnya saja. */}
             <div>
-              <p className={cx("font-sans font-black text-3xl tabular-nums leading-tight drop-shadow-sm", primaryTextClass)}>
+              <p className={cx("font-mono font-black text-3xl tabular-nums leading-tight drop-shadow-sm", primaryTextClass)}>
                 {balanceVisible ? formatIDR(selectedWallet.balance) : maskCurrency(formatIDR(selectedWallet.balance))}
               </p>
               {contactValue && (
@@ -292,7 +292,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   <p className={cx("text-[9.5px] uppercase font-bold tracking-wide truncate", mutedTextClass)}>
                     {t("dashboard.income")}
                   </p>
-                  <p className="text-xs font-bold text-emerald-400 tabular-nums truncate">
+                  <p className="font-mono text-xs font-bold text-emerald-400 tabular-nums truncate">
                     {balanceVisible ? formatIDR(income) : maskCurrency(formatIDR(income))}
                   </p>
                 </div>
@@ -310,7 +310,7 @@ export const DashboardWalletSelectorCard: React.FC<DashboardWalletSelectorCardPr
                   <p className={cx("text-[9.5px] uppercase font-bold tracking-wide truncate", mutedTextClass)}>
                     {t("dashboard.expense")}
                   </p>
-                  <p className="text-xs font-bold text-red-400 tabular-nums truncate">
+                  <p className="font-mono text-xs font-bold text-red-400 tabular-nums truncate">
                     {balanceVisible ? formatIDR(expense) : maskCurrency(formatIDR(expense))}
                   </p>
                 </div>

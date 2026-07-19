@@ -120,7 +120,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
             "rounded-2xl border px-4 py-3 mb-4 text-center",
             isExpense ? tokens.newTransaction.amountInputExpense : tokens.newTransaction.amountInputIncome
           )}>
-            <span className={`font-sans font-black text-2xl tabular-nums ${isExpense ? "text-red-400" : "text-emerald-400"}`}>
+            <span className={`font-mono font-black text-2xl tabular-nums ${isExpense ? "text-red-400" : "text-emerald-400"}`}>
               {isExpense ? "−" : "+"}{formatIDR(draft.amount)}
             </span>
           </div>

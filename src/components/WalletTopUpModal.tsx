@@ -158,7 +158,7 @@ export const WalletTopUpModal: React.FC<WalletTopUpModalProps> = ({
               </div>
 
               <div className={cx("rounded-2xl border px-4 py-3 mb-4 text-center", tokens.newTransaction.amountInputIncome)}>
-                <span className="font-sans font-black text-2xl tabular-nums text-emerald-400">
+                <span className="font-mono font-black text-2xl tabular-nums text-emerald-400">
                   +{formatIDR(numericAmount)}
                 </span>
               </div>

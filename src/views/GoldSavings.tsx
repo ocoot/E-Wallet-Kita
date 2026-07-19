@@ -331,7 +331,7 @@ export const GoldSavings: React.FC = () => {
                   sempit -- itulah penyebab teks yang tadinya bertabrakan/
                   saling tumpang tindih. */}
               <div className="relative z-[1] flex flex-col gap-1">
-                <p className="text-[10px] font-bold text-amber-950 leading-tight tabular-nums tracking-tight break-words">
+                <p className="text-[10px] font-bold font-mono text-amber-950 leading-tight tabular-nums tracking-tight break-words">
                   {marketValue != null ? formatIDR(marketValue) : t("gold.price_unavailable_short")}
                 </p>
                 {isEstimated && <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-amber-900/60 leading-snug">{t("gold.est_from_sell_price_note")}</p>}
@@ -339,7 +339,7 @@ export const GoldSavings: React.FC = () => {
                   <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-amber-900/60 leading-snug">{t("gold.no_cost_basis_note")}</p>
                 )}
                 {gainLoss != null && p.grams_owned > 0 && p.cash_locked_amount > 0 && (
-                  <span className={`relative self-start inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[clamp(0.5344rem,2.47vw,0.5938rem)] font-bold ${gainLoss >= 0 ? "bg-black/15 text-emerald-950" : "bg-black/25 text-red-950"}`}>
+                  <span className={`relative self-start inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[clamp(0.5344rem,2.47vw,0.5938rem)] font-bold font-mono tabular-nums ${gainLoss >= 0 ? "bg-black/15 text-emerald-950" : "bg-black/25 text-red-950"}`}>
                     {gainLoss >= 0 ? "▲" : "▼"} {formatIDR(Math.abs(gainLoss))}
                     <span onClick={(e) => e.stopPropagation()} className="text-black/50">
                       <InfoTooltip text={t("gold.unrealized_tooltip")} align="left" />
@@ -460,7 +460,7 @@ export const GoldSavings: React.FC = () => {
             </div>
             <div className={cx("rounded-2xl px-3 py-3", tokens.gold.statValBgBorder)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_market_value")}</span>
-              <p className={cx("font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.accentStrong)}>{formatIDR(summary.total_market_value)}</p>
+              <p className={cx("font-bold font-mono text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.accentStrong)}>{formatIDR(summary.total_market_value)}</p>
               {/* Footnote "estimasi" -- nilai ini dihitung dari harga acuan
                   (sumber + margin app), bukan harga jual resmi yang bisa
                   langsung dieksekusi ke toko. Lihat sim_disclaimer_* untuk
@@ -469,7 +469,7 @@ export const GoldSavings: React.FC = () => {
             </div>
             <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.subtle, tokens.border.strong)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_cash_locked")}</span>
-              <p className={cx("font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.secondary)}>{formatIDR(summary.total_cash_locked)}</p>
+              <p className={cx("font-bold font-mono text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.secondary)}>{formatIDR(summary.total_cash_locked)}</p>
               {/* Sejak migration 20260814000000_decouple_gold_simulation_from_balance.sql,
                   angka ini TIDAK LAGI berarti "uang yang terpotong dari
                   Saldo Tersedia" -- murni basis hitung Untung/Rugi. Footnote
@@ -480,7 +480,7 @@ export const GoldSavings: React.FC = () => {
             <div className={cx("rounded-2xl border px-3 py-3", summary.unrealized_gain_loss >= 0 ? tokens.gold.gainBgBorder : tokens.gold.lossBgBorder)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_gain_loss")}</span>
               <p className={cx(
-                "font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight",
+                "font-bold font-mono text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight",
                 summary.unrealized_gain_loss >= 0 ? tokens.text.success : tokens.text.danger
               )}>
                 {summary.unrealized_gain_loss >= 0 ? "+" : ""}{formatIDR(summary.unrealized_gain_loss)}
@@ -525,11 +525,11 @@ export const GoldSavings: React.FC = () => {
                         )}
                       >
                         <p className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap">{t(`gold.brand_${pr.brand}`)}</p>
-                        <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold flex items-center gap-1 whitespace-nowrap", tokens.text.warning)}>
+                        <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold font-mono tabular-nums flex items-center gap-1 whitespace-nowrap", tokens.text.warning)}>
                           {formatIDR(pr.sell_price_per_gram)}
                           {renderPriceDelta(pr.sell_price_per_gram, pr.prev_sell_price_per_gram, t)}
                         </p>
-                        <p className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-500 flex items-center gap-1 whitespace-nowrap">
+                        <p className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-500 font-mono tabular-nums flex items-center gap-1 whitespace-nowrap">
                           {t("gold.buyback_short")} {formatIDR(pr.buyback_price_per_gram)}
                           {renderPriceDelta(pr.buyback_price_per_gram, pr.prev_buyback_price_per_gram, t)}
                           {isStaleVsOthers && <AlertTriangle size={8} className="shrink-0 text-amber-400 ml-0.5" />}

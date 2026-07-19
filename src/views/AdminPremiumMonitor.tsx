@@ -286,7 +286,7 @@ export const AdminPremiumMonitor: React.FC = () => {
           ].map((m, i) => (
             <div key={i} className={cx("p-6 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
               <p className={cx("text-sm font-medium", tokens.text.muted)}>{m.label}</p>
-              <h3 className={`font-bold text-2xl mt-2 ${m.color}`}>
+              <h3 className={`font-bold font-mono tabular-nums text-2xl mt-2 ${m.color}`}>
                 {m.val}
               </h3>
             </div>
@@ -348,9 +348,9 @@ export const AdminPremiumMonitor: React.FC = () => {
                         <span className={cx("font-mono text-xs", tokens.text.muted)}>{tx.order_id}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <p className={cx("font-semibold", tokens.text.primary)}>{formatIDR(tx.total_amount)}</p>
+                        <p className={cx("font-semibold font-mono tabular-nums", tokens.text.primary)}>{formatIDR(tx.total_amount)}</p>
                         {tx.total_amount !== tx.amount && (
-                          <p className={cx("text-xs", tokens.text.muted)}>
+                          <p className={cx("text-xs font-mono tabular-nums", tokens.text.muted)}>
                             base: {formatIDR(tx.amount)}
                           </p>
                         )}

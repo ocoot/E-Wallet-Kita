@@ -343,9 +343,9 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
               {todaySummary && (
                 <div className={cx("shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl", tokens.newTransaction.quickAddChipBorder)}>
                   <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-wider">Hari ini</span>
-                  <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-red-400">−{formatIDR(todaySummary.expense)}</span>
+                  <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold font-mono tabular-nums text-red-400">−{formatIDR(todaySummary.expense)}</span>
                   {todaySummary.income > 0 && (
-                    <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold text-emerald-400">+{formatIDR(todaySummary.income)}</span>
+                    <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold font-mono tabular-nums text-emerald-400">+{formatIDR(todaySummary.income)}</span>
                   )}
                 </div>
               )}
@@ -428,7 +428,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                           initial={{ opacity: 0, y: -6 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 6 }}
-                          className={cx("font-sans font-black text-3xl tracking-tight tabular-nums leading-none", isExpense ? tokens.newTransaction.amountDisplayExpense : tokens.newTransaction.amountDisplayIncome)}
+                          className={cx("font-mono font-black text-3xl tracking-tight tabular-nums leading-none", isExpense ? tokens.newTransaction.amountDisplayExpense : tokens.newTransaction.amountDisplayIncome)}
                         >
                           {isExpense ? "−" : "+"}{amountDisplay}
                         </motion.div>

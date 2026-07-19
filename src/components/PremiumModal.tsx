@@ -236,17 +236,17 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               <div className={cx("mt-4 p-4 rounded-xl text-xs space-y-1", tokens.premiumModal.infoBoxBg)}>
                 <p className={cx("flex justify-between", tokens.text.label)}>
                   <span>{t("voucher.price_before")}</span> 
-                  <span className={cx("font-semibold", tokens.text.onSurface)}>Rp {pricing.basePrice.toLocaleString("id-ID")}</span>
+                  <span className={cx("font-semibold font-mono tabular-nums", tokens.text.onSurface)}>Rp {pricing.basePrice.toLocaleString("id-ID")}</span>
                 </p>
                 {pricing.discountAmount > 0 && (
                   <p className={cx("flex justify-between", tokens.text.success)}>
                     <span>{t("voucher.discount", { percent: pricing.discountPercent })}</span> 
-                    <span className="font-semibold">-Rp {pricing.discountAmount.toLocaleString("id-ID")}</span>
+                    <span className="font-semibold font-mono tabular-nums">-Rp {pricing.discountAmount.toLocaleString("id-ID")}</span>
                   </p>
                 )}
                 <p className={cx("flex justify-between font-bold text-base mt-2", tokens.text.onSurface)}>
                   <span>{t("voucher.total")}</span> 
-                  <span>Rp {pricing.finalPrice.toLocaleString("id-ID")}</span>
+                  <span className="font-mono tabular-nums">Rp {pricing.finalPrice.toLocaleString("id-ID")}</span>
                 </p>
               </div>
 
@@ -276,7 +276,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
               <div className={cx("bg-white rounded-2xl p-4 mt-4 inline-block", tokens.premiumModal.qrWrapperBorder)}>
                 <img src={tx.qris_url} alt="QRIS" className="w-48 h-48" />
               </div>
-              <p className={cx("text-2xl font-bold mt-4", tokens.text.onSurface)}>Rp {tx.total_amount.toLocaleString("id-ID")}</p>
+              <p className={cx("text-2xl font-bold font-mono tabular-nums mt-4", tokens.text.onSurface)}>Rp {tx.total_amount.toLocaleString("id-ID")}</p>
               <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] mt-1", tokens.text.warning)}>{t("premium.unique_code_note")}</p>
               <div className={cx("flex items-center justify-center gap-2 mt-3 text-sm", tokens.text.muted)}>
                 <Clock size={14} />

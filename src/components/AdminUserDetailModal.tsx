@@ -197,7 +197,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
               <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase tracking-wider mb-1", tokens.text.muted)}>
                 {t("admin.net_balance_lifetime")}
               </p>
-              <p className={cx("font-black text-xl", tokens.text.accent)}>
+              <p className={cx("font-black font-mono tabular-nums text-xl", tokens.text.accent)}>
                 {formatIDR((detail.totalIncome ?? 0) - (detail.totalExpense ?? 0))}
               </p>
             </div>
@@ -230,7 +230,7 @@ const StatCard: React.FC<{ icon: React.ReactNode; label: string; value: string; 
   return (
   <div className={cx("rounded-xl border p-3 text-center", tokens.surface.card, tokens.border.accent)}>
     <div className="flex justify-center mb-1">{icon}</div>
-    <p className={`font-black text-xs ${color} leading-tight`}>{value}</p>
+    <p className={`font-black font-mono tabular-nums text-xs ${color} leading-tight`}>{value}</p>
     <p className={cx("text-[clamp(0.5062rem,2.34vw,0.5625rem)] mt-0.5", tokens.text.faint)}>{label}</p>
   </div>
   );

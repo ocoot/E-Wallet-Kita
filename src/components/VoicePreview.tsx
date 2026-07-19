@@ -231,7 +231,7 @@ export const VoicePreview: React.FC<VoicePreviewProps> = ({
                   tokens.border.accent
                 )}
               />
-              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] opacity-50 font-mono">{formatIDR(amount)}</p>
+              <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] opacity-50 font-mono tabular-nums">{formatIDR(amount)}</p>
             </div>
             <div className="space-y-1">
               <label className="text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest font-bold opacity-50 block">

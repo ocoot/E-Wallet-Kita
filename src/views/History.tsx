@@ -29,7 +29,6 @@ import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { ErrorState } from "../components/ErrorState";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { BottomSheet } from "../components/ui/BottomSheet";
-import { CollapsingHeader } from "../components/ui/CollapsingHeader";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -265,9 +264,16 @@ export const History: React.FC<HistoryProps> = ({
 
   return (
     <div className="space-y-5">
-      {/* Item 2.3 (P2): large-title header yang mengecil + menempel saat
-          discroll, khusus mobile -- lihat CollapsingHeader.tsx. */}
-      <CollapsingHeader title={t("history.title")} description={t("history.desc")} />
+      {/* Judul halaman khusus mobile (item 2.3/P2 sudah dicabut --
+          sebelumnya versi collapsing/animasi via CollapsingHeader.tsx). */}
+      <div className="md:hidden">
+        <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+          {t("history.title")}
+        </h1>
+        <p className={cx("font-sans text-xs mt-1", tokens.text.muted)}>
+          {t("history.desc")}
+        </p>
+      </div>
 
       {/* ── Header card ─────────────────────────────────────────────── */}
       <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
@@ -294,7 +300,7 @@ export const History: React.FC<HistoryProps> = ({
                     {t("dashboard.expense")}
                   </span>
                 </div>
-                <p className={cx("font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.danger)}>
+                <p className={cx("font-bold font-mono text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.danger)}>
                   −{formatIDR(stats.expense)}
                 </p>
               </div>
@@ -304,7 +310,7 @@ export const History: React.FC<HistoryProps> = ({
                     {t("dashboard.income")}
                   </span>
                 </div>
-                <p className={cx("font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.success)}>
+                <p className={cx("font-bold font-mono text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.success)}>
                   +{formatIDR(stats.income)}
                 </p>
               </div>
@@ -318,7 +324,7 @@ export const History: React.FC<HistoryProps> = ({
                     {t("dashboard.balance")}
                   </span>
                 </div>
-                <p className={`font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight ${
+                <p className={`font-bold font-mono text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight ${
                   stats.net >= 0 ? tokens.text.accentStrong : tokens.text.warningOrange
                 }`}>
                   {stats.net >= 0 ? "+" : ""}{formatIDR(stats.net)}

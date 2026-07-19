@@ -309,7 +309,7 @@ export const BillReminders: React.FC = () => {
                                   <p className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>{r.name}</p>
                                   <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">{getCategoryLabel(r.category_key)} · {recurrenceLabel(r.recurrence_type)} · {dueDateLabel(r)}</p>
                                 </div>
-                                <span className={cx("font-mono font-bold text-sm shrink-0", tokens.text.primary)}>{formatIDR(r.amount)}</span>
+                                <span className={cx("font-mono tabular-nums font-bold text-sm shrink-0", tokens.text.primary)}>{formatIDR(r.amount)}</span>
                               </div>
 
                               {/* Status + days left */}

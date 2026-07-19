@@ -100,10 +100,9 @@ export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
 
   return (
     <div className="md:hidden space-y-5">
-      {/* Kartu judul statis sebelumnya ada di sini, sekarang digantikan
-          CollapsingHeader (item 2.3, P2) yang dipasang langsung di
-          Settings.tsx supaya efek collapse-nya terhitung dari scroll
-          paling atas halaman, bukan dari dalam menu ini saja. */}
+      {/* Kartu judul statis sengaja tidak ditaruh di sini -- judul halaman
+          "Pengaturan" dirender di Settings.tsx (lihat <h1> di atas
+          <SettingsMobileMenu>), supaya tidak duplikat. */}
 
       {/* Profile summary card */}
       <div className={cx("flex items-center gap-3.5 p-4 rounded-2xl border shadow-sm", tokens.border.subtleRose, tokens.surface.card)}>

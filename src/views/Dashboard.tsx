@@ -23,7 +23,6 @@ import { DashboardWalletCarousel } from "../components/DashboardWalletCarousel";
 import { DashboardWalletSelectorCard } from "../components/DashboardWalletSelectorCard";
 import { useCategories } from "../hooks/useCategories";
 import { Button } from "../components/ui/Button";
-import { CollapsingHeader } from "../components/ui/CollapsingHeader";
 
 interface DashboardProps {
   transactionsUpdatedTrigger: number;
@@ -236,9 +235,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="space-y-6 pb-24 relative">
-      {/* Item 2.3 (P2): large-title header yang mengecil + menempel saat
-          discroll, khusus mobile -- lihat CollapsingHeader.tsx. */}
-      <CollapsingHeader title={t("nav.dashboard")} />
+      {/* Judul halaman khusus mobile (item 2.3/P2 sudah dicabut --
+          sebelumnya versi collapsing/animasi via CollapsingHeader.tsx). */}
+      <h1 className={cx("md:hidden font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+        {t("nav.dashboard")}
+      </h1>
 
       {/* 1 + 1b. Welcome/weather card ("dashboard dinamis") DAN kartu Pos
           Dompet selector digabung jadi SATU strip yang bisa digeser (swipe)

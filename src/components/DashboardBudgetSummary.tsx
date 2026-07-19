@@ -80,7 +80,7 @@ export const DashboardBudgetSummary: React.FC = () => {
                   <span className={`font-bold tabular-nums ${isDanger ? 'text-red-400' : isWarning ? 'text-amber-400' : 'text-emerald-400'}`}>
                     {Math.round(b.percent)}%
                   </span>
-                  <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.text.faint)}>{formatIDR(b.spent)} / {formatIDR(b.monthly_limit)}</span>
+                  <span className={cx("font-mono tabular-nums text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.text.faint)}>{formatIDR(b.spent)} / {formatIDR(b.monthly_limit)}</span>
                 </div>
               </div>
               <div className={cx("h-1.5 w-full rounded-full overflow-hidden", tokens.surface.sunken)}>

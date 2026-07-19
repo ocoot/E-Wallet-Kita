@@ -482,7 +482,7 @@ export const Onboarding: React.FC = () => {
                             </div>
                             <span
                               className={cx(
-                                "text-right font-semibold font-mono",
+                                "text-right font-semibold font-mono tabular-nums",
                                 tx.type === "income" ? tokens.text.success : tokens.text.danger
                               )}
                             >
@@ -548,7 +548,7 @@ export const Onboarding: React.FC = () => {
                         </div>
                         <span className={cx("text-sm font-semibold", tokens.text.onSurface)}>{w.label}</span>
                       </div>
-                      <span className={cx("text-sm font-mono", tokens.text.label)}>{w.amount}</span>
+                      <span className={cx("text-sm font-mono tabular-nums", tokens.text.label)}>{w.amount}</span>
                     </div>
                   ))}
                 </div>
@@ -603,7 +603,7 @@ export const Onboarding: React.FC = () => {
                           className="h-full bg-gradient-to-r from-orange-500 to-rose-500" 
                         />
                       </div>
-                      <div className="flex justify-between items-center mt-2 text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500">
+                      <div className="flex justify-between items-center mt-2 text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 font-mono tabular-nums">
                         <span>Rp850.000</span>
                         <span>Limit: Rp1.000.000</span>
                       </div>
@@ -665,7 +665,7 @@ export const Onboarding: React.FC = () => {
                         className={cx("h-full", tokens.onboarding.savingsProgressGlow)}
                       />
                     </div>
-                    <div className="flex justify-between items-center mt-2 text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500">
+                    <div className="flex justify-between items-center mt-2 text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 font-mono tabular-nums">
                       <span>Rp3.500.000</span>
                       <span>{t("onboarding.savings_mock_target")}: Rp10.000.000</span>
                     </div>
@@ -712,9 +712,9 @@ export const Onboarding: React.FC = () => {
                     <div className="flex items-center justify-between">
                       <div>
                         <p className={cx("text-sm font-bold", tokens.text.onSurface)}>2.5 gram Antam</p>
-                        <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-0.5">{t("gold.stat_market_value")}: Rp3.250.000</p>
+                        <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 mt-0.5 font-mono tabular-nums">{t("gold.stat_market_value")}: Rp3.250.000</p>
                       </div>
-                      <span className={cx("px-2.5 py-1 rounded-lg text-xs font-bold", tokens.onboarding.goldBadgeBg, tokens.text.success)}>
+                      <span className={cx("px-2.5 py-1 rounded-lg text-xs font-bold font-mono tabular-nums", tokens.onboarding.goldBadgeBg, tokens.text.success)}>
                         +Rp150.000
                       </span>
                     </div>
@@ -829,7 +829,7 @@ export const Onboarding: React.FC = () => {
                     <div className="flex items-end justify-between">
                       <div>
                         <p className="text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-500 uppercase tracking-wider">{t("bill_reminders.amount_label")}</p>
-                        <p className={cx("text-sm font-mono font-bold", tokens.text.onSurface)}>Rp350.000</p>
+                        <p className={cx("text-sm font-mono tabular-nums font-bold", tokens.text.onSurface)}>Rp350.000</p>
                       </div>
                       <Button 
                         type="button"

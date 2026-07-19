@@ -64,7 +64,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
               return (
                 <div key={p.name} className="flex items-center justify-between gap-6">
                   <span className={tokens.text.muted}>{p.name}:</span>
-                  <span className={`font-bold ${colorCls}`}>{formatIDR(p.value)}</span>
+                  <span className={`font-bold tabular-nums ${colorCls}`}>{formatIDR(p.value)}</span>
                 </div>
               );
             })}

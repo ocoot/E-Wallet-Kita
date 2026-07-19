@@ -230,7 +230,7 @@ export const Installments: React.FC = () => {
               </div>
               <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
                 <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_monthly_commitment")}</span>
-                <p className={cx("font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.onSurface)}>{formatIDR(totalMonthlyCommitment)}</p>
+                <p className={cx("font-bold font-mono text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.onSurface)}>{formatIDR(totalMonthlyCommitment)}</p>
               </div>
             </div>
           )}
@@ -268,7 +268,7 @@ export const Installments: React.FC = () => {
                           <span>{i.progressPercent}%</span>
                         </div>
                         <p className="font-sans font-bold text-base mt-3 truncate">{i.name}</p>
-                        <p className="text-xs opacity-80 mt-0.5">{formatIDR(i.monthly_amount)}/bulan</p>
+                        <p className="text-xs font-mono tabular-nums opacity-80 mt-0.5">{formatIDR(i.monthly_amount)}/bulan</p>
                         <div className="h-1.5 w-full rounded-full bg-white/25 overflow-hidden mt-4">
                           <div className="h-full rounded-full bg-white" style={{ width: `${i.progressPercent}%` }} />
                         </div>
@@ -317,12 +317,12 @@ export const Installments: React.FC = () => {
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
                         <span className="text-slate-500">{t("installments.monthly_amount_label")}</span>
-                        <span className={cx("font-semibold", tokens.text.onSurface)}>{formatIDR(i.monthly_amount)}</span>
+                        <span className={cx("font-semibold font-mono tabular-nums", tokens.text.onSurface)}>{formatIDR(i.monthly_amount)}</span>
                       </div>
                       {i.principal_amount != null && (
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-slate-500">{t("installments.principal_label")}</span>
-                          <span className={cx("font-semibold", tokens.text.onSurface)}>{formatIDR(i.principal_amount)}</span>
+                          <span className={cx("font-semibold font-mono tabular-nums", tokens.text.onSurface)}>{formatIDR(i.principal_amount)}</span>
                         </div>
                       )}
                       {!i.is_completed && (

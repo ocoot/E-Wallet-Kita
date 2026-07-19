@@ -251,9 +251,9 @@ export const Savings: React.FC = () => {
           </div>
 
           {p.target_amount != null ? (
-            <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold", tokens.text.label)}>{formatIDR(p.current_amount)} <span className="text-slate-500 font-normal">/ {formatIDR(p.target_amount)}</span></p>
+            <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold font-mono tabular-nums", tokens.text.label)}>{formatIDR(p.current_amount)} <span className="text-slate-500 font-normal">/ {formatIDR(p.target_amount)}</span></p>
           ) : (
-            <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold", tokens.text.onSurface)}>{formatIDR(p.current_amount)}</p>
+            <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold font-mono tabular-nums", tokens.text.onSurface)}>{formatIDR(p.current_amount)}</p>
           )}
 
           {p.notes && <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] text-slate-500 italic truncate">{p.notes}</p>}
@@ -315,11 +315,11 @@ export const Savings: React.FC = () => {
           <div className="grid grid-cols-3 gap-2">
             <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_total_saved")}</span>
-              <p className={cx("font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.success)}>{formatIDR(summary.total_saved)}</p>
+              <p className={cx("font-bold font-mono text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.success)}>{formatIDR(summary.total_saved)}</p>
             </div>
             <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_available_balance")}</span>
-              <p className={cx("font-bold text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.accentStrong)}>{availableBalance != null ? formatIDR(availableBalance) : "-"}</p>
+              <p className={cx("font-bold font-mono text-[11px] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.accentStrong)}>{availableBalance != null ? formatIDR(availableBalance) : "-"}</p>
             </div>
             <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_pocket_count")}</span>
