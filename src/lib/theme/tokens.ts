@@ -925,6 +925,20 @@ export const themeTokens = {
     avatarFallback: "bg-slate-800 text-emerald-300 light_sakura:bg-rose-100 light_sakura:text-rose-600",
     avatarRing: "ring-1 ring-white/10 light_sakura:ring-rose-200/60",
     iconButton: "flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors light_sakura:bg-rose-50 light_sakura:border-rose-100/60 light_sakura:hover:bg-rose-100",
+    /**
+     * Sesi 55: bar kaca untuk topbar sticky full-bleed. Sebelumnya topbar
+     * ini transparan penuh & duduk langsung di atas `surface.canvas` polos
+     * -- di mobile ini terlihat seperti strip kosong/aneh sebelum kartu
+     * "Saldo Anda" muncul, bukan seperti chrome navigasi. Sekarang dibuat
+     * jadi permukaan kaca sendiri (blur + saturate, SAMA persis dengan
+     * pola `mobileBottomNav.navContainer`, cuma tanpa `rounded-full` &
+     * cuma border-b, bukan border 4 sisi -- krn ini bar penuh nempel ke
+     * tepi atas layar, bukan pill mengambang) supaya kebaca sebagai lapisan
+     * navigasi tersendiri yang beda dari canvas maupun dari card konten
+     * di bawahnya, tanpa perlu dibungkus <Card> (yang akan bikin dua kotak
+     * bertumpuk dgn kartu "Saldo Anda" tepat di bawahnya).
+     */
+    stickyBar: "bg-slate-950/70 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/10 light_sakura:bg-rose-50/85 light_sakura:backdrop-saturate-100 light_sakura:border-rose-100/60",
   },
   /**
    * Sesi 54: token untuk `ui/Card.tsx`. `borderSubtle` genuinely 1x-pakai
