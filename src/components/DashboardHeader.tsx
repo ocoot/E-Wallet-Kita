@@ -145,27 +145,12 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     };
   };
 
-  // Dot indikator status untuk sub-greeting (pengganti visual dari paragraf
-  // italic panjang) -- warnanya mengikuti tingkat urgensi anggaran, selaras
-  // dengan token badge yang sama dipakai widget budget lain di app.
-  const subGreetingDotClass: Record<ReturnType<typeof getDynamicSubGreeting>["type"], string> = {
-    budget_danger: "bg-red-400",
-    budget_warning: "bg-amber-400",
-    budget_ok: "bg-emerald-400",
-    empty: "bg-slate-500 light_sakura:bg-slate-300",
-    loading: "bg-slate-500 light_sakura:bg-slate-300 animate-pulse",
-  };
-
-  const avatarInitial = currentUser.display_name?.charAt(0)?.toUpperCase() || "?";
-  const subGreeting = getDynamicSubGreeting();
-
   return (
     <Card
       id="dashboard-welcome-banner"
       border="subtle"
       elevation="sm"
-      padding="sm"
-      className="relative flex flex-col gap-3"
+      className="relative flex flex-col md:flex-row md:items-center justify-between gap-4"
     >
       {weatherTheme && effectiveWeather && (
         <DashboardWeatherLayer
@@ -183,23 +168,22 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         <EventOverlay type={eventOverlay} />
       )}
 
-      {/* Pola "large title" native: satu baris status ringkas (cuaca+tanggal
-          digabung, bukan 2 badge terpisah) di atas judul besar satu baris --
-          menggantikan susunan lama (badge tanggal + badge cuaca berjajar,
-          lalu judul, lalu paragraf italic panjang) yang terasa seperti
-          caption artikel web, bukan status singkat gaya OS native. */}
-      <div className="relative z-10 flex items-start justify-between gap-3">
+      <div className="relative z-10 flex items-center gap-4">
         {/* Logo brand PNG sudah dipindah khusus ke MobileTopBar/Sidebar supaya
             tidak duplikat dengan greeting card ini (sebelumnya logo yang sama
             tampil dua kali sekaligus di layar: kecil di top bar + besar di
             sini). Greeting card sekarang fokus murni ke sapaan personal. */}
         <motion.div
-          className="min-w-0 flex-1"
           initial={{ opacity: 0, x: -10 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
         >
-          <div className="flex items-center gap-1.5 mb-1.5 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+            <div className={cx(tokens.dashboardHeader.weatherBadge, tokens.text.accent)}>
+              <Calendar size={12} className="shrink-0" />
+              <span>{formattedDate}</span>
+            </div>
+
             {weatherLoading && !debugOverride && (
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium text-slate-500 shrink-0 whitespace-nowrap animate-pulse">
                 <span>{t("dashboard.weather_loading")}</span>
@@ -207,7 +191,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             )}
 
             {effectiveWeather && weatherTheme && (
-              <div className={cx(tokens.dashboardHeader.weatherBadge, tokens.text.accent, "shrink-0")}>
+              <div className={cx(tokens.dashboardHeader.weatherBadge, tokens.text.accent)}>
                 <weatherTheme.icon size={12} className={`shrink-0 ${weatherTheme.accentClass}`} />
                 <span>{locale === "id" ? weatherTheme.labelId : weatherTheme.labelEn}</span>
                 {!debugOverride && weather && (
@@ -222,39 +206,19 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               </div>
             )}
 
-            {/* Tanggal digabung jadi satu baris yang sama dengan badge cuaca
-                (dipisah garis vertikal tipis), bukan badge terpisah di
-                sampingnya seperti sebelumnya. */}
-            <span className="w-px h-3 bg-white/10 shrink-0" aria-hidden="true" />
-            <div className={cx(tokens.dashboardHeader.weatherBadge, tokens.text.accent, "shrink-0")}>
-              <Calendar size={12} className="shrink-0" />
-              <span className="whitespace-nowrap">{formattedDate}</span>
-            </div>
-
             <WeatherDebugToggle value={debugOverride} onChange={setDebugOverride} />
           </div>
-
-          {/* Large title -- satu baris, besar, tegas, meniru pola title
-              iOS/Android modern (bukan lagi text-2xl font-bold biasa). */}
-          <h1 className={cx("font-sans font-black text-[28px] sm:text-3xl leading-none tracking-tight truncate", tokens.text.primary)}>
+          <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
             {t(getGreetingKey(), { name: currentUser.display_name })}
           </h1>
-
-          {/* Status anggaran diringkas jadi satu baris dengan dot warna,
-              menggantikan paragraf italic panjang -- teks lengkapnya tetap
-              sama (data-driven), hanya presentasinya yang dipadatkan jadi
-              satu baris dengan ellipsis; teks penuh tetap tersedia lewat
-              title="" saat di-hover/di-tahan. */}
-          <div className="flex items-center gap-1.5 mt-2 min-w-0">
-            <span className={cx("w-1.5 h-1.5 rounded-full shrink-0", subGreetingDotClass[subGreeting.type])} aria-hidden="true" />
-            <p
-              className={cx("font-sans text-xs truncate transition-colors", tokens.text.muted)}
-              title={subGreeting.text}
-            >
-              {subGreeting.text}
-            </p>
-          </div>
-
+          {(() => {
+            const subGreeting = getDynamicSubGreeting();
+            return (
+              <p className={cx("font-sans text-xs mt-1.5 max-w-xl leading-relaxed transition-colors italic", tokens.text.muted)}>
+                {subGreeting.text}
+              </p>
+            );
+          })()}
           {telegramStatus.linked && (
             <div className={cx("flex items-center gap-1.5 mt-2 text-[clamp(0.5625rem,2.6vw,0.625rem)] px-2 py-1 rounded-lg border w-fit", tokens.badge.success)}>
               <Send size={10} />
@@ -265,34 +229,23 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             </div>
           )}
         </motion.div>
+      </div>
 
-        {/* Avatar + badge tamu -- toggle mata nominal yang dulu ada di
-            header kartu Pos Dompet sudah DIHAPUS (lihat
-            DashboardWalletCarousel.tsx), saldo selalu tampil apa adanya. */}
-        <div className="relative z-10 flex flex-col items-end gap-2 shrink-0">
-          <div className={cx(
-            "w-9 h-9 rounded-full flex items-center justify-center overflow-hidden text-sm font-bold shrink-0",
-            "bg-white/10 backdrop-blur-sm border border-white/10 light_sakura:bg-rose-50 light_sakura:border-rose-100/50",
-            tokens.text.accent
-          )}>
-            {currentUser.avatar_url ? (
-              <img src={currentUser.avatar_url} alt={currentUser.display_name} className="w-full h-full object-cover" />
-            ) : (
-              avatarInitial
-            )}
-          </div>
-          {currentUser.is_guest && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, delay: 0.3 }}
-              className="bg-amber-500/10 border border-amber-500/20 rounded-2xl px-3 py-1.5 font-sans text-xs font-semibold text-amber-500 flex items-center gap-1.5 whitespace-nowrap"
-            >
-              <Info size={13} className="shrink-0" />
-              <span>{t("auth.guest_badge")}</span>
-            </motion.div>
-          )}
-        </div>
+      {/* Badge tamu saja di sini sekarang -- toggle mata nominal yang dulu
+          ada di header kartu Pos Dompet sudah DIHAPUS (lihat
+          DashboardWalletCarousel.tsx), saldo selalu tampil apa adanya. */}
+      <div className="relative z-10 flex flex-col items-start md:items-end gap-2 shrink-0">
+        {currentUser.is_guest && (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.3 }}
+            className="bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-2 font-sans text-xs font-semibold text-amber-500 flex items-center gap-2"
+          >
+            <Info size={14} />
+            <span>{t("auth.guest_badge")}</span>
+          </motion.div>
+        )}
       </div>
     </Card>
   );
