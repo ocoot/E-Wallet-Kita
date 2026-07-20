@@ -992,6 +992,15 @@ export const themeTokens = {
    */
   toggleSwitch: {
     trackActive: "bg-indigo-600 border-indigo-500 light_sakura:bg-rose-500 light_sakura:border-rose-400",
+    /**
+     * Sesi lanjutan (audit #6): tone tambahan untuk menyerap 3 toggle
+     * manual berbeda warna di `AdminMaintenance.tsx` (maintenance global,
+     * sandbox bypass, lock fitur). Sebelumnya hardcode `bg-amber-600`/
+     * `bg-violet-600`/`bg-red-600` tanpa varian `light_sakura` sama sekali.
+     */
+    trackAmber: "bg-amber-600 border-amber-500 light_sakura:bg-amber-500 light_sakura:border-amber-400",
+    trackViolet: "bg-violet-600 border-violet-500 light_sakura:bg-violet-500 light_sakura:border-violet-400",
+    trackDanger: "bg-red-600 border-red-500 light_sakura:bg-red-500 light_sakura:border-red-400",
   },
   /**
    * P3 (3.2): komponen UI baru `SegmentedControl.tsx` -- pill filter

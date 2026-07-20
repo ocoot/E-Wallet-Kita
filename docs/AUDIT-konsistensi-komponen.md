@@ -231,6 +231,33 @@ Ini beda secara **mekanisme fokus**, bukan cuma kelas — `Input.tsx` pakai `foc
 
 ---
 
+### 📍 Status pengerjaan (update terakhir)
+
+**Status: ✅ SELESAI — `Login.tsx` (a) & `AdminVoucherManager.tsx` (b) sudah dimigrasi ke `<Input>`.**
+
+**a) `Login.tsx`:**
+- `InputField` lokal (didefinisikan di file yang sama) dipangkas dari implementasi penuh (label manual, ikon posisi absolute dengan warna berubah saat `group-focus-within`, `<input>` bergaya sendiri) menjadi wrapper tipis yang merender `<Input leftIcon={icon} rightElement={rightAddon} .../>` dari `src/components/ui/Input.tsx`.
+- Kontrak props publik `InputFieldProps` (`icon`, `label`, `type`, `placeholder`, `value`, `onChange: (v: string) => void`, `disabled`, `required`, `minLength`, `rightAddon`, `autoComplete`) **tidak berubah** — ke-4 titik pakai di file yang sama (`InputField` untuk nama tampilan, email forgot-password, email sign in/up, password) tidak perlu disentuh. `onChange(v: string)` lokal tetap dipertahankan (bukan diganti ke event handler standar `Input`), cukup dibungkus `(e) => onChange(e.target.value)` di dalam wrapper.
+- **Perubahan visual minor yang disengaja:** radius `rounded-xl` → `rounded-2xl` (standar `Input`), padding `pl-10 pr-10 py-3` → `px-4 py-3` + `pl-11`/`pr-11` otomatis dari `Input` saat ada `leftIcon`/`rightElement`, dan token warna `tokens.login.inputFieldBgBorder`/`inputFieldFocus` (background `/60` opacity + focus glow shadow tambahan) → `tokens.surface.subtle`/`border.strong` + `focusBorder` standar `Input` (border berubah warna saat fokus, tanpa efek glow). Warna border fokus tetap sama secara hue (`indigo-500`/`light_sakura:rose-400`) karena `accent="indigo"` (default `Input`) memetakan ke token yang persis sama nilainya dengan token lama khusus Login. Pada field password, atribut `label=""` yang lama selalu me-render elemen `<label>` kosong (sisa spasi kecil di atas input) — di `Input.tsx` label kosong/`undefined` tidak dirender sama sekali, jadi elemen kosong ini hilang (bukan regresi, cuma membersihkan whitespace yang sebelumnya tidak disengaja).
+- Ikon kiri kehilangan efek warna berubah saat fokus (`group-focus-within:text-{accent}`) karena `Input.tsx` memang tidak punya fitur ini untuk `leftIcon` (selalu `text-slate-400` statis) — efek ini spesifik ke Login lama dan tidak ada di form lain manapun yang sudah pakai `Input`, jadi ini konsolidasi ke perilaku standar, bukan fitur yang sengaja dipertahankan berbeda.
+
+**b) `AdminVoucherManager.tsx`:**
+- 3 `<input>` manual (harga premium, kode voucher, persen diskon) diganti `<Input accent="indigo" />`, menghilangkan mekanisme fokus `focus:ring-2 focus:ring-indigo-500` (cincin/glow di luar border) yang berbeda dari form lain, jadi sekarang pakai `focus:border-indigo-500` (garis tepi berubah warna) seperti standar `Input`.
+- Label `<label>` teks (`text-sm font-medium`, bukan uppercase kecil) **sengaja dipertahankan terpisah di luar `<Input>`** (tidak dioper lewat prop `label`) supaya tipografi label tidak berubah jadi versi uppercase kecil milik `Input` — perbaikan ini fokus ke mekanisme fokus & radius, bukan restyle label, sesuai rekomendasi #2 di atas yang cuma bilang "efek fokusnya konsisten".
+- Radius `rounded-xl`/padding `p-3` → radius/padding standar `Input` (`rounded-2xl`, `px-4 py-3`). Dampak visual kecil, konsisten dengan pola konsolidasi padding yang sama di temuan #1.
+- **Rekomendasi #3 (didokumentasikan sebagai utang teknis) belum dikerjakan** — pola input manual di file admin lain (di luar `AdminVoucherManager.tsx`) belum diaudit ulang satu-satu sesi ini.
+
+**Verifikasi yang sudah dilakukan:**
+- `npx tsc --noEmit` di seluruh project → **0 error**.
+- `vite build` → **berhasil**, `✓ built in 20.44s`, 0 error. Warning ukuran chunk sama seperti sebelumnya.
+
+**Belum dilakukan (langkah wajib sebelum benar-benar dianggap tuntas):**
+- Verifikasi visual manual `Login.tsx` (radius/padding/focus-glow baru) di kedua tema, terutama animasi ikon kiri yang kehilangan efek warna saat fokus.
+- Verifikasi visual manual `AdminVoucherManager.tsx` (3 field), khususnya interaksi fokus baru (`focus:border` vs `focus:ring` lama).
+- Audit rekomendasi #3: cari pola input manual serupa di file admin lain yang belum dicek sesi ini.
+
+---
+
 ## 3. 🔴 `WalletPickerField.tsx` vs `DropdownField.tsx`: duplikasi logika penuh, bukan cuma style
 
 Ini bukan sekadar kelas Tailwind yang beda — dua file ini menduplikasi ~150 baris **logika stateful yang identik**:
@@ -268,6 +295,31 @@ Tiga ukuran/warna berbeda untuk elemen yang secara fungsi identik (on/off switch
 
 ---
 
+### 📍 Status pengerjaan (update terakhir)
+
+**Status: ✅ SELESAI — 3 dari 3 toggle manual di `AdminMaintenance.tsx` sudah dimigrasi ke `<ToggleSwitch>`.**
+
+**Perubahan pada `ToggleSwitch.tsx` (3 prop baru, semuanya opsional & backward-compatible — 2 caller lama `Settings.tsx`/`NotificationSettings.tsx` tidak berubah perilakunya sama sekali):**
+- `tone?: "indigo" | "amber" | "violet" | "danger"` (default `"indigo"`, perilaku identik seperti sebelum prop ini ada). Tone lain dipetakan ke token baru `tokens.toggleSwitch.trackAmber`/`trackViolet`/`trackDanger` — **bukan** ke `tokens.badge.warning`/`tokens.badge.danger` seperti saran awal di atas, karena token `badge.*` berupa warna pastel tipis untuk pill teks (`bg-amber-500/15`), sedangkan track toggle butuh warna solid pekat (`bg-amber-600`) supaya kontras dengan thumb putih — dipetakan ke token baru sejenis `trackActive` yang sudah ada, bukan direuse dari `badge`. Ketiga token baru ini **sudah punya varian `light_sakura`**, beda dari warna hardcode lama (`bg-amber-600`/`bg-violet-600`/`bg-red-600`) yang sebelumnya sama sekali tidak bereaksi ke tema terang — sama kategorinya dengan bug `DashboardHeader.tsx` yang diperbaiki di sesi migrasi Badge (temuan #4 tabel di atas).
+- `size?: "md" | "lg"` (default `"md"` = `w-11 h-6`, ukuran lama, tidak berubah). `"lg"` (`w-14 h-7`) ditambahkan khusus untuk 2 toggle "primary" (maintenance global, lock fitur) yang secara desain memang perlu bobot visual lebih besar dari toggle sandbox-bypass yang nested/sekunder di baris yang sama — **sengaja tidak menyeragamkan ketiganya ke satu ukuran fisik**, karena hierarki ukuran (toggle utama lebih besar dari toggle sekunder di baris sama) tampak seperti keputusan desain yang disengaja di kode lama, bukan drift. Yang diseragamkan adalah *sistem*-nya (semua toggle sekarang lewat komponen yang sama, dengan 2 nilai resmi `md`/`lg`), bukan memaksa satu angka piksel tunggal untuk semua konteks.
+- `hideLabel?: boolean` (default `false`). Ketiga toggle di `AdminMaintenance.tsx` tidak menampilkan teks label di sebelah switch-nya secara langsung (toggle global sudah punya blok ikon+judul terpisah di luar; 2 toggle per-baris cuma punya ikon+tooltip) — `hideLabel` membuat `ToggleSwitch` merender switch-nya saja (skip blok `<p>` label/description bawaan + padding vertikal `py-2.5`-nya), `label` tetap wajib diisi untuk `aria-label`.
+
+**3 toggle yang dimigrasi:**
+- Toggle maintenance global: `tone="amber"` `size="lg"` `hideLabel`. Label/status text (`"Mode maintenance aktif/nonaktif"`) tetap ditulis manual persis seperti sebelumnya di luar komponen (tidak disentuh), cuma elemen `<button>` track+thumb-nya yang diganti.
+- Toggle sandbox bypass per-fitur: `tone="violet"`, ukuran `size` default (`"md"`, `w-11 h-6`) — **bukan** dipertahankan di `w-10 h-5` lama, sedikit lebih besar (4px) supaya konsisten dengan ukuran resmi `ToggleSwitch`, dampak visual di baris tabel yang sudah padat dianggap dapat diabaikan.
+- Toggle lock/unlock fitur: `tone="danger"` `size="lg"` `hideLabel`.
+- Semua toggle di state nonaktif sekarang pakai gaya inactive bawaan `ToggleSwitch` (`tokens.surface.sunken` + border, gelap-transparan dengan border tipis) menggantikan `tokens.toggle.inactiveTrack` lama (abu solid tanpa border) — mengikuti gaya toggle Settings/NotificationSettings yang sudah ada, bukan regresi.
+
+**Verifikasi yang sudah dilakukan:**
+- `npx tsc --noEmit` di seluruh project → **0 error**.
+- `vite build` → **berhasil**, `✓ built in 20.44s`, 0 error. Warning ukuran chunk sama seperti sebelumnya.
+
+**Belum dilakukan (langkah wajib sebelum benar-benar dianggap tuntas):**
+- Verifikasi visual manual ketiga toggle di kedua tema, terutama pastikan warna `light_sakura` baru (`trackAmber`/`trackViolet`/`trackDanger`) cukup kontras di atas background terang.
+- Regression check interaksi: klik toggle sandbox-bypass saat `disabled` (fitur belum di-lock) harus tetap non-interaktif — secara kode `disabled={!feature.is_locked}` diteruskan apa adanya ke `ToggleSwitch`, tapi belum dicoba manual di browser.
+
+---
+
 ## 7. 🟡 Kontainer ikon bulat/kotak: radius berbeda di ukuran fisik yang sama
 
 Untuk kontainer ikon `w-10 h-10` (dipakai sebagai avatar/icon-badge kecil di card, list item, dan chat widget), ditemukan campuran radius yang tidak konsisten untuk konteks visual yang mirip:
@@ -302,8 +354,8 @@ Ini kemungkinan **sengaja**: `ErrorBoundary` diletakkan di luar semua context pr
 2. **`WalletPickerField` → wrapper tipis di atas `DropdownField`** — sama-sama migrasi 1 file, tapi menghilangkan ~150 baris duplikasi logika stateful (bukan cuma style) sekaligus.
 3. ✅ **Migrasi Card di level view** — **SELESAI**, seluruh 18 file (7 view utama + 11 file Admin) sudah dimigrasi, nol occurrence pola manual `rounded-3xl border` tersisa. Verifikasi visual manual per halaman masih belum dilakukan — lihat detail status di temuan #1 di atas.
 4. ⚠️➡️✅ **`GoldSavings.tsx` badge hardcode** — **DIKOREKSI, bukan bug**: warna hardcode di sini disengaja (kartu emas skeuomorphic yang memang tidak ikut tema, lihat detail di temuan #3 di atas), jadi **tidak dimigrasi**. Sebagai gantinya, bug tema-bypass yang *sungguhan* ditemukan & diperbaiki sesi ini di `DashboardHeader.tsx` (indikator status Telegram, sebelumnya tanpa varian `light_sakura` sama sekali). Radius `AdminErrorMonitor.tsx` & `Onboarding.tsx` juga sudah dikonsolidasi ke `rounded-lg`. `Budget.tsx`/`Installments.tsx` sengaja belum disentuh (butuh keputusan desain, bukan technical debt murni) — lihat detail di temuan #3.
-5. **Toggle switch di `AdminMaintenance.tsx` → `ToggleSwitch`** — halaman sensitif (maintenance/feature-lock), worth diprioritaskan meski jumlah file kecil.
-6. **`Login.tsx` InputField → `Input`** — halaman pertama yang dilihat user, worth prioritizing meski dampaknya kecil.
-7. Sisanya (badge lain, kontainer ikon, `AdminVoucherManager` input, admin views secara umum) — technical debt yang bisa dikerjakan bertahap, cocok masuk backlog "polish" per-sprint.
+5. ✅ **Toggle switch di `AdminMaintenance.tsx` → `ToggleSwitch`** — **SELESAI**, 3 dari 3 toggle manual (maintenance global, sandbox bypass, lock fitur) sudah dimigrasi. `ToggleSwitch` dapat 3 prop baru (`tone`, `size`, `hideLabel`), semuanya backward-compatible. Belum diverifikasi visual manual — lihat detail status di temuan #6 di atas.
+6. ✅ **`Login.tsx` InputField → `Input`** — **SELESAI**, sekaligus `AdminVoucherManager.tsx` (3 field) ikut dimigrasi ke `<Input accent="indigo" />` untuk menyamakan mekanisme fokus. Belum diverifikasi visual manual — lihat detail status di temuan #4 di atas.
+7. Sisanya (badge lain, kontainer ikon, admin views secara umum) — technical debt yang bisa dikerjakan bertahap, cocok masuk backlog "polish" per-sprint.
 
 Catatan umum: primitive di `src/components/ui/` sudah didesain dengan baik (dokumentasi tiap komponen menjelaskan pola apa yang diekstrak & dari file mana) — masalahnya murni **adopsi**, bukan desain. Fix paling efektif adalah migrasi bertahap ke primitive yang sudah ada, bukan membangun sistem baru.

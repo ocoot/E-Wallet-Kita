@@ -10,6 +10,7 @@ import { motion, AnimatePresence, useAnimation } from "motion/react";
 import { Modal } from "../components/Modal";
 import { audioFeedback } from "../lib/audio";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { Input } from "../components/ui/Input";
 
 /* ─────────────────────────────────────────────────────────
    Brand panel decoration — faint background arc rings only.
@@ -107,44 +108,32 @@ interface InputFieldProps {
   rightAddon?: React.ReactNode;
   autoComplete?: string;
 }
+/**
+ * Thin wrapper over the shared `<Input>` primitive (src/components/ui/Input.tsx).
+ * Login.tsx used to hand-roll this field with its own radius (`rounded-xl` vs
+ * Input's `rounded-2xl`), padding (`pl-10 pr-10 py-3` vs Input's `px-4 py-3`/`pl-11`),
+ * and its own token pair (`tokens.login.inputFieldBgBorder`/`inputFieldFocus`)
+ * instead of `tokens.surface.subtle`/`border.strong` used everywhere else.
+ * Public props kept identical so every call site below stays unchanged.
+ */
 const InputField: React.FC<InputFieldProps> = ({
   icon, label, type, placeholder, value, onChange,
   disabled, required, minLength, rightAddon, autoComplete
 }) => {
-  const { tokens, cx } = useThemeTokens();
   return (
-  <div className="space-y-1.5">
-    <label className={cx("block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold tracking-[0.12em] uppercase", tokens.text.muted)}>
-      {label}
-    </label>
-    <div className="relative group">
-      <span className={cx(
-        "absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 transition-colors",
-        tokens.text.accent.replace(/text-/g, "group-focus-within:text-")
-      )}>
-        {icon}
-      </span>
-      <input
-        type={type}
-        required={required}
-        minLength={minLength}
-        placeholder={placeholder}
-        disabled={disabled}
-        value={value}
-        autoComplete={autoComplete}
-        onChange={(e) => onChange(e.target.value)}
-        className={cx(
-          "w-full pl-10 pr-10 py-3 rounded-xl text-sm transition-all duration-200 disabled:opacity-40 focus:outline-none",
-          tokens.login.inputFieldBgBorder,
-          tokens.login.inputFieldFocus,
-          tokens.text.onSurface
-        )}
-      />
-      {rightAddon && (
-        <span className="absolute right-3.5 top-1/2 -translate-y-1/2">{rightAddon}</span>
-      )}
-    </div>
-  </div>
+    <Input
+      label={label || undefined}
+      type={type}
+      placeholder={placeholder}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
+      required={required}
+      minLength={minLength}
+      autoComplete={autoComplete}
+      leftIcon={icon}
+      rightElement={rightAddon}
+    />
   );
 };
 

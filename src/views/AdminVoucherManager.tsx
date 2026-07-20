@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
 import { Card } from "../components/ui/Card";
+import { Input } from "../components/ui/Input";
 import { supabase } from "../lib/supabase";
 import { PremiumVoucher } from "../types";
 import { useAuth } from "../contexts/AuthContext";
@@ -260,12 +261,12 @@ export const AdminVoucherManager: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-4 items-end">
           <div className="flex-1">
             <label className={cx("block text-sm font-medium mb-1.5", tokens.text.secondary)}>{t("voucher.base_price")}</label>
-            <input 
-              type="number" 
-              placeholder="20000" 
-              value={premiumPrice} 
-              onChange={e => setPremiumPrice(e.target.value)} 
-              className={cx("w-full border p-3 rounded-xl placeholder-slate-500 focus:ring-2 focus:ring-indigo-500", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)} 
+            <Input
+              type="number"
+              placeholder="20000"
+              value={premiumPrice}
+              onChange={e => setPremiumPrice(e.target.value)}
+              accent="indigo"
             />
           </div>
           <Button 
@@ -285,11 +286,11 @@ export const AdminVoucherManager: React.FC = () => {
         <div className="flex gap-4 items-end">
           <div className="flex-1">
             <label className={cx("block text-sm font-medium mb-1.5", tokens.text.secondary)}>{t("voucher.voucher_code")}</label>
-            <input placeholder={t("voucher.placeholder_code")} value={code} onChange={e => setCode(e.target.value)} className={cx("w-full border p-3 rounded-xl placeholder-slate-500 focus:ring-2 focus:ring-indigo-500", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)} />
+            <Input placeholder={t("voucher.placeholder_code")} value={code} onChange={e => setCode(e.target.value)} accent="indigo" />
           </div>
           <div className="w-32">
             <label className={cx("block text-sm font-medium mb-1.5", tokens.text.secondary)}>{t("voucher.discount_percent")}</label>
-            <input placeholder="50" type="number" value={percent} onChange={e => setPercent(e.target.value)} className={cx("w-full border p-3 rounded-xl placeholder-slate-500 focus:ring-2 focus:ring-indigo-500", tokens.text.primary, tokens.surface.subtle, tokens.border.strong)} />
+            <Input placeholder="50" type="number" value={percent} onChange={e => setPercent(e.target.value)} accent="indigo" />
           </div>
           <Button
             variant="primary"

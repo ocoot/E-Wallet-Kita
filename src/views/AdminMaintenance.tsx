@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
 import { Card } from "../components/ui/Card";
+import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
@@ -190,17 +191,14 @@ export const AdminMaintenance: React.FC = () => {
             </div>
           </div>
 
-          <button
-            onClick={() => setIsActive(v => !v)}
-            className={`btn-exact relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0
-              ${isActive ? "bg-amber-600" : tokens.toggle.inactiveTrack}`}
-            aria-pressed={isActive}
-          >
-            <span
-              className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform
-                ${isActive ? "translate-x-7" : "translate-x-0"}`}
-            />
-          </button>
+          <ToggleSwitch
+            checked={isActive}
+            onChange={setIsActive}
+            label={t("admin.maintenance_global_toggle_label")}
+            tone="amber"
+            size="lg"
+            hideLabel
+          />
         </div>
 
         {/* Running text message editors */}
@@ -304,36 +302,25 @@ export const AdminMaintenance: React.FC = () => {
                   title={t("admin.maintenance_sandbox_bypass_tooltip")}
                 >
                   <FlaskConical size={14} className={tokens.adminMaintenance.sandboxIcon} />
-                  <button
-                    onClick={() =>
-                      handleToggleSandboxBypass(feature.feature_key, !feature.bypass_in_sandbox)
-                    }
+                  <ToggleSwitch
+                    checked={feature.bypass_in_sandbox}
+                    onChange={(next) => handleToggleSandboxBypass(feature.feature_key, next)}
                     disabled={!feature.is_locked}
-                    className={`btn-exact relative w-10 h-5 rounded-full transition-colors cursor-pointer shrink-0
-                      ${feature.bypass_in_sandbox ? "bg-violet-600" : tokens.toggle.inactiveTrack}`}
-                    aria-pressed={feature.bypass_in_sandbox}
-                    aria-label={`Sandbox bypass ${feature.feature_key}`}
-                  >
-                    <span
-                      className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform
-                        ${feature.bypass_in_sandbox ? "translate-x-5" : "translate-x-0"}`}
-                    />
-                  </button>
+                    label={`Sandbox bypass ${feature.feature_key}`}
+                    tone="violet"
+                    hideLabel
+                  />
                 </div>
 
                 {/* Lock / Unlock main toggle */}
-                <button
-                  onClick={() => handleToggleFeature(feature.feature_key, !feature.is_locked)}
-                  className={`btn-exact relative w-14 h-7 rounded-full transition-colors cursor-pointer shrink-0
-                    ${feature.is_locked ? "bg-red-600" : tokens.toggle.inactiveTrack}`}
-                  aria-pressed={feature.is_locked}
-                  aria-label={`Lock ${feature.feature_key}`}
-                >
-                  <span
-                    className={`absolute top-1 left-1 w-5 h-5 rounded-full bg-white shadow transition-transform
-                      ${feature.is_locked ? "translate-x-7" : "translate-x-0"}`}
-                  />
-                </button>
+                <ToggleSwitch
+                  checked={feature.is_locked}
+                  onChange={(next) => handleToggleFeature(feature.feature_key, next)}
+                  label={`Lock ${feature.feature_key}`}
+                  tone="danger"
+                  size="lg"
+                  hideLabel
+                />
               </div>
             </div>
           ))}
