@@ -220,7 +220,8 @@ html, body {
   /* Obsidian colors are natively integrated into Tailwind utility classes of slate grid */
 }
 
-.light_sakura {
+.light_sakura,
+.light_sakura body {
   background-color: #F5FAF8 !important;
 }
 

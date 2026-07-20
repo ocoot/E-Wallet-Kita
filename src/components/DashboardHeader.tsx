@@ -39,30 +39,6 @@ interface DashboardHeaderProps {
  * di topbar setipis ini. Kalau suatu saat mau dikembalikan, tempatnya lebih
  * cocok di kartu ringkasan saldo (bagian yang punya ruang lega), bukan di
  * topbar.
- *
- * Sesi 55: fix "topbar duduk aneh di atas canvas kosong". Root cause-nya
- * BUKAN soal perlu-atau-tidak dibungkus <Card> -- membungkusnya jadi <Card>
- * justru salah, karena bakal menghasilkan dua kotak bertumpuk (topbar +
- * kartu "Saldo Anda" tepat di bawahnya) dan kembali ke pola hero-card lama
- * yang sudah sengaja ditinggalkan. Masalah sebenarnya: elemen ini transparan
- * penuh & ikut terbungkus padding halaman biasa (`p-4 sm:p-6 lg:p-8` di
- * App.tsx), jadi ia cuma terlihat seperti teks nyasar dengan jarak kosong
- * di kiri-kanan-atasnya -- bukan seperti chrome navigasi.
- *
- * Perbaikannya: jadikan ini topbar sticky FULL-BLEED sungguhan --
- *  - `sticky top-0` supaya tetap terlihat & diam di tempat saat konten di
- *    bawahnya di-scroll (perilaku topbar native yang sesungguhnya, bukan
- *    cuma "terlihat seperti" topbar).
- *  - `-mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8` melepaskan diri dari
- *    padding halaman lalu `px-4 sm:px-6 lg:px-8` mengembalikan inset yang
- *    sama untuk KONTEN di dalamnya -- hasilnya bar ini nempel penuh dari
- *    tepi-ke-tepi layar (dan ke tepi atas viewport), sementara teks di
- *    dalamnya tetap sejajar horizontal dengan konten card di bawahnya.
- *  - `tokens.dashboardHeader.stickyBar` memberi permukaan kaca (blur +
- *    saturate + border-b tipis) -- token yang sama polanya dengan
- *    `mobileBottomNav.navContainer` yang sudah dipakai utk navbar bawah,
- *    supaya bahasa visual "elemen navigasi mengambang/kaca" konsisten di
- *    seluruh app, bukan bikin pola baru.
  */
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   currentUser,
@@ -99,16 +75,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   return (
     <div
       id="dashboard-welcome-banner"
-      className={cx(
-        // Lepas dari padding halaman (App.tsx: p-4 sm:p-6 lg:p-8) lalu
-        // kembalikan sebagai padding internal -- supaya bar-nya full-bleed
-        // tepi-ke-tepi & nempel ke atas viewport, tapi teks di dalamnya
-        // tetap sejajar dgn konten card di bawahnya.
-        "sticky top-0 z-20 -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8 mb-2",
-        "px-4 sm:px-6 lg:px-8 py-2.5",
-        "flex items-center justify-between gap-3",
-        tokens.dashboardHeader.stickyBar
-      )}
+      className="relative flex items-center justify-between gap-3 py-1"
     >
       {/* Kiri: sapaan sekarang boleh sampai 2 baris (line-clamp-2) alih-alih
           dipotong paksa jadi 1 baris ("Selamat malam, A...") -- nama
