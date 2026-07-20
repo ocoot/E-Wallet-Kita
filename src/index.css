@@ -249,6 +249,17 @@ html, body {
   animation: maintenance-marquee linear infinite;
 }
 
+/* Dipakai DashboardHeader.tsx: baris status (cuaca+tanggal) yang bisa
+   digeser horizontal di layar sempit tanpa scrollbar bawaan browser
+   ikut tampil (yang akan merusak tampilan "large title" native). */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Progress bar tipis di toast notifikasi — mengecil dari penuh ke kosong
    selama durasi tampil toast tersebut. Di-pause murni lewat CSS
    (animation-play-state) saat user hover, supaya tidak perlu re-mount
