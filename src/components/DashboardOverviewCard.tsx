@@ -133,13 +133,6 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
           </h3>
         </div>
         <div className="flex items-center gap-3.5">
-          <div className={cx(
-            "w-11 h-11 rounded-2xl flex items-center justify-center shrink-0",
-            tokens.chip.accentIndigo,
-            tokens.icon.accent
-          )}>
-            <Layers size={20} />
-          </div>
           <div className="min-w-0">
             <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase tracking-wider flex items-center gap-1.5", tokens.text.muted)}>
               {t("dashboard.accumulated_balance_label")}

@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { Bell, ChevronRight, AlertCircle } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useBillReminders } from "../hooks/useBillReminders";
@@ -32,7 +32,6 @@ export const DashboardBillReminders: React.FC = () => {
   if (loading || alerts.length === 0) return null;
 
   const mostUrgent = alerts[0];
-  const hasOverdue = mostUrgent.urgency === "overdue";
   const statusText =
     mostUrgent.urgency === "overdue"
       ? t("bill_reminders.status_overdue")
@@ -46,11 +45,6 @@ export const DashboardBillReminders: React.FC = () => {
         className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left cursor-pointer"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
-            hasOverdue ? "bg-red-500/15 text-red-400" : "bg-orange-500/15 text-orange-400"
-          }`}>
-            {hasOverdue ? <AlertCircle size={16} /> : <Bell size={16} />}
-          </div>
           <div className="min-w-0">
             <h3 className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>
               {t("bill_reminders.dashboard_alert_title")}

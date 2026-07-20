@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { Landmark, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useInstallments } from "../hooks/useInstallments";
@@ -40,9 +40,6 @@ export const DashboardInstallments: React.FC = () => {
         className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left cursor-pointer"
       >
         <div className="flex items-center gap-3 min-w-0">
-          <div className={cx("w-9 h-9 rounded-full flex items-center justify-center shrink-0", tokens.chip.accentIndigo, tokens.text.accent)}>
-            <Landmark size={16} />
-          </div>
           <div className="min-w-0">
             <h3 className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>
               {t("installments.dashboard_row_title")}
