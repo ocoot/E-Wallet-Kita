@@ -11,6 +11,7 @@ import { audioFeedback } from "../lib/audio";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 
 import { DashboardHeader } from "../components/DashboardHeader";
+import { DashboardTitleHeader } from "../components/DashboardTitleHeader";
 import { DashboardChart } from "../components/DashboardChart";
 import { DashboardRecentTransactions } from "../components/DashboardRecentTransactions";
 import { DashboardBudgetAlerts } from "../components/DashboardBudgetAlerts";
@@ -234,8 +235,30 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const chartData = getChartData();
 
   return (
-    <div className="space-y-6 pb-24 relative">
-      {/* 1 + 1b. Welcome/weather card ("dashboard dinamis") DAN kartu Pos
+    <>
+      {/* Large title native (mobile only) -- SENGAJA di luar carousel DAN
+          di luar container space-y-6 di bawah. Alasan kedua ("luar
+          space-y-6"): Tailwind space-y-* pakai selector CSS
+          `:not([hidden]) ~ :not([hidden])` yang cuma peduli atribut HTML
+          `hidden`, BUKAN class `md:hidden` (itu murni display:none) --
+          kalau tetap jadi anak pertama space-y-6, di desktop elemen ini
+          tetap "dihitung" sebagai sibling oleh selector itu (walau
+          display:none), sehingga anak berikutnya (carousel) tetap kebagian
+          margin-top ekstra yang tidak diinginkan. Jarak ke carousel di
+          mobile diatur manual (mb-6) di komponennya sendiri, tidak
+          bergantung ke space-y-6. Alasan pertama ("luar carousel"): lihat
+          komentar lengkap di DashboardTitleHeader.tsx (position:sticky
+          rusak kalau ditaruh di dalam ancestor overflow-x-auto). Judul ini
+          juga sengaja tidak ikut ter-swipe saat user geser carousel ke
+          kartu Pos Dompet -- ini pola native yang benar (large title
+          halaman tidak boleh "hilang" gara-gara swipe konten lain di
+          bawahnya). */}
+      <DashboardTitleHeader
+        userId={currentUser.id}
+        displayName={currentUser.display_name}
+      />
+
+      <div className="space-y-6 pb-24 relative">
           Dompet selector digabung jadi SATU strip yang bisa digeser (swipe)
           horizontal, snap satu kartu per satu -- sama seperti sebelumnya.
           Bedanya kartu Pos Dompet SEKARANG cuma SATU kartu (selector
@@ -380,6 +403,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <span>{t("dashboard.quick_add_fab")}</span>
         </motion.button>
       </div>
-    </div>
+      </div>
+    </>
   );
 };

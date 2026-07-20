@@ -4,7 +4,7 @@ import { UserSession } from "../types";
 import { Send, Info, Calendar, MapPin } from "lucide-react";
 import { motion } from "motion/react";
 import { useWeather } from "../hooks/useWeather";
-import { useBudgets } from "../hooks/useBudgets";
+import { useDashboardGreeting } from "../hooks/useDashboardGreeting";
 import { getWeatherTheme } from "../lib/weatherTheme";
 import { DashboardWeatherLayer } from "./DashboardWeatherLayer";
 import { WeatherDebugToggle, WeatherDebugOverride } from "./WeatherDebugToggle";
@@ -27,7 +27,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const { tokens, cx } = useThemeTokens();
   const { t, locale } = useLanguage();
   const { weather, loading: weatherLoading } = useWeather();
-  const { budgets, loading: budgetsLoading } = useBudgets(currentUser.id);
+  const { greetingText, subGreeting } = useDashboardGreeting(currentUser.id, currentUser.display_name);
 
   // TEMPORARY DEV TOOL -- lihat komentar di WeatherDebugToggle.tsx.
   // Saat override aktif, ini menggantikan data cuaca asli hanya untuk
@@ -60,90 +60,12 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
   const weatherTheme = effectiveWeather ? getWeatherTheme(effectiveWeather.condition, effectiveWeather.isDay) : null;
 
-  const getGreetingKey = (): string => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 11) {
-      return "dashboard.greeting_morning";
-    } else if (hour >= 11 && hour < 15) {
-      return "dashboard.greeting_afternoon";
-    } else if (hour >= 15 && hour < 19) {
-      return "dashboard.greeting_evening";
-    } else {
-      return "dashboard.greeting_night";
-    }
-  };
-
   const formattedDate = new Intl.DateTimeFormat(locale === "id" ? "id-ID" : "en-US", {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   }).format(new Date());
-
-  const getDynamicSubGreeting = (): { text: string; type: "budget_danger" | "budget_warning" | "budget_ok" | "empty" | "loading" } => {
-    if (budgetsLoading) {
-      return {
-        text: locale === "id" ? "Memuat status anggaran..." : "Loading budget status...",
-        type: "loading"
-      };
-    }
-
-    if (budgets.length > 0) {
-      const dangerBudget = budgets.find(b => b.status === "danger" || b.percent >= 100);
-      if (dangerBudget) {
-        return {
-          text: locale === "id"
-            ? `Peringatan Anggaran: Kategori "${dangerBudget.category_key}" telah terpakai ${Math.round(dangerBudget.percent)}%! Batasi pengeluaran Anda hari ini.`
-            : `Budget Alert: Category "${dangerBudget.category_key}" is at ${Math.round(dangerBudget.percent)}%! Mind your spending today.`,
-          type: "budget_danger"
-        };
-      }
-
-      const warningBudget = budgets.find(b => b.status === "warning");
-      if (warningBudget) {
-        return {
-          text: locale === "id"
-            ? `Perhatian Anggaran: Kategori "${warningBudget.category_key}" mendekati batas (${Math.round(warningBudget.percent)}% terpakai).`
-            : `Budget Warning: Category "${warningBudget.category_key}" is approaching limit (${Math.round(warningBudget.percent)}% spent).`,
-          type: "budget_warning"
-        };
-      }
-
-      const totalLimit = budgets.reduce((acc, b) => acc + b.monthly_limit, 0);
-      const totalSpent = budgets.reduce((acc, b) => acc + b.spent, 0);
-
-      if (totalLimit > 0) {
-        const today = new Date();
-        const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-        const remainingDays = Math.max(1, daysInMonth - today.getDate() + 1);
-        const remainingBudget = Math.max(0, totalLimit - totalSpent);
-        const dailyAllowance = Math.floor(remainingBudget / remainingDays);
-        const overallPercent = Math.round((totalSpent / totalLimit) * 100);
-
-        const formattedAllowance = new Intl.NumberFormat(locale === "id" ? "id-ID" : "en-US", {
-          style: "currency",
-          currency: "IDR",
-          maximumFractionDigits: 0
-        }).format(dailyAllowance);
-
-        const rawText = locale === "id"
-          ? `Status Anggaran Harian: Jatah aman harian ± ${formattedAllowance} (${remainingDays} hari tersisa, ${overallPercent}% anggaran terpakai).`
-          : `Daily Budget Status: Safe daily allowance ± ${formattedAllowance} (${remainingDays} days remaining, ${overallPercent}% budget spent).`;
-
-        return {
-          text: rawText,
-          type: "budget_ok"
-        };
-      }
-    }
-
-    return {
-      text: locale === "id"
-        ? "Belum ada anggaran kategori yang diatur. Buat anggaran untuk memantau pengeluaran Anda."
-        : "No category budgets set yet. Create one to keep track of your spending.",
-      type: "empty"
-    };
-  };
 
   return (
     <Card
@@ -208,17 +130,22 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
             <WeatherDebugToggle value={debugOverride} onChange={setDebugOverride} />
           </div>
-          <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
-            {t(getGreetingKey(), { name: currentUser.display_name })}
-          </h1>
-          {(() => {
-            const subGreeting = getDynamicSubGreeting();
-            return (
-              <p className={cx("font-sans text-xs mt-1.5 max-w-xl leading-relaxed transition-colors italic", tokens.text.muted)}>
-                {subGreeting.text}
-              </p>
-            );
-          })()}
+          {/* Large title "Selamat pagi, {nama}" sekarang HANYA tampil di
+              desktop (hidden md:block) -- di mobile, sapaan ini digantikan
+              DashboardTitleHeader.tsx yang dirender Dashboard.tsx SEBELUM
+              carousel ini (di luar overflow-x-auto, supaya collapse-on-scroll
+              bisa sticky dengan benar -- lihat komentar di file itu untuk
+              alasan lengkapnya). Desktop tidak punya MobileTopBar untuk
+              collapse ke sana, jadi tetap dipertahankan statis di sini
+              seperti semula. */}
+          <div className="hidden md:block">
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+              {greetingText}
+            </h1>
+            <p className={cx("font-sans text-xs mt-1.5 max-w-xl leading-relaxed line-clamp-2 transition-colors", tokens.text.muted)}>
+              {subGreeting.text}
+            </p>
+          </div>
           {telegramStatus.linked && (
             <div className={cx("flex items-center gap-1.5 mt-2 text-[clamp(0.5625rem,2.6vw,0.625rem)] px-2 py-1 rounded-lg border w-fit", tokens.badge.success)}>
               <Send size={10} />

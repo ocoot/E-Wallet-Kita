@@ -918,6 +918,19 @@ export const themeTokens = {
     weatherBadge: "flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium shrink-0 whitespace-nowrap light_sakura:bg-rose-50 light_sakura:border-rose-100/50 transition-colors duration-300",
   },
   /**
+   * Fitur "large title header" native (BUKAN bagian rollout literal
+   * light_sakura: yang dilacak theme-tokens-rollout.md -- ini token untuk
+   * fitur baru, sengaja tidak ikut dihitung di log migrasi sesi rollout,
+   * tapi tetap ditulis di tokens.ts sesuai kebijakan "semua literal warna
+   * masuk tokens.ts"). Dipakai `DashboardTitleHeader.tsx` (large title +
+   * compact collapsing bar Dashboard, dirender di luar carousel -- lihat
+   * komentar di file itu). Genuinely 1x-pakai, dicek cross-file, tidak ada
+   * exact match.
+   */
+  dashboardTitleHeader: {
+    compactBarHairline: "bg-slate-800/60 light_sakura:bg-rose-200/60",
+  },
+  /**
    * Sesi 54: token untuk `ui/Card.tsx`. `borderSubtle` genuinely 1x-pakai
    * (dicek cross-file, tidak ada exact match) -- sengaja BEDA dari
    * `border.accent` (lihat komentar di Card.tsx: border="subtle" tetap
