@@ -220,7 +220,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             );
           })()}
           {telegramStatus.linked && (
-            <div className="flex items-center gap-1.5 mt-2 text-[clamp(0.5625rem,2.6vw,0.625rem)] text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-md w-fit border border-emerald-500/10">
+            <div className={cx("flex items-center gap-1.5 mt-2 text-[clamp(0.5625rem,2.6vw,0.625rem)] px-2 py-1 rounded-lg border w-fit", tokens.badge.success)}>
               <Send size={10} />
               <span>
                 {t("settings.telegram_sync_status")}

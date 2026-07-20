@@ -328,7 +328,7 @@ export const AdminErrorMonitor: React.FC = () => {
                         onClick={() => hasContext && setExpandedId(isExpanded ? null : log.id)}
                       >
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.bg} ${cfg.color}`}>
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border ${cfg.bg} ${cfg.color}`}>
                             <LevelIcon size={12} />
                             {t(`error_monitor.${log.level}`)}
                           </span>

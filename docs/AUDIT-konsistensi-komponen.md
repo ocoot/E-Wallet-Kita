@@ -173,6 +173,40 @@ Ini contoh nyata dari yang disebutkan di brief: **radius berbeda antar layar** u
 
 ---
 
+### 📍 Status pengerjaan (update terakhir)
+
+**Status: SEBAGIAN SELESAI, dengan 1 koreksi penting terhadap rekomendasi #1 di atas.**
+
+⚠️ **Koreksi atas rekomendasi #1 (`GoldSavings.tsx`) — TIDAK dimigrasi, dan sebaiknya memang tidak:**
+
+Saat verifikasi manual sebelum migrasi (bukan cuma keyword-match), ditemukan bahwa badge untung/rugi di `GoldSavings.tsx` berada di atas kartu dengan class `gold-card-shine` (`src/index.css`), yang backgroundnya adalah **gradient emas solid hardcode** (`linear-gradient(135deg, #fde68a, #f59e0b, #b45309)`) — **sama di kedua tema**, tidak ada varian `light_sakura`. Ini kartu "emas fisik" yang memang didesain untuk selalu terlihat seperti lempengan emas sungguhan, terlepas dari tema app. Elemen lain di kartu yang sama (`text-amber-950`, `text-amber-900/70`, badge "Diarsipkan" di baris ~307) **juga hardcode dengan pola yang sama** — bukan cuma badge untung/rugi ini sendirian.
+
+Kalau badge ini dipaksa migrasi ke `<Badge tone="success"/"danger">` (yang warnanya dirancang untuk background gelap `slate-900`/putih `light_sakura`, bukan gradient emas terang), hasilnya:
+- Dark mode: `text-emerald-400`/`text-red-400` (terang) di atas gradient emas terang → **kontras buruk/nyaris tidak kebaca**.
+- Light mode: `light_sakura:bg-emerald-50` (hampir putih) menimpa gradient emas → merusak tampilan "kartu emas fisik" yang jadi konsep visual utama fitur ini.
+
+**Kesimpulan:** warna hardcode di sini bukan bug yang lolos dari sistem token — ini pengecualian yang disengaja (skeuomorphic gold-card, sama kategorinya dengan pengecualian `ErrorBoundary.tsx` di temuan #8), karena kartu ini secara sengaja TIDAK ikut sistem tema `dark_obsidian`/`light_sakura`. **Tidak ada perubahan kode di `GoldSavings.tsx`** sesi ini. Rekomendasi audit sebelumnya untuk file ini dianggap gugur — kalau nanti ingin tetap distandardisasi, jalur yang benar bukan `<Badge tone="...">` tapi kelas warna gelap (`*-950`/`*-900`) yang secara sengaja kontras terhadap kartu terang, sama seperti badge "Diarsipkan" di file yang sama.
+
+✅ **Selesai dikerjakan sesi ini (konsolidasi radius murni, tanpa mengubah warna/makna semantik):**
+- `AdminErrorMonitor.tsx`: `rounded-full` → `rounded-lg` (radius standar `Badge`). Warna level (`error`/`warning`/`info`) sudah lewat `tokens.errorMonitor.level*Color`/`level*Bg` yang reaktif tema — **tidak disentuh**, karena mapping warnanya (mis. "info" pakai `sky`) tidak identik dengan tone `Badge` bawaan (`info` = indigo) — mengganti ke `<Badge tone="info">` akan mengubah warna sky→indigo yang bukan sekadar cleanup, itu perubahan semantik warna yang butuh keputusan desain terpisah, jadi sengaja tidak dilakukan sesi ini.
+- `Onboarding.tsx` (baris ~814, badge "Jatuh tempo" di kartu simulasi tutorial): `rounded` (default, radius terkecil) → `rounded-lg`.
+- `DashboardHeader.tsx` (indikator "Tersambung ke Telegram"): ini **bug nyata** — sebelumnya hardcode penuh (`text-emerald-400 bg-emerald-500/10 border-emerald-500/10`) **tanpa varian `light_sakura` sama sekali**, beda dari `GoldSavings.tsx` di atas (elemen ini ada di header Dashboard biasa yang ikut tema, bukan kartu emas skeuomorphic). Diganti ke `tokens.badge.success` (token yang sama dipakai `Badge.tsx` tone `success`) + radius dikonsolidasi `rounded-md` → `rounded-lg`. Efek visual: badge ini sekarang benar-benar kebaca di `light_sakura` (sebelumnya berpotensi kontras buruk/nyaris invisible karena cuma `bg-emerald-500/10` tanpa fallback terang), dan border sedikit lebih terlihat (`/10` → `/30`, ikut standar `Badge`).
+
+⏳ **Sengaja belum diubah (dipertimbangkan, bukan terlewat):**
+- `Budget.tsx` & `Installments.tsx`: keduanya **sudah** pakai radius `rounded-lg` (sudah satu keluarga dengan `Badge`), beda cuma di padding/ukuran font — sesuai catatan tabel temuan di atas ("radius sama, cuma clamp font beda"). Diperiksa lebih detail sesi ini: status badge di `Budget.tsx` pakai case biasa + ikon (`<AlertTriangle/> Waspada`), BUKAN pola caps-lock pendek ala `Badge.tsx` (`<Badge>` selalu `uppercase font-extrabold tracking-wider` + selalu ada `border`). Memaksa migrasi penuh ke `<Badge>` akan mengubah tipografi (jadi UPPERCASE) dan menambah border baru yang sebelumnya tidak ada — itu perubahan desain yang lebih besar dari "konsolidasi radius", jadi **sengaja tidak dilakukan** tanpa konfirmasi desain lebih dulu. Radius keduanya sudah tidak drift, jadi dampak risiko rendah untuk dibiarkan.
+- 14 file yang disebut di ringkasan temuan awal ("ditemukan 14 file") — dokumen ini cuma memverifikasi detail 6 baris di tabel atas (yang sudah diverifikasi manual satu per satu sesi ini). 8 file sisanya **belum diaudit ulang manual** sesi ini; jangan asumsikan otomatis "aman"/"sudah beres" sampai dicek satu-satu dengan cara yang sama (banyak kasus di sesi ini ternyata butuh judgment call, bukan cuma pattern-match keyword).
+
+**Verifikasi yang sudah dilakukan:**
+- `npx tsc --noEmit` di seluruh project → **0 error**.
+- `vite build` → **berhasil**, `✓ built in 30.30s`, 0 error. Warning chunk-size sama seperti sebelumnya.
+
+**Belum dilakukan (langkah wajib sebelum benar-benar dianggap tuntas):**
+- Verifikasi visual manual `AdminErrorMonitor.tsx` (radius pill status), `Onboarding.tsx` (radius badge simulasi), dan terutama `DashboardHeader.tsx` di `light_sakura` — ini yang paling penting karena baru pertama kali punya varian warna terang sama sekali (sebelumnya tidak ada, jadi tidak ada baseline visual "sebelum" yang valid untuk dibandingkan di tema itu).
+- Audit manual 8 dari 14 file yang belum diverifikasi detail (di luar 6 baris tabel + `DashboardHeader.tsx`).
+- Keputusan desain (di luar scope teknis murni): apakah `Budget.tsx`/`Installments.tsx` memang harus dipaksa uppercase ala `Badge.tsx`, atau justru `Badge.tsx` yang perlu prop baru (mis. `caseStyle="normal"`) untuk mengakomodasi pola case-biasa+ikon yang sudah dipakai di beberapa tempat. Di luar keputusan teknis yang bisa diambil sepihak dalam sesi refactor ini.
+
+---
+
 ## 4. 🟠 Input custom di Login & beberapa Admin view
 
 `Input.tsx` sudah menstandardisasi label uppercase + icon kiri + focus-border + radius `rounded-2xl` (default). Dua area menyimpang:
@@ -267,7 +301,7 @@ Ini kemungkinan **sengaja**: `ErrorBoundary` diletakkan di luar semua context pr
 1. ✅ **`Modal.tsx` → compose dari `ModalShell`** — **SELESAI** (dampak tertinggi per baris kode yang diubah, 18 titik pakai, API tidak berubah). Butuh tambahan prop `panelTone` di `ModalShell` (backward-compatible) untuk menampung warna panel danger/normal yang beda dari default. Belum diverifikasi visual manual — lihat detail status di temuan #2 di atas.
 2. **`WalletPickerField` → wrapper tipis di atas `DropdownField`** — sama-sama migrasi 1 file, tapi menghilangkan ~150 baris duplikasi logika stateful (bukan cuma style) sekaligus.
 3. ✅ **Migrasi Card di level view** — **SELESAI**, seluruh 18 file (7 view utama + 11 file Admin) sudah dimigrasi, nol occurrence pola manual `rounded-3xl border` tersisa. Verifikasi visual manual per halaman masih belum dilakukan — lihat detail status di temuan #1 di atas.
-4. **`GoldSavings.tsx` badge hardcode** — kecil tapi satu-satunya yang benar-benar lolos dari sistem tema sepenuhnya (bukan cuma beda radius).
+4. ⚠️➡️✅ **`GoldSavings.tsx` badge hardcode** — **DIKOREKSI, bukan bug**: warna hardcode di sini disengaja (kartu emas skeuomorphic yang memang tidak ikut tema, lihat detail di temuan #3 di atas), jadi **tidak dimigrasi**. Sebagai gantinya, bug tema-bypass yang *sungguhan* ditemukan & diperbaiki sesi ini di `DashboardHeader.tsx` (indikator status Telegram, sebelumnya tanpa varian `light_sakura` sama sekali). Radius `AdminErrorMonitor.tsx` & `Onboarding.tsx` juga sudah dikonsolidasi ke `rounded-lg`. `Budget.tsx`/`Installments.tsx` sengaja belum disentuh (butuh keputusan desain, bukan technical debt murni) — lihat detail di temuan #3.
 5. **Toggle switch di `AdminMaintenance.tsx` → `ToggleSwitch`** — halaman sensitif (maintenance/feature-lock), worth diprioritaskan meski jumlah file kecil.
 6. **`Login.tsx` InputField → `Input`** — halaman pertama yang dilihat user, worth prioritizing meski dampaknya kecil.
 7. Sisanya (badge lain, kontainer ikon, `AdminVoucherManager` input, admin views secara umum) — technical debt yang bisa dikerjakan bertahap, cocok masuk backlog "polish" per-sprint.

@@ -811,7 +811,7 @@ export const Onboarding: React.FC = () => {
 
                   <div className={cx("p-4 rounded-xl border shadow-sm relative overflow-hidden", tokens.surface.card, tokens.border.accent)}>
                     <div className="absolute top-0 right-0 p-2">
-                      <span className={cx("px-2 py-0.5 rounded text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold", tokens.onboarding.badgeDueSoon)}>
+                      <span className={cx("px-2 py-0.5 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold", tokens.onboarding.badgeDueSoon)}>
                         {t("bill_reminders.status_due_soon")}
                       </span>
                     </div>
