@@ -19,7 +19,6 @@ import { DashboardBillReminders } from "../components/DashboardBillReminders";
 import { DashboardInstallments } from "../components/DashboardInstallments";
 import { DashboardOverviewCard } from "../components/DashboardOverviewCard";
 import { ErrorState } from "../components/ErrorState";
-import { DashboardWalletCarousel } from "../components/DashboardWalletCarousel";
 import { DashboardWalletSelectorCard } from "../components/DashboardWalletSelectorCard";
 import { useCategories } from "../hooks/useCategories";
 import { Button } from "../components/ui/Button";
@@ -235,30 +234,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="space-y-6 pb-24 relative">
-      {/* 1 + 1b. Welcome/weather card ("dashboard dinamis") DAN kartu Pos
-          Dompet selector digabung jadi SATU strip yang bisa digeser (swipe)
-          horizontal, snap satu kartu per satu -- sama seperti sebelumnya.
-          Bedanya kartu Pos Dompet SEKARANG cuma SATU kartu (selector
-          dropdown, lihat DashboardWalletSelectorCard.tsx) alih-alih satu
-          kartu per pos yang digeser satu-satu -- untuk pindah pos, user
-          pakai dropdown DI DALAM kartu itu, bukan swipe lagi. Swipe di
-          strip ini sekarang cuma untuk berpindah antara kartu dashboard
-          dinamis <-> kartu Pos Dompet. */}
-      <DashboardWalletCarousel
-        headerSlot={
-          <DashboardHeader
-            currentUser={currentUser}
-            telegramStatus={telegramStatus}
-          />
-        }
-        walletSlot={
-          <DashboardWalletSelectorCard
-            formatIDR={formatIDR}
-            transactions={transactions}
-            refreshTrigger={transactionsUpdatedTrigger}
-            onTransactionAdded={onTransactionAdded}
-          />
-        }
+      {/* 1. Welcome/weather card ("dashboard dinamis"). Kartu Pos Dompet
+          selector TIDAK LAGI digabung dalam satu strip carousel dengan
+          kartu ini (lihat riwayat DashboardWalletCarousel.tsx) -- sekarang
+          kartu Pos Dompet dirender sebagai section berdiri sendiri
+          langsung di bawah header, bukan hasil swipe. */}
+      <DashboardHeader
+        currentUser={currentUser}
+        telegramStatus={telegramStatus}
+      />
+
+      {/* 1b. Kartu Pos Dompet selector (dropdown, lihat
+          DashboardWalletSelectorCard.tsx) -- dipindah keluar dari komponen
+          header, jadi section sendiri persis di bawahnya. */}
+      <DashboardWalletSelectorCard
+        formatIDR={formatIDR}
+        transactions={transactions}
+        refreshTrigger={transactionsUpdatedTrigger}
+        onTransactionAdded={onTransactionAdded}
       />
 
       {/* 1c. Ringkasan Keuangan -- Total Kekayaan, Bulan Ini, Rincian Aset
