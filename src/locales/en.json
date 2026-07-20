@@ -85,8 +85,10 @@
     "greeting_evening": "Good evening, {name}",
     "greeting_night": "Good night, {name}",
     "weather_loading": "Loading weather...",
+    "open_profile": "Open profile",
     "balance_summary": "Financial Overview This Month",
     "overall_summary_label": "Overall Summary",
+    "financial_monitor_label": "Financial Monitor",
     "wallet_carousel_hint": "Swipe to see more wallets →",
     "income": "Income",
     "expense": "Expense",
@@ -1160,7 +1162,9 @@
     "empty_state_desc": "Add an expense category first before setting a budget.",
     "dashboard_alert_title": "Budget Alerts",
     "dashboard_alert_cta": "Manage Budget",
-    "dashboard_alert_item": "{category}: {percent}% used"
+    "dashboard_alert_item": "{category}: {percent}% used",
+    "dashboard_row_title": "Monthly Budget",
+    "dashboard_row_subtitle": "{percent}% of {total}"
   },
   "bill_reminders": {
     "page_title": "Bill Reminders",
@@ -1281,7 +1285,9 @@
     "undo_confirm_desc": "Progress for \"{name}\" will be reduced by 1 month, and the related transaction (if any) will be deleted.",
     "undo_confirm_button": "Yes, Undo",
     "dashboard_widget_title": "Installment Progress",
-    "dashboard_widget_cta": "See All"
+    "dashboard_widget_cta": "See All",
+    "dashboard_row_title": "Installments",
+    "dashboard_row_subtitle": "{name} · {paid}/{total} months"
   },
   "savings": {
     "page_title": "Savings",

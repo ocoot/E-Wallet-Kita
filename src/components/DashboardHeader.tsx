@@ -1,18 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { UserSession } from "../types";
-import { Send, Info, Calendar, MapPin } from "lucide-react";
-import { motion } from "motion/react";
+import { Send, Info } from "lucide-react";
 import { useWeather } from "../hooks/useWeather";
-import { useBudgets } from "../hooks/useBudgets";
 import { getWeatherTheme } from "../lib/weatherTheme";
-import { DashboardWeatherLayer } from "./DashboardWeatherLayer";
 import { WeatherDebugToggle, WeatherDebugOverride } from "./WeatherDebugToggle";
-import { EventOverlay } from "./EventOverlay";
-import { getActiveEvent, fetchAllEvents } from "../api/eventCalendar";
-import type { NagerHoliday, SportsDbEvent } from "../api/eventCalendar";
-import type { OverlayType } from "../api/eventCalendar";
-import { Card } from "./ui/Card";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface DashboardHeaderProps {
@@ -20,37 +13,46 @@ interface DashboardHeaderProps {
   telegramStatus: { linked: boolean; lastSync: string | null };
 }
 
+/**
+ * Redesign "Varian A -- Minimal Utility Topbar" (native look-alike).
+ *
+ * Sebelumnya komponen ini adalah <Card> besar berisi 4+ badge terpisah
+ * (tanggal, cuaca, lokasi, debug), sapaan besar, sub-teks status anggaran,
+ * dan banner sync Telegram permanen -- pola khas hero card di website, dan
+ * kelamaan makan ruang layar di mobile.
+ *
+ * Sekarang jadi topbar setinggi ~52px, tanpa bingkai <Card>, meniru nav bar
+ * native (mis. header list di iOS Mail/Settings):
+ *  - Kiri : sapaan (boleh wrap sampai 2 baris untuk nama panjang -- lihat
+ *           `line-clamp-2` di JSX, tidak lagi dipotong paksa jadi "...").
+ *           Tanpa sub-teks anggaran -- info itu sudah tersedia di
+ *           <DashboardBudgetSummary />/<DashboardBudgetAlerts /> di bagian
+ *           bawah halaman, jadi tidak digandakan di sini.
+ *  - Kanan: chip cuaca ringkas, tombol debug cuaca (dev only, ikon saja),
+ *           dan avatar profil -- INI YANG MENGGANTIKAN slot ikon notifikasi
+ *           di mockup Varian A. Titik hijau kecil di sudut avatar menandakan
+ *           status sinkron Bot Telegram (dari `telegramStatus.linked`),
+ *           menggantikan banner sync yang dulu selalu tampil penuh.
+ *
+ * Overlay dekoratif cuaca (awan/partikel animasi) & overlay event/liburan
+ * sengaja TIDAK dipakai lagi di sini -- tidak ada ruang yang pas untuk itu
+ * di topbar setipis ini. Kalau suatu saat mau dikembalikan, tempatnya lebih
+ * cocok di kartu ringkasan saldo (bagian yang punya ruang lega), bukan di
+ * topbar.
+ */
 export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   currentUser,
   telegramStatus,
 }) => {
   const { tokens, cx } = useThemeTokens();
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
   const { weather, loading: weatherLoading } = useWeather();
-  const { budgets, loading: budgetsLoading } = useBudgets(currentUser.id);
 
-  // TEMPORARY DEV TOOL -- lihat komentar di WeatherDebugToggle.tsx.
-  // Saat override aktif, ini menggantikan data cuaca asli hanya untuk
-  // preview visual (tidak mengubah/menyimpan apa pun).
+  // TEMPORARY DEV TOOL -- lihat komentar di WeatherDebugToggle.tsx. Saat
+  // override aktif, ini menggantikan data cuaca asli hanya untuk preview
+  // visual (tidak mengubah/menyimpan apa pun).
   const [debugOverride, setDebugOverride] = useState<WeatherDebugOverride | null>(null);
-
-  // ── Deteksi event/liburan & sepakbola aktif ──
-  const [holidays, setHolidays] = useState<NagerHoliday[] | null>(null);
-  const [footballMatches, setFootballMatches] = useState<SportsDbEvent[] | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    fetchAllEvents().then((data) => {
-      if (!cancelled) {
-        setHolidays(data.holidays);
-        setFootballMatches(data.footballMatches);
-      }
-    });
-    return () => { cancelled = true; };
-  }, []);
-
-  const activeEvent = getActiveEvent(new Date(), holidays, footballMatches);
-  const eventOverlay: OverlayType | null = activeEvent?.event.overlay.type ?? null;
 
   const effectiveWeather: { condition: WeatherDebugOverride["condition"]; isDay: boolean } | null = debugOverride
     ? debugOverride
@@ -62,191 +64,118 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
   const getGreetingKey = (): string => {
     const hour = new Date().getHours();
-    if (hour >= 5 && hour < 11) {
-      return "dashboard.greeting_morning";
-    } else if (hour >= 11 && hour < 15) {
-      return "dashboard.greeting_afternoon";
-    } else if (hour >= 15 && hour < 19) {
-      return "dashboard.greeting_evening";
-    } else {
-      return "dashboard.greeting_night";
-    }
+    if (hour >= 5 && hour < 11) return "dashboard.greeting_morning";
+    if (hour >= 11 && hour < 15) return "dashboard.greeting_afternoon";
+    if (hour >= 15 && hour < 19) return "dashboard.greeting_evening";
+    return "dashboard.greeting_night";
   };
 
-  const formattedDate = new Intl.DateTimeFormat(locale === "id" ? "id-ID" : "en-US", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(new Date());
-
-  const getDynamicSubGreeting = (): { text: string; type: "budget_danger" | "budget_warning" | "budget_ok" | "empty" | "loading" } => {
-    if (budgetsLoading) {
-      return {
-        text: locale === "id" ? "Memuat status anggaran..." : "Loading budget status...",
-        type: "loading"
-      };
-    }
-
-    if (budgets.length > 0) {
-      const dangerBudget = budgets.find(b => b.status === "danger" || b.percent >= 100);
-      if (dangerBudget) {
-        return {
-          text: locale === "id"
-            ? `Peringatan Anggaran: Kategori "${dangerBudget.category_key}" telah terpakai ${Math.round(dangerBudget.percent)}%! Batasi pengeluaran Anda hari ini.`
-            : `Budget Alert: Category "${dangerBudget.category_key}" is at ${Math.round(dangerBudget.percent)}%! Mind your spending today.`,
-          type: "budget_danger"
-        };
-      }
-
-      const warningBudget = budgets.find(b => b.status === "warning");
-      if (warningBudget) {
-        return {
-          text: locale === "id"
-            ? `Perhatian Anggaran: Kategori "${warningBudget.category_key}" mendekati batas (${Math.round(warningBudget.percent)}% terpakai).`
-            : `Budget Warning: Category "${warningBudget.category_key}" is approaching limit (${Math.round(warningBudget.percent)}% spent).`,
-          type: "budget_warning"
-        };
-      }
-
-      const totalLimit = budgets.reduce((acc, b) => acc + b.monthly_limit, 0);
-      const totalSpent = budgets.reduce((acc, b) => acc + b.spent, 0);
-
-      if (totalLimit > 0) {
-        const today = new Date();
-        const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-        const remainingDays = Math.max(1, daysInMonth - today.getDate() + 1);
-        const remainingBudget = Math.max(0, totalLimit - totalSpent);
-        const dailyAllowance = Math.floor(remainingBudget / remainingDays);
-        const overallPercent = Math.round((totalSpent / totalLimit) * 100);
-
-        const formattedAllowance = new Intl.NumberFormat(locale === "id" ? "id-ID" : "en-US", {
-          style: "currency",
-          currency: "IDR",
-          maximumFractionDigits: 0
-        }).format(dailyAllowance);
-
-        const rawText = locale === "id"
-          ? `Status Anggaran Harian: Jatah aman harian ± ${formattedAllowance} (${remainingDays} hari tersisa, ${overallPercent}% anggaran terpakai).`
-          : `Daily Budget Status: Safe daily allowance ± ${formattedAllowance} (${remainingDays} days remaining, ${overallPercent}% budget spent).`;
-
-        return {
-          text: rawText,
-          type: "budget_ok"
-        };
-      }
-    }
-
-    return {
-      text: locale === "id"
-        ? "Belum ada anggaran kategori yang diatur. Buat anggaran untuk memantau pengeluaran Anda."
-        : "No category budgets set yet. Create one to keep track of your spending.",
-      type: "empty"
-    };
-  };
+  const initial = currentUser.display_name?.charAt(0)?.toUpperCase() || "?";
 
   return (
-    <Card
+    <div
       id="dashboard-welcome-banner"
-      border="subtle"
-      elevation="sm"
-      className="relative flex flex-col md:flex-row md:items-center justify-between gap-4"
+      className="relative flex items-center justify-between gap-3 py-1"
     >
-      {weatherTheme && effectiveWeather && (
-        <DashboardWeatherLayer
-          condition={effectiveWeather.condition}
-          isDay={effectiveWeather.isDay}
-        />
-      )}
-
-      {/* Overlay event/liburan (confetti Piala Dunia, dll) -- sengaja dirender
-          TERPISAH dari DashboardWeatherLayer supaya tetap muncul walau data
-          cuaca gagal/loading (geolocation ditolak, /api/utils?type=weather down, dst).
-          Sebelumnya overlay ini "menumpang" di dalam weather layer sehingga
-          tidak pernah terlihat ketika cuaca gagal dimuat. */}
-      {eventOverlay && (
-        <EventOverlay type={eventOverlay} />
-      )}
-
-      <div className="relative z-10 flex items-center gap-4">
-        {/* Logo brand PNG sudah dipindah khusus ke MobileTopBar/Sidebar supaya
-            tidak duplikat dengan greeting card ini (sebelumnya logo yang sama
-            tampil dua kali sekaligus di layar: kecil di top bar + besar di
-            sini). Greeting card sekarang fokus murni ke sapaan personal. */}
-        <motion.div
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5, delay: 0.1, ease: "easeOut" }}
-        >
-          <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-            <div className={cx(tokens.dashboardHeader.weatherBadge, tokens.text.accent)}>
-              <Calendar size={12} className="shrink-0" />
-              <span>{formattedDate}</span>
-            </div>
-
-            {weatherLoading && !debugOverride && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium text-slate-500 shrink-0 whitespace-nowrap animate-pulse">
-                <span>{t("dashboard.weather_loading")}</span>
-              </div>
-            )}
-
-            {effectiveWeather && weatherTheme && (
-              <div className={cx(tokens.dashboardHeader.weatherBadge, tokens.text.accent)}>
-                <weatherTheme.icon size={12} className={`shrink-0 ${weatherTheme.accentClass}`} />
-                <span>{locale === "id" ? weatherTheme.labelId : weatherTheme.labelEn}</span>
-                {!debugOverride && weather && (
-                  <>
-                    <span>· {weather.current.temperatureC}°C</span>
-                    <span className="w-px h-3 bg-white/10 mx-0.5 shrink-0" />
-                    <MapPin size={11} className="shrink-0 opacity-70" />
-                    <span className="max-w-[9rem] truncate">{weather.location.city}</span>
-                  </>
-                )}
-                {debugOverride && <span className="text-fuchsia-300">(debug)</span>}
-              </div>
-            )}
-
-            <WeatherDebugToggle value={debugOverride} onChange={setDebugOverride} />
-          </div>
-          <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
-            {t(getGreetingKey(), { name: currentUser.display_name })}
-          </h1>
-          {(() => {
-            const subGreeting = getDynamicSubGreeting();
-            return (
-              <p className={cx("font-sans text-xs mt-1.5 max-w-xl leading-relaxed transition-colors italic", tokens.text.muted)}>
-                {subGreeting.text}
-              </p>
-            );
-          })()}
-          {telegramStatus.linked && (
-            <div className={cx("flex items-center gap-1.5 mt-2 text-[clamp(0.5625rem,2.6vw,0.625rem)] px-2 py-1 rounded-lg border w-fit", tokens.badge.success)}>
-              <Send size={10} />
-              <span>
-                {t("settings.telegram_sync_status")}
-                {telegramStatus.lastSync ? ` (${t("settings.telegram_last_sync", { time: telegramStatus.lastSync })})` : ""}
-              </span>
-            </div>
+      {/* Kiri: sapaan sekarang boleh sampai 2 baris (line-clamp-2) alih-alih
+          dipotong paksa jadi 1 baris ("Selamat malam, A...") -- nama
+          panjang sekarang tetap terbaca penuh selama muat dalam 2 baris.
+          `flex-1 min-w-0` di sini WAJIB supaya kolom ini benar-benar
+          menyempit sesuai sisa ruang (bukan selebar konten), karena syarat
+          line-clamp/wrap baru aktif kalau lebar elemennya dibatasi. */}
+      <div className="flex-1 min-w-0">
+        <h1
+          className={cx(
+            "font-sans font-bold text-[15px] leading-snug tracking-tight line-clamp-2",
+            tokens.text.primary
           )}
-        </motion.div>
-      </div>
-
-      {/* Badge tamu saja di sini sekarang -- toggle mata nominal yang dulu
-          ada di header kartu Pos Dompet sudah DIHAPUS (lihat
-          DashboardWalletCarousel.tsx), saldo selalu tampil apa adanya. */}
-      <div className="relative z-10 flex flex-col items-start md:items-end gap-2 shrink-0">
+        >
+          {t(getGreetingKey(), { name: currentUser.display_name })}
+        </h1>
         {currentUser.is_guest && (
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, delay: 0.3 }}
-            className="bg-amber-500/10 border border-amber-500/20 rounded-2xl px-4 py-2 font-sans text-xs font-semibold text-amber-500 flex items-center gap-2"
+          <span
+            className={cx(
+              "inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-semibold",
+              "bg-amber-500/10 border border-amber-500/20 text-amber-500"
+            )}
           >
-            <Info size={14} />
-            <span>{t("auth.guest_badge")}</span>
-          </motion.div>
+            <Info size={10} />
+            {t("auth.guest_badge")}
+          </span>
         )}
       </div>
-    </Card>
+
+      {/* Kanan: chip cuaca ringkas -> debug (dev only) -> avatar profil
+          (menggantikan slot ikon notifikasi di mockup Varian A). */}
+      <div className="flex items-center gap-1.5 shrink-0">
+        {weatherLoading && !debugOverride && (
+          <div className={cx(tokens.dashboardHeader.weatherBadge, "animate-pulse")}>
+            <span>{t("dashboard.weather_loading")}</span>
+          </div>
+        )}
+
+        {effectiveWeather && weatherTheme && (
+          <div className={cx(tokens.dashboardHeader.weatherBadge, tokens.text.accent)}>
+            <weatherTheme.icon size={12} className={`shrink-0 ${weatherTheme.accentClass}`} />
+            {!debugOverride && weather && <span>{weather.current.temperatureC}°C</span>}
+            {debugOverride && (
+              <span>{debugOverride.condition.replace(/_/g, " ")}</span>
+            )}
+          </div>
+        )}
+
+        <WeatherDebugToggle value={debugOverride} onChange={setDebugOverride} />
+
+        <button
+          type="button"
+          onClick={() => navigate("/settings/profile")}
+          aria-label={t("dashboard.open_profile")}
+          title={t("dashboard.open_profile")}
+          className="relative shrink-0"
+        >
+          <div
+            className={cx(
+              "w-8 h-8 rounded-full flex items-center justify-center overflow-hidden text-xs font-bold",
+              tokens.dashboardHeader.avatarRing,
+              !currentUser.avatar_url && tokens.dashboardHeader.avatarFallback
+            )}
+          >
+            {currentUser.avatar_url ? (
+              <img
+                src={currentUser.avatar_url}
+                alt={currentUser.display_name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              initial
+            )}
+          </div>
+
+          {/* Titik status sync Bot Telegram -- menggantikan banner sync
+              permanen versi lama. Detail lengkap (waktu sync terakhir) bisa
+              dilihat di Pengaturan > Telegram, jadi tidak perlu diulang di
+              sini; title/aria-label cukup untuk pembaca layar. */}
+          {telegramStatus.linked && (
+            <span
+              className={cx(
+                "absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full flex items-center justify-center",
+                tokens.surface.card
+              )}
+              title={
+                telegramStatus.lastSync
+                  ? t("settings.telegram_last_sync", { time: telegramStatus.lastSync })
+                  : t("settings.telegram_sync_status")
+              }
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              <span className="sr-only">
+                <Send size={8} />
+                {t("settings.telegram_sync_status")}
+              </span>
+            </span>
+          )}
+        </button>
+      </div>
+    </div>
   );
 };

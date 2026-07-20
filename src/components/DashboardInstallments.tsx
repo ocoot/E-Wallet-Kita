@@ -6,15 +6,15 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useInstallments } from "../hooks/useInstallments";
 import { audioFeedback } from "../lib/audio";
-import { Card } from "./ui/Card";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 
-const MotionCard = motion.create(Card);
-
 /**
- * Widget dashboard ringkas untuk cicilan/utang jangka panjang yang masih
- * berjalan, menampilkan progres tiap cicilan (mis. "12/24 bulan"). Hanya
- * tampil kalau user punya minimal 1 cicilan aktif.
+ * Baris "Cicilan" di dalam grouped list Pantauan Keuangan (lihat
+ * Dashboard.tsx) -- versi RINGKAS satu baris ala iOS Settings/Wallet: ikon
+ * bulat + judul + SATU baris subjudul (nama cicilan teratas · progresnya,
+ * mis. "Cicilan Motor · 1/12 bulan") + chevron. Daftar lengkap semua
+ * cicilan aktif (bukan cuma satu) sengaja TIDAK ditampilkan di sini lagi --
+ * itu tugas halaman /installments yang dituju kalau baris ini di-tap.
  */
 export const DashboardInstallments: React.FC = () => {
   const { tokens, cx } = useThemeTokens();
@@ -23,50 +23,37 @@ export const DashboardInstallments: React.FC = () => {
   const navigate = useNavigate();
   const { installments, loading } = useInstallments(user?.id);
 
-  const active = installments.filter((i) => !i.is_completed).slice(0, 3);
+  // `installments` sudah terurut (belum lunas dulu, progres terbesar di
+  // atas -- lihat useInstallments.ts), jadi active[0] otomatis yang paling
+  // relevan untuk ditampilkan sebagai satu baris ringkasan.
+  const active = installments.filter((i) => !i.is_completed);
 
   if (loading || active.length === 0) return null;
 
+  const top = active[0];
+
   return (
-    <MotionCard
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      border="subtle"
-      elevation="ambient"
-    >
-      <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="flex items-center gap-2.5">
-          <div className={cx("w-8 h-8 rounded-xl flex items-center justify-center shrink-0", tokens.chip.accentIndigo, tokens.text.accent)}>
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+      <button
+        type="button"
+        onClick={() => { audioFeedback.playClick(); navigate("/installments"); }}
+        className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left cursor-pointer"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div className={cx("w-9 h-9 rounded-full flex items-center justify-center shrink-0", tokens.chip.accentIndigo, tokens.text.accent)}>
             <Landmark size={16} />
           </div>
-          <h3 className={cx("font-sans font-bold text-sm", tokens.text.onSurface)}>
-            {t("installments.dashboard_widget_title")}
-          </h3>
-        </div>
-        <button
-          onClick={() => { audioFeedback.playClick(); navigate("/installments"); }}
-          className={cx("flex items-center gap-1 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold transition-colors cursor-pointer hover:opacity-80", tokens.text.muted)}
-        >
-          {t("installments.dashboard_widget_cta")} <ChevronRight size={12} />
-        </button>
-      </div>
-
-      <div className="space-y-3">
-        {active.map((i) => (
-          <div key={i.id} className="space-y-1">
-            <div className="flex items-center justify-between text-xs">
-              <span className={cx("font-semibold truncate pr-2", tokens.text.secondary)}>{i.name}</span>
-              <span className={cx("shrink-0", tokens.text.faint)}>{i.months_paid}/{i.total_months}</span>
-            </div>
-            <div className={cx("h-1.5 w-full rounded-full overflow-hidden", tokens.surface.sunken)}>
-              <div
-                className={cx("h-full rounded-full", tokens.installments.progressGlow)}
-                style={{ width: `${i.progressPercent}%` }}
-              />
-            </div>
+          <div className="min-w-0">
+            <h3 className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>
+              {t("installments.dashboard_row_title")}
+            </h3>
+            <p className={cx("text-xs truncate", tokens.text.muted)}>
+              {t("installments.dashboard_row_subtitle", { name: top.name, paid: top.months_paid, total: top.total_months })}
+            </p>
           </div>
-        ))}
-      </div>
-    </MotionCard>
+        </div>
+        <ChevronRight size={18} className={cx("shrink-0", tokens.text.muted)} />
+      </button>
+    </motion.div>
   );
 };

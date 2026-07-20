@@ -419,7 +419,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
               >
                 <Suspense fallback={<SkeletonByRoute />}>
                   <Routes location={location}>
-                  <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} />} />
+                  <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} userAvatarUrl={userProfile?.avatar_url} />} />
                   <Route path="/transactions/new" element={<FeatureLockGate featureKey="new_transaction"><NewTransaction onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
                   <Route path="/transactions" element={<FeatureLockGate featureKey="history"><History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
                   <Route path="/wallets" element={<FeatureLockGate featureKey="wallets"><Wallets /></FeatureLockGate>} />

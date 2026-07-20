@@ -916,6 +916,15 @@ export const themeTokens = {
    */
   dashboardHeader: {
     weatherBadge: "flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium shrink-0 whitespace-nowrap light_sakura:bg-rose-50 light_sakura:border-rose-100/50 transition-colors duration-300",
+    /**
+     * Varian A (topbar kompak) -- lihat DashboardHeader.tsx. Dipisah dari
+     * `weatherBadge` di atas karena topbar ini TIDAK lagi dibungkus <Card>
+     * (bandingkan dengan komentar `Card border="subtle"` versi lama), jadi
+     * butuh token warna sendiri untuk avatar & tombol ikon dev-only.
+     */
+    avatarFallback: "bg-slate-800 text-emerald-300 light_sakura:bg-rose-100 light_sakura:text-rose-600",
+    avatarRing: "ring-1 ring-white/10 light_sakura:ring-rose-200/60",
+    iconButton: "flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors light_sakura:bg-rose-50 light_sakura:border-rose-100/60 light_sakura:hover:bg-rose-100",
   },
   /**
    * Sesi 54: token untuk `ui/Card.tsx`. `borderSubtle` genuinely 1x-pakai

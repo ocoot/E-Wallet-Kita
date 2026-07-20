@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabase";
 import { UserSession, Transaction } from "../types";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { Plus, BookOpen, X } from "lucide-react";
+import { Plus, BookOpen, X, Activity } from "lucide-react";
 import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { useThemeTokens } from "../hooks/useThemeTokens";
@@ -27,12 +27,14 @@ interface DashboardProps {
   transactionsUpdatedTrigger: number;
   onTransactionAdded: () => void;
   userDisplayName?: string;
+  userAvatarUrl?: string | null;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
   transactionsUpdatedTrigger,
   onTransactionAdded,
-  userDisplayName
+  userDisplayName,
+  userAvatarUrl
 }) => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -41,12 +43,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const { tokens, cx } = useThemeTokens();
 
   const [displayName, setDisplayName] = useState<string>(userDisplayName || "");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(userAvatarUrl ?? null);
 
   useEffect(() => {
     if (userDisplayName) {
       setDisplayName(userDisplayName);
     }
   }, [userDisplayName]);
+
+  // Sinkron foto profil dari prop App.tsx (mengikuti pola `displayName` di
+  // atas) -- ini yang tadinya HILANG, sehingga avatar di DashboardHeader
+  // selalu jatuh ke fallback inisial huruf walau pengguna sudah set foto.
+  useEffect(() => {
+    if (userAvatarUrl !== undefined) {
+      setAvatarUrl(userAvatarUrl);
+    }
+  }, [userAvatarUrl]);
 
   useEffect(() => {
     if (userDisplayName) return;
@@ -64,12 +76,32 @@ export const Dashboard: React.FC<DashboardProps> = ({
     fetchProfile();
   }, [user, userDisplayName]);
 
+  // Fallback ambil avatar_url langsung dari Supabase kalau App.tsx belum
+  // sempat mengirim prop-nya (sama seperti pola fallback display_name di
+  // atas) -- misalnya saat refresh halaman di /dashboard secara langsung.
+  useEffect(() => {
+    if (userAvatarUrl !== undefined) return;
+    if (!user) return;
+    const fetchAvatar = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("avatar_url")
+        .eq("id", user.id)
+        .single();
+      if (!error && data && data.avatar_url) {
+        setAvatarUrl(data.avatar_url);
+      }
+    };
+    fetchAvatar();
+  }, [user, userAvatarUrl]);
+
   const currentUser: UserSession = {
     id: user?.id || "",
     display_name: displayName || user?.user_metadata?.full_name || t("admin.guest_user"),
     is_guest: user?.is_anonymous || false,
     preferred_language: "id",
-    preferred_theme: "dark_obsidian"
+    preferred_theme: "dark_obsidian",
+    avatar_url: avatarUrl
   };
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -312,11 +344,41 @@ export const Dashboard: React.FC<DashboardProps> = ({
       {/* 2. Scorecard Summaries -- dipindahkan ke dalam DashboardOverviewCard
           (strip "Bulan Ini") supaya tidak ada 2 grup kartu saldo terpisah. */}
 
-      {/* 2b. Budget Summary & Bill Reminders */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <DashboardBudgetSummary />
-        <DashboardBillReminders />
-        <DashboardInstallments />
+      {/* 2b. Budget Summary & Bill Reminders -- digabung jadi SATU grouped
+          list (pola iOS Settings/Wallet): 1 container/border, divider tipis
+          antar baris lewat `divide-y` (otomatis lompat baris yang tidak
+          di-render, mis. widget yang return null karena datanya kosong --
+          divide-y bekerja lewat sibling combinator jadi tidak perlu logic
+          tambahan untuk itu), chevron polos di kanan tiap baris (lihat
+          masing-masing komponen widget). Menggantikan 3 kartu terpisah
+          dengan border penuh 4 sisi yang terasa seperti widget dashboard
+          web terpisah-pisah. */}
+      {/* 2b. Budget Summary & Bill Reminders -- digabung jadi SATU grouped
+          list (pola iOS Settings/Wallet), dengan label section "PANTAUAN
+          KEUANGAN" di atasnya (pola eyebrow yang sama seperti "RINGKASAN
+          KESELURUHAN" di DashboardOverviewCard). 1 container/border,
+          divider tipis antar baris lewat `divide-y` (otomatis lompat baris
+          yang tidak di-render, mis. widget yang return null karena datanya
+          kosong -- divide-y bekerja lewat sibling combinator jadi tidak
+          perlu logic tambahan untuk itu), chevron polos di kanan tiap
+          baris (lihat masing-masing komponen widget). Menggantikan 3 kartu
+          terpisah dengan border penuh 4 sisi yang terasa seperti widget
+          dashboard web terpisah-pisah. Baik label maupun container
+          disembunyikan bersamaan lewat `has-[]:` di label & `empty:hidden`
+          di container, supaya tidak ada label section "menggantung" tanpa
+          isi kalau ketiga widget di dalamnya sama-sama kosong. */}
+      <div className="[&:has(.financial-monitor-rows:empty)]:hidden">
+        <div className="flex items-center gap-2 mb-3 px-1">
+          <Activity size={14} className={tokens.icon.accent} />
+          <h3 className={cx("text-xs font-bold uppercase tracking-wider", tokens.text.muted)}>
+            {t("dashboard.financial_monitor_label")}
+          </h3>
+        </div>
+        <div className={cx("financial-monitor-rows rounded-3xl border overflow-hidden divide-y divide-slate-800 light_sakura:divide-rose-100", tokens.surface.card, tokens.border.accent)}>
+          <DashboardBudgetSummary />
+          <DashboardBillReminders />
+          <DashboardInstallments />
+        </div>
       </div>
 
       {/* 2c. Alert card (hanya kalau urgent) */}

@@ -1,116 +1,63 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
-import { PiggyBank, ChevronRight, TrendingUp } from "lucide-react";
+import { PiggyBank, ChevronRight } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
-import { useCategories } from "../hooks/useCategories";
 import { useBudgets } from "../hooks/useBudgets";
 import { audioFeedback } from "../lib/audio";
-import { Card } from "./ui/Card";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 
-const MotionCard = motion.create(Card);
-
+/**
+ * Baris "Anggaran Bulanan" di dalam grouped list Pantauan Keuangan
+ * (lihat Dashboard.tsx) -- versi RINGKAS satu baris ala iOS Settings/Wallet:
+ * ikon bulat + judul + SATU baris subjudul ringkasan ("68% dari
+ * Rp3.000.000", diagregasi dari SELURUH anggaran yang ada, bukan per
+ * kategori) + chevron. Rincian per kategori (progress bar tiap kategori,
+ * dsb.) sengaja TIDAK ditampilkan lagi di sini -- itu tugas halaman
+ * /budget yang dituju kalau baris ini di-tap, supaya baris tetap ringkas
+ * & konsisten tingginya dengan 2 baris lain di grouped list yang sama.
+ */
 export const DashboardBudgetSummary: React.FC = () => {
   const { tokens, cx } = useThemeTokens();
-  const { t, locale } = useLanguage();
+  const { t } = useLanguage();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { categories } = useCategories();
   const { budgets, loading } = useBudgets(user?.id);
 
   if (loading || budgets.length === 0) return null;
 
-  const getLabel = (key: string) => {
-    const cat = categories.find((c) => c.key === key);
-    if (!cat) return key;
-    return locale === "id" ? cat.label_id || cat.key : cat.label_en || cat.key;
-  };
+  const formatIDR = (num: number) => "Rp\u00A0" + Math.round(num).toLocaleString("id-ID");
 
-  const formatIDR = (num: number) => {
-    return "Rp\u00A0" + Math.round(num).toLocaleString("id-ID");
-  };
-
-  // Sort by highest percentage used to show most critical ones first
-  const sortedBudgets = [...budgets].sort((a, b) => b.percent - a.percent).slice(0, 3);
+  // Agregat SELURUH anggaran (bukan cuma 3 teratas) -- satu angka persentase
+  // yang mewakili "seberapa penuh" anggaran bulan ini secara keseluruhan,
+  // dipakai sebagai subjudul satu baris ("68% dari Rp3.000.000").
+  const totalLimit = budgets.reduce((sum, b) => sum + b.monthly_limit, 0);
+  const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
+  const overallPercent = totalLimit > 0 ? (totalSpent / totalLimit) * 100 : 0;
 
   return (
-    <MotionCard
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      elevation="ambient"
-      className="overflow-hidden relative"
-    >
-      <div className="flex items-center justify-between gap-3 mb-6">
-        <div className="flex items-center gap-3">
-          <div className={cx(tokens.dashboardBudgetSummary.iconChipBg, tokens.text.accent)}>
-            <PiggyBank size={18} />
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+      <button
+        type="button"
+        onClick={() => { audioFeedback.playClick(); navigate("/budget"); }}
+        className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left cursor-pointer"
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          <div className={cx("w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-indigo-500/10 light_sakura:bg-rose-500/10", tokens.text.accent)}>
+            <PiggyBank size={17} />
           </div>
-          <div>
-            <h3 className={cx("font-sans font-bold text-sm", tokens.text.heading)}>
-              {t("budget.page_title")}
+          <div className="min-w-0">
+            <h3 className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>
+              {t("budget.dashboard_row_title")}
             </h3>
-            <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest font-bold", tokens.text.muted)}>
-              {t("budget.summary_subtitle", "Monthly Spending Limits")}
+            <p className={cx("text-xs truncate", tokens.text.muted)}>
+              {t("budget.dashboard_row_subtitle", { percent: Math.round(overallPercent), total: formatIDR(totalLimit) })}
             </p>
           </div>
         </div>
-        <button
-          onClick={() => {
-            audioFeedback.playClick();
-            navigate("/budget");
-          }}
-          className={cx("p-2 rounded-xl transition-colors cursor-pointer", tokens.surface.sunken, tokens.text.accent, tokens.dashboardBudgetSummary.chevronBtnHover)}
-        >
-          <ChevronRight size={18} />
-        </button>
-      </div>
-
-      <div className="space-y-5">
-        {sortedBudgets.map((b) => {
-          const isDanger = b.status === "danger";
-          const isWarning = b.status === "warning";
-          
-          return (
-            <div key={b.id} className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <span className={cx("font-semibold", tokens.text.secondary)}>{getLabel(b.category_key)}</span>
-                <div className="flex items-center gap-1.5">
-                  <span className={`font-bold tabular-nums ${isDanger ? 'text-red-400' : isWarning ? 'text-amber-400' : 'text-emerald-400'}`}>
-                    {Math.round(b.percent)}%
-                  </span>
-                  <span className={cx("font-mono tabular-nums text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.text.faint)}>{formatIDR(b.spent)} / {formatIDR(b.monthly_limit)}</span>
-                </div>
-              </div>
-              <div className={cx("h-1.5 w-full rounded-full overflow-hidden", tokens.surface.sunken)}>
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${Math.min(100, b.percent)}%` }}
-                  transition={{ duration: 0.8, ease: "circOut" }}
-                  className={`h-full rounded-full ${
-                    isDanger 
-                      ? 'bg-red-500' 
-                      : isWarning 
-                        ? 'bg-amber-500' 
-                        : tokens.admin.aiMonitorSuccessProgress
-                  }`}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className={cx("mt-6 pt-5 border-t", tokens.border.accent)}>
-        <button
-          onClick={() => navigate("/budget")}
-          className={cx("w-full flex items-center justify-center gap-2 text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold transition-colors cursor-pointer", tokens.text.accent, "hover:opacity-80")}
-        >
-          <TrendingUp size={14} />
-          {t("budget.view_all_budgets", "Manage All Budgets")}
-        </button>
-      </div>
-    </MotionCard>
+        <ChevronRight size={18} className={cx("shrink-0", tokens.text.muted)} />
+      </button>
+    </motion.div>
   );
 };

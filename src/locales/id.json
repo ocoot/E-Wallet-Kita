@@ -85,8 +85,10 @@
     "greeting_evening": "Selamat sore, {name}",
     "greeting_night": "Selamat malam, {name}",
     "weather_loading": "Memuat cuaca...",
+    "open_profile": "Buka profil",
     "balance_summary": "Ikhtisar Keuangan Bulan Ini",
     "overall_summary_label": "Ringkasan Keseluruhan",
+    "financial_monitor_label": "Pantauan Keuangan",
     "wallet_carousel_hint": "Geser untuk lihat pos lainnya →",
     "income": "Pemasukan",
     "expense": "Pengeluaran",
@@ -1160,7 +1162,9 @@
     "empty_state_desc": "Tambahkan kategori pengeluaran terlebih dahulu untuk bisa mengatur anggaran.",
     "dashboard_alert_title": "Peringatan Anggaran",
     "dashboard_alert_cta": "Kelola Anggaran",
-    "dashboard_alert_item": "{category}: {percent}% terpakai"
+    "dashboard_alert_item": "{category}: {percent}% terpakai",
+    "dashboard_row_title": "Anggaran Bulanan",
+    "dashboard_row_subtitle": "{percent}% dari {total}"
   },
   "bill_reminders": {
     "page_title": "Pengingat Tagihan",
@@ -1281,7 +1285,9 @@
     "undo_confirm_desc": "Progres \"{name}\" akan dikurangi 1 bulan, dan transaksi terkait (jika ada) akan dihapus.",
     "undo_confirm_button": "Ya, Batalkan",
     "dashboard_widget_title": "Progres Cicilan",
-    "dashboard_widget_cta": "Lihat Semua"
+    "dashboard_widget_cta": "Lihat Semua",
+    "dashboard_row_title": "Cicilan",
+    "dashboard_row_subtitle": "{name} · {paid}/{total} bulan"
   },
   "savings": {
     "page_title": "Tabungan",
