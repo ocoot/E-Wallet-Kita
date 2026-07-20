@@ -17,6 +17,7 @@ import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { Input } from "../components/ui/Input";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "../components/ui/ModalShell";
+import { Card } from "../components/ui/Card";
 
 export const Budget: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -218,8 +219,12 @@ export const Budget: React.FC = () => {
           padding sesungguhnya ada di div anak. Sebelumnya halaman ini punya
           border-slate-900 (identik dgn bg-slate-900 sehingga border tidak
           kelihatan sama sekali) dan tanpa accent stripe -- beda sendiri dari
-          semua halaman list lainnya. */}
-      <div className={cx("rounded-3xl border transition-colors duration-300 shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
+          semua halaman list lainnya.
+          Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
+          div manual ke <Card elevation="lg" padding="none"> supaya shadow
+          elevation-nya diatur terpusat lewat primitive, bukan hardcode
+          shadow-lg lagi di sini. */}
+      <Card elevation="lg" padding="none" className="overflow-hidden">
       {/* Accent stripe */}
       <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
       <div className="p-6 md:p-8 space-y-6">
@@ -332,7 +337,7 @@ export const Budget: React.FC = () => {
       )}
 
       </div>{/* end padded content */}
-      </div>{/* end header card */}
+      </Card>{/* end header card */}
 
       {/* Modal: Tambah Anggaran — pilih kategori dari yang belum dianggarkan */}
       <ModalShell

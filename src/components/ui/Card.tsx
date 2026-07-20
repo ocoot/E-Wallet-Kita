@@ -3,7 +3,7 @@ import { useThemeTokens } from "../../hooks/useThemeTokens";
 
 export type CardPadding = "none" | "sm" | "md" | "lg";
 export type CardElevation = "flat" | "xs" | "sm" | "lg" | "xl" | "ambient";
-export type CardBorder = "default" | "subtle";
+export type CardBorder = "default" | "subtle" | "neutral";
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   padding?: CardPadding;
@@ -61,6 +61,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     const borderClasses: Record<CardBorder, string> = {
       default: tokens.border.accent,
       subtle: tokens.card.borderSubtle,
+      neutral: tokens.border.default,
     };
 
     const isAmbient = elevation === "ambient";

@@ -10,6 +10,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { Card } from "../components/ui/Card";
 import {
   User,
   Mail,
@@ -427,7 +428,7 @@ export const AdminUserManager: React.FC = () => {
 
       {/* Header + quick actions -- Wrapped in One Card Container, konsisten
           dengan pola header di halaman Admin* lainnya (mis. AdminPremiumMonitor). */}
-      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.border.accent)}>
+      <Card padding="none" elevation="lg" border="default" className="overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
           <div className={cx("flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6", tokens.border.default)}>
@@ -516,7 +517,7 @@ export const AdminUserManager: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Control panel (Search & filters) - Wrapped in One Card Container */}
       <div className={cx("p-5 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.default)}>

@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
+import { Card } from "../components/ui/Card";
 import { useAdmin } from "../hooks/useAdmin";
 import { audioFeedback } from "../lib/audio";
 import {
@@ -78,7 +79,7 @@ export const AdminPanel: React.FC = () => {
       {/* Hero card -- disamakan dengan pola kartu utama halaman Akun desktop
           (lihat Settings.tsx: rounded-3xl + bar gradient tipis di atas +
           judul/deskripsi dengan border-b di dalam kartu putih/slate). */}
-      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.settings.cardBorder)}>
+      <Card padding="none" elevation="lg" border="default" className="overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -163,7 +164,7 @@ export const AdminPanel: React.FC = () => {
           ))}
 
         </div>
-      </div>
+      </Card>
 
     </div>
   );

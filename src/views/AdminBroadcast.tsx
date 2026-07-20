@@ -7,6 +7,7 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
 import { Send, Users, MessageSquare, AlertTriangle, Bell, RefreshCw } from "lucide-react";
 
 type BroadcastChannel = "telegram" | "push" | "both";
@@ -158,7 +159,7 @@ export const AdminBroadcast: React.FC = () => {
     <div className="space-y-6">
       <AdminBackBar />
 
-      <div className={cx("p-8 rounded-3xl border shadow-sm space-y-6", tokens.surface.card, tokens.border.default)}>
+      <Card padding="none" elevation="sm" border="neutral" className="p-8 space-y-6">
         {/* Header inside Card Container */}
         <div className={cx("border-b pb-5", tokens.border.default)}>
           <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
@@ -356,7 +357,7 @@ export const AdminBroadcast: React.FC = () => {
             )}
           </div>
         )}
-      </div>
+      </Card>
 
       {/* Loading overlay for mass notifications */}
       <LoadingOverlay isOpen={sending} message={t("admin.sending_broadcast")} />

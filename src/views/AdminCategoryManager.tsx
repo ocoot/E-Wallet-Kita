@@ -10,6 +10,7 @@ import { ErrorState } from "../components/ErrorState";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { DropdownField } from "../components/DropdownField";
 import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
 import { Tag, Plus, Pencil, Check, X, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Category {
@@ -161,7 +162,7 @@ export const AdminCategoryManager: React.FC = () => {
       <AdminBackBar />
 
       {/* Header Wrapped in One Card Container */}
-      <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
+      <Card padding="lg" elevation="sm" border="neutral">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
@@ -190,11 +191,11 @@ export const AdminCategoryManager: React.FC = () => {
             </Button>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Add Form */}
       {showAddForm && (
-        <div className={cx("p-8 rounded-3xl border shadow-sm space-y-6", tokens.surface.card, tokens.border.default)}>
+        <Card padding="none" elevation="sm" border="neutral" className="p-8 space-y-6">
           <h3 className={cx("font-semibold", tokens.text.onSurface)}>{t("admin.add_category_title")}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputField label={t("admin.key_label")} value={addForm.key}
@@ -238,7 +239,7 @@ export const AdminCategoryManager: React.FC = () => {
               {t("admin.save_category_btn")}
             </Button>
           </div>
-        </div>
+        </Card>
       )}
 
       {/* Category List */}
@@ -247,7 +248,7 @@ export const AdminCategoryManager: React.FC = () => {
       ) : categoriesError ? (
         <ErrorState onRetry={loadCategories} />
       ) : (
-        <div className={cx("rounded-3xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
+        <Card padding="none" elevation="sm" border="neutral" className="overflow-hidden">
           <ScrollableTableWrapper>
             <table className={cx("w-full text-left text-sm min-w-[900px]", tokens.text.label)}>
               <thead className={cx("uppercase text-xs", tokens.text.muted, tokens.surface.subtle)}>
@@ -354,7 +355,7 @@ export const AdminCategoryManager: React.FC = () => {
               </tbody>
             </table>
           </ScrollableTableWrapper>
-        </div>
+        </Card>
       )}
 
       {/* Pagination Controls */}

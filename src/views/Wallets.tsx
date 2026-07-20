@@ -18,6 +18,7 @@ import { Modal } from "../components/Modal";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { AnimatedNumber } from "../components/ui/AnimatedNumber";
+import { Card } from "../components/ui/Card";
 import { PROVIDER_CATALOG, OTHER_PROVIDER_ID } from "../data/walletProviders";
 
 const GROUP_META: Record<Exclude<WalletType, "general">, { icon: string; labelKey: string; addKey: string; placeholderKey: string }> = {
@@ -410,7 +411,10 @@ export const Wallets: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", cardSurfaceClass)}>
+      {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
+          div manual ke <Card elevation="lg" padding="none"> supaya shadow
+          elevation-nya diatur terpusat lewat primitive. */}
+      <Card elevation="lg" padding="none" className="overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -582,7 +586,7 @@ export const Wallets: React.FC = () => {
           {!isLoading && !walletsError && activeWallets.length === 0 && <EmptyState />}
 
         </div>
-      </div>
+      </Card>
 
       <Modal
         isOpen={walletToDelete !== null}

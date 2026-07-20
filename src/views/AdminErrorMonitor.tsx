@@ -11,6 +11,7 @@ import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
+import { Card } from "../components/ui/Card";
 import {
   AlertTriangle,
   XCircle,
@@ -168,7 +169,7 @@ export const AdminErrorMonitor: React.FC = () => {
       <AdminBackBar />
 
       {/* Header */}
-      <div className={cx("p-6 md:p-8 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
+      <Card padding="lg" elevation="sm" border="neutral">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
@@ -206,7 +207,7 @@ export const AdminErrorMonitor: React.FC = () => {
             </button>
           </div>
         </div>
-      </div>
+      </Card>
 
       {statsLoading ? (
         <div className="py-16 flex items-center justify-center">
@@ -239,7 +240,7 @@ export const AdminErrorMonitor: React.FC = () => {
 
           {/* By-source breakdown */}
           {sources.length > 0 && (
-            <div className={cx("p-6 rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
+            <Card padding="md" elevation="sm" border="neutral">
               <p className={cx("text-sm font-semibold mb-4", tokens.text.secondary)}>
                 {t("error_monitor.by_source_title")}
               </p>
@@ -263,7 +264,7 @@ export const AdminErrorMonitor: React.FC = () => {
                   );
                 })}
               </div>
-            </div>
+            </Card>
           )}
         </>
       )}
@@ -293,7 +294,7 @@ export const AdminErrorMonitor: React.FC = () => {
       </div>
 
       {/* Log table */}
-      <div className={cx("overflow-hidden rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.default)}>
+      <Card padding="none" elevation="sm" border="neutral" className="overflow-hidden">
         {logsLoading ? (
           <div className="py-16 flex items-center justify-center">
             <Activity className="animate-pulse text-red-500" size={28} />
@@ -362,7 +363,7 @@ export const AdminErrorMonitor: React.FC = () => {
             </table>
           </ScrollableTableWrapper>
         )}
-      </div>
+      </Card>
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">

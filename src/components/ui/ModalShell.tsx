@@ -33,6 +33,17 @@ interface ModalShellProps {
    * Jika true, klik backdrop tidak menutup modal (mis. saat proses sedang berjalan).
    */
   backdropLocked?: boolean;
+  /**
+   * Override kelas bg+border panel (mis. `tokens.modal.panelDanger`).
+   * Kalau di-set, INI MENGGANTIKAN default `tokens.surface.card` +
+   * `tokens.border.default` sepenuhnya (bukan digabung lewat `className`),
+   * supaya tidak terjadi konflik kelas Tailwind yang sama-sama menata
+   * `bg-*`/`border-*` di properti sama. Pakai ini untuk varian panel
+   * bertema (mis. `Modal.tsx` yang punya panel danger/normal berbeda),
+   * bukan `className`, yang tetap dipakai untuk kelas non-konflik
+   * (padding, dst).
+   */
+  panelTone?: string;
 }
 
 /**
@@ -61,6 +72,7 @@ export const ModalShell: React.FC<ModalShellProps> = ({
   className = "",
   elevated = false,
   backdropLocked = false,
+  panelTone,
 }) => {
   const { tokens, cx } = useThemeTokens();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -108,8 +120,7 @@ export const ModalShell: React.FC<ModalShellProps> = ({
               "relative z-10 w-full mt-auto md:my-auto max-h-[90vh] overflow-y-auto overflow-x-hidden border shadow-2xl outline-none transition-colors duration-300",
               "rounded-t-3xl md:rounded-2xl",
               maxWidth,
-              tokens.surface.card,
-              tokens.border.default,
+              panelTone ?? cx(tokens.surface.card, tokens.border.default),
               tokens.text.onSurface,
               className
             )}

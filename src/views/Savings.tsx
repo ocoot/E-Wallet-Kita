@@ -14,6 +14,7 @@ import { ErrorState } from "../components/ErrorState";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { ModalShell } from "../components/ui/ModalShell";
+import { Card } from "../components/ui/Card";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
@@ -285,7 +286,10 @@ export const Savings: React.FC = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
-      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.border.accent)}>
+      {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
+          div manual ke <Card elevation="lg" padding="none"> supaya shadow
+          elevation-nya diatur terpusat lewat primitive. */}
+      <Card elevation="lg" padding="none" className="overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-indigo-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -345,7 +349,7 @@ export const Savings: React.FC = () => {
             </AnimatePresence>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Add/Edit pocket form modal */}
       <ModalShell

@@ -19,6 +19,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
 import {
   Landmark, Plus, Trash2, CheckCircle2, Edit2, RotateCcw, PartyPopper
 } from "lucide-react";
@@ -191,7 +192,10 @@ export const Installments: React.FC = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
-      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.border.accent)}>
+      {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
+          div manual ke <Card elevation="lg" padding="none"> supaya shadow
+          elevation-nya diatur terpusat lewat primitive. */}
+      <Card elevation="lg" padding="none" className="overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -359,7 +363,7 @@ export const Installments: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+      </Card>
 
       {/* Form modal */}
       <ModalShell

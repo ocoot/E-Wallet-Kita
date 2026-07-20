@@ -42,6 +42,7 @@ import { PremiumModal } from "../components/PremiumModal";
 import { uploadAvatar, AvatarValidationError } from "../lib/avatar";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
+import { Card } from "../components/ui/Card";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { useNotificationPreferences, NotificationPreferenceKey } from "../hooks/useNotificationPreferences";
@@ -560,7 +561,10 @@ export const Settings: React.FC<SettingsProps> = ({
       {/* Main Card -- tampilan desktop lama, tidak diubah, hanya
           disembunyikan di breakpoint mobile. */}
       <div className="hidden md:block">
-      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
+      {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
+          div manual ke <Card elevation="lg" padding="none"> supaya shadow
+          elevation-nya diatur terpusat lewat primitive. */}
+      <Card elevation="lg" padding="none" className="overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
         
@@ -1271,7 +1275,7 @@ export const Settings: React.FC<SettingsProps> = ({
       />
       </div>{/* grid */}
         </div>{/* card-body */}
-      </div>{/* card */}
+      </Card>{/* card */}
       </div>{/* hidden md:block desktop wrapper */}
     </div>
   );
