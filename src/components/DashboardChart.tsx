@@ -2,7 +2,6 @@ import React from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Transaction } from "../types";
 import { Activity } from "lucide-react";
-import { audioFeedback } from "../lib/audio";
 import { EmptyState } from "./EmptyState";
 import { Card } from "./ui/Card";
 import { useThemeTokens } from "../hooks/useThemeTokens";
@@ -15,30 +14,30 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  LineChart,
-  Line
 } from "recharts";
 
 interface DashboardChartProps {
   transactions: Transaction[];
   chartData: any[];
-  chartMode: "area" | "line";
-  setChartMode: (mode: "area" | "line") => void;
-  chartType: "daily" | "cumulative";
-  setChartType: (type: "daily" | "cumulative") => void;
   labelIncome: string;
   labelExpense: string;
   labelBalance: string;
   formatIDR: (num: number) => string;
 }
 
+/**
+ * Sesi permintaan user: dulu ada 2 tab selector (Kumulatif/Harian dan Bagan
+ * Area/Bagan Garis, 4 opsi total via `chartMode`/`chartType` yang di-lift
+ * ke Dashboard.tsx). Sekarang PERMANEN cuma mode kumulatif + bagan area --
+ * kedua tab selector dihapus total, begitu juga cabang render <LineChart>
+ * dan opsi harian di `getChartData()` (lihat Dashboard.tsx). Kalau nanti
+ * mode lain mau dikembalikan, cara paling gampang: kembalikan prop
+ * chartMode/chartType + kedua blok tombol di bawah dari riwayat git,
+ * bukan re-implementasi dari nol.
+ */
 export const DashboardChart: React.FC<DashboardChartProps> = ({
   transactions,
   chartData,
-  chartMode,
-  setChartMode,
-  chartType,
-  setChartType,
   labelIncome,
   labelExpense,
   labelBalance,
@@ -77,229 +76,97 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
 
   return (
     <Card id="dashboard-trends-panel" padding="lg" border="subtle" elevation="ambient" className="space-y-6">
-      {/* Chart Header & Tab Options */}
-      <div className={cx("flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b pb-5", tokens.border.accent)}>
-        <div>
-          <h3 className={cx("font-sans font-bold text-base tracking-tight", tokens.text.onSurface)}>
-            {t("dashboard.chart_title")}
-          </h3>
-          <p className={cx("font-sans text-xs mt-1", tokens.text.muted)}>
-            {chartType === "cumulative" 
-              ? t("dashboard.chart_desc_cumulative")
-              : t("dashboard.chart_desc_daily")}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Chart Type Selector: Cumulative vs Daily */}
-          <div className={cx("flex p-1 rounded-xl border", tokens.surface.sunken, tokens.border.accent)}>
-            <button
-              onClick={() => {
-                audioFeedback.playClick();
-                setChartType("cumulative");
-              }}
-              className={cx(
-                "px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer",
-                chartType === "cumulative"
-                  ? cx("shadow-sm", tokens.surface.card, tokens.text.accent)
-                  : cx("hover:text-slate-200", tokens.text.muted)
-              )}
-            >
-              {t("dashboard.chart_cumulative")}
-            </button>
-            <button
-              onClick={() => {
-                audioFeedback.playClick();
-                setChartType("daily");
-              }}
-              className={cx(
-                "px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer",
-                chartType === "daily"
-                  ? cx("shadow-sm", tokens.surface.card, tokens.text.accent)
-                  : cx("hover:text-slate-200", tokens.text.muted)
-              )}
-            >
-              {t("dashboard.chart_daily")}
-            </button>
-          </div>
-
-          {/* Chart Mode Selector: Area vs Line */}
-          <div className={cx("flex p-1 rounded-xl border", tokens.surface.sunken, tokens.border.accent)}>
-            <button
-              onClick={() => {
-                audioFeedback.playClick();
-                setChartMode("area");
-              }}
-              className={cx(
-                "px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer",
-                chartMode === "area"
-                  ? cx("shadow-sm", tokens.surface.card, tokens.text.accent)
-                  : cx("hover:text-slate-200", tokens.text.muted)
-              )}
-            >
-              {t("dashboard.chart_area")}
-            </button>
-            <button
-              onClick={() => {
-                audioFeedback.playClick();
-                setChartMode("line");
-              }}
-              className={cx(
-                "px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold rounded-lg transition-all cursor-pointer",
-                chartMode === "line"
-                  ? cx("shadow-sm", tokens.surface.card, tokens.text.accent)
-                  : cx("hover:text-slate-200", tokens.text.muted)
-              )}
-            >
-              {t("dashboard.chart_line")}
-            </button>
-          </div>
-        </div>
+      {/* Chart Header -- tanpa tab selector lagi, lihat komentar di atas
+          komponen. */}
+      <div className={cx("border-b pb-5", tokens.border.accent)}>
+        <h3 className={cx("font-sans font-bold text-base tracking-tight", tokens.text.onSurface)}>
+          {t("dashboard.chart_title")}
+        </h3>
+        <p className={cx("font-sans text-xs mt-1", tokens.text.muted)}>
+          {t("dashboard.chart_desc_cumulative")}
+        </p>
       </div>
 
-      {/* Dynamic Rendering of Recharts */}
+      {/* Rendering Recharts -- permanen AreaChart kumulatif */}
       {transactions.length === 0 ? (
         <EmptyState message={t("dashboard.chart_no_data")} />
       ) : (
         <div className="w-full overflow-hidden">
           <ResponsiveContainer width="100%" height={320}>
-            {chartMode === "area" ? (
-              <AreaChart
-                data={chartData}
-                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-              >
-                <defs>
-                  <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.01} />
-                  </linearGradient>
-                  <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.22} />
-                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.01} />
-                  </linearGradient>
-                  <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.22} />
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0.01} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" opacity={0.25} />
-                <XAxis 
-                  dataKey="day" 
-                  stroke="#71717a" 
-                  fontSize={10} 
-                  tickLine={false} 
-                  axisLine={false} 
-                  className="font-mono text-[clamp(0.5062rem,2.34vw,0.5625rem)]"
-                />
-                <YAxis 
-                  stroke="#71717a" 
-                  fontSize={10} 
-                  tickLine={false} 
-                  axisLine={false} 
-                  tickFormatter={(val) => 
-                    val >= 1000000 
-                      ? `${(val / 1000000).toFixed(1)}jt` 
-                      : val >= 1000 
-                      ? `${(val / 1000).toFixed(0)}rb` 
-                      : val
-                  }
-                  className="font-mono"
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend 
-                  verticalAlign="top" 
-                  height={36} 
-                  iconType="circle"
-                  iconSize={8}
-                  wrapperStyle={{ fontSize: '11px', fontFamily: 'Inter, sans-serif', paddingBottom: '10px' }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey={labelIncome}
-                  stroke="#10b981"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#colorIncome)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey={labelExpense}
-                  stroke="#f43f5e"
-                  strokeWidth={2}
-                  fillOpacity={1}
-                  fill="url(#colorExpense)"
-                />
-                <Area
-                  type="monotone"
-                  dataKey={labelBalance}
-                  stroke="#6366f1"
-                  strokeWidth={2.5}
-                  fillOpacity={1}
-                  fill="url(#colorBalance)"
-                />
-              </AreaChart>
-            ) : (
-              <LineChart
-                data={chartData}
-                margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-              >
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" opacity={0.25} />
-                <XAxis 
-                  dataKey="day" 
-                  stroke="#71717a" 
-                  fontSize={10} 
-                  tickLine={false} 
-                  axisLine={false}
-                  className="font-mono text-[clamp(0.5062rem,2.34vw,0.5625rem)]"
-                />
-                <YAxis 
-                  stroke="#71717a" 
-                  fontSize={10} 
-                  tickLine={false} 
-                  axisLine={false} 
-                  tickFormatter={(val) => 
-                    val >= 1000000 
-                      ? `${(val / 1000000).toFixed(1)}jt` 
-                      : val >= 1000 
-                      ? `${(val / 1000).toFixed(0)}rb` 
-                      : val
-                  }
-                  className="font-mono"
-                />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend 
-                  verticalAlign="top" 
-                  height={36} 
-                  iconType="circle"
-                  iconSize={8}
-                  wrapperStyle={{ fontSize: '11px', fontFamily: 'Inter, sans-serif', paddingBottom: '10px' }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey={labelIncome}
-                  stroke="#10b981"
-                  strokeWidth={2.5}
-                  dot={{ r: 2 }}
-                  activeDot={{ r: 4 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey={labelExpense}
-                  stroke="#f43f5e"
-                  strokeWidth={2.5}
-                  dot={{ r: 2 }}
-                  activeDot={{ r: 4 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey={labelBalance}
-                  stroke="#6366f1"
-                  strokeWidth={3}
-                  dot={{ r: 3 }}
-                  activeDot={{ r: 5 }}
-                />
-              </LineChart>
-            )}
+            <AreaChart
+              data={chartData}
+              margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient id="colorIncome" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.01} />
+                </linearGradient>
+                <linearGradient id="colorExpense" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.22} />
+                  <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.01} />
+                </linearGradient>
+                <linearGradient id="colorBalance" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.22} />
+                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0.01} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" opacity={0.25} />
+              <XAxis 
+                dataKey="day" 
+                stroke="#71717a" 
+                fontSize={10} 
+                tickLine={false} 
+                axisLine={false} 
+                className="font-mono text-[clamp(0.5062rem,2.34vw,0.5625rem)]"
+              />
+              <YAxis 
+                stroke="#71717a" 
+                fontSize={10} 
+                tickLine={false} 
+                axisLine={false} 
+                tickFormatter={(val) => 
+                  val >= 1000000 
+                    ? `${(val / 1000000).toFixed(1)}jt` 
+                    : val >= 1000 
+                    ? `${(val / 1000).toFixed(0)}rb` 
+                    : val
+                }
+                className="font-mono"
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend 
+                verticalAlign="top" 
+                height={36} 
+                iconType="circle"
+                iconSize={8}
+                wrapperStyle={{ fontSize: '11px', fontFamily: 'Inter, sans-serif', paddingBottom: '10px' }}
+              />
+              <Area
+                type="monotone"
+                dataKey={labelIncome}
+                stroke="#10b981"
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#colorIncome)"
+              />
+              <Area
+                type="monotone"
+                dataKey={labelExpense}
+                stroke="#f43f5e"
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#colorExpense)"
+              />
+              <Area
+                type="monotone"
+                dataKey={labelBalance}
+                stroke="#6366f1"
+                strokeWidth={2.5}
+                fillOpacity={1}
+                fill="url(#colorBalance)"
+              />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       )}

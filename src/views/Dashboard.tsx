@@ -112,8 +112,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [telegramStatus, setTelegramStatus] = useState<{ linked: boolean, lastSync: string | null }>({ linked: false, lastSync: null });
 
   // Interactive Recharts configuration states
-  const [chartMode, setChartMode] = useState<"area" | "line">("area");
-  const [chartType, setChartType] = useState<"daily" | "cumulative">("cumulative");
+  // Dulu state (bisa diganti user lewat tab selector di DashboardChart),
+  // sekarang permanen "area" + "cumulative" -- tab selector-nya sudah
+  // dihapus sesuai permintaan user, chart hanya pernah menampilkan mode ini.
   const [showOnboardingBanner, setShowOnboardingBanner] = useState<boolean>(() => {
     return localStorage.getItem("ewallet_onboarding_completed") !== "true";
   });
@@ -247,8 +248,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
       cumIncome += income;
       cumExpense += expense;
 
-      const incVal = chartType === "cumulative" ? cumIncome : income;
-      const expVal = chartType === "cumulative" ? cumExpense : expense;
+      const incVal = cumIncome;
+      const expVal = cumExpense;
       const balVal = incVal - expVal;
 
       data.push({
@@ -395,10 +396,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <DashboardChart 
             transactions={transactions}
             chartData={chartData}
-            chartMode={chartMode}
-            setChartMode={setChartMode}
-            chartType={chartType}
-            setChartType={setChartType}
             labelIncome={labelIncome}
             labelExpense={labelExpense}
             labelBalance={labelBalance}
