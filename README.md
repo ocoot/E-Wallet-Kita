@@ -49,7 +49,7 @@ supabase/         # Migrasi database
 docs/             # Dokumentasi produk (PRD, master prompt)
 ```
 
-## aaMenjalankan Secara Lokal
+## Menjalankan Secara Lokal
 
 ```bash
 npm install

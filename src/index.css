@@ -103,22 +103,6 @@
 @variant light_sakura (.light_sakura &);
 
 /*
- * ── Tinggi MobileTopBar (single source of truth) ────────────────────
- * Baseline 3.5rem (56px) = px-4 pb-3 (0.75rem) + paddingTop 0.75rem +
- * konten logo 2rem (lihat MobileTopBar.tsx), ditambah safe-area-inset-top
- * untuk perangkat notch/dynamic-island (butuh `viewport-fit=cover` di
- * index.html, kalau tidak env() selalu resolve ke 0).
- *
- * Dipakai supaya elemen sticky LAIN yang perlu menempel persis di bawah
- * MobileTopBar (mis. compact collapsing bar di DashboardHeader.tsx) tidak
- * perlu menebak/duplikasi angka tinggi topbar secara manual -- kalau
- * tinggi MobileTopBar berubah, cukup edit var ini di satu tempat.
- */
-:root {
-  --mobile-topbar-h: calc(3.5rem + env(safe-area-inset-top));
-}
-
-/*
  * ── Skema z-index global ──────────────────────────────────────────
  * Tailwind v4 tidak mendukung custom named z-index utility lewat
  * @theme (core utility `z-*` tidak pakai namespace lookup), jadi

@@ -21,11 +21,7 @@ export const MobileTopBar: React.FC = () => {
 
   return (
     <header
-      className={cx("md:hidden sticky top-0 z-40 flex items-center gap-2 px-4 pb-3 backdrop-blur-md relative", tokens.mobileTopBar.headerBg)}
-      // paddingTop = jarak dasar (sama seperti pb-3 di atas) + safe-area-inset-top
-      // perangkat notch/dynamic-island -- lihat komentar --mobile-topbar-h di
-      // index.css untuk kenapa formula ini harus tetap selaras dengan var itu.
-      style={{ paddingTop: "calc(0.75rem + env(safe-area-inset-top))" }}
+      className={cx("md:hidden sticky top-0 z-40 flex items-center gap-2 px-4 py-3 backdrop-blur-md relative", tokens.mobileTopBar.headerBg)}
     >
       <div className="shrink-0">
         <img src={logoUrl} alt="EWK Icon" className="w-8 h-8 object-contain" />
