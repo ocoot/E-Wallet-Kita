@@ -11,7 +11,6 @@ import { useAuth } from "./contexts/AuthContext";
 import { usePremium } from "./hooks/usePremium";
 import { Sidebar } from "./components/Sidebar";
 import { MobileBottomNav } from "./components/MobileBottomNav";
-import { MobileTopBar } from "./components/MobileTopBar";
 import { Login } from "./views/Login";
 import { AuthCallback } from "./components/AuthCallback";
 import { Onboarding } from "./views/Onboarding";
@@ -397,20 +396,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
         userAvatarUrl={userProfile?.avatar_url}
       />
 
-      {/* Header khusus tampilan handphone -- SENGAJA diletakkan di sini,
-          sebagai saudara (sibling) dari <main>, BUKAN di dalamnya. <main> di
-          bawah punya class overflow-y-auto; kalau header sticky ditaruh di
-          DALAM elemen yang overflow-nya bukan "visible", browser menjadikan
-          elemen itu sebagai acuan scroll untuk posisi sticky -- padahal
-          <main> sendiri tidak pernah benar-benar men-scroll secara internal
-          (tingginya cuma min-h-screen, tidak dibatasi), jadi yang scroll
-          sesungguhnya adalah dokumen/window. Akibatnya sticky yang dihitung
-          relatif ke <main> malah ikut "terbawa" scroll dan headernya
-          hilang. Dengan diletakkan di sini (ancestor-nya tidak ada yang
-          overflow selain visible), sticky dihitung relatif ke window,
-          persis seperti header mobile versi lama sebelum navbar bawah ada. */}
-      <MobileTopBar />
-
       {/* Main active subview frame */}
       <main className={`flex-1 min-h-screen overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}>
         {/* Running text maintenance banner, shown globally above all pages */}
@@ -421,7 +406,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
             (yang tidak punya navbar bawah). */}
         <div className="p-4 sm:p-6 lg:p-8 pb-24 md:pb-40">
           <div className="max-w-7xl mx-auto w-full">
-            <Breadcrumbs />
+            {location.pathname !== "/dashboard" && <Breadcrumbs />}
             <AnimatePresence mode="wait" custom={pageDirection}>
               <motion.div
                 key={location.pathname}
