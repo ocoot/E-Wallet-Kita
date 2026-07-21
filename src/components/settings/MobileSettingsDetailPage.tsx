@@ -55,7 +55,7 @@ export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> =
       className="max-w-3xl mx-auto space-y-5 pb-24 md:hidden"
     >
       <div className="relative">
-        <div className={cx("relative z-10 mt-12 sm:mt-14 rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
+        <div className={cx("relative z-10 mt-6 sm:mt-8 rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-5 space-y-5">
           {/* Header: back button + title */}

@@ -129,6 +129,29 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  * makai `<PageRibbonBackground />`, wrapper-nya juga ingat perlu
  * `flow-root` -- lihat Wallets.tsx/Budget.tsx/dkk untuk contoh
  * pemakaian yang benar.
+ *
+ * REVISI (fix "jarak breadcrumb-ke-Card kelihatan kosong/jauh", laporan
+ * bug dengan screenshot ditandai lingkaran merah di area lengkung
+ * ribbon): jarak itu = tinggi breadcrumb + margin-bottom breadcrumb
+ * (App.tsx) + margin-top Card (mis. `mt-12 sm:mt-14` di Wallets.tsx dkk)
+ * -- SEMUANYA ditambah bleed atas ribbon sendiri (`-top-4/-6/-8`).
+ * Dipersempit dengan mengecilkan margin-bottom breadcrumb jadi
+ * `mb-2 sm:mb-3` (dari `mb-4 sm:mb-5`) dan margin-top Card di semua
+ * halaman jadi `mt-6 sm:mt-8` (dari `mt-12 sm:mt-14`).
+ *
+ * Konsekuensinya: `pt` (zona solid) di sini WAJIB dibesarkan mengikuti,
+ * dari `pt-16 sm:pt-20` jadi `pt-24 sm:pt-28` -- BUKAN supaya lebih
+ * banyak warna solid yang KELIHATAN (toh sekarang Card memotong lebih
+ * awal, jadi yang tampil di layar malah LEBIH SEDIKIT dari sebelumnya,
+ * sesuai permintaan), tapi supaya titik potong Card (yang sekarang lebih
+ * dekat ke atas) tetap jatuh DI DALAM zona solid `pt`, bukan di tengah
+ * lengkung svg `pb` -- kalau `pt` dibiarkan kecil, potongan Card akan
+ * jatuh di tengah wave lagi dan memunculkan bug lama (segitiga/garis
+ * lekukan tipis di pojok, lihat revisi-revisi di atas). Sisa `pt` yang
+ * tidak kelihatan (karena ketutup Card) tidak masalah -- itu cuma warna
+ * solid yang bersembunyi rapi di belakang Card, tidak ada biaya visual.
+ * `pb` (tinggi svg wave) TIDAK diubah -- toh sekarang seluruhnya hampir
+ * pasti tersembunyi di belakang Card juga.
  */
 export const PageRibbonBackground: React.FC = () => {
   const { tokens, cx } = useThemeTokens();
@@ -140,7 +163,7 @@ export const PageRibbonBackground: React.FC = () => {
     >
       <div
         className={cx(
-          "relative pt-16 sm:pt-20 pb-9 sm:pb-11",
+          "relative pt-24 sm:pt-28 pb-9 sm:pb-11",
           tokens.dashboardHeader.heroGradient
         )}
       >
