@@ -46,26 +46,37 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  * dkk) supaya sebagian ribbon "mengintip" di belakangnya -- bukan lagi
  * margin negatif yang menariknya naik menembus tinggi ribbon.
  *
- * PENTING soal besaran overlap: ribbon ini tingginya cuma pt-5+pb-9
- * (56px mobile) / pt-6+pb-11 (68px sm), dan lengkung svg-nya (wave)
- * menempati BAGIAN BAWAH dari tinggi itu (h-9/h-11 = 36/44px terakhir).
- * Kalau margin-top konten dibuat terlalu besar (misalnya sama dengan
- * tinggi penuh ribbon, seperti sempat dicoba dengan `mt-8 sm:mt-9`),
- * kartu akan menutupi HAMPIR SELURUH zona wave -- padahal wave itu
- * sendiri sudah "berlubang" mengikuti kurva svg-nya, jadi yang tersisa
- * kelihatan cuma garis tipis, bukan pita warna yang jelas (ribbon
- * terkesan "hilang"). `mt-12 sm:mt-14` sengaja disisakan sedikit lebih
- * kecil dari tinggi penuh ribbon (overlap cuma ~8-12px di ujung bawah
- * wave) supaya sebagian besar area gradient + lengkung wave-nya tetap
- * tampil jelas di belakang kartu, mirip proporsi hero Dashboard.
+ * PENTING soal besaran overlap (REVISI -- fix "ribbon terpotong" jadi
+ * garis/segitiga tipis di pojok kiri-atas, lihat laporan bug dengan
+ * screenshot Dashboard vs halaman Dompet): lengkung svg (wave) SELALU
+ * menempel di `bottom-0` ribbon dan tingginya PERSIS sama dengan `pb`
+ * (h-9=pb-9, h-11=pb-11) -- jadi seluruh jatah `pb` itu "milik" wave,
+ * dan zona warna SOLID polos (tanpa lekukan svg) cuma setinggi `pt`
+ * saja, dihitung dari atas.
+ *
+ * Kartu halaman (`mt-12 sm:mt-14`, lihat pemakaian di Wallets.tsx dkk)
+ * duduk pada jarak 48px/56px dari atas. Versi LAMA cuma punya
+ * `pt-5 sm:pt-6` (20px/24px) sebagai zona solid -- jauh lebih kecil
+ * dari overlap kartu (48/56px), jadi kartu itu memotong TEPAT DI
+ * TENGAH lekukan svg wave alih-alih menutupinya secara utuh --
+ * hasilnya cuma secuil segitiga/garis tipis lekukan yang nongol di
+ * pojok kiri-atas kartu, BUKAN pita warna solid yang jelas seperti di
+ * Dashboard.
+ *
+ * Fix-nya: `pt-16 sm:pt-20` (64px/80px) -- sengaja dibuat LEBIH BESAR
+ * dari overlap kartu (48/56px) -- supaya seluruh zona yang tampil di
+ * atas kartu adalah warna gradient SOLID (bukan potongan wave), dengan
+ * sisa ~16-24px yang jelas terlihat sebagai pita warna bersih, mirip
+ * proporsi hero Dashboard. `pb-9 sm:pb-11` (utuh selebar wave) TIDAK
+ * diubah -- lekukan svg-nya tetap width penuh & tinggi sama, cuma
+ * sekarang seluruhnya bersembunyi rapi di belakang kartu (tidak lagi
+ * terpotong di tengah kurva).
  *
  * Full-bleed horizontal (-left/-right) melawan padding `<main>` di
  * App.tsx (`p-4 sm:p-6 lg:p-8`), sama seperti sebelumnya, supaya
- * menyentuh tepi layar alih-alih berhenti di dalam padding halaman.
- * Tinggi ribbon (pt-5/pb-9 dkk) TIDAK diubah dari versi sebelumnya --
- * proporsi gradient+lengkungnya sudah meniru gaya hero Dashboard, cuma
- * sekarang benar-benar tampil (tidak lagi ketutup/ke-z-index-kan oleh
- * kartu) karena posisinya lepas dari document flow.
+ * menyentuh tepi layar alih-alih berhenti di dalam padding halaman --
+ * ini TIDAK diubah oleh fix di atas, cuma `pt` vertikalnya saja yang
+ * disesuaikan.
  */
 export const PageRibbonBackground: React.FC = () => {
   const { tokens, cx } = useThemeTokens();
@@ -77,7 +88,7 @@ export const PageRibbonBackground: React.FC = () => {
     >
       <div
         className={cx(
-          "relative pt-5 sm:pt-6 pb-9 sm:pb-11",
+          "relative pt-16 sm:pt-20 pb-9 sm:pb-11",
           tokens.dashboardHeader.heroGradient
         )}
       >
