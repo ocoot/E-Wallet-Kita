@@ -11,8 +11,8 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  * belakang di belakang kartu teratas tiap halaman.
  *
  * REVISI (fix ribbon-tidak-terlihat / breadcrumb-tumpang-tindih): komponen
- * ini SEKARANG betul-betul `position: absolute` + `-z-10`, alih-alih elemen
- * block biasa yang ikut makan tinggi document flow seperti sebelumnya.
+ * ini SEKARANG betul-betul `position: absolute`, alih-alih elemen block
+ * biasa yang ikut makan tinggi document flow seperti sebelumnya.
  * Dulu ribbon ini dirender sebagai elemen normal (pakai margin negatif
  * `-mx/-mt` untuk full-bleed), lalu kartu di bawahnya "ditarik naik" pakai
  * margin negatif (`-mt-6 sm:-mt-8` dkk) supaya terlihat duduk di atas
@@ -25,7 +25,20 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  * karena keduanya sama-sama mengklaim ruang vertikal yang sama tanpa
  * masing-masing tahu tinggi elemen lain.
  *
- * Sekarang ribbon murni dekoratif: `absolute -z-10 top-0` di dalam wrapper
+ * JEBAKAN KEDUA (sempat dicoba, JANGAN diulangi): mengganti stacking ribbon
+ * jadi `-z-10` (negative z-index) supaya "pasti di belakang". Ini balik
+ * membuat ribbon SAMA SEKALI TIDAK TERLIHAT, karena wrapper `relative`
+ * milik tiap halaman TIDAK membentuk stacking context baru (cuma
+ * `position: relative` tanpa z-index sendiri) -- akibatnya ribbon dengan
+ * z-index negatif "kabur" ke stacking context milik nenek moyang yang
+ * lebih tinggi (mis. `motion.div` transisi halaman di App.tsx yang punya
+ * transform/opacity), lalu tergambar DI BELAKANG background solid milik
+ * elemen lain di level itu -- bukan cuma di belakang kartu di halaman yang
+ * sama. Solusinya: pakai `z-0` (bukan negatif) di sini, dan pastikan kartu
+ * di tiap halaman punya `relative z-10` supaya urutan tumpuknya eksplisit
+ * DI DALAM stacking context yang sama, tanpa lompat ke context lain.
+ *
+ * Sekarang ribbon murni dekoratif: `absolute z-0 top-0` di dalam wrapper
  * `relative` milik tiap halaman (`<div className="relative"><PageRibbonBackground />
  * <Card .../></div>`), TIDAK memengaruhi tinggi/posisi elemen apa pun di
  * atas maupun di bawahnya. Konten (Card/menu dsb.) sekarang cukup diberi
@@ -60,7 +73,7 @@ export const PageRibbonBackground: React.FC = () => {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute -z-10 top-0 -left-4 -right-4 sm:-left-6 sm:-right-6 lg:-left-8 lg:-right-8 overflow-hidden"
+      className="pointer-events-none absolute z-0 top-0 -left-4 -right-4 sm:-left-6 sm:-right-6 lg:-left-8 lg:-right-8 overflow-hidden"
     >
       <div
         className={cx(
