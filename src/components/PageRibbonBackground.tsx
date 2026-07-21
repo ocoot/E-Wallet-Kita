@@ -33,10 +33,21 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  * tinggi breadcrumb, sehingga ribbon kembali terlihat mulai di bawah
  * breadcrumb alih-alih dari tepi layar.
  *
- * Tinggi ribbon (h-32 sm:h-40) sengaja dibuat sedikit lebih panjang dari
- * versi sebelumnya (h-28 sm:h-32) supaya proporsinya lebih dekat dengan
- * hero Dashboard yang lebih tinggi, dan supaya chip breadcrumb overlay di
- * atas tetap punya cukup ruang napas sebelum lengkung wave di bagian bawah.
+ * Tinggi ribbon: alih-alih angka height tetap (h-32/h-40) yang ternyata
+ * MASIH lebih pendek dari hero Dashboard sungguhan, sekarang tinggi
+ * ribbon ini disusun dari padding vertikal YANG SAMA PERSIS dengan
+ * DashboardHeader.tsx (pt-5/pt-6 & pb-20/pb-24), ditambah satu spacer
+ * kosong (`h-[102px]`) yang besarnya = tinggi gabungan baris chip cuaca
+ * (~26px) + margin `mt-4` (16px) + judul sapaan `<h1>` 2 baris (~60px)
+ * di hero Dashboard. Hasilnya total tinggi container ribbon di sini jadi
+ * SAMA PERSIS dengan total tinggi hero Dashboard (202px mobile / 222px
+ * sm+), walau di halaman lain tidak ada teks/chip sungguhan yang
+ * dirender -- supaya rasio ribbon-terlihat-vs-tertutup-kartu (lihat
+ * catatan overlap di atas) konsisten di semua halaman.
+ *
+ * Kalau padding/ukuran font di hero DashboardHeader.tsx berubah di masa
+ * depan, angka spacer `h-[102px]` di bawah ini perlu disesuaikan juga
+ * supaya kedua ribbon tetap match.
  */
 export const PageRibbonBackground: React.FC = () => {
   const { tokens, cx } = useThemeTokens();
@@ -46,7 +57,15 @@ export const PageRibbonBackground: React.FC = () => {
       aria-hidden="true"
       className="-mx-4 -mt-4 sm:-mx-6 sm:-mt-6 lg:-mx-8 lg:-mt-8"
     >
-      <div className={cx("relative h-32 sm:h-40", tokens.dashboardHeader.heroGradient)}>
+      <div
+        className={cx(
+          "relative pt-5 sm:pt-6 pb-20 sm:pb-24",
+          tokens.dashboardHeader.heroGradient
+        )}
+      >
+        {/* Spacer setinggi chip cuaca + judul sapaan hero Dashboard --
+            lihat catatan tinggi ribbon di atas. */}
+        <div className="h-[102px]" />
         <svg
           className={cx("absolute bottom-0 left-0 w-full h-9 sm:h-11 block", tokens.dashboardHeader.waveFill)}
           viewBox="0 0 264 66"

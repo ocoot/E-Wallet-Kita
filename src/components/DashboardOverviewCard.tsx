@@ -118,7 +118,13 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         className={cx(
-          "relative overflow-hidden rounded-3xl border shadow-xl",
+          // shadow-xl SENGAJA dihapus (dulu ada di sini) -- blur box-shadow-nya
+          // bocor ke samping masuk ke celah antar-slide di DashboardCardSwiper
+          // (sumbu-x swiper tidak di-clip / overflow-x-auto supaya bisa
+          // discroll), sehingga muncul sebagai garis gradient tipis yang
+          // tidak diinginkan di antara Kartu "Saldo Anda" & "Total Kekayaan"
+          // saat sedang di-swipe.
+          "relative overflow-hidden rounded-3xl border",
           tokens.dashboardOverviewCard.heroCardGradient
         )}
       >
