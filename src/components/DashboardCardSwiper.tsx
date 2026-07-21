@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface DashboardCardSwiperProps {
@@ -21,9 +21,39 @@ interface DashboardCardSwiperProps {
 export const DashboardCardSwiper: React.FC<DashboardCardSwiperProps> = ({ children }) => {
   const { cx } = useThemeTokens();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  // Tinggi kontainer di-set eksplisit lewat JS supaya mengikuti tinggi
+  // konten slide yang SEDANG aktif -- bukan tinggi slide tertinggi. Tanpa
+  // ini, flex row akan otomatis stretch ke tinggi child terbesar (mis.
+  // kartu "Total Kekayaan" yang lebih tinggi), sehingga saat slide yang
+  // lebih pendek (kartu "Saldo Anda") aktif, tersisa ruang kosong besar
+  // di bawah sebelum section berikutnya.
+  const [activeHeight, setActiveHeight] = useState<number | undefined>(undefined);
 
   const slides = React.Children.toArray(children);
+
+  const measureActive = useCallback(() => {
+    const node = slideRefs.current[activeIndex];
+    if (node) {
+      setActiveHeight(node.getBoundingClientRect().height);
+    }
+  }, [activeIndex]);
+
+  // Ukur ulang setiap kali slide aktif berganti.
+  useLayoutEffect(() => {
+    measureActive();
+  }, [measureActive]);
+
+  // Ukur ulang juga saat konten slide aktif berubah ukuran secara dinamis
+  // (mis. data async yang baru selesai dimuat) atau saat layar di-resize.
+  useLayoutEffect(() => {
+    const node = slideRefs.current[activeIndex];
+    if (!node || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => measureActive());
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [activeIndex, measureActive]);
 
   const handleScroll = () => {
     const el = scrollRef.current;
@@ -48,29 +78,46 @@ export const DashboardCardSwiper: React.FC<DashboardCardSwiperProps> = ({ childr
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide -mx-0.5 px-0.5"
-        style={{ scrollSnapType: "x mandatory" }}
+        className="flex items-start overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-hide -mx-0.5 px-0.5 transition-[height] duration-300 ease-out"
+        style={{ scrollSnapType: "x mandatory", height: activeHeight }}
       >
         {slides.map((slide, idx) => (
-          <div key={idx} className="w-full shrink-0 snap-center snap-always">
+          <div
+            key={idx}
+            ref={(node) => {
+              slideRefs.current[idx] = node;
+            }}
+            className="w-full shrink-0 snap-center snap-always"
+          >
             {slide}
           </div>
         ))}
       </div>
 
-      {/* Dot indicator */}
-      <div className="flex items-center justify-center gap-1.5 mt-3">
+      {/* Dot indicator -- ukuran visual pill dibuat kecil & tetap (fixed px,
+          bukan cuma class Tailwind) lewat <span> di dalam <button>, supaya
+          target sentuh tetap nyaman di mobile (padding di button) tanpa
+          bikin dot itu sendiri tampak besar. */}
+      <div className="flex items-center justify-center gap-1 mt-3">
         {slides.map((_, idx) => (
           <button
             key={idx}
             type="button"
             aria-label={`Slide ${idx + 1}`}
             onClick={() => scrollToIndex(idx)}
-            className={cx(
-              "h-1.5 rounded-full transition-all cursor-pointer",
-              idx === activeIndex ? "w-5 bg-indigo-400" : "w-1.5 bg-slate-500/40"
-            )}
-          />
+            className="appearance-none bg-transparent border-0 p-1.5 m-0 flex items-center justify-center cursor-pointer shrink-0 leading-none"
+          >
+            <span
+              className={cx(
+                "block rounded-full transition-all",
+                idx === activeIndex ? "bg-indigo-400" : "bg-slate-500/40"
+              )}
+              style={{
+                height: 4,
+                width: idx === activeIndex ? 12 : 4,
+              }}
+            />
+          </button>
         ))}
       </div>
     </div>
