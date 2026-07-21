@@ -195,7 +195,7 @@ export const Breadcrumbs: React.FC = () => {
       id="app-breadcrumbs-nav" 
       aria-label="breadcrumb"
       className={cx(
-        "mb-6 flex items-center overflow-x-auto whitespace-nowrap py-3 px-5 rounded-3xl border shadow-sm text-xs transition-all duration-300 max-w-fit",
+        "flex items-center overflow-x-auto whitespace-nowrap py-3 px-5 rounded-3xl border shadow-sm text-xs transition-all duration-300 max-w-fit",
         tokens.surface.card,
         tokens.border.accent,
         tokens.text.muted

@@ -22,6 +22,21 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  * Full-bleed (-mx/-mt) melawan padding `<main>` di App.tsx
  * (`p-4 sm:p-6 lg:p-8`), sama seperti DashboardHeader, supaya menyentuh
  * tepi layar alih-alih berhenti di dalam padding halaman.
+ *
+ * PENTING: supaya ribbon ini benar-benar menyentuh tepi ATAS layar (persis
+ * seperti hero Dashboard, tidak "terpotong"/didorong turun oleh
+ * <Breadcrumbs />), <Breadcrumbs /> di App.tsx sengaja dirender sebagai
+ * overlay `absolute` (bukan elemen block biasa yang makan tinggi baris) di
+ * atas ribbon ini -- lihat App.tsx. Jangan kembalikan <Breadcrumbs />
+ * menjadi elemen block statis sebelum ribbon, karena itu akan membuat
+ * margin negatif `-mt-*` di atas cuma membatalkan padding `<main>`, bukan
+ * tinggi breadcrumb, sehingga ribbon kembali terlihat mulai di bawah
+ * breadcrumb alih-alih dari tepi layar.
+ *
+ * Tinggi ribbon (h-32 sm:h-40) sengaja dibuat sedikit lebih panjang dari
+ * versi sebelumnya (h-28 sm:h-32) supaya proporsinya lebih dekat dengan
+ * hero Dashboard yang lebih tinggi, dan supaya chip breadcrumb overlay di
+ * atas tetap punya cukup ruang napas sebelum lengkung wave di bagian bawah.
  */
 export const PageRibbonBackground: React.FC = () => {
   const { tokens, cx } = useThemeTokens();
@@ -31,7 +46,7 @@ export const PageRibbonBackground: React.FC = () => {
       aria-hidden="true"
       className="-mx-4 -mt-4 sm:-mx-6 sm:-mt-6 lg:-mx-8 lg:-mt-8"
     >
-      <div className={cx("relative h-28 sm:h-32", tokens.dashboardHeader.heroGradient)}>
+      <div className={cx("relative h-32 sm:h-40", tokens.dashboardHeader.heroGradient)}>
         <svg
           className={cx("absolute bottom-0 left-0 w-full h-9 sm:h-11 block", tokens.dashboardHeader.waveFill)}
           viewBox="0 0 264 66"
