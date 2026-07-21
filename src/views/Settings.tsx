@@ -43,6 +43,7 @@ import { uploadAvatar, AvatarValidationError } from "../lib/avatar";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
+import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { useNotificationPreferences, NotificationPreferenceKey } from "../hooks/useNotificationPreferences";
@@ -534,12 +535,13 @@ export const Settings: React.FC<SettingsProps> = ({
           diubah sama sekali. */}
       {/* Ribbon dekoratif (md:hidden, sama pola dengan halaman lain) --
           ditaruh di belakang kartu profil teratas SettingsMobileMenu. Judul
-          halaman terpisah di atas ribbon SUDAH DICABUT karena label halaman
-          sudah cukup diwakili oleh item terakhir <Breadcrumbs/> (kini
-          dirender normal di atas ribbon lewat App.tsx, bukan lagi overlay
-          `absolute` -- lihat catatan di PageRibbonBackground.tsx). */}
-      <div className="relative flow-root md:hidden">
-        <div className="relative z-10 mt-6 sm:mt-8">
+          halaman terpisah di atas ribbon SUDAH DICABUT (sempat bentrok
+          visual dengan chip <Breadcrumbs/> yang sekarang mengambang
+          `absolute` di dekat tepi atas ribbon -- lihat App.tsx); label
+          halaman sekarang cukup diwakili oleh item terakhir breadcrumb. */}
+      <div className="relative md:hidden">
+        <PageRibbonBackground />
+        <div className="mt-[186px] sm:mt-[198px]">
           <SettingsMobileMenu
             displayName={displayName}
             email={user?.email || null}
@@ -563,8 +565,9 @@ export const Settings: React.FC<SettingsProps> = ({
       {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
-      <div className="relative flow-root">
-        <Card elevation="lg" padding="none" className="relative z-10 mt-6 sm:mt-8 overflow-hidden">
+      <div className="relative">
+        <PageRibbonBackground />
+        <Card elevation="lg" padding="none" className="mt-[186px] sm:mt-[198px] overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
         

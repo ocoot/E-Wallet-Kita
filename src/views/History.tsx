@@ -30,6 +30,7 @@ import { ErrorState } from "../components/ErrorState";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { BottomSheet } from "../components/ui/BottomSheet";
 import { Card } from "../components/ui/Card";
+import { PageRibbonBackground } from "../components/PageRibbonBackground";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -269,8 +270,9 @@ export const History: React.FC<HistoryProps> = ({
       {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
-      <div className="relative flow-root">
-        <Card elevation="lg" padding="none" className="relative z-10 mt-6 sm:mt-8 overflow-hidden">
+      <div className="relative">
+        <PageRibbonBackground />
+        <Card elevation="lg" padding="none" className="mt-[186px] sm:mt-[198px] overflow-hidden">
         {/* Accent stripe */}
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">

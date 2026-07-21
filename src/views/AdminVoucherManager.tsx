@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { supabase } from "../lib/supabase";
@@ -240,8 +241,9 @@ export const AdminVoucherManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="relative flow-root">
-        <div className="relative z-10 mt-6 sm:mt-8">
+      <div className="relative">
+        <PageRibbonBackground />
+        <div className="mt-[186px] sm:mt-[198px]">
           <AdminBackBar />
         </div>
       </div>
