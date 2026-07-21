@@ -4,6 +4,33 @@ import { supabase } from '../lib/supabase';
 import { Loader2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
+/**
+ * Navigasi ke dashboard setelah login berhasil.
+ *
+ * SENGAJA pakai hard navigation (`window.location.replace`), BUKAN
+ * `navigate()` dari react-router (soft SPA navigation). Alasan:
+ *
+ * Setelah redirect balik dari OAuth Google (browser/WebView eksternal ->
+ * kembali ke PWA), pada sebagian device layout viewport yang dipakai
+ * browser untuk pertama kali masih memakai ukuran lama (kadang lebih
+ * lebar, membuat breakpoint `md:` di seluruh app -- lihat
+ * useIsDesktopViewport.ts, Sidebar.tsx, MobileBottomNav.tsx -- salah
+ * kebaca sebagai desktop) sampai ada reload penuh yang memaksa browser
+ * menghitung ulang viewport dari awal. Soft navigate TIDAK memicu
+ * penghitungan ulang ini karena document yang sama tetap dipakai apa
+ * adanya, makanya sebelumnya user harus refresh manual supaya kembali ke
+ * tampilan mobile. Dispatch `resize` event sintetis (versi sebelumnya)
+ * juga tidak menolong karena `matchMedia` hanya re-evaluate saat lebar
+ * viewport ASLI berubah, bukan dari event tiruan.
+ *
+ * `window.location.replace` mereplikasi persis efek refresh manual
+ * (full reload, tanpa menambah entry baru di history) sehingga masalah
+ * ini teratasi tanpa perlu campur tangan user.
+ */
+const goToDashboard = () => {
+  window.location.replace('/dashboard');
+};
+
 export const AuthCallback: React.FC = () => {
   const navigate = useNavigate();
   const { t } = useLanguage();
@@ -28,10 +55,7 @@ export const AuthCallback: React.FC = () => {
             });
             
             if (!error && data.session) {
-              requestAnimationFrame(() => {
-                window.dispatchEvent(new Event("resize"));
-                navigate('/dashboard', { replace: true });
-              });
+              goToDashboard();
               return;
             }
           }
@@ -41,10 +65,7 @@ export const AuthCallback: React.FC = () => {
         if (code) {
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
           if (!error && data.session) {
-            requestAnimationFrame(() => {
-              window.dispatchEvent(new Event("resize"));
-              navigate('/dashboard', { replace: true });
-            });
+            goToDashboard();
             return;
           }
         }
@@ -52,10 +73,7 @@ export const AuthCallback: React.FC = () => {
         // 3. Last fallback: Check current session
         const { data: sessionData } = await supabase.auth.getSession();
         if (sessionData.session) {
-          requestAnimationFrame(() => {
-            window.dispatchEvent(new Event("resize"));
-            navigate('/dashboard', { replace: true });
-          });
+          goToDashboard();
           return;
         }
 

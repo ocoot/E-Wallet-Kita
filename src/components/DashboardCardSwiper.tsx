@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useRef, useState } from "react";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface DashboardCardSwiperProps {
@@ -22,38 +22,66 @@ export const DashboardCardSwiper: React.FC<DashboardCardSwiperProps> = ({ childr
   const { cx } = useThemeTokens();
   const scrollRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
+  // Cache tinggi TERAKHIR yang terukur untuk tiap slide (index -> px),
+  // supaya saat pindah slide kita bisa langsung terapkan tinggi yang
+  // sudah pernah diketahui tanpa menunggu observer callback berikutnya.
+  const heightsRef = useRef<number[]>([]);
+  const activeIndexRef = useRef(0);
   const [activeIndex, setActiveIndex] = useState(0);
   // Tinggi kontainer di-set eksplisit lewat JS supaya mengikuti tinggi
   // konten slide yang SEDANG aktif -- bukan tinggi slide tertinggi. Tanpa
   // ini, flex row akan otomatis stretch ke tinggi child terbesar (mis.
   // kartu "Total Kekayaan" yang lebih tinggi), sehingga saat slide yang
   // lebih pendek (kartu "Saldo Anda") aktif, tersisa ruang kosong besar
-  // di bawah sebelum section berikutnya.
+  // di bawahnya sebelum section berikutnya.
   const [activeHeight, setActiveHeight] = useState<number | undefined>(undefined);
 
   const slides = React.Children.toArray(children);
+  activeIndexRef.current = activeIndex;
 
-  const measureActive = useCallback(() => {
-    const node = slideRefs.current[activeIndex];
-    if (node) {
-      setActiveHeight(node.getBoundingClientRect().height);
+  // PENTING: observer dipasang ke SEMUA slide sekaligus, bukan cuma slide
+  // yang sedang aktif. Kartu-kartu ini sering berubah tinggi setelah mount
+  // (mis. skeleton loading -> data asli selesai dimuat, atau bagian
+  // "Rincian Aset & Riwayat" di-expand/collapse) -- kalau observer cuma
+  // dipasang & dilepas ulang setiap kali `activeIndex` berganti, perubahan
+  // tinggi yang terjadi di luar window itu bisa terlewat dan kontainer
+  // "nyangkut" di tinggi lama (persis gejala celah kosong yang muncul).
+  useLayoutEffect(() => {
+    if (typeof ResizeObserver === "undefined") {
+      const node = slideRefs.current[activeIndexRef.current];
+      if (node) setActiveHeight(node.getBoundingClientRect().height);
+      return;
     }
+
+    const observers = slideRefs.current.map((node, idx) => {
+      if (!node) return null;
+      const observer = new ResizeObserver(() => {
+        const h = node.getBoundingClientRect().height;
+        heightsRef.current[idx] = h;
+        if (idx === activeIndexRef.current) {
+          setActiveHeight(h);
+        }
+      });
+      observer.observe(node);
+      heightsRef.current[idx] = node.getBoundingClientRect().height;
+      return observer;
+    });
+
+    if (heightsRef.current[activeIndexRef.current] !== undefined) {
+      setActiveHeight(heightsRef.current[activeIndexRef.current]);
+    }
+
+    return () => observers.forEach((o) => o?.disconnect());
+  }, [slides.length]);
+
+  // Saat pindah slide (swipe atau tap dot), langsung terapkan tinggi yang
+  // sudah pernah terukur untuk slide itu (kalau ada) supaya perubahan
+  // tinggi terjadi bersamaan dengan animasi swipe, bukan telat menunggu
+  // observer callback berikutnya.
+  useLayoutEffect(() => {
+    const h = heightsRef.current[activeIndex];
+    if (h) setActiveHeight(h);
   }, [activeIndex]);
-
-  // Ukur ulang setiap kali slide aktif berganti.
-  useLayoutEffect(() => {
-    measureActive();
-  }, [measureActive]);
-
-  // Ukur ulang juga saat konten slide aktif berubah ukuran secara dinamis
-  // (mis. data async yang baru selesai dimuat) atau saat layar di-resize.
-  useLayoutEffect(() => {
-    const node = slideRefs.current[activeIndex];
-    if (!node || typeof ResizeObserver === "undefined") return;
-    const observer = new ResizeObserver(() => measureActive());
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [activeIndex, measureActive]);
 
   const handleScroll = () => {
     const el = scrollRef.current;
