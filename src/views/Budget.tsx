@@ -227,7 +227,7 @@ export const Budget: React.FC = () => {
           shadow-lg lagi di sini. */}
       <div className="relative">
         <PageRibbonBackground />
-        <Card elevation="lg" padding="none" className="relative z-10 -mt-14 sm:-mt-16 overflow-hidden">
+        <Card elevation="lg" padding="none" className="relative z-10 -mt-6 sm:-mt-8 overflow-hidden">
       {/* Accent stripe */}
       <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
       <div className="p-6 md:p-8 space-y-6">

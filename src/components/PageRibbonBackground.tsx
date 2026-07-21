@@ -8,16 +8,13 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  *
  * BEDA dengan DashboardHeader.tsx: tidak ada judul/sapaan/chip cuaca/avatar
  * di sini -- MURNI cuma warna gradient + lengkung sebagai aksen latar
- * belakang di belakang kartu teratas tiap halaman (sesuai instruksi:
- * "cukup style dan warna ribbonnya saja dipakai sebagai aksen" /
- * "perlakukan itu seperti sebuah background").
+ * belakang di belakang kartu teratas tiap halaman.
  *
  * Cara pakai: taruh PERSIS SEBELUM kartu teratas halaman, lalu bungkus
  * ribbon+kartu itu dalam satu wrapper `relative` bersama supaya margin
  * negatif kartu tidak "diambil alih" oleh utility `space-y-*` milik
- * container terluar. Kartu tersebut diberi `relative z-10 -mt-14 sm:-mt-16`
- * supaya ia tampak "duduk" di atas ribbon -- pola overlap yang sama persis
- * dengan Kartu Pos Dompet "Saldo Anda" di Dashboard.
+ * container terluar. Kartu tersebut diberi `relative z-10 -mt-6 sm:-mt-8`
+ * supaya ia tampak "duduk" di atas ribbon.
  *
  * Full-bleed (-mx/-mt) melawan padding `<main>` di App.tsx
  * (`p-4 sm:p-6 lg:p-8`), sama seperti DashboardHeader, supaya menyentuh
@@ -33,21 +30,18 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  * tinggi breadcrumb, sehingga ribbon kembali terlihat mulai di bawah
  * breadcrumb alih-alih dari tepi layar.
  *
- * Tinggi ribbon: alih-alih angka height tetap (h-32/h-40) yang ternyata
- * MASIH lebih pendek dari hero Dashboard sungguhan, sekarang tinggi
- * ribbon ini disusun dari padding vertikal YANG SAMA PERSIS dengan
- * DashboardHeader.tsx (pt-5/pt-6 & pb-20/pb-24), ditambah satu spacer
- * kosong (`h-[102px]`) yang besarnya = tinggi gabungan baris chip cuaca
- * (~26px) + margin `mt-4` (16px) + judul sapaan `<h1>` 2 baris (~60px)
- * di hero Dashboard. Hasilnya total tinggi container ribbon di sini jadi
- * SAMA PERSIS dengan total tinggi hero Dashboard (202px mobile / 222px
- * sm+), walau di halaman lain tidak ada teks/chip sungguhan yang
- * dirender -- supaya rasio ribbon-terlihat-vs-tertutup-kartu (lihat
- * catatan overlap di atas) konsisten di semua halaman.
- *
- * Kalau padding/ukuran font di hero DashboardHeader.tsx berubah di masa
- * depan, angka spacer `h-[102px]` di bawah ini perlu disesuaikan juga
- * supaya kedua ribbon tetap match.
+ * Tinggi ribbon (revisi -- lihat catatan di bawah): SEBELUMNYA komponen ini
+ * meniru tinggi hero Dashboard PERSIS (pakai spacer kosong h-[102px] yang
+ * besarnya = tinggi baris chip cuaca + judul sapaan di Dashboard). Ternyata
+ * itu menyisakan area kosong yang sangat besar (~140-160px, terlihat jelas
+ * di semua halaman non-Dashboard) karena halaman-halaman itu memang tidak
+ * punya judul/chip sungguhan untuk mengisi ruang tsb -- spacer itu SEKARANG
+ * DIHAPUS, dan padding bawah (`pb-*`) dikecilkan supaya ribbon jadi aksen
+ * tipis di belakang breadcrumb, bukan blok kosong setinggi hero Dashboard.
+ * Nilai `-mt-6 sm:-mt-8` pada kartu di tiap halaman (lihat pemakaian di
+ * Wallets.tsx dkk) ikut dikecilkan senada dengan perubahan ini -- kalau
+ * ribbon ini diperbesar lagi di masa depan, sesuaikan juga overlap kartu di
+ * SEMUA halaman yang memakainya (cari `PageRibbonBackground` di src/views).
  */
 export const PageRibbonBackground: React.FC = () => {
   const { tokens, cx } = useThemeTokens();
@@ -59,13 +53,10 @@ export const PageRibbonBackground: React.FC = () => {
     >
       <div
         className={cx(
-          "relative pt-5 sm:pt-6 pb-20 sm:pb-24",
+          "relative pt-5 sm:pt-6 pb-9 sm:pb-11",
           tokens.dashboardHeader.heroGradient
         )}
       >
-        {/* Spacer setinggi chip cuaca + judul sapaan hero Dashboard --
-            lihat catatan tinggi ribbon di atas. */}
-        <div className="h-[102px]" />
         <svg
           className={cx("absolute bottom-0 left-0 w-full h-9 sm:h-11 block", tokens.dashboardHeader.waveFill)}
           viewBox="0 0 264 66"

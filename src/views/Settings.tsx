@@ -541,7 +541,7 @@ export const Settings: React.FC<SettingsProps> = ({
           halaman sekarang cukup diwakili oleh item terakhir breadcrumb. */}
       <div className="relative md:hidden">
         <PageRibbonBackground />
-        <div className="relative z-10 -mt-14 sm:-mt-16">
+        <div className="relative z-10 -mt-6 sm:-mt-8">
           <SettingsMobileMenu
             displayName={displayName}
             email={user?.email || null}
@@ -567,7 +567,7 @@ export const Settings: React.FC<SettingsProps> = ({
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="relative">
         <PageRibbonBackground />
-        <Card elevation="lg" padding="none" className="relative z-10 -mt-14 sm:-mt-16 overflow-hidden">
+        <Card elevation="lg" padding="none" className="relative z-10 -mt-6 sm:-mt-8 overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
         

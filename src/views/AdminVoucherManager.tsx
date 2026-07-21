@@ -243,7 +243,7 @@ export const AdminVoucherManager: React.FC = () => {
     <div className="space-y-6">
       <div className="relative">
         <PageRibbonBackground />
-        <div className="relative z-10 -mt-14 sm:-mt-16">
+        <div className="relative z-10 -mt-6 sm:-mt-8">
           <AdminBackBar />
         </div>
       </div>
