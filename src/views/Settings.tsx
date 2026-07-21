@@ -43,7 +43,6 @@ import { uploadAvatar, AvatarValidationError } from "../lib/avatar";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
-import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { useNotificationPreferences, NotificationPreferenceKey } from "../hooks/useNotificationPreferences";
@@ -540,8 +539,7 @@ export const Settings: React.FC<SettingsProps> = ({
           `absolute` di dekat tepi atas ribbon -- lihat App.tsx); label
           halaman sekarang cukup diwakili oleh item terakhir breadcrumb. */}
       <div className="relative md:hidden">
-        <PageRibbonBackground />
-        <div className="mt-[186px] sm:mt-[198px]">
+        <div>
           <SettingsMobileMenu
             displayName={displayName}
             email={user?.email || null}
@@ -566,8 +564,7 @@ export const Settings: React.FC<SettingsProps> = ({
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="relative">
-        <PageRibbonBackground />
-        <Card elevation="lg" padding="none" className="mt-[186px] sm:mt-[198px] overflow-hidden">
+        <Card elevation="lg" padding="none" className="overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
         

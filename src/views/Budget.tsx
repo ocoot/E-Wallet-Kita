@@ -18,7 +18,6 @@ import { Input } from "../components/ui/Input";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "../components/ui/ModalShell";
 import { Card } from "../components/ui/Card";
-import { PageRibbonBackground } from "../components/PageRibbonBackground";
 
 export const Budget: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -226,8 +225,7 @@ export const Budget: React.FC = () => {
           elevation-nya diatur terpusat lewat primitive, bukan hardcode
           shadow-lg lagi di sini. */}
       <div className="relative">
-        <PageRibbonBackground />
-        <Card elevation="lg" padding="none" className="mt-[186px] sm:mt-[198px] overflow-hidden">
+        <Card elevation="lg" padding="none" className="overflow-hidden">
       {/* Accent stripe */}
       <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
       <div className="p-6 md:p-8 space-y-6">

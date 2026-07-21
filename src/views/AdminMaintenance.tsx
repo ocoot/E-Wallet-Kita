@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
-import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { Card } from "../components/ui/Card";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { supabase } from "../lib/supabase";
@@ -156,8 +155,7 @@ export const AdminMaintenance: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="relative">
-        <PageRibbonBackground />
-        <div className="mt-[186px] sm:mt-[198px]">
+        <div>
           <AdminBackBar />
         </div>
       </div>

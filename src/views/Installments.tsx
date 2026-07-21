@@ -20,7 +20,6 @@ import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
-import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import {
   Landmark, Plus, Trash2, CheckCircle2, Edit2, RotateCcw, PartyPopper
 } from "lucide-react";
@@ -197,8 +196,7 @@ export const Installments: React.FC = () => {
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="relative">
-        <PageRibbonBackground />
-        <Card elevation="lg" padding="none" className="mt-[186px] sm:mt-[198px] overflow-hidden">
+        <Card elevation="lg" padding="none" className="overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">
 

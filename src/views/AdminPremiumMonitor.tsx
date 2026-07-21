@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
-import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { Card } from "../components/ui/Card";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -183,8 +182,7 @@ export const AdminPremiumMonitor: React.FC = () => {
     <div className="space-y-6">
 
       <div className="relative">
-        <PageRibbonBackground />
-        <div className="mt-[186px] sm:mt-[198px]">
+        <div>
           <AdminBackBar />
         </div>
       </div>

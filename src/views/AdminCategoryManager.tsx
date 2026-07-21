@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
-import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
@@ -161,8 +160,7 @@ export const AdminCategoryManager: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="relative">
-        <PageRibbonBackground />
-        <div className="mt-[186px] sm:mt-[198px]">
+        <div>
           <AdminBackBar />
         </div>
       </div>
