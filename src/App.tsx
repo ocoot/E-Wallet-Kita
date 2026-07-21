@@ -429,7 +429,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                 sudah pernah dicoba. */}
             {location.pathname !== "/dashboard" && <PageRibbonBackground />}
             {location.pathname !== "/dashboard" && (
-              <div className="relative z-10 mb-4 sm:mb-5">
+              <div className="relative z-10 mb-2 sm:mb-3">
                 <Breadcrumbs />
               </div>
             )}

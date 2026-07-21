@@ -153,27 +153,26 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  * `pb` (tinggi svg wave) TIDAK diubah -- toh sekarang seluruhnya hampir
  * pasti tersembunyi di belakang Card juga.
  *
- * REVISI (samakan tinggi ribbon dengan hero Dashboard, laporan +
- * screenshot perbandingan Dasbor Utama vs Dompet): tinggi ribbon yang
- * BENAR-BENAR KELIHATAN di layar TIDAK ditentukan oleh `pt`/`pb` di sini
- * sendirian -- ribbon ini `position: absolute` murni dekoratif tanpa
- * konten, jadi dia selalu digambar penuh sampai `pt+pb`, tapi bagian
- * mana yang benar-benar TAMPAK cuma sampai titik Card (elemen flow biasa
- * di atasnya) mulai menutupinya. Titik itu = tinggi breadcrumb + margin-
- * bottom breadcrumb (App.tsx) + margin-top Card (tiap halaman) --
- * MEMBESARKAN `pt`/`pb` saja TIDAK membuat ribbon kelihatan lebih tinggi
- * kalau titik potong Card tidak ikut dimundurkan, karena sisa tambahan
- * itu cuma bersembunyi di belakang Card (tidak ada efek visual).
- * Makanya untuk menyamakan proporsi dengan hero Dashboard (yang jauh
- * lebih tinggi karena isinya sendiri -- sapaan, chip cuaca, avatar),
- * margin-bottom breadcrumb dikembalikan ke `mb-4 sm:mb-5` dan margin-top
- * Card/wrapper konten di semua halaman dibesarkan jadi `mt-24 sm:mt-28`
- * (dari `mt-6 sm:mt-8`) -- lihat App.tsx & tiap file di src/views/ untuk
- * perubahan itu. `pt` di sini ikut dibesarkan jadi `pt-44 sm:pt-48`
- * (dari `pt-24 sm:pt-28`) supaya titik potong Card yang sekarang jauh
- * lebih dalam TETAP jatuh di zona solid, bukan di tengah lengkung `pb`
- * (lihat revisi-revisi di atas soal bug segitiga/garis lekukan kalau ini
- * dilanggar).
+ * REVISI DICOBA LALU DIBATALKAN (menyamakan tinggi ribbon dengan hero
+ * Dashboard): sempat dicoba dengan membesarkan margin-bottom breadcrumb
+ * (App.tsx) jadi `mb-4 sm:mb-5` dan margin-top Card di semua halaman
+ * jadi `mt-24 sm:mt-28`, plus `pt` di sini jadi `pt-44 sm:pt-48` --
+ * TAPI ini DIBATALKAN atas laporan user, karena ribbon ini murni
+ * dekoratif TANPA konten sendiri (beda dengan Dashboard yang punya
+ * sapaan/chip cuaca/avatar mengisi ruangnya) -- tinggi ribbon yang
+ * BENAR-BENAR kelihatan di layar SAMA PERSIS dengan jarak breadcrumb-ke-
+ * Card (celah kosong itulah yang menampilkan ribbon). Menyamakan tinggi
+ * dengan Dashboard otomatis berarti menyamakan jarak itu juga, dan tanpa
+ * konten pengisi, hasilnya cuma keliatan sebagai celah kosong lagi
+ * (persis masalah yang sudah pernah dilaporkan & diperbaiki sebelumnya).
+ * KESIMPULAN: `pt`/`pb` di komponen INI TIDAK BISA dipakai untuk
+ * mengatur tinggi ribbon yang terlihat secara independen dari jarak
+ * breadcrumb-ke-Card -- keduanya adalah ruang yang sama. Kalau ada
+ * permintaan serupa lagi di masa depan, jangan ulangi coba-coba ini;
+ * jelaskan dulu keterbatasan ini ke user sebelum mengubah apa pun.
+ * Nilai `pt-24 sm:pt-28` (dan `mb-2 sm:mb-3`, `mt-6 sm:mt-8` di
+ * App.tsx/tiap halaman) yang sudah di-approve user SEBELUM percobaan ini
+ * sudah dikembalikan.
  */
 export const PageRibbonBackground: React.FC = () => {
   const { tokens, cx } = useThemeTokens();
@@ -185,7 +184,7 @@ export const PageRibbonBackground: React.FC = () => {
     >
       <div
         className={cx(
-          "relative pt-44 sm:pt-48 pb-9 sm:pb-11",
+          "relative pt-24 sm:pt-28 pb-9 sm:pb-11",
           tokens.dashboardHeader.heroGradient
         )}
       >

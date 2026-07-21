@@ -192,7 +192,7 @@ export const BillReminders: React.FC = () => {
 
       {/* ── Main card ──────────────────────────────────────────────── */}
       <div className="relative flow-root">
-        <div className={cx("relative z-10 mt-24 sm:mt-28 rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.border.default)}>
+        <div className={cx("relative z-10 mt-6 sm:mt-8 rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.border.default)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600" />
         <div className="p-6 md:p-8 space-y-6">
 
