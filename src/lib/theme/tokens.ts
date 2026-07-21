@@ -911,20 +911,56 @@ export const themeTokens = {
     optionInactive: "border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 light_sakura:text-indigo-600",
   },
   /**
-   * Sesi 54: token per-file untuk `DashboardHeader.tsx`. Exact match
-   * VERBATIM 2x dalam file yang sama.
+   * Sesi 55: `DashboardHeader.tsx` diredesain jadi "Double Wave (Ribbon)"
+   * hero -- gradient penuh warna + lengkung ganda di tepi bawah (lihat
+   * mockup `wave-mockups-themed.html`, varian 03), menggantikan topbar
+   * flat minimal "Varian A" dari sesi 54. Karena background sekarang
+   * SELALU gradient warna (bukan lagi canvas polos) di KEDUA tema, semua
+   * elemen di dalamnya (chip, avatar, tombol debug) dipindah ke gaya
+   * "frosted white" yang seragam untuk dark_obsidian & light_sakura --
+   * bukan lagi dibedakan per tema seperti versi topbar flat sebelumnya.
+   * Token `weatherBadge`/`avatarFallback`/`avatarRing`/`iconButton` di
+   * bawah adalah UPDATE dari versi sesi 54 (bukan token baru terpisah),
+   * karena masih exact-match cuma-dipakai di 2 file yang sama
+   * (`DashboardHeader.tsx` & `WeatherDebugToggle.tsx`) -- tidak ada
+   * konsumen lain yang butuh nilai lama, jadi diganti langsung di tempat
+   * supaya tetap single source of truth.
    */
   dashboardHeader: {
-    weatherBadge: "flex items-center gap-1.5 px-2.5 py-1 bg-white/10 backdrop-blur-sm border border-white/10 rounded-full text-xs font-medium shrink-0 whitespace-nowrap light_sakura:bg-rose-50 light_sakura:border-rose-100/50 transition-colors duration-300",
     /**
-     * Varian A (topbar kompak) -- lihat DashboardHeader.tsx. Dipisah dari
-     * `weatherBadge` di atas karena topbar ini TIDAK lagi dibungkus <Card>
-     * (bandingkan dengan komentar `Card border="subtle"` versi lama), jadi
-     * butuh token warna sendiri untuk avatar & tombol ikon dev-only.
+     * Gradient hero utama. Dark: indigo-500 -> emerald-500 (mint ke giok
+     * tua), Light: rose-400 -> rose-600 (jade muda ke jade tua) -- warna &
+     * sudut (160deg, stop di 140%) disalin persis dari mockup varian 03
+     * "Double Wave (Ribbon)".
      */
-    avatarFallback: "bg-slate-800 text-emerald-300 light_sakura:bg-rose-100 light_sakura:text-rose-600",
-    avatarRing: "ring-1 ring-white/10 light_sakura:ring-rose-200/60",
-    iconButton: "flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:bg-white/10 transition-colors light_sakura:bg-rose-50 light_sakura:border-rose-100/60 light_sakura:hover:bg-rose-100",
+    heroGradient: "bg-[linear-gradient(160deg,var(--color-indigo-500),var(--color-emerald-500)_140%)] light_sakura:bg-[linear-gradient(160deg,var(--color-rose-400),var(--color-rose-600)_140%)]",
+    /**
+     * Warna fill svg lengkung ganda di tepi bawah hero, dipasang via
+     * `fill="currentColor"` supaya ikut token (SVG fill tidak bisa baca
+     * CSS var Tailwind langsung tanpa util `text-*`). Nilainya SENGAJA
+     * sama dengan `surface.canvas`/background body per tema (slate-950
+     * dark, slate-50 light == persis `--d-canvas`/`--l-canvas` di mockup)
+     * supaya lengkungnya menyatu mulus dengan canvas di baliknya, bukan
+     * warna acak.
+     */
+    waveFill: "text-slate-950 light_sakura:text-slate-50",
+    weatherBadge: "flex items-center gap-1.5 px-2.5 py-1 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full text-xs font-medium shrink-0 whitespace-nowrap text-white transition-colors duration-300 light_sakura:bg-white/20",
+    /**
+     * Badge tamu (guest) -- dulu solid amber (cocok di atas card polos),
+     * sekarang frosted-white supaya tetap kebaca di atas gradient warna
+     * pada kedua tema (amber solid akan tenggelam/bentrok dengan gradient
+     * mint/jade).
+     */
+    guestBadge: "inline-flex items-center gap-1 bg-white/15 backdrop-blur-sm border border-white/25 text-white",
+    /** Fallback avatar (huruf inisial) saat user belum punya foto profil. */
+    avatarFallback: "bg-white/20 text-white",
+    avatarRing: "ring-2 ring-white/40",
+    /** Ring kecil di belakang titik status sync Telegram pada avatar --
+     * putih solid supaya "memotong" bersih dari gradient di baliknya,
+     * konsisten di kedua tema (beda dari `surface.card` versi topbar
+     * flat lama yang ikut ganti warna per tema). */
+    avatarStatusRing: "bg-white",
+    iconButton: "flex items-center justify-center rounded-full bg-white/15 border border-white/20 hover:bg-white/25 transition-colors text-white",
   },
   /**
    * Sesi 54: token untuk `ui/Card.tsx`. `borderSubtle` genuinely 1x-pakai

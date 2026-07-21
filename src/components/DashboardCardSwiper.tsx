@@ -22,79 +22,76 @@ export const DashboardCardSwiper: React.FC<DashboardCardSwiperProps> = ({ childr
   const { cx } = useThemeTokens();
   const scrollRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
-  // Cache tinggi TERAKHIR yang terukur untuk tiap slide (index -> px),
-  // supaya saat pindah slide kita bisa langsung terapkan tinggi yang
-  // sudah pernah diketahui tanpa menunggu observer callback berikutnya.
+  // Cache tinggi TERAKHIR yang terukur untuk tiap slide (index -> px).
   const heightsRef = useRef<number[]>([]);
-  const activeIndexRef = useRef(0);
   const [activeIndex, setActiveIndex] = useState(0);
   // Tinggi kontainer di-set eksplisit lewat JS supaya mengikuti tinggi
-  // konten slide yang SEDANG aktif -- bukan tinggi slide tertinggi. Tanpa
-  // ini, flex row akan otomatis stretch ke tinggi child terbesar (mis.
-  // kartu "Total Kekayaan" yang lebih tinggi), sehingga saat slide yang
-  // lebih pendek (kartu "Saldo Anda") aktif, tersisa ruang kosong besar
-  // di bawahnya sebelum section berikutnya.
+  // konten slide yang SEDANG terlihat -- bukan tinggi slide tertinggi.
+  // Nilainya DIHITUNG LANGSUNG dari posisi scroll aktual tiap kali event
+  // `scroll` terjadi (lihat `applyHeightFromScroll`), termasuk selagi jari
+  // masih di layar (drag belum selesai/snap) -- bukan cuma saat index aktif
+  // "resmi" berganti. Ini supaya tinggi kontainer selalu presisi mengikuti
+  // proporsi kartu mana yang paling banyak terlihat saat itu, tanpa risiko
+  // "nyangkut" di tinggi lama akibat efek/observer yang telat.
   const [activeHeight, setActiveHeight] = useState<number | undefined>(undefined);
 
   const slides = React.Children.toArray(children);
-  activeIndexRef.current = activeIndex;
 
-  // PENTING: observer dipasang ke SEMUA slide sekaligus, bukan cuma slide
-  // yang sedang aktif. Kartu-kartu ini sering berubah tinggi setelah mount
-  // (mis. skeleton loading -> data asli selesai dimuat, atau bagian
-  // "Rincian Aset & Riwayat" di-expand/collapse) -- kalau observer cuma
-  // dipasang & dilepas ulang setiap kali `activeIndex` berganti, perubahan
-  // tinggi yang terjadi di luar window itu bisa terlewat dan kontainer
-  // "nyangkut" di tinggi lama (persis gejala celah kosong yang muncul).
+  const applyHeightFromScroll = () => {
+    const el = scrollRef.current;
+    if (!el || el.clientWidth === 0) return;
+    const progress = el.scrollLeft / el.clientWidth;
+    const lower = Math.max(0, Math.min(slides.length - 1, Math.floor(progress)));
+    const upper = Math.max(0, Math.min(slides.length - 1, Math.ceil(progress)));
+    const t = progress - Math.floor(progress);
+    const hLower = heightsRef.current[lower];
+    const hUpper = heightsRef.current[upper];
+    if (hLower === undefined && hUpper === undefined) return;
+    const base = hLower ?? hUpper!;
+    const target = hUpper ?? hLower!;
+    setActiveHeight(base + (target - base) * t);
+    setActiveIndex(Math.min(Math.max(Math.round(progress), 0), slides.length - 1));
+  };
+
+  // Amati SEMUA slide sekaligus (bukan cuma yang aktif) supaya perubahan
+  // tinggi konten apa pun -- mis. skeleton loading yang berubah jadi data
+  // asli, atau bagian "Rincian Aset & Riwayat" yang di-expand/collapse --
+  // selalu ter-capture kapan pun itu terjadi, lalu langsung diterapkan ulang
+  // lewat posisi scroll saat ini.
   useLayoutEffect(() => {
     if (typeof ResizeObserver === "undefined") {
-      const node = slideRefs.current[activeIndexRef.current];
-      if (node) setActiveHeight(node.getBoundingClientRect().height);
+      slideRefs.current.forEach((node, idx) => {
+        if (node) heightsRef.current[idx] = node.getBoundingClientRect().height;
+      });
+      applyHeightFromScroll();
       return;
     }
 
     const observers = slideRefs.current.map((node, idx) => {
       if (!node) return null;
       const observer = new ResizeObserver(() => {
-        const h = node.getBoundingClientRect().height;
-        heightsRef.current[idx] = h;
-        if (idx === activeIndexRef.current) {
-          setActiveHeight(h);
-        }
+        heightsRef.current[idx] = node.getBoundingClientRect().height;
+        applyHeightFromScroll();
       });
       observer.observe(node);
       heightsRef.current[idx] = node.getBoundingClientRect().height;
       return observer;
     });
 
-    if (heightsRef.current[activeIndexRef.current] !== undefined) {
-      setActiveHeight(heightsRef.current[activeIndexRef.current]);
-    }
+    applyHeightFromScroll();
 
     return () => observers.forEach((o) => o?.disconnect());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slides.length]);
 
-  // Saat pindah slide (swipe atau tap dot), langsung terapkan tinggi yang
-  // sudah pernah terukur untuk slide itu (kalau ada) supaya perubahan
-  // tinggi terjadi bersamaan dengan animasi swipe, bukan telat menunggu
-  // observer callback berikutnya.
-  useLayoutEffect(() => {
-    const h = heightsRef.current[activeIndex];
-    if (h) setActiveHeight(h);
-  }, [activeIndex]);
-
   const handleScroll = () => {
-    const el = scrollRef.current;
-    if (!el || el.clientWidth === 0) return;
-    const idx = Math.round(el.scrollLeft / el.clientWidth);
-    setActiveIndex(Math.min(Math.max(idx, 0), slides.length - 1));
+    applyHeightFromScroll();
   };
 
   const scrollToIndex = (idx: number) => {
     const el = scrollRef.current;
     if (!el) return;
     el.scrollTo({ left: idx * el.clientWidth, behavior: "smooth" });
-    setActiveIndex(idx);
   };
 
   if (slides.length <= 1) {
@@ -106,7 +103,7 @@ export const DashboardCardSwiper: React.FC<DashboardCardSwiperProps> = ({ childr
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="flex items-start overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-hide -mx-0.5 px-0.5 transition-[height] duration-300 ease-out"
+        className="flex items-start overflow-x-auto overflow-y-hidden snap-x snap-mandatory scrollbar-hide -mx-0.5 px-0.5"
         style={{ scrollSnapType: "x mandatory", height: activeHeight }}
       >
         {slides.map((slide, idx) => (
@@ -115,7 +112,11 @@ export const DashboardCardSwiper: React.FC<DashboardCardSwiperProps> = ({ childr
             ref={(node) => {
               slideRefs.current[idx] = node;
             }}
-            className="w-full shrink-0 snap-center snap-always"
+            // px-1.5 di tiap slide -> ada jarak/gap yang konsisten antara
+            // kartu ini & kartu sebelahnya saat keduanya kelihatan
+            // bersamaan selagi di-swipe (drag belum snap penuh), alih-alih
+            // dua kartu yang bersinggungan langsung tanpa jarak.
+            className="w-full shrink-0 snap-center snap-always px-1.5 first:pl-0 last:pr-0"
           >
             {slide}
           </div>
