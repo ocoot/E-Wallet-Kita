@@ -525,17 +525,6 @@ export const Settings: React.FC<SettingsProps> = ({
   return (
     <div className="max-w-3xl mx-auto space-y-5 pb-24">
 
-      {/* Judul halaman khusus mobile (item 2.3/P2 sudah dicabut --
-          sebelumnya versi collapsing/animasi via CollapsingHeader.tsx). */}
-      <div className="md:hidden">
-        <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
-          {t("nav.settings")}
-        </h1>
-        <p className={cx("font-sans text-xs mt-1", tokens.text.muted)}>
-          {t("settings.desc")}
-        </p>
-      </div>
-
       {/* ── Mobile-only redesign: menu list ala "Profile/Akun" ──────────
           Menggantikan grid form raksasa di atas KHUSUS untuk breakpoint
           mobile (md:hidden). Setiap baris menu di sini membuka route
@@ -545,9 +534,11 @@ export const Settings: React.FC<SettingsProps> = ({
           Layar desktop (di bawah, dibungkus hidden md:block) TIDAK
           diubah sama sekali. */}
       {/* Ribbon dekoratif (md:hidden, sama pola dengan halaman lain) --
-          ditaruh di belakang kartu profil teratas SettingsMobileMenu,
-          bukan di belakang judul "Pengaturan" di atas (judul tetap di
-          canvas polos, tidak diubah). */}
+          ditaruh di belakang kartu profil teratas SettingsMobileMenu. Judul
+          halaman terpisah di atas ribbon SUDAH DICABUT (sempat bentrok
+          visual dengan chip <Breadcrumbs/> yang sekarang mengambang
+          `absolute` di dekat tepi atas ribbon -- lihat App.tsx); label
+          halaman sekarang cukup diwakili oleh item terakhir breadcrumb. */}
       <div className="relative md:hidden">
         <PageRibbonBackground />
         <div className="relative z-10 -mt-14 sm:-mt-16">

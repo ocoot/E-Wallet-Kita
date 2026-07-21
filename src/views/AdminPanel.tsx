@@ -19,6 +19,7 @@ import {
   HardDrive
 } from "lucide-react";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { PageRibbonBackground } from "../components/PageRibbonBackground";
 
 type AdminTab = "users" | "premium" | "voucher" | "categories" | "broadcast" | "ai_monitor" | "error_monitor" | "maintenance" | "support_chat" | "backup";
 
@@ -79,7 +80,9 @@ export const AdminPanel: React.FC = () => {
       {/* Hero card -- disamakan dengan pola kartu utama halaman Akun desktop
           (lihat Settings.tsx: rounded-3xl + bar gradient tipis di atas +
           judul/deskripsi dengan border-b di dalam kartu putih/slate). */}
-      <Card padding="none" elevation="lg" border="default" className="overflow-hidden">
+      <div className="relative">
+        <PageRibbonBackground />
+        <Card padding="none" elevation="lg" border="default" className="relative z-10 -mt-14 sm:-mt-16 overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -165,6 +168,7 @@ export const AdminPanel: React.FC = () => {
 
         </div>
       </Card>
+      </div>
 
     </div>
   );

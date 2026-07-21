@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
@@ -157,7 +158,12 @@ export const AdminBroadcast: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <AdminBackBar />
+      <div className="relative">
+        <PageRibbonBackground />
+        <div className="relative z-10 -mt-14 sm:-mt-16">
+          <AdminBackBar />
+        </div>
+      </div>
 
       <Card padding="none" elevation="sm" border="neutral" className="p-8 space-y-6">
         {/* Header inside Card Container */}

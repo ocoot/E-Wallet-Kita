@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { BillReminder } from "../types";
 import { useNavigate } from "react-router-dom";
+import { PageRibbonBackground } from "../components/PageRibbonBackground";
 
 const REMINDER_HOUR_OPTIONS = [9, 12, 15, 18, 21] as const;
 type RecurrenceType = "monthly" | "yearly" | "one_time";
@@ -191,7 +192,9 @@ export const BillReminders: React.FC = () => {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
       {/* ── Main card ──────────────────────────────────────────────── */}
-      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.border.default)}>
+      <div className="relative">
+        <PageRibbonBackground />
+        <div className={cx("relative z-10 -mt-14 sm:-mt-16 rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.border.default)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -342,6 +345,7 @@ export const BillReminders: React.FC = () => {
               </div>
             </AnimatePresence>
           )}
+        </div>
         </div>
       </div>
 

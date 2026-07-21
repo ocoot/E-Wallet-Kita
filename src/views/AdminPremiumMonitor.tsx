@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { Card } from "../components/ui/Card";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -181,7 +182,12 @@ export const AdminPremiumMonitor: React.FC = () => {
   return (
     <div className="space-y-6">
 
-      <AdminBackBar />
+      <div className="relative">
+        <PageRibbonBackground />
+        <div className="relative z-10 -mt-14 sm:-mt-16">
+          <AdminBackBar />
+        </div>
+      </div>
 
       {/* Header Wrapped in One Card Container */}
       <Card padding="lg" elevation="sm" border="neutral">

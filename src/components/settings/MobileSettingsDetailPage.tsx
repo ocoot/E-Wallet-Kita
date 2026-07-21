@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { useThemeTokens } from "../../hooks/useThemeTokens";
 import { useIsDesktopViewport } from "../../hooks/useIsDesktopViewport";
 import { audioFeedback } from "../../lib/audio";
+import { PageRibbonBackground } from "../PageRibbonBackground";
 
 interface MobileSettingsDetailPageProps {
   title: string;
@@ -54,7 +55,9 @@ export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> =
       transition={{ duration: 0.18 }}
       className="max-w-3xl mx-auto space-y-5 pb-24 md:hidden"
     >
-      <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
+      <div className="relative">
+        <PageRibbonBackground />
+        <div className={cx("relative z-10 -mt-14 sm:-mt-16 rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-5 space-y-5">
           {/* Header: back button + title */}
@@ -80,6 +83,7 @@ export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> =
           </div>
 
           {children}
+        </div>
         </div>
       </div>
     </motion.div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { Card } from "../components/ui/Card";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { supabase } from "../lib/supabase";
@@ -154,7 +155,12 @@ export const AdminMaintenance: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <AdminBackBar />
+      <div className="relative">
+        <PageRibbonBackground />
+        <div className="relative z-10 -mt-14 sm:-mt-16">
+          <AdminBackBar />
+        </div>
+      </div>
 
       {/* ── Global Maintenance Toggle ── */}
       <Card padding="lg" elevation="sm" border="neutral" className="space-y-6">

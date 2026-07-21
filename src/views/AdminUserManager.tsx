@@ -10,6 +10,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { Card } from "../components/ui/Card";
 import {
   User,
@@ -424,7 +425,12 @@ export const AdminUserManager: React.FC = () => {
   return (
     <div className="space-y-5">
 
-      <AdminBackBar />
+      <div className="relative">
+        <PageRibbonBackground />
+        <div className="relative z-10 -mt-14 sm:-mt-16">
+          <AdminBackBar />
+        </div>
+      </div>
 
       {/* Header + quick actions -- Wrapped in One Card Container, konsisten
           dengan pola header di halaman Admin* lainnya (mis. AdminPremiumMonitor). */}
