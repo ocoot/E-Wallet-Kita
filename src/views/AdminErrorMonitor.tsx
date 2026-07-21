@@ -167,7 +167,7 @@ export const AdminErrorMonitor: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="relative">
+      <div className="relative flow-root">
         <PageRibbonBackground />
         <div className="relative z-10 mt-12 sm:mt-14">
           <AdminBackBar />

@@ -539,7 +539,7 @@ export const Settings: React.FC<SettingsProps> = ({
           sudah cukup diwakili oleh item terakhir <Breadcrumbs/> (kini
           dirender normal di atas ribbon lewat App.tsx, bukan lagi overlay
           `absolute` -- lihat catatan di PageRibbonBackground.tsx). */}
-      <div className="relative md:hidden">
+      <div className="relative flow-root md:hidden">
         <PageRibbonBackground />
         <div className="relative z-10 mt-12 sm:mt-14">
           <SettingsMobileMenu
@@ -565,7 +565,7 @@ export const Settings: React.FC<SettingsProps> = ({
       {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
-      <div className="relative">
+      <div className="relative flow-root">
         <PageRibbonBackground />
         <Card elevation="lg" padding="none" className="relative z-10 mt-12 sm:mt-14 overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />

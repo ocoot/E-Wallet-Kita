@@ -270,7 +270,7 @@ export const History: React.FC<HistoryProps> = ({
       {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
-      <div className="relative">
+      <div className="relative flow-root">
         <PageRibbonBackground />
         <Card elevation="lg" padding="none" className="relative z-10 mt-12 sm:mt-14 overflow-hidden">
         {/* Accent stripe */}

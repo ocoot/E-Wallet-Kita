@@ -192,7 +192,7 @@ export const BillReminders: React.FC = () => {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
       {/* ── Main card ──────────────────────────────────────────────── */}
-      <div className="relative">
+      <div className="relative flow-root">
         <PageRibbonBackground />
         <div className={cx("relative z-10 mt-12 sm:mt-14 rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.border.default)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600" />

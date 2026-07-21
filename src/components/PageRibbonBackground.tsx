@@ -77,6 +77,39 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  * menyentuh tepi layar alih-alih berhenti di dalam padding halaman --
  * ini TIDAK diubah oleh fix di atas, cuma `pt` vertikalnya saja yang
  * disesuaikan.
+ *
+ * REVISI LAGI (fix "ribbon terpotong total" -- laporan bug dengan
+ * screenshot halaman Dompet, ribbon nyaris tidak kelihatan sama sekali
+ * kecuali segitiga hijau tipis di pojok kiri-atas): akar masalahnya
+ * BUKAN di komponen ini, tapi di wrapper `<div className="relative">`
+ * yang membungkus `<PageRibbonBackground />` + Card di tiap halaman
+ * (Wallets.tsx dkk). Card di dalamnya diberi `mt-12 sm:mt-14` supaya
+ * berjarak dari ribbon -- tapi karena `<PageRibbonBackground />`
+ * `position: absolute` (tidak ikut document flow / tidak dihitung
+ * sebagai "konten" oleh algoritma margin-collapse), margin-top Card
+ * itu MENEMBUS wrapper `relative`-nya dan collapse jadi margin-top
+ * milik wrapper itu sendiri (perilaku standar CSS: margin-top elemen
+ * anak PERTAMA collapse ke parent kalau parent tidak punya
+ * padding-top/border-top/BFC sendiri yang menghalanginya). Akibatnya
+ * SELURUH wrapper (ribbon + Card sekaligus) ikut turun bersama sejauh
+ * 48/56px itu, sehingga posisi ribbon dan Card jadi SAMA PERSIS --
+ * tidak ada celah solid gradient yang kelihatan di atas Card sama
+ * sekali, cuma sisa bleed horizontal di kiri/kanan Card yang kelihatan
+ * (karena itu terlihat seperti "terpotong" jadi segitiga/pita tipis
+ * di sisi, bukan pita horizontal di atas seperti di Dashboard).
+ *
+ * FIX-nya ada di PEMANGGIL (bukan di file ini): wrapper `relative` di
+ * tiap halaman WAJIB juga diberi `flow-root` (mis.
+ * `className="relative flow-root"`) supaya wrapper itu membentuk
+ * block formatting context barunya sendiri -- ini mencegah collapse
+ * tadi TANPA memotong bleed horizontal ribbon (beda dengan
+ * `overflow-hidden`, yang juga mencegah collapse tapi sekaligus
+ * meng-clip ribbon yang sengaja bleed melewati tepi wrapper, jadi
+ * JANGAN pakai `overflow-hidden` untuk fix ini). Dicatat di sini
+ * (bukan cuma di tiap pemanggil) supaya kalau ada halaman BARU yang
+ * makai `<PageRibbonBackground />`, wrapper-nya juga ingat perlu
+ * `flow-root` -- lihat Wallets.tsx/Budget.tsx/dkk untuk contoh
+ * pemakaian yang benar.
  */
 export const PageRibbonBackground: React.FC = () => {
   const { tokens, cx } = useThemeTokens();

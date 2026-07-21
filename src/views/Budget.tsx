@@ -225,7 +225,7 @@ export const Budget: React.FC = () => {
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive, bukan hardcode
           shadow-lg lagi di sini. */}
-      <div className="relative">
+      <div className="relative flow-root">
         <PageRibbonBackground />
         <Card elevation="lg" padding="none" className="relative z-10 mt-12 sm:mt-14 overflow-hidden">
       {/* Accent stripe */}
