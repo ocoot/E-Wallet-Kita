@@ -77,11 +77,17 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   return (
     <div
       id="dashboard-welcome-banner"
-      className="relative -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 lg:-mx-8 lg:-mt-8 mb-4"
+      // Ribbon hijau sekarang dibuat lebih "memanjang" ke bawah (pb-20/24,
+      // sebelumnya pb-11/14) supaya area gradiennya menjorok sampai ke
+      // belakang Kartu Pos Dompet "Saldo Anda" -- lalu kartu tersebut
+      // ditarik naik lewat margin-bottom negatif (-mb-14/-16, sebelumnya
+      // mb-4 positif) sehingga secara visual terlihat "duduk" di atas
+      // ribbon, bukan lagi menempel di bawahnya dengan jarak putih polos.
+      className="relative -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 lg:-mx-8 lg:-mt-8 -mb-14 sm:-mb-16"
     >
       <div
         className={cx(
-          "relative pt-5 sm:pt-6 px-4 sm:px-6 lg:px-8 pb-11 sm:pb-14",
+          "relative pt-5 sm:pt-6 px-4 sm:px-6 lg:px-8 pb-20 sm:pb-24",
           tokens.dashboardHeader.heroGradient
         )}
       >
