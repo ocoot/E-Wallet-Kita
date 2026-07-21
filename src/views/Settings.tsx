@@ -535,13 +535,13 @@ export const Settings: React.FC<SettingsProps> = ({
           diubah sama sekali. */}
       {/* Ribbon dekoratif (md:hidden, sama pola dengan halaman lain) --
           ditaruh di belakang kartu profil teratas SettingsMobileMenu. Judul
-          halaman terpisah di atas ribbon SUDAH DICABUT (sempat bentrok
-          visual dengan chip <Breadcrumbs/> yang sekarang mengambang
-          `absolute` di dekat tepi atas ribbon -- lihat App.tsx); label
-          halaman sekarang cukup diwakili oleh item terakhir breadcrumb. */}
+          halaman terpisah di atas ribbon SUDAH DICABUT karena label halaman
+          sudah cukup diwakili oleh item terakhir <Breadcrumbs/> (kini
+          dirender normal di atas ribbon lewat App.tsx, bukan lagi overlay
+          `absolute` -- lihat catatan di PageRibbonBackground.tsx). */}
       <div className="relative md:hidden">
         <PageRibbonBackground />
-        <div className="relative z-10 -mt-6 sm:-mt-8">
+        <div className="relative z-10 mt-8 sm:mt-9">
           <SettingsMobileMenu
             displayName={displayName}
             email={user?.email || null}
@@ -567,7 +567,7 @@ export const Settings: React.FC<SettingsProps> = ({
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="relative">
         <PageRibbonBackground />
-        <Card elevation="lg" padding="none" className="relative z-10 -mt-6 sm:-mt-8 overflow-hidden">
+        <Card elevation="lg" padding="none" className="relative z-10 mt-8 sm:mt-9 overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
         

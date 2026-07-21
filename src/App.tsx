@@ -406,17 +406,21 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
             (yang tidak punya navbar bawah). */}
         <div className="p-4 sm:p-6 lg:p-8 pb-24 md:pb-40">
           <div className="relative max-w-7xl mx-auto w-full">
-            {/* Breadcrumb pill sengaja `absolute` (bukan block biasa) supaya
-                TIDAK makan ruang vertikal di document flow -- ia harus
-                mengambang DI ATAS PageRibbonBackground/DashboardHeader milik
-                tiap halaman, bukan mendorongnya turun (lihat catatan di
-                PageRibbonBackground.tsx). Posisi top-5/top-6 sengaja
-                menyamai offset pt-5/pt-6 di DashboardHeader.tsx supaya
-                sejajar dengan baris chip cuaca/lokasi Dashboard; left-0
-                tanpa padding tambahan karena wrapper ini sudah otomatis
-                terinset oleh padding `<main>` (p-4/p-6/p-8) di atas. */}
+            {/* Breadcrumb pill dikembalikan jadi elemen block BIASA (bukan
+                lagi overlay `absolute`) -- sebelumnya di-absolute-kan supaya
+                "tidak makan ruang" dan bisa mengambang di atas ribbon, tapi
+                itu justru membuat pill breadcrumb menumpuk/bertabrakan
+                dengan judul kartu halaman di bawahnya karena keduanya
+                sama-sama mengklaim ruang vertikal yang sama tanpa saling
+                tahu tinggi elemen lain (lihat catatan lengkap di
+                PageRibbonBackground.tsx). Sekarang PageRibbonBackground
+                sendiri sudah jadi layer dekoratif `absolute -z-10` yang
+                tidak memengaruhi document flow, jadi breadcrumb ini cukup
+                dirender normal dengan margin-bottom supaya berjarak rapi
+                dari konten halaman di bawahnya -- tidak perlu lagi trik
+                positioning apa pun. */}
             {location.pathname !== "/dashboard" && (
-              <div className="absolute top-5 sm:top-6 left-0 z-20">
+              <div className="mb-4 sm:mb-5">
                 <Breadcrumbs />
               </div>
             )}

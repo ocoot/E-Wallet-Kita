@@ -57,7 +57,7 @@ export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> =
     >
       <div className="relative">
         <PageRibbonBackground />
-        <div className={cx("relative z-10 -mt-14 sm:-mt-16 rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
+        <div className={cx("relative z-10 mt-0 sm:mt-1 rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-5 space-y-5">
           {/* Header: back button + title */}

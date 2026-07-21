@@ -10,38 +10,39 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  * di sini -- MURNI cuma warna gradient + lengkung sebagai aksen latar
  * belakang di belakang kartu teratas tiap halaman.
  *
- * Cara pakai: taruh PERSIS SEBELUM kartu teratas halaman, lalu bungkus
- * ribbon+kartu itu dalam satu wrapper `relative` bersama supaya margin
- * negatif kartu tidak "diambil alih" oleh utility `space-y-*` milik
- * container terluar. Kartu tersebut diberi `relative z-10 -mt-6 sm:-mt-8`
- * supaya ia tampak "duduk" di atas ribbon.
+ * REVISI (fix ribbon-tidak-terlihat / breadcrumb-tumpang-tindih): komponen
+ * ini SEKARANG betul-betul `position: absolute` + `-z-10`, alih-alih elemen
+ * block biasa yang ikut makan tinggi document flow seperti sebelumnya.
+ * Dulu ribbon ini dirender sebagai elemen normal (pakai margin negatif
+ * `-mx/-mt` untuk full-bleed), lalu kartu di bawahnya "ditarik naik" pakai
+ * margin negatif (`-mt-6 sm:-mt-8` dkk) supaya terlihat duduk di atas
+ * ribbon -- pola ini bermasalah karena (1) kartu itu diberi `relative z-10`
+ * sehingga context stacking-nya SELALU digambar di atas ribbon yang tidak
+ * dipositioning, walau secara tinggi mestinya cuma menutupi sebagian; dan
+ * (2) <Breadcrumbs /> sempat dirender `absolute` bertumpuk PERSIS di ruang
+ * yang sama dengan ribbon supaya "tidak makan tinggi", yang malah membuat
+ * pill breadcrumb menutupi/bertabrakan dengan judul kartu di bawahnya
+ * karena keduanya sama-sama mengklaim ruang vertikal yang sama tanpa
+ * masing-masing tahu tinggi elemen lain.
  *
- * Full-bleed (-mx/-mt) melawan padding `<main>` di App.tsx
- * (`p-4 sm:p-6 lg:p-8`), sama seperti DashboardHeader, supaya menyentuh
- * tepi layar alih-alih berhenti di dalam padding halaman.
+ * Sekarang ribbon murni dekoratif: `absolute -z-10 top-0` di dalam wrapper
+ * `relative` milik tiap halaman (`<div className="relative"><PageRibbonBackground />
+ * <Card .../></div>`), TIDAK memengaruhi tinggi/posisi elemen apa pun di
+ * atas maupun di bawahnya. Konten (Card/menu dsb.) sekarang cukup diberi
+ * margin-top POSITIF kecil (mis. `mt-8 sm:mt-9`, lihat pemakaian di
+ * Wallets.tsx dkk) supaya sebagian ribbon "mengintip" di belakangnya --
+ * bukan lagi margin negatif yang menariknya naik menembus tinggi ribbon.
+ * <Breadcrumbs /> di App.tsx juga sudah dikembalikan jadi elemen block
+ * biasa (bukan overlay `absolute`) karena tidak perlu lagi berbagi ruang
+ * dengan ribbon ini.
  *
- * PENTING: supaya ribbon ini benar-benar menyentuh tepi ATAS layar (persis
- * seperti hero Dashboard, tidak "terpotong"/didorong turun oleh
- * <Breadcrumbs />), <Breadcrumbs /> di App.tsx sengaja dirender sebagai
- * overlay `absolute` (bukan elemen block biasa yang makan tinggi baris) di
- * atas ribbon ini -- lihat App.tsx. Jangan kembalikan <Breadcrumbs />
- * menjadi elemen block statis sebelum ribbon, karena itu akan membuat
- * margin negatif `-mt-*` di atas cuma membatalkan padding `<main>`, bukan
- * tinggi breadcrumb, sehingga ribbon kembali terlihat mulai di bawah
- * breadcrumb alih-alih dari tepi layar.
- *
- * Tinggi ribbon (revisi -- lihat catatan di bawah): SEBELUMNYA komponen ini
- * meniru tinggi hero Dashboard PERSIS (pakai spacer kosong h-[102px] yang
- * besarnya = tinggi baris chip cuaca + judul sapaan di Dashboard). Ternyata
- * itu menyisakan area kosong yang sangat besar (~140-160px, terlihat jelas
- * di semua halaman non-Dashboard) karena halaman-halaman itu memang tidak
- * punya judul/chip sungguhan untuk mengisi ruang tsb -- spacer itu SEKARANG
- * DIHAPUS, dan padding bawah (`pb-*`) dikecilkan supaya ribbon jadi aksen
- * tipis di belakang breadcrumb, bukan blok kosong setinggi hero Dashboard.
- * Nilai `-mt-6 sm:-mt-8` pada kartu di tiap halaman (lihat pemakaian di
- * Wallets.tsx dkk) ikut dikecilkan senada dengan perubahan ini -- kalau
- * ribbon ini diperbesar lagi di masa depan, sesuaikan juga overlap kartu di
- * SEMUA halaman yang memakainya (cari `PageRibbonBackground` di src/views).
+ * Full-bleed horizontal (-left/-right) melawan padding `<main>` di
+ * App.tsx (`p-4 sm:p-6 lg:p-8`), sama seperti sebelumnya, supaya
+ * menyentuh tepi layar alih-alih berhenti di dalam padding halaman.
+ * Tinggi ribbon (pt-5/pb-9 dkk) TIDAK diubah dari versi sebelumnya --
+ * proporsi gradient+lengkungnya sudah meniru gaya hero Dashboard, cuma
+ * sekarang benar-benar tampil (tidak lagi ketutup/ke-z-index-kan oleh
+ * kartu) karena posisinya lepas dari document flow.
  */
 export const PageRibbonBackground: React.FC = () => {
   const { tokens, cx } = useThemeTokens();
@@ -49,7 +50,7 @@ export const PageRibbonBackground: React.FC = () => {
   return (
     <div
       aria-hidden="true"
-      className="-mx-4 -mt-4 sm:-mx-6 sm:-mt-6 lg:-mx-8 lg:-mt-8"
+      className="pointer-events-none absolute -z-10 top-0 -left-4 -right-4 sm:-left-6 sm:-right-6 lg:-left-8 lg:-right-8 overflow-hidden"
     >
       <div
         className={cx(
