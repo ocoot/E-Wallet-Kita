@@ -427,7 +427,7 @@ export const AdminUserManager: React.FC = () => {
 
       <div className="relative">
         <PageRibbonBackground />
-        <div className="relative z-10 mt-8 sm:mt-9">
+        <div className="relative z-10 mt-12 sm:mt-14">
           <AdminBackBar />
         </div>
       </div>

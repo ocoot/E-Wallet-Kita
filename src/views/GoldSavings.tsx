@@ -437,7 +437,7 @@ export const GoldSavings: React.FC = () => {
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="relative">
         <PageRibbonBackground />
-        <Card elevation="lg" padding="none" className="relative z-10 mt-8 sm:mt-9 overflow-hidden">
+        <Card elevation="lg" padding="none" className="relative z-10 mt-12 sm:mt-14 overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500" />
         <div className="p-6 md:p-8 space-y-6">
 

@@ -272,7 +272,7 @@ export const History: React.FC<HistoryProps> = ({
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="relative">
         <PageRibbonBackground />
-        <Card elevation="lg" padding="none" className="relative z-10 mt-8 sm:mt-9 overflow-hidden">
+        <Card elevation="lg" padding="none" className="relative z-10 mt-12 sm:mt-14 overflow-hidden">
         {/* Accent stripe */}
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">

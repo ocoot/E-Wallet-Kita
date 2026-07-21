@@ -29,12 +29,22 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  * `relative` milik tiap halaman (`<div className="relative"><PageRibbonBackground />
  * <Card .../></div>`), TIDAK memengaruhi tinggi/posisi elemen apa pun di
  * atas maupun di bawahnya. Konten (Card/menu dsb.) sekarang cukup diberi
- * margin-top POSITIF kecil (mis. `mt-8 sm:mt-9`, lihat pemakaian di
- * Wallets.tsx dkk) supaya sebagian ribbon "mengintip" di belakangnya --
- * bukan lagi margin negatif yang menariknya naik menembus tinggi ribbon.
- * <Breadcrumbs /> di App.tsx juga sudah dikembalikan jadi elemen block
- * biasa (bukan overlay `absolute`) karena tidak perlu lagi berbagi ruang
- * dengan ribbon ini.
+ * margin-top POSITIF (`mt-12 sm:mt-14`, lihat pemakaian di Wallets.tsx
+ * dkk) supaya sebagian ribbon "mengintip" di belakangnya -- bukan lagi
+ * margin negatif yang menariknya naik menembus tinggi ribbon.
+ *
+ * PENTING soal besaran overlap: ribbon ini tingginya cuma pt-5+pb-9
+ * (56px mobile) / pt-6+pb-11 (68px sm), dan lengkung svg-nya (wave)
+ * menempati BAGIAN BAWAH dari tinggi itu (h-9/h-11 = 36/44px terakhir).
+ * Kalau margin-top konten dibuat terlalu besar (misalnya sama dengan
+ * tinggi penuh ribbon, seperti sempat dicoba dengan `mt-8 sm:mt-9`),
+ * kartu akan menutupi HAMPIR SELURUH zona wave -- padahal wave itu
+ * sendiri sudah "berlubang" mengikuti kurva svg-nya, jadi yang tersisa
+ * kelihatan cuma garis tipis, bukan pita warna yang jelas (ribbon
+ * terkesan "hilang"). `mt-12 sm:mt-14` sengaja disisakan sedikit lebih
+ * kecil dari tinggi penuh ribbon (overlap cuma ~8-12px di ujung bawah
+ * wave) supaya sebagian besar area gradient + lengkung wave-nya tetap
+ * tampil jelas di belakang kartu, mirip proporsi hero Dashboard.
  *
  * Full-bleed horizontal (-left/-right) melawan padding `<main>` di
  * App.tsx (`p-4 sm:p-6 lg:p-8`), sama seperti sebelumnya, supaya
