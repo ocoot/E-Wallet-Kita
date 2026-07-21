@@ -46,6 +46,25 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  * dkk) supaya sebagian ribbon "mengintip" di belakangnya -- bukan lagi
  * margin negatif yang menariknya naik menembus tinggi ribbon.
  *
+ * REVISI (fix "strip warna aneh" di atas breadcrumb, laporan bug dengan
+ * screenshot ditandai lingkaran kuning di area status-bar/breadcrumb):
+ * setelah ribbon dipindah ke level shared layout di App.tsx (supaya juga
+ * menutupi breadcrumb, lihat App.tsx), ternyata masih ada CELAH tipis
+ * warna canvas polos di ATAS ribbon, sebelum breadcrumb -- karena
+ * `top-0` di sini dihitung relatif terhadap wrapper `relative` milik
+ * ribbon, yang MASIH berada di DALAM padding atas `<main>`
+ * (`p-4 sm:p-6 lg:p-8` di App.tsx). Jadi ribbon "berhenti" sebelum betul-
+ * betul menyentuh tepi atas halaman, menyisakan strip selebar padding itu
+ * (16-32px) yang warnanya beda sendiri (canvas biasa, bukan gradient).
+ * Halaman Dashboard TIDAK kena masalah ini karena `DashboardHeader.tsx`
+ * sengaja pakai margin negatif (`-mt-4 sm:-mt-6 lg:-mt-8`) untuk
+ * "menembus" padding itu. Fix di sini: ganti `top-0` jadi
+ * `-top-4 sm:-top-6 lg:-top-8` (BUKAN margin, karena elemen ini
+ * `position: absolute` -- makanya pakai offset `top` negatif, bukan
+ * `-mt-*`) dengan angka PERSIS SAMA seperti padding `<main>`, supaya
+ * ribbon bleed sampai tepi atas yang sama persis dengan hero Dashboard,
+ * tanpa celah warna apa pun di antaranya.
+ *
  * PENTING soal besaran overlap (REVISI -- fix "ribbon terpotong" jadi
  * garis/segitiga tipis di pojok kiri-atas, lihat laporan bug dengan
  * screenshot Dashboard vs halaman Dompet): lengkung svg (wave) SELALU
@@ -117,7 +136,7 @@ export const PageRibbonBackground: React.FC = () => {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute z-0 top-0 -left-4 -right-4 sm:-left-6 sm:-right-6 lg:-left-8 lg:-right-8 overflow-hidden"
+      className="pointer-events-none absolute z-0 -top-4 sm:-top-6 lg:-top-8 -left-4 -right-4 sm:-left-6 sm:-right-6 lg:-left-8 lg:-right-8 overflow-hidden"
     >
       <div
         className={cx(
