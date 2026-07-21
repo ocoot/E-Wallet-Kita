@@ -539,7 +539,7 @@ export const Settings: React.FC<SettingsProps> = ({
           dirender normal di atas ribbon lewat App.tsx, bukan lagi overlay
           `absolute` -- lihat catatan di PageRibbonBackground.tsx). */}
       <div className="relative flow-root md:hidden">
-        <div className="relative z-10 mt-6 sm:mt-8">
+        <div className="relative z-10 mt-24 sm:mt-28">
           <SettingsMobileMenu
             displayName={displayName}
             email={user?.email || null}
@@ -564,7 +564,7 @@ export const Settings: React.FC<SettingsProps> = ({
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="relative flow-root">
-        <Card elevation="lg" padding="none" className="relative z-10 mt-6 sm:mt-8 overflow-hidden">
+        <Card elevation="lg" padding="none" className="relative z-10 mt-24 sm:mt-28 overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
         

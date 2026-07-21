@@ -435,7 +435,7 @@ export const GoldSavings: React.FC = () => {
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="relative flow-root">
-        <Card elevation="lg" padding="none" className="relative z-10 mt-6 sm:mt-8 overflow-hidden">
+        <Card elevation="lg" padding="none" className="relative z-10 mt-24 sm:mt-28 overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500" />
         <div className="p-6 md:p-8 space-y-6">
 

@@ -152,6 +152,28 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
  * solid yang bersembunyi rapi di belakang Card, tidak ada biaya visual.
  * `pb` (tinggi svg wave) TIDAK diubah -- toh sekarang seluruhnya hampir
  * pasti tersembunyi di belakang Card juga.
+ *
+ * REVISI (samakan tinggi ribbon dengan hero Dashboard, laporan +
+ * screenshot perbandingan Dasbor Utama vs Dompet): tinggi ribbon yang
+ * BENAR-BENAR KELIHATAN di layar TIDAK ditentukan oleh `pt`/`pb` di sini
+ * sendirian -- ribbon ini `position: absolute` murni dekoratif tanpa
+ * konten, jadi dia selalu digambar penuh sampai `pt+pb`, tapi bagian
+ * mana yang benar-benar TAMPAK cuma sampai titik Card (elemen flow biasa
+ * di atasnya) mulai menutupinya. Titik itu = tinggi breadcrumb + margin-
+ * bottom breadcrumb (App.tsx) + margin-top Card (tiap halaman) --
+ * MEMBESARKAN `pt`/`pb` saja TIDAK membuat ribbon kelihatan lebih tinggi
+ * kalau titik potong Card tidak ikut dimundurkan, karena sisa tambahan
+ * itu cuma bersembunyi di belakang Card (tidak ada efek visual).
+ * Makanya untuk menyamakan proporsi dengan hero Dashboard (yang jauh
+ * lebih tinggi karena isinya sendiri -- sapaan, chip cuaca, avatar),
+ * margin-bottom breadcrumb dikembalikan ke `mb-4 sm:mb-5` dan margin-top
+ * Card/wrapper konten di semua halaman dibesarkan jadi `mt-24 sm:mt-28`
+ * (dari `mt-6 sm:mt-8`) -- lihat App.tsx & tiap file di src/views/ untuk
+ * perubahan itu. `pt` di sini ikut dibesarkan jadi `pt-44 sm:pt-48`
+ * (dari `pt-24 sm:pt-28`) supaya titik potong Card yang sekarang jauh
+ * lebih dalam TETAP jatuh di zona solid, bukan di tengah lengkung `pb`
+ * (lihat revisi-revisi di atas soal bug segitiga/garis lekukan kalau ini
+ * dilanggar).
  */
 export const PageRibbonBackground: React.FC = () => {
   const { tokens, cx } = useThemeTokens();
@@ -163,7 +185,7 @@ export const PageRibbonBackground: React.FC = () => {
     >
       <div
         className={cx(
-          "relative pt-24 sm:pt-28 pb-9 sm:pb-11",
+          "relative pt-44 sm:pt-48 pb-9 sm:pb-11",
           tokens.dashboardHeader.heroGradient
         )}
       >

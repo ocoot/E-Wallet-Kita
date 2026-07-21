@@ -182,7 +182,7 @@ export const AdminPremiumMonitor: React.FC = () => {
     <div className="space-y-6">
 
       <div className="relative flow-root">
-        <div className="relative z-10 mt-6 sm:mt-8">
+        <div className="relative z-10 mt-24 sm:mt-28">
           <AdminBackBar />
         </div>
       </div>
