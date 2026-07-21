@@ -109,30 +109,34 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
   const isPositive = netWorth >= 0;
 
   return (
-    // NOTE: sengaja TIDAK memakai <Card> primitive di sini -- background-nya
-    // gradient kustom (bg-gradient-to-br ...), bukan bg-slate-900 polos, dan
-    // project ini tidak memakai tailwind-merge sehingga override background
-    // lewat className tidak reliable (lihat catatan di Input.tsx/Card.tsx).
-    // Memaksakan migrasi mekanis di sini berisiko menghilangkan gradient-nya.
-    <motion.div
-      initial={{ opacity: 0, y: -8 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={cx(
-        "relative overflow-hidden rounded-3xl border shadow-xl",
-        tokens.dashboardOverviewCard.heroCardGradient
-      )}
-    >
-      {/* Total Kekayaan -- sekarang jadi angka utama kartu ini, karena
-          "Saldo Tersedia" tunggal sudah dipindah jadi kartu-kartu Pos Dompet
-          terpisah di Dashboard (lihat DashboardWalletCarousel.tsx). */}
-      <div className="p-5 sm:p-6 pb-4">
-        <div className="flex items-center gap-2 mb-4">
-          <Layers size={14} className={tokens.icon.accent} />
-          <h3 className={cx("text-xs font-bold uppercase tracking-wider", tokens.text.muted)}>
-            {t("dashboard.overall_summary_label")}
-          </h3>
-        </div>
-        <div className="flex items-center gap-3.5">
+    <>
+      {/* Header "RINGKASAN KESELURUHAN" -- dipindah KELUAR dari card (dulu
+          jadi child pertama di dalam padding kartu, lihat riwayat git),
+          disamakan polanya dengan header "Pantauan Keuangan" di
+          Dashboard.tsx: baris sendiri di atas card, bukan lagi ikut
+          ter-render di dalam bingkai kartu. */}
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <Layers size={14} className={tokens.icon.accent} />
+        <h3 className={cx("text-xs font-bold uppercase tracking-wider", tokens.text.muted)}>
+          {t("dashboard.overall_summary_label")}
+        </h3>
+      </div>
+
+      {/* NOTE: sengaja TIDAK memakai <Card> primitive di sini -- background-nya
+      // gradient kustom (bg-gradient-to-br ...), bukan bg-slate-900 polos, dan
+      // project ini tidak memakai tailwind-merge sehingga override background
+      // lewat className tidak reliable (lihat catatan di Input.tsx/Card.tsx).
+      // Memaksakan migrasi mekanis di sini berisiko menghilangkan gradient-nya. */}
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={cx(
+          "relative overflow-hidden rounded-3xl border shadow-xl",
+          tokens.dashboardOverviewCard.heroCardGradient
+        )}
+      >
+        <div className="p-5 sm:p-6 pb-4">
+          <div className="flex items-center gap-3.5">
           <div className="min-w-0">
             <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold uppercase tracking-wider flex items-center gap-1.5", tokens.text.muted)}>
               {t("dashboard.accumulated_balance_label")}
@@ -263,5 +267,6 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
         {t("dashboard.accumulated_balance_hint")}
       </p>
     </motion.div>
+    </>
   );
 };

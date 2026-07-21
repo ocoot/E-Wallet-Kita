@@ -1,7 +1,7 @@
 import React from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Transaction, Category } from "../types";
-import { ArrowUpRight, ArrowDownLeft, ArrowRight, Send, Sparkles, User } from "lucide-react";
+import { ArrowUpRight, ArrowDownLeft, ArrowRight, Send, Sparkles, User, History } from "lucide-react";
 import { motion } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { EmptyState } from "./EmptyState";
@@ -54,15 +54,18 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
   };
 
   return (
-    <Card id="recent-transactions-panel" padding="lg" border="subtle" elevation="ambient" className="space-y-6">
-      <div className={cx("flex items-center justify-between border-b pb-5", tokens.settings.sectionBorder)}>
-        <div>
-          <h3 className={cx("font-sans font-bold text-base tracking-tight", tokens.text.onSurface)}>
+    <>
+      {/* Header -- ikon + label kecil uppercase, disamakan persis dengan
+          pola "Ringkasan Keseluruhan" (DashboardOverviewCard.tsx) dan
+          "Tren Visual..." (DashboardChart.tsx). Deskripsi "Menampilkan X
+          dari Y log transaksi" dihapus atas permintaan user -- tombol
+          "Tampilkan Semua" tetap di baris yang sama, kanan. */}
+      <div className="flex items-center justify-between px-1">
+        <div className="flex items-center gap-2">
+          <History size={14} className={tokens.icon.accent} />
+          <h3 className={cx("text-xs font-bold uppercase tracking-wider", tokens.text.muted)}>
             {t("history.title")}
           </h3>
-          <p className={cx("font-sans text-xs mt-1", tokens.text.muted)}>
-            {t("history.pagination_info", { current: latestTransactions.length, total: transactions.length })}
-          </p>
         </div>
 
         <button
@@ -76,6 +79,8 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
           <ArrowRight size={13} />
         </button>
       </div>
+
+      <Card id="recent-transactions-panel" padding="lg" border="subtle" elevation="ambient" className="space-y-6">
 
       {latestTransactions.length === 0 ? (
         <EmptyState message={t("history.no_transactions")} />
@@ -130,6 +135,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
           })}
         </div>
       )}
-    </Card>
+      </Card>
+    </>
   );
 };

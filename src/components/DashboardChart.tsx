@@ -1,7 +1,7 @@
 import React from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { Transaction } from "../types";
-import { Activity } from "lucide-react";
+import { Activity, LineChart as LineChartIcon } from "lucide-react";
 import { EmptyState } from "./EmptyState";
 import { Card } from "./ui/Card";
 import { useThemeTokens } from "../hooks/useThemeTokens";
@@ -75,17 +75,19 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
   };
 
   return (
-    <Card id="dashboard-trends-panel" padding="lg" border="subtle" elevation="ambient" className="space-y-6">
-      {/* Chart Header -- tanpa tab selector lagi, lihat komentar di atas
-          komponen. */}
-      <div className={cx("border-b pb-5", tokens.border.accent)}>
-        <h3 className={cx("font-sans font-bold text-base tracking-tight", tokens.text.onSurface)}>
+    <>
+      {/* Header -- ikon + label kecil uppercase, disamakan persis dengan
+          pola "Ringkasan Keseluruhan" (DashboardOverviewCard.tsx) dan
+          "Pantauan Keuangan" (Dashboard.tsx). Deskripsi di bawah judul
+          dihapus atas permintaan user. */}
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <LineChartIcon size={14} className={tokens.icon.accent} />
+        <h3 className={cx("text-xs font-bold uppercase tracking-wider", tokens.text.muted)}>
           {t("dashboard.chart_title")}
         </h3>
-        <p className={cx("font-sans text-xs mt-1", tokens.text.muted)}>
-          {t("dashboard.chart_desc_cumulative")}
-        </p>
       </div>
+
+      <Card id="dashboard-trends-panel" padding="lg" border="subtle" elevation="ambient" className="space-y-6">
 
       {/* Rendering Recharts -- permanen AreaChart kumulatif */}
       {transactions.length === 0 ? (
@@ -194,6 +196,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
           </div>
         </div>
       )}
-    </Card>
+      </Card>
+    </>
   );
 };

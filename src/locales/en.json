@@ -98,7 +98,6 @@
     "net_balance_tooltip": "Formula: This month's income − This month's expenses. This number does NOT account for your Total Net Worth or funds held in Savings pockets.",
     "chart_title": "Income vs Expense Visual Trends",
     "chart_no_data": "Log a manual transaction or use AI quick insert below to display visual trends!",
-    "chart_desc_cumulative": "Historical overview of cumulative net balance progress",
     "chart_instruction": "Hover or tap on points to view precise daily transaction details.",
     "ai_box_title": "AI Quick Financial Entry (E-Wallet Kita-AI)",
     "ai_box_desc": "The primary method for quick input. Just type your freeform transaction text as-is below:",

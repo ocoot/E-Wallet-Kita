@@ -98,7 +98,6 @@
     "net_balance_tooltip": "Rumus: Pemasukan bulan ini − Pengeluaran bulan ini. Angka ini TIDAK memperhitungkan Total Kekayaan maupun dana di pos Tabungan.",
     "chart_title": "Tren Visual Aliran Masuk & Keluar",
     "chart_no_data": "Catat transaksi pertamamu atau gunakan asisten AI di bawah untuk melihat bagan visual reaktif!",
-    "chart_desc_cumulative": "Perkembangan saldo bersih kumulatif dari waktu ke waktu",
     "chart_instruction": "Arahkan kursor atau sentuh titik grafik untuk melihat rincian mutasi harian secara presisi.",
     "ai_box_title": "Pencatatan Cepat via Kecerdasan Buatan (E-Wallet Kita-AI)",
     "ai_box_desc": "Metode input tercepat. Cukup ketik teks transaksi bebas seperti biasa di bawah ini:",
