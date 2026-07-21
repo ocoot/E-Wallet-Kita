@@ -25,6 +25,7 @@ import { SupportChatWidget } from "./components/SupportChatWidget";
 import { UpdatePrompt } from "./components/UpdatePrompt";
 import { UpdateCheckingIndicator } from "./components/UpdateCheckingIndicator";
 import { Breadcrumbs } from "./components/Breadcrumbs";
+import { PageRibbonBackground } from "./components/PageRibbonBackground";
 import { SplashScreen } from "./components/SplashScreen";
 import {
   DashboardSkeleton,
@@ -405,22 +406,30 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
             bawah mobile; md:pb-40 mengembalikan spasi asli di layar desktop
             (yang tidak punya navbar bawah). */}
         <div className="p-4 sm:p-6 lg:p-8 pb-24 md:pb-40">
-          <div className="relative max-w-7xl mx-auto w-full">
-            {/* Breadcrumb pill dikembalikan jadi elemen block BIASA (bukan
-                lagi overlay `absolute`) -- sebelumnya di-absolute-kan supaya
-                "tidak makan ruang" dan bisa mengambang di atas ribbon, tapi
-                itu justru membuat pill breadcrumb menumpuk/bertabrakan
-                dengan judul kartu halaman di bawahnya karena keduanya
-                sama-sama mengklaim ruang vertikal yang sama tanpa saling
-                tahu tinggi elemen lain (lihat catatan lengkap di
-                PageRibbonBackground.tsx). Sekarang PageRibbonBackground
-                sendiri sudah jadi layer dekoratif `absolute -z-10` yang
-                tidak memengaruhi document flow, jadi breadcrumb ini cukup
-                dirender normal dengan margin-bottom supaya berjarak rapi
-                dari konten halaman di bawahnya -- tidak perlu lagi trik
-                positioning apa pun. */}
+          <div className="relative flow-root max-w-7xl mx-auto w-full">
+            {/* REVISI (fix ribbon-tidak-menutupi-breadcrumb): PageRibbonBackground
+                dulu dirender terpisah di DALAM tiap halaman (Wallets.tsx dkk),
+                dalam wrapper `relative flow-root` sendiri yang baru mulai
+                SETELAH breadcrumb + margin-bottomnya -- akibatnya ribbon
+                cuma menutupi Card di bawah breadcrumb, sementara baris
+                breadcrumb sendiri "nampang" di atas background polos
+                halaman (bukan ribbon), kelihatan seperti kotak putih yang
+                menimpa ribbon padahal sebenarnya cuma tidak pernah tumpang
+                tindih sama sekali. Sekarang ribbon dipindah ke SATU tempat
+                di sini (level shared layout), jadi wrapper yang sama
+                membungkus baik breadcrumb maupun konten halaman di
+                bawahnya -- ribbon (absolute, top-0) otomatis "mengintip" di
+                belakang breadcrumb juga, bukan cuma di belakang Card.
+                `flow-root` di wrapper ini (bukan cuma di wrapper per-halaman
+                seperti sebelumnya) mencegah margin-top Card di halaman
+                (mis. `mt-12 sm:mt-14`) collapse menembus lapisan
+                AnimatePresence/motion.div di antaranya.
+                PageRibbonBackground TIDAK lagi dirender per-halaman -- lihat
+                komponen ini untuk histori masalah stacking/z-index yang
+                sudah pernah dicoba. */}
+            {location.pathname !== "/dashboard" && <PageRibbonBackground />}
             {location.pathname !== "/dashboard" && (
-              <div className="mb-4 sm:mb-5">
+              <div className="relative z-10 mb-4 sm:mb-5">
                 <Breadcrumbs />
               </div>
             )}

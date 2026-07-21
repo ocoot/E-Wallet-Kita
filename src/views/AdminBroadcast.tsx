@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
-import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
@@ -159,7 +158,6 @@ export const AdminBroadcast: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="relative flow-root">
-        <PageRibbonBackground />
         <div className="relative z-10 mt-12 sm:mt-14">
           <AdminBackBar />
         </div>

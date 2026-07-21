@@ -30,7 +30,6 @@ import { ErrorState } from "../components/ErrorState";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { BottomSheet } from "../components/ui/BottomSheet";
 import { Card } from "../components/ui/Card";
-import { PageRibbonBackground } from "../components/PageRibbonBackground";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -271,7 +270,6 @@ export const History: React.FC<HistoryProps> = ({
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="relative flow-root">
-        <PageRibbonBackground />
         <Card elevation="lg" padding="none" className="relative z-10 mt-12 sm:mt-14 overflow-hidden">
         {/* Accent stripe */}
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />

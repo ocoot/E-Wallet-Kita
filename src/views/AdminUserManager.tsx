@@ -10,7 +10,6 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
 import { AdminBackBar } from "../components/AdminBackBar";
-import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { Card } from "../components/ui/Card";
 import {
   User,
@@ -426,7 +425,6 @@ export const AdminUserManager: React.FC = () => {
     <div className="space-y-5">
 
       <div className="relative flow-root">
-        <PageRibbonBackground />
         <div className="relative z-10 mt-12 sm:mt-14">
           <AdminBackBar />
         </div>

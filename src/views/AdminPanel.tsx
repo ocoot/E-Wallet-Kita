@@ -19,7 +19,6 @@ import {
   HardDrive
 } from "lucide-react";
 import { useThemeTokens } from "../hooks/useThemeTokens";
-import { PageRibbonBackground } from "../components/PageRibbonBackground";
 
 type AdminTab = "users" | "premium" | "voucher" | "categories" | "broadcast" | "ai_monitor" | "error_monitor" | "maintenance" | "support_chat" | "backup";
 
@@ -81,7 +80,6 @@ export const AdminPanel: React.FC = () => {
           (lihat Settings.tsx: rounded-3xl + bar gradient tipis di atas +
           judul/deskripsi dengan border-b di dalam kartu putih/slate). */}
       <div className="relative flow-root">
-        <PageRibbonBackground />
         <Card padding="none" elevation="lg" border="default" className="relative z-10 mt-12 sm:mt-14 overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">

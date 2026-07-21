@@ -43,7 +43,6 @@ import { uploadAvatar, AvatarValidationError } from "../lib/avatar";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
-import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { useNotificationPreferences, NotificationPreferenceKey } from "../hooks/useNotificationPreferences";
@@ -540,7 +539,6 @@ export const Settings: React.FC<SettingsProps> = ({
           dirender normal di atas ribbon lewat App.tsx, bukan lagi overlay
           `absolute` -- lihat catatan di PageRibbonBackground.tsx). */}
       <div className="relative flow-root md:hidden">
-        <PageRibbonBackground />
         <div className="relative z-10 mt-12 sm:mt-14">
           <SettingsMobileMenu
             displayName={displayName}
@@ -566,7 +564,6 @@ export const Settings: React.FC<SettingsProps> = ({
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="relative flow-root">
-        <PageRibbonBackground />
         <Card elevation="lg" padding="none" className="relative z-10 mt-12 sm:mt-14 overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
