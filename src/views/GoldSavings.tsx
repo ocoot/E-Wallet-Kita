@@ -20,6 +20,7 @@ import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
+import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import {
   Coins, Plus, Trash2, Edit2, ArrowDownCircle, ArrowUpCircle,
   Archive, ArchiveRestore, Info, AlertTriangle, PackagePlus, PackageMinus
@@ -434,7 +435,9 @@ export const GoldSavings: React.FC = () => {
       {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
-      <Card elevation="lg" padding="none" className="overflow-hidden">
+      <div className="relative">
+        <PageRibbonBackground />
+        <Card elevation="lg" padding="none" className="relative z-10 -mt-14 sm:-mt-16 overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -559,7 +562,8 @@ export const GoldSavings: React.FC = () => {
             </AnimatePresence>
           )}
         </div>
-      </Card>
+        </Card>
+      </div>
 
       {/* Add/Edit pocket form modal */}
       <ModalShell

@@ -43,6 +43,7 @@ import { uploadAvatar, AvatarValidationError } from "../lib/avatar";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
+import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { useNotificationPreferences, NotificationPreferenceKey } from "../hooks/useNotificationPreferences";
@@ -543,20 +544,29 @@ export const Settings: React.FC<SettingsProps> = ({
           sekaligus dalam satu layar panjang seperti versi desktop.
           Layar desktop (di bawah, dibungkus hidden md:block) TIDAK
           diubah sama sekali. */}
-      <SettingsMobileMenu
-        displayName={displayName}
-        email={user?.email || null}
-        avatarUrl={avatarUrl}
-        isGuest={isGuest}
-        isPremium={isPremium}
-        onOpenPremium={() => { audioFeedback.playClick(); setIsPremiumOpen(true); }}
-        canChangePassword={canChangePassword}
-        isTelegramLinked={isTelegramLinked}
-        isTelegramLocked={isTelegramLocked}
-        isStandalone={isStandalone}
-        locale={locale}
-        theme={theme}
-      />
+      {/* Ribbon dekoratif (md:hidden, sama pola dengan halaman lain) --
+          ditaruh di belakang kartu profil teratas SettingsMobileMenu,
+          bukan di belakang judul "Pengaturan" di atas (judul tetap di
+          canvas polos, tidak diubah). */}
+      <div className="relative md:hidden">
+        <PageRibbonBackground />
+        <div className="relative z-10 -mt-14 sm:-mt-16">
+          <SettingsMobileMenu
+            displayName={displayName}
+            email={user?.email || null}
+            avatarUrl={avatarUrl}
+            isGuest={isGuest}
+            isPremium={isPremium}
+            onOpenPremium={() => { audioFeedback.playClick(); setIsPremiumOpen(true); }}
+            canChangePassword={canChangePassword}
+            isTelegramLinked={isTelegramLinked}
+            isTelegramLocked={isTelegramLocked}
+            isStandalone={isStandalone}
+            locale={locale}
+            theme={theme}
+          />
+        </div>
+      </div>
 
       {/* Main Card -- tampilan desktop lama, tidak diubah, hanya
           disembunyikan di breakpoint mobile. */}
@@ -564,7 +574,9 @@ export const Settings: React.FC<SettingsProps> = ({
       {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
-      <Card elevation="lg" padding="none" className="overflow-hidden">
+      <div className="relative">
+        <PageRibbonBackground />
+        <Card elevation="lg" padding="none" className="relative z-10 -mt-14 sm:-mt-16 overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
         
@@ -1275,7 +1287,8 @@ export const Settings: React.FC<SettingsProps> = ({
       />
       </div>{/* grid */}
         </div>{/* card-body */}
-      </Card>{/* card */}
+        </Card>{/* card */}
+      </div>{/* ribbon+card wrapper */}
       </div>{/* hidden md:block desktop wrapper */}
     </div>
   );

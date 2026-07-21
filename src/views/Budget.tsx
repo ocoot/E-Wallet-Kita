@@ -18,6 +18,7 @@ import { Input } from "../components/ui/Input";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "../components/ui/ModalShell";
 import { Card } from "../components/ui/Card";
+import { PageRibbonBackground } from "../components/PageRibbonBackground";
 
 export const Budget: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -224,7 +225,9 @@ export const Budget: React.FC = () => {
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive, bukan hardcode
           shadow-lg lagi di sini. */}
-      <Card elevation="lg" padding="none" className="overflow-hidden">
+      <div className="relative">
+        <PageRibbonBackground />
+        <Card elevation="lg" padding="none" className="relative z-10 -mt-14 sm:-mt-16 overflow-hidden">
       {/* Accent stripe */}
       <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
       <div className="p-6 md:p-8 space-y-6">
@@ -337,7 +340,8 @@ export const Budget: React.FC = () => {
       )}
 
       </div>{/* end padded content */}
-      </Card>{/* end header card */}
+        </Card>{/* end header card */}
+      </div>
 
       {/* Modal: Tambah Anggaran — pilih kategori dari yang belum dianggarkan */}
       <ModalShell

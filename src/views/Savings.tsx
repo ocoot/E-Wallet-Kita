@@ -15,6 +15,7 @@ import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { ModalShell } from "../components/ui/ModalShell";
 import { Card } from "../components/ui/Card";
+import { PageRibbonBackground } from "../components/PageRibbonBackground";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
@@ -289,7 +290,9 @@ export const Savings: React.FC = () => {
       {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
-      <Card elevation="lg" padding="none" className="overflow-hidden">
+      <div className="relative">
+        <PageRibbonBackground />
+        <Card elevation="lg" padding="none" className="relative z-10 -mt-14 sm:-mt-16 overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-indigo-500 to-indigo-600" />
         <div className="p-6 md:p-8 space-y-6">
 
@@ -349,7 +352,8 @@ export const Savings: React.FC = () => {
             </AnimatePresence>
           )}
         </div>
-      </Card>
+        </Card>
+      </div>
 
       {/* Add/Edit pocket form modal */}
       <ModalShell
