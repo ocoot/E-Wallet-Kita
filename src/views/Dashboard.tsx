@@ -20,6 +20,7 @@ import { DashboardInstallments } from "../components/DashboardInstallments";
 import { DashboardOverviewCard } from "../components/DashboardOverviewCard";
 import { ErrorState } from "../components/ErrorState";
 import { DashboardWalletSelectorCard } from "../components/DashboardWalletSelectorCard";
+import { DashboardCardSwiper } from "../components/DashboardCardSwiper";
 import { useCategories } from "../hooks/useCategories";
 import { Button } from "../components/ui/Button";
 
@@ -277,24 +278,25 @@ export const Dashboard: React.FC<DashboardProps> = ({
         telegramStatus={telegramStatus}
       />
 
-      {/* 1b. Kartu Pos Dompet selector (dropdown, lihat
-          DashboardWalletSelectorCard.tsx) -- dipindah keluar dari komponen
-          header, jadi section sendiri persis di bawahnya. */}
-      <DashboardWalletSelectorCard
-        formatIDR={formatIDR}
-        transactions={transactions}
-        refreshTrigger={transactionsUpdatedTrigger}
-        onTransactionAdded={onTransactionAdded}
-      />
-
-      {/* 1c. Ringkasan Keuangan -- Total Kekayaan, Bulan Ini, Rincian Aset
-          (Tabungan/Emas) expandable. Angka "Saldo Tersedia" tunggal sudah
-          dipindah jadi kartu-kartu Pos Dompet di atas. */}
-      <DashboardOverviewCard
-        refreshTrigger={transactionsUpdatedTrigger}
-        formatIDR={formatIDR}
-        monthlySummary={summary}
-      />
+      {/* 1b/1c. Kartu Pos Dompet "Saldo Anda" (dropdown, lihat
+          DashboardWalletSelectorCard.tsx) & Kartu "Total Kekayaan" (lihat
+          DashboardOverviewCard.tsx) digabung jadi SATU carousel swipeable
+          (DashboardCardSwiper.tsx) -- keduanya kini "bersebelahan", digeser
+          lewat swipe horizontal, dengan dot indicator di bawah -- alih-alih
+          ditumpuk penuh secara vertikal seperti sebelumnya. */}
+      <DashboardCardSwiper>
+        <DashboardWalletSelectorCard
+          formatIDR={formatIDR}
+          transactions={transactions}
+          refreshTrigger={transactionsUpdatedTrigger}
+          onTransactionAdded={onTransactionAdded}
+        />
+        <DashboardOverviewCard
+          refreshTrigger={transactionsUpdatedTrigger}
+          formatIDR={formatIDR}
+          monthlySummary={summary}
+        />
+      </DashboardCardSwiper>
 
       {/* Onboarding Interactive Banner for new users */}
       {showOnboardingBanner && (

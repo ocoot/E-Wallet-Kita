@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { TrendingUp, TrendingDown, Layers, Vault, Coins, ChevronDown } from "lucide-react";
+import { TrendingUp, TrendingDown, Vault, Coins, ChevronDown } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { dbService } from "../lib/db";
@@ -109,24 +109,11 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
   const isPositive = netWorth >= 0;
 
   return (
-    <>
-      {/* Header "RINGKASAN KESELURUHAN" -- dipindah KELUAR dari card (dulu
-          jadi child pertama di dalam padding kartu, lihat riwayat git),
-          disamakan polanya dengan header "Pantauan Keuangan" di
-          Dashboard.tsx: baris sendiri di atas card, bukan lagi ikut
-          ter-render di dalam bingkai kartu. */}
-      <div className="flex items-center gap-2 mb-3 px-1">
-        <Layers size={14} className={tokens.icon.accent} />
-        <h3 className={cx("text-xs font-bold uppercase tracking-wider", tokens.text.muted)}>
-          {t("dashboard.overall_summary_label")}
-        </h3>
-      </div>
-
-      {/* NOTE: sengaja TIDAK memakai <Card> primitive di sini -- background-nya
+      /* NOTE: sengaja TIDAK memakai <Card> primitive di sini -- background-nya
       // gradient kustom (bg-gradient-to-br ...), bukan bg-slate-900 polos, dan
       // project ini tidak memakai tailwind-merge sehingga override background
       // lewat className tidak reliable (lihat catatan di Input.tsx/Card.tsx).
-      // Memaksakan migrasi mekanis di sini berisiko menghilangkan gradient-nya. */}
+      // Memaksakan migrasi mekanis di sini berisiko menghilangkan gradient-nya. */
       <motion.div
         initial={{ opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -267,6 +254,5 @@ export const DashboardOverviewCard: React.FC<DashboardOverviewCardProps> = ({
         {t("dashboard.accumulated_balance_hint")}
       </p>
     </motion.div>
-    </>
   );
 };
