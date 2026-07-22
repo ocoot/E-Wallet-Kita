@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "motion/react";
-import { Plus, Pencil, Trash2, History as HistoryIcon, Wallet as WalletIcon, Eye, EyeOff, Phone, CreditCard } from "lucide-react";
+import { Plus, Pencil, Trash2, History as HistoryIcon, Eye, EyeOff, Phone, CreditCard } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
@@ -421,10 +421,9 @@ export const Wallets: React.FC = () => {
 
           {/* Header */}
           <div>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
-              <WalletIcon size={22} /> {t("wallet.title")}
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+              {t("wallet.title")}
             </h1>
-            <p className={cx("font-sans text-sm mt-1", tokens.text.muted)}>{t("wallet.desc")}</p>
           </div>
 
           {/* Total banner */}
@@ -443,19 +442,25 @@ export const Wallets: React.FC = () => {
               <h2 className={cx("font-sans text-xs font-bold uppercase tracking-wider", tokens.text.label)}>
                 {t("wallet.group_general")}
               </h2>
-              <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] -mt-1", tokens.text.faint)}>{t("wallet.general_desc")}</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <WalletCard wallet={generalWallet} {...walletCardSharedProps} />
               </div>
             </div>
           )}
 
-          {/* E-Wallet / Bank / Cash groups */}
-          {(["ewallet", "bank", "cash"] as const).map((type) => {
-            const meta = GROUP_META[type];
-            const items = grouped(type);
-            return (
-              <div key={type} className="space-y-2">
+        </div>
+        </Card>
+      </div>
+
+      {/* E-Wallet / Bank / Cash groups -- masing-masing sekarang jadi section/Card terpisah */}
+      {(["ewallet", "bank", "cash"] as const).map((type) => {
+        const meta = GROUP_META[type];
+        const items = grouped(type);
+        return (
+          <div className="relative" key={type}>
+            <Card elevation="lg" padding="none" className="overflow-hidden">
+              <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
+              <div className="p-6 md:p-8 space-y-2">
                 <div className="flex items-center justify-between">
                   <h2 className={cx("font-sans text-xs font-bold uppercase tracking-wider flex items-center gap-1.5", tokens.text.label)}>
                     <span>{meta.icon}</span> {t(meta.labelKey)}
@@ -580,15 +585,13 @@ export const Wallets: React.FC = () => {
                   </div>
                 )}
               </div>
-            );
-          })}
+            </Card>
+          </div>
+        );
+      })}
 
-          {!isLoading && walletsError && <ErrorState onRetry={refresh} />}
-          {!isLoading && !walletsError && activeWallets.length === 0 && <EmptyState />}
-
-        </div>
-        </Card>
-      </div>
+      {!isLoading && walletsError && <ErrorState onRetry={refresh} />}
+      {!isLoading && !walletsError && activeWallets.length === 0 && <EmptyState />}
 
       <Modal
         isOpen={walletToDelete !== null}
