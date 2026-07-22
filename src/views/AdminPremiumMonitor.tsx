@@ -193,7 +193,7 @@ export const AdminPremiumMonitor: React.FC = () => {
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
               {t("admin.premium_monitor_title")}
             </h1>
-            <p className={cx("text-sm mt-1", tokens.text.muted)}>
+            <p className={cx("text-sm mt-1", tokens.text.heroSubtitle)}>
               {t("admin.premium_monitor_desc")}
             </p>
           </div>

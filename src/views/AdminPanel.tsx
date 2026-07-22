@@ -82,7 +82,7 @@ export const AdminPanel: React.FC = () => {
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
               {t("nav.admin_panel")}
             </h1>
-            <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.muted)}>
+            <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.heroSubtitle)}>
               {t("admin.panel_desc")}
             </p>
           </div>

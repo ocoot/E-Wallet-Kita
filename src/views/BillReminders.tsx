@@ -199,7 +199,7 @@ export const BillReminders: React.FC = () => {
               <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
                 {t("bill_reminders.page_title")}
               </h1>
-              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
+              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.heroSubtitle)}>
                 {t("bill_reminders.page_subtitle")}
               </p>
             </div>
@@ -214,25 +214,35 @@ export const BillReminders: React.FC = () => {
           </div>
 
           {/* ── Counter stats: formasi strip chip horizontal ─────────── */}
+          {/* Catatan: chip ini SENGAJA memakai surface.card (opaque) sebagai
+              dasar, bukan tint transparan (mis. bg-red-500/5) seperti versi
+              sebelumnya -- tint transparan menampakkan apa pun yang ada DI
+              BELAKANGnya (termasuk batas ribbon/canvas dari
+              PageRibbonBackground.tsx), yang terlihat seperti garis
+              memotong chip ini kalau baris ini kebetulan jatuh persis di
+              batas tersebut. Warna/aksen sekarang dari border-l tebal +
+              ikon, bukan dari bg transparan, supaya tetap terlihat berbeda
+              tanpa bergantung pada apa pun di baliknya. */}
           {reminders.length > 0 && (
             <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
-              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl border bg-red-500/5", tokens.border.default)}>
+              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl border border-l-4 border-l-red-500", tokens.surface.card, tokens.border.default)}>
                 <AlertCircle size={13} className={cx(tokens.text.danger)} />
                 <span className={cx("font-bold text-lg leading-none", tokens.text.danger)}>{overdueCount}</span>
                 <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider leading-none", tokens.text.muted)}>Terlambat</span>
               </div>
-              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl border bg-amber-500/5", tokens.border.default)}>
+              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl border border-l-4 border-l-amber-500", tokens.surface.card, tokens.border.default)}>
                 <AlertTriangle size={13} className={cx(tokens.text.warning)} />
                 <span className={cx("font-bold text-lg leading-none", tokens.text.warning)}>{dueSoonCount}</span>
                 <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider leading-none", tokens.text.muted)}>Segera</span>
               </div>
-              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl border bg-emerald-500/5", tokens.border.default)}>
+              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl border border-l-4 border-l-emerald-500", tokens.surface.card, tokens.border.default)}>
                 <CheckCircle2 size={13} className={cx(tokens.text.success)} />
                 <span className={cx("font-bold text-lg leading-none", tokens.text.success)}>{paidCount}</span>
                 <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider leading-none", tokens.text.muted)}>Lunas</span>
               </div>
             </div>
           )}
+
 
           {/* Telegram reminder hour */}
           {isTelegramLinked ? (

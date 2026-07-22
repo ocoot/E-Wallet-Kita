@@ -440,7 +440,7 @@ export const AdminUserManager: React.FC = () => {
                 <User className={cx(tokens.text.accent)} size={24} />
                 {t("admin.tab_users")}
               </h1>
-              <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.mutedAlt)}>
+              <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.heroSubtitle)}>
                 {t("admin.tab_users_desc")}
               </p>
             </div>

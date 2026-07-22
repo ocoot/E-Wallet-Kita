@@ -164,7 +164,7 @@ export const AdminMaintenance: React.FC = () => {
           <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
             {t("admin.maintenance_title")}
           </h1>
-          <p className={cx("text-sm mt-1", tokens.text.muted)}>
+          <p className={cx("text-sm mt-1", tokens.text.heroSubtitle)}>
             {t("admin.maintenance_desc")}
           </p>
         </div>

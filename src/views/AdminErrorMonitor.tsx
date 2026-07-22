@@ -178,7 +178,7 @@ export const AdminErrorMonitor: React.FC = () => {
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
               {t("error_monitor.title")}
             </h1>
-            <p className={cx("text-sm mt-1", tokens.text.muted)}>
+            <p className={cx("text-sm mt-1", tokens.text.heroSubtitle)}>
               {t("error_monitor.desc")}
             </p>
           </div>

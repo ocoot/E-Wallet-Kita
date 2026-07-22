@@ -440,7 +440,7 @@ export const GoldSavings: React.FC = () => {
               <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
                 {t("gold.page_title")}
               </h1>
-              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
+              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.heroSubtitle)}>
                 {t("gold.page_subtitle")}
               </p>
             </div>

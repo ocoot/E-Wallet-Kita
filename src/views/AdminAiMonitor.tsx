@@ -148,7 +148,7 @@ export const AdminAiMonitor: React.FC = () => {
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
               {t("ai_monitor.title")}
             </h1>
-            <p className={cx("text-sm mt-1", tokens.text.muted)}>
+            <p className={cx("text-sm mt-1", tokens.text.heroSubtitle)}>
               {t("ai_monitor.desc")}
             </p>
           </div>

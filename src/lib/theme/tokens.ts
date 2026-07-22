@@ -45,6 +45,18 @@ export const themeTokens = {
     label: "text-slate-300 light_sakura:text-slate-600",
     /** Teks kecil/caption yang paling umum -- label uppercase, timestamp, helper text. */
     muted: "text-slate-400 light_sakura:text-slate-500",
+    /**
+     * Subtitle halaman yang duduk LANGSUNG di atas ribbon/hero gradient
+     * (lihat PageRibbonBackground.tsx), BUKAN di atas surface.canvas biasa.
+     * `muted`/`mutedAlt` sengaja dikalibrasi untuk kontras di atas canvas
+     * polos -- di atas ribbon (terutama light_sakura) kontrasnya jatuh
+     * terlalu rendah (teks abu-abu medium di atas gradient warna cerah).
+     * Dipakai HANYA untuk baris <p> subtitle tepat di bawah <h1> judul
+     * halaman (h1 memakai tokens.text.primary, yang memang sudah
+     * dikalibrasi untuk ribbon). Jangan pakai untuk teks di atas
+     * surface.card/sunken -- pakai `muted`/`mutedAlt` di sana.
+     */
+    heroSubtitle: "text-slate-300 light_sakura:text-slate-700",
     /** Varian muted yang sedikit lebih gelap di light mode (dipakai beberapa caption). */
     mutedAlt: "text-slate-400 light_sakura:text-slate-600",
     /** Placeholder / teks paling pudar. */

@@ -232,7 +232,7 @@ export const Budget: React.FC = () => {
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
               {t("budget.page_title")}
             </h1>
-            <p className={cx("text-xs mt-0.5 max-w-xl leading-relaxed", tokens.text.mutedAlt)}>
+            <p className={cx("text-xs mt-0.5 max-w-xl leading-relaxed", tokens.text.heroSubtitle)}>
               {t("budget.page_subtitle")}
             </p>
           </div>

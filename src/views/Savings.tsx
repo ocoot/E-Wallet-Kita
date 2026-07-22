@@ -295,7 +295,7 @@ export const Savings: React.FC = () => {
               <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
                 {t("savings.page_title")}
               </h1>
-              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
+              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.heroSubtitle)}>
                 {t("savings.page_subtitle")}
               </p>
             </div>

@@ -318,7 +318,7 @@ export const AdminSupportChat: React.FC = () => {
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
               {t("admin_support_chat.title")}
             </h1>
-            <p className={cx("text-sm mt-1 max-w-xl", tokens.text.muted)}>
+            <p className={cx("text-sm mt-1 max-w-xl", tokens.text.heroSubtitle)}>
               {t("admin_support_chat.desc")}
             </p>
           </div>

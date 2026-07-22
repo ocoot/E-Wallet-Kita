@@ -573,7 +573,7 @@ export const Settings: React.FC<SettingsProps> = ({
           <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
             {t("settings.title")}
           </h1>
-          <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.muted)}>
+          <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.heroSubtitle)}>
             {t("settings.desc")}
           </p>
         </div>

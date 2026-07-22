@@ -202,7 +202,7 @@ export const Installments: React.FC = () => {
               <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
                 {t("installments.page_title")}
               </h1>
-              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
+              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.heroSubtitle)}>
                 {t("installments.page_subtitle")}
               </p>
             </div>
