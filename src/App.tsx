@@ -408,32 +408,40 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
 
         {/* pb-24: ruang aman di bawah supaya konten tidak tertutup navbar
             bawah mobile; md:pb-40 mengembalikan spasi asli di layar desktop
-            (yang tidak punya navbar bawah). */}
-        <div className="p-4 sm:p-6 lg:p-8 pb-24 md:pb-40">
-          <div
-            className={cx(
-              "relative flow-root max-w-7xl mx-auto w-full",
-              location.pathname !== "/dashboard" && pageRibbon.className
-            )}
-            style={location.pathname !== "/dashboard" ? pageRibbon.style : undefined}
-          >
-            {/* REVISI (fix ribbon-tidak-terlihat / gap-kebesaran / tumpang-tindih):
-                Dua percobaan sebelumnya me-render ribbon sebagai ELEMEN DOM
-                terpisah (baik `position:absolute`+`-z-10` maupun alur-normal
-                dengan margin negatif) yang harus "dikoordinasikan" secara
-                manual dengan posisi breadcrumb/Card lewat z-index atau
-                perhitungan margin -- sumber constant bug (ribbon ketiban
-                background solid halaman karena z-index negatif tanpa
-                stacking-context pembatas, gap kosong kebesaran, dst).
-                Sekarang ribbon BUKAN elemen DOM sama sekali -- murni
-                `background-image` (lihat usePageRibbonBackground di
-                components/PageRibbonBackground.tsx) yang ditempel LANGSUNG
-                ke wrapper flow-root ini (yang sudah membungkus breadcrumb +
-                konten halaman). Background CSS tidak pernah memengaruhi
-                layout elemen lain -- breadcrumb & Card di bawah TIDAK
-                PERLU tahu ribbon ini ada sama sekali, tidak ada z-index/
-                margin overlap yang perlu disesuaikan lagi kalau ribbon
-                berubah ukuran (cukup ubah RIBBON_HEIGHT di satu tempat). */}
+            (yang tidak punya navbar bawah).
+            REVISI (fix ribbon-"terkurung"/tidak full-bleed): style ribbon
+            (usePageRibbonBackground) SEKARANG ditempel di DIV INI, bukan
+            lagi di div anaknya (yang punya "mx-auto max-w-7xl"). Alasannya:
+            CSS `margin-left/right: auto` (dari `mx-auto`) dan margin negatif
+            bleed (`-mx-4` dst, yang tadinya saya taruh di div anak itu)
+            SALING BERTABRAKAN pada property yang sama (margin-left/right)
+            -- salah satunya menang secara tidak terduga tergantung urutan
+            rule di stylesheet Tailwind terkompilasi, BUKAN urutan class di
+            JSX -- membuat bleed batal jalan, ribbon jadi "terkurung" di
+            dalam area padding alih-alih full-bleed sampai tepi layar
+            seperti Dashboard.
+            Div INI (pembungkus, bukan anaknya) tidak punya `mx-auto`
+            sama sekali, jadi TIDAK PERLU margin negatif apa pun -- cukup
+            manfaatkan sifat default CSS: `background-image` selalu
+            dilukis di bawah padding elemennya sendiri (`background-origin:
+            padding-box` adalah default), jadi background otomatis
+            menyentuh tepi TERLUAR div ini (termasuk area padding
+            `p-4/p-6/p-8`) tanpa trik margin sama sekali. */}
+        <div
+          className={cx(
+            "p-4 sm:p-6 lg:p-8 pb-24 md:pb-40",
+            location.pathname !== "/dashboard" && pageRibbon.className
+          )}
+          style={location.pathname !== "/dashboard" ? pageRibbon.style : undefined}
+        >
+          <div className="relative flow-root max-w-7xl mx-auto w-full">
+            {/* Ribbon (background-image, lihat komponen usePageRibbonBackground
+                di components/PageRibbonBackground.tsx) ditempel di div
+                PEMBUNGKUS di atas, bukan di sini -- lihat catatan di atas.
+                Background CSS tidak pernah memengaruhi layout elemen lain
+                -- breadcrumb & Card di bawah TIDAK PERLU tahu ribbon ini
+                ada sama sekali, tidak ada z-index/margin overlap yang
+                perlu disesuaikan lagi kalau ribbon berubah ukuran. */}
             {location.pathname !== "/dashboard" && (
               <div className="relative mb-2 sm:mb-3">
                 <Breadcrumbs />

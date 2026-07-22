@@ -85,10 +85,14 @@ export function usePageRibbonBackground(): { style: CSSProperties; className: st
 
   return {
     style,
-    // Full-bleed sampai tepi layar (melawan padding `<main>` di App.tsx),
-    // dengan padding pengganti supaya breadcrumb/konten di dalamnya TETAP
-    // di posisi visual yang sama seperti sebelumnya -- murni kosmetik
-    // bleed, tidak menyentuh margin/z-index elemen anak sama sekali.
-    className: "-mx-4 -mt-4 px-4 pt-4 sm:-mx-6 sm:-mt-6 sm:px-6 sm:pt-6 lg:-mx-8 lg:-mt-8 lg:px-8 lg:pt-8",
+    // TIDAK perlu className bleed (-mx/-mt/px/pt) sama sekali di sini --
+    // App.tsx menempelkan style ini ke div PEMBUNGKUS `<main>` yang TIDAK
+    // punya `mx-auto`/`max-w-*` (beda dari revisi sebelumnya yang salah
+    // taruh di div ber-`mx-auto`, menyebabkan margin negatif bertabrakan
+    // dan bleed batal jalan). Karena CSS `background-image` secara default
+    // (`background-origin: padding-box`) SUDAH otomatis dilukis di bawah
+    // padding elemennya sendiri, background ini bleed ke tepi terluar
+    // div pembungkus itu TANPA butuh margin negatif/positif apa pun.
+    className: "",
   };
 }
