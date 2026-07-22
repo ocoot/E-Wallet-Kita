@@ -39,7 +39,7 @@ export const HistoryPagination: React.FC<HistoryPaginationProps> = ({
             audioFeedback.playClick();
             setCurrentPage((curr) => Math.max(1, curr - 1));
           }}
-          className={cx("p-1.5 rounded-lg border hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer", tokens.surface.sunken, tokens.border.accent, tokens.text.secondary)}
+          className={cx("p-1.5 rounded-lg border hover:text-white light_sakura:hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none cursor-pointer", tokens.surface.sunken, tokens.border.accent, tokens.text.secondary)}
         >
           <ChevronLeft size={14} />
         </button>
@@ -55,7 +55,7 @@ export const HistoryPagination: React.FC<HistoryPaginationProps> = ({
             audioFeedback.playClick();
             setCurrentPage((curr) => Math.min(totalPages, curr + 1));
           }}
-          className={cx("p-1.5 rounded-lg border hover:text-white disabled:opacity-30 disabled:pointer-events-none cursor-pointer", tokens.surface.sunken, tokens.border.accent, tokens.text.secondary)}
+          className={cx("p-1.5 rounded-lg border hover:text-white light_sakura:hover:text-slate-900 disabled:opacity-30 disabled:pointer-events-none cursor-pointer", tokens.surface.sunken, tokens.border.accent, tokens.text.secondary)}
         >
           <ChevronRight size={14} />
         </button>

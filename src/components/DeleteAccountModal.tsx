@@ -61,7 +61,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
               onClick={handleClose}
               disabled={isDeleting}
               aria-label="Tutup"
-              className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer disabled:opacity-40"
+              className="absolute top-4 right-4 text-slate-500 hover:text-slate-300 light_sakura:hover:text-slate-700 transition-colors cursor-pointer disabled:opacity-40"
             >
               <X size={18} />
             </button>

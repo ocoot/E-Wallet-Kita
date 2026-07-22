@@ -607,7 +607,7 @@ export const AdminBackup: React.FC = () => {
               </div>
               <button
                 onClick={closeRestoreModal}
-                className="text-slate-400 hover:text-slate-200 cursor-pointer shrink-0"
+                className="text-slate-400 hover:text-slate-200 light_sakura:hover:text-slate-700 cursor-pointer shrink-0"
               >
                 <X className="w-4 h-4" />
               </button>

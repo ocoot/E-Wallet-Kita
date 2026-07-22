@@ -188,7 +188,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
           </div>
 
           {duplicateChecking && (
-            <div className="rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-2 mb-3 text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-400 flex items-center gap-2">
+            <div className={cx("rounded-xl border px-3 py-2 mb-3 text-[clamp(0.6188rem,2.86vw,0.6875rem)] flex items-center gap-2", tokens.surface.sunken, tokens.border.default, tokens.text.muted)}>
               <span className="w-3 h-3 rounded-full border-2 border-slate-500 border-t-transparent animate-spin shrink-0" />
               {t("confirm.duplicate_checking")}
             </div>

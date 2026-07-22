@@ -140,7 +140,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
                     setShowPassword(!showPassword);
                   }}
                   aria-label={showPassword ? t("auth.hide_password") : t("auth.show_password")}
-                  className="text-slate-400 hover:text-slate-200 cursor-pointer"
+                  className="text-slate-400 hover:text-slate-200 light_sakura:hover:text-slate-700 cursor-pointer"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -172,7 +172,7 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
                     setShowConfirmPassword(!showConfirmPassword);
                   }}
                   aria-label={showConfirmPassword ? t("auth.hide_password") : t("auth.show_password")}
-                  className="text-slate-400 hover:text-slate-200 cursor-pointer"
+                  className="text-slate-400 hover:text-slate-200 light_sakura:hover:text-slate-700 cursor-pointer"
                 >
                   {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>

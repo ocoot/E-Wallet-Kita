@@ -173,7 +173,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
             className={cx("flex items-center gap-2 w-full text-left px-2.5 py-1.5 rounded-lg cursor-pointer group", tokens.surface.sunken, tokens.hover.surface)}
           >
             {wallet.type === "ewallet" ? <Phone size={12} className="text-slate-500 shrink-0" /> : <CreditCard size={12} className="text-slate-500 shrink-0" />}
-            <span className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] tabular-nums truncate group-hover:text-slate-300", tokens.text.muted)}>
+            <span className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] tabular-nums truncate group-hover:text-slate-300 light_sakura:group-hover:text-slate-700", tokens.text.muted)}>
               {contactValue
                 ? (isContactVisible ? contactValue : maskContact(contactValue))
                 : `+ ${contactLabel}`}
@@ -182,7 +182,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
               <span
                 role="button"
                 onClick={(e) => { e.stopPropagation(); toggleContactVisibility(wallet.id); }}
-                className="ml-auto p-1 rounded text-slate-500 hover:text-white cursor-pointer shrink-0"
+                className="ml-auto p-1 rounded text-slate-500 hover:text-white light_sakura:hover:text-slate-900 cursor-pointer shrink-0"
               >
                 {isContactVisible ? <EyeOff size={12} /> : <Eye size={12} />}
               </span>

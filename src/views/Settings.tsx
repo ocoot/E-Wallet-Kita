@@ -699,7 +699,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     tabIndex={-1}
                     onClick={() => { audioFeedback.playClick(); setShowCurrentPassword(!showCurrentPassword); }}
                     aria-label={showCurrentPassword ? t("auth.hide_password") : t("auth.show_password")}
-                    className="text-slate-400 hover:text-slate-200 cursor-pointer"
+                    className="text-slate-400 hover:text-slate-200 light_sakura:hover:text-slate-700 cursor-pointer"
                   >
                     {showCurrentPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
@@ -723,7 +723,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     tabIndex={-1}
                     onClick={() => { audioFeedback.playClick(); setShowNewPassword(!showNewPassword); }}
                     aria-label={showNewPassword ? t("auth.hide_password") : t("auth.show_password")}
-                    className="text-slate-400 hover:text-slate-200 cursor-pointer"
+                    className="text-slate-400 hover:text-slate-200 light_sakura:hover:text-slate-700 cursor-pointer"
                   >
                     {showNewPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
@@ -747,7 +747,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     tabIndex={-1}
                     onClick={() => { audioFeedback.playClick(); setShowConfirmNewPassword(!showConfirmNewPassword); }}
                     aria-label={showConfirmNewPassword ? t("auth.hide_password") : t("auth.show_password")}
-                    className="text-slate-400 hover:text-slate-200 cursor-pointer"
+                    className="text-slate-400 hover:text-slate-200 light_sakura:hover:text-slate-700 cursor-pointer"
                   >
                     {showConfirmNewPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                   </button>
@@ -793,7 +793,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   className={`py-3 rounded-xl font-sans text-xs font-bold border transition-all cursor-pointer
                     ${locale === "id" 
                       ? tokens.settings.telegramLinkedBadge 
-                      : cx("hover:bg-slate-900", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
+                      : cx("hover:bg-slate-900 light_sakura:hover:bg-slate-50", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
                     }`}
                 >
                   Bahasa Indonesia (ID)
@@ -808,7 +808,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   className={`py-3 rounded-xl font-sans text-xs font-bold border transition-all cursor-pointer
                     ${locale === "en" 
                       ? tokens.settings.telegramLinkedBadge 
-                      : cx("hover:bg-slate-900", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
+                      : cx("hover:bg-slate-900 light_sakura:hover:bg-slate-50", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
                     }`}
                 >
                   English (EN)
@@ -834,7 +834,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   className={`py-3 rounded-xl font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-bold border transition-all cursor-pointer
                     ${theme === "dark_obsidian" 
                       ? "bg-indigo-600/10 border-indigo-500 text-indigo-400" 
-                      : cx("hover:bg-slate-900", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
+                      : cx("hover:bg-slate-900 light_sakura:hover:bg-slate-50", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
                     }`}
                 >
                   {t("settings.theme_dark_obsidian")}
@@ -849,7 +849,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   className={`py-3 rounded-xl font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-bold border transition-all cursor-pointer
                     ${theme === "light_sakura" 
                       ? "bg-rose-500/10 border-rose-500 text-rose-600" 
-                      : cx("hover:bg-slate-900", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
+                      : cx("hover:bg-slate-900 light_sakura:hover:bg-slate-50", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
                     }`}
                 >
                   {t("settings.theme_light_sakura")}

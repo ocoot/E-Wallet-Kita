@@ -585,7 +585,7 @@ export const AdminUserManager: React.FC = () => {
           <div className="flex flex-wrap items-center gap-2">
             {[
               { label: "Grant Premium",  action: "grant_premium"  as const, color: tokens.admin.bulkActionBtnGrant },
-              { label: "Revoke Premium", action: "revoke_premium" as const, color: cx("border text-slate-400 hover:text-white transition-colors", tokens.border.default, tokens.hover.surface, tokens.surface.card) },
+              { label: "Revoke Premium", action: "revoke_premium" as const, color: cx("border text-slate-400 hover:text-white light_sakura:hover:text-slate-900 transition-colors", tokens.border.default, tokens.hover.surface, tokens.surface.card) },
               { label: "Ban Semua",      action: "ban"            as const, color: "text-red-400 border-red-500/30 bg-red-500/10 hover:bg-red-500/20" },
               { label: "Unban Semua",    action: "unban"          as const, color: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20" },
             ].map(({ label, action, color }) => (
@@ -600,7 +600,7 @@ export const AdminUserManager: React.FC = () => {
             ))}
             <button
               onClick={() => setSelectedIds(new Set())}
-              className={cx("px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase rounded-xl border hover:text-white cursor-pointer transition-colors", tokens.border.default, tokens.hover.surface, tokens.text.secondary)}
+              className={cx("px-3 py-1.5 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase rounded-xl border hover:text-white light_sakura:hover:text-slate-900 cursor-pointer transition-colors", tokens.border.default, tokens.hover.surface, tokens.text.secondary)}
             >
               {t("admin.clear_selection")}
             </button>

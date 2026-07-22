@@ -332,7 +332,7 @@ export const History: React.FC<HistoryProps> = ({
                       : ft === "income"
                       ? tokens.history.typeFilterActiveIncome
                       : tokens.history.typeFilterActiveAll
-                    : cx("hover:text-slate-300", tokens.history.typeFilterInactive)
+                    : tokens.history.typeFilterInactive
                 }`}
               >
                 {ft === "all" ? t("history.filter_all") ?? "Semua" : ft === "expense" ? t("transaction.expense") : t("transaction.income")}

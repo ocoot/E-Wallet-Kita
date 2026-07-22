@@ -101,7 +101,7 @@ export const SecuritySettings: React.FC = () => {
               tabIndex={-1}
               onClick={() => { audioFeedback.playClick(); setShowCurrentPassword(!showCurrentPassword); }}
               aria-label={showCurrentPassword ? t("auth.hide_password") : t("auth.show_password")}
-              className="text-slate-400 hover:text-slate-200 cursor-pointer"
+              className="text-slate-400 hover:text-slate-200 light_sakura:hover:text-slate-700 cursor-pointer"
             >
               {showCurrentPassword ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
@@ -125,7 +125,7 @@ export const SecuritySettings: React.FC = () => {
               tabIndex={-1}
               onClick={() => { audioFeedback.playClick(); setShowNewPassword(!showNewPassword); }}
               aria-label={showNewPassword ? t("auth.hide_password") : t("auth.show_password")}
-              className="text-slate-400 hover:text-slate-200 cursor-pointer"
+              className="text-slate-400 hover:text-slate-200 light_sakura:hover:text-slate-700 cursor-pointer"
             >
               {showNewPassword ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
@@ -149,7 +149,7 @@ export const SecuritySettings: React.FC = () => {
               tabIndex={-1}
               onClick={() => { audioFeedback.playClick(); setShowConfirmNewPassword(!showConfirmNewPassword); }}
               aria-label={showConfirmNewPassword ? t("auth.hide_password") : t("auth.show_password")}
-              className="text-slate-400 hover:text-slate-200 cursor-pointer"
+              className="text-slate-400 hover:text-slate-200 light_sakura:hover:text-slate-700 cursor-pointer"
             >
               {showConfirmNewPassword ? <EyeOff size={15} /> : <Eye size={15} />}
             </button>
