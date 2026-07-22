@@ -905,10 +905,18 @@ export const themeTokens = {
   /**
    * Sesi 54: token per-file untuk `HistoryExport.tsx`. Genuinely 1x-pakai
    * per varian (dicek cross-file, tidak ada exact match).
+   *
+   * FIX transparansi (audit tombol di atas hero gradient): sejak card
+   * pembungkus halaman Riwayat dihapus, tombol "Ekspor PDF" ini duduk
+   * langsung di atas background gradient header alih-alih di atas
+   * surface.card solid -- background semi-transparan (alpha rendah)
+   * yang tadinya cukup kontras di atas kartu jadi kelihatan pudar/tembus
+   * pandang di atas gradient. Diganti jadi solid (tanpa alpha) di kedua
+   * varian supaya tetap terbaca jelas di background apa pun.
    */
   historyExport: {
-    optionActive: "border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/15 text-amber-400 light_sakura:text-rose-600 light_sakura:border-rose-300/30 light_sakura:bg-rose-50/50",
-    optionInactive: "border-indigo-500/20 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 light_sakura:text-indigo-600",
+    optionActive: "border border-amber-500 bg-amber-500 hover:bg-amber-400 text-slate-950 light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400 light_sakura:border-rose-500 light_sakura:text-white",
+    optionInactive: "border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-200 light_sakura:bg-white light_sakura:hover:bg-slate-50 light_sakura:text-slate-700 light_sakura:border-slate-200",
   },
   /**
    * Sesi 55: `DashboardHeader.tsx` diredesain jadi "Double Wave (Ribbon)"

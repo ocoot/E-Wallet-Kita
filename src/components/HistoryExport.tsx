@@ -145,7 +145,7 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
               audioFeedback.playClick();
               setIsDeleteAllOpen(true);
             }}
-            className="cursor-pointer px-4.5 py-3 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            className="cursor-pointer px-4.5 py-3 border border-red-600 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-colors"
           >
             <Trash2 size={15} />
             <span>{t("history.btn_delete_all")}</span>
