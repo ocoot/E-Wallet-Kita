@@ -452,15 +452,12 @@ export const Wallets: React.FC = () => {
         </Card>
       </div>
 
-      {/* E-Wallet / Bank / Cash groups -- masing-masing sekarang jadi section/Card terpisah */}
+      {/* E-Wallet / Bank / Cash groups -- masing-masing section terpisah, tanpa dibungkus Card */}
       {(["ewallet", "bank", "cash"] as const).map((type) => {
         const meta = GROUP_META[type];
         const items = grouped(type);
         return (
-          <div className="relative" key={type}>
-            <Card elevation="lg" padding="none" className="overflow-hidden">
-              <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
-              <div className="p-6 md:p-8 space-y-2">
+          <div key={type} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h2 className={cx("font-sans text-xs font-bold uppercase tracking-wider flex items-center gap-1.5", tokens.text.label)}>
                     <span>{meta.icon}</span> {t(meta.labelKey)}
@@ -584,8 +581,6 @@ export const Wallets: React.FC = () => {
                     {items.map((w) => <WalletCard key={w.id} wallet={w} {...walletCardSharedProps} />)}
                   </div>
                 )}
-              </div>
-            </Card>
           </div>
         );
       })}
