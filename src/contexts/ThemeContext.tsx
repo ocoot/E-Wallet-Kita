@@ -11,6 +11,20 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+// Warna latar asli tiap tema (lihat html/body & .light_sakura di src/index.css).
+// Status bar HP disamakan dengan warna ini lewat <meta name="theme-color">
+// supaya menyatu dengan tampilan app, bukan warna ungu sisa scaffold Vite.
+const STATUS_BAR_COLOR: Record<Theme, string> = {
+  dark_obsidian: "#0A1512",
+  light_sakura: "#F5FAF8",
+};
+
+function applyStatusBarColor(theme: Theme) {
+  if (typeof document === "undefined") return;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", STATUS_BAR_COLOR[theme]);
+}
+
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   
@@ -53,6 +67,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const root = window.document.documentElement;
       root.classList.remove("dark_obsidian", "light_sakura");
       root.classList.add(newTheme);
+      applyStatusBarColor(newTheme);
     };
     if (typeof document !== "undefined" && typeof document.startViewTransition === "function") {
       document.startViewTransition(applyThemeClasses);
@@ -76,6 +91,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const root = window.document.documentElement;
     root.classList.remove("dark_obsidian", "light_sakura");
     root.classList.add(theme);
+    applyStatusBarColor(theme);
   }, [theme]);
 
   return (
