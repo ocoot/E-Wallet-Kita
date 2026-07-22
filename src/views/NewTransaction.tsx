@@ -324,13 +324,10 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
               {t("transaction.add_title")}
             </h1>
-            <p className={cx("font-sans text-sm mt-1", tokens.text.muted)}>
-              {t("transaction.add_desc")}
-            </p>
           </div>
 
             {/* ── Formasi tab: pilih satu metode input ──────────────────── */}
-            <div className={cx("grid grid-cols-3 gap-1 p-1 rounded-2xl", tokens.newTransaction.segmentedControlBg)}>
+            <div className={cx("grid grid-cols-3 gap-1 p-1 rounded-2xl border", tokens.surface.card, tokens.border.accent)}>
               {([
                 { key: "receipt", label: "Struk", icon: "" },
                 { key: "voice", label: "Suara", icon: "" },
@@ -472,6 +469,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                     onChange={(v) => setWalletId(v || null)}
                     disabled={isLoading}
                     placeholder={t("wallet.label_pos")}
+                    className="[&>button]:bg-slate-900 [&>button]:border-slate-800 light_sakura:[&>button]:bg-white light_sakura:[&>button]:border-rose-100"
                     options={activeWallets.map((w) => {
                       const icon = w.type === "general" ? "" : w.type === "ewallet" ? "" : w.type === "bank" ? "" : "";
                       return { value: w.id, label: `${icon} ${w.name}${(w.provider && w.provider !== w.name) ? ` · ${w.provider}` : ""} (${formatIDR(w.balance)})` };

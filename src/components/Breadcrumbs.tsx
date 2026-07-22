@@ -191,11 +191,12 @@ export const Breadcrumbs: React.FC = () => {
   }
 
   return (
+    <div className="overflow-hidden rounded-3xl max-w-fit">
     <nav 
       id="app-breadcrumbs-nav" 
       aria-label="breadcrumb"
       className={cx(
-        "flex items-center overflow-x-auto whitespace-nowrap py-3 px-5 rounded-3xl border shadow-sm text-xs transition-all duration-300 max-w-fit",
+        "flex items-center overflow-x-auto whitespace-nowrap pt-3 pb-8 -mb-5 px-5 rounded-3xl border shadow-sm text-xs transition-all duration-300 max-w-fit scrollbar-hide",
         tokens.surface.card,
         tokens.border.accent,
         tokens.text.muted
@@ -238,5 +239,6 @@ export const Breadcrumbs: React.FC = () => {
         })}
       </ol>
     </nav>
+    </div>
   );
 };
