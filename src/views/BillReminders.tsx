@@ -190,11 +190,8 @@ export const BillReminders: React.FC = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
-      {/* ── Main card ──────────────────────────────────────────────── */}
-      <div className="relative">
-        <div className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.surface.card, tokens.border.default)}>
-        <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-600" />
-        <div className="p-6 md:p-8 space-y-6">
+      {/* ── Main content ───────────────────────────────────────────── */}
+      <div className="space-y-6">
 
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
@@ -343,8 +340,6 @@ export const BillReminders: React.FC = () => {
               </div>
             </AnimatePresence>
           )}
-        </div>
-        </div>
       </div>
 
       {/* ── Form modal ──────────────────────────────────────────────── */}

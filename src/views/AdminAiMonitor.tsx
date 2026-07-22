@@ -9,7 +9,6 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
 import { useThemeTokens } from "../hooks/useThemeTokens";
-import { Card } from "../components/ui/Card";
 import {
   Brain,
   RefreshCw,
@@ -144,7 +143,7 @@ export const AdminAiMonitor: React.FC = () => {
       </div>
 
       {/* Header Wrapped in One Card Container */}
-      <Card padding="lg" elevation="sm" border="neutral">
+      <div className="p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
@@ -185,7 +184,7 @@ export const AdminAiMonitor: React.FC = () => {
             </button>
           </div>
         </div>
-      </Card>
+      </div>
 
       {loading ? (
         <div className="py-20 flex items-center justify-center">
@@ -208,13 +207,7 @@ export const AdminAiMonitor: React.FC = () => {
                 const sharePercent = grandTotal > 0 ? Math.round((p.total_calls / grandTotal) * 100) : 0;
 
                 return (
-                  <Card
-                    key={p.provider}
-                    padding="md"
-                    elevation="sm"
-                    border="neutral"
-                    className="space-y-4"
-                  >
+                  <div key={p.provider} className="p-6 space-y-4">
                     <div className="flex items-center justify-between">
                       <span className={cx("px-3 py-1 rounded-full text-xs font-semibold uppercase", tokens.surface.sunken, tokens.text.accent)}>
                         {p.provider}
@@ -264,7 +257,7 @@ export const AdminAiMonitor: React.FC = () => {
                         <p className={cx("text-xs", tokens.text.muted)}>{t("ai_monitor.failed")}</p>
                       </div>
                     </div>
-                  </Card>
+                  </div>
                 );
               })
             )}
@@ -272,7 +265,7 @@ export const AdminAiMonitor: React.FC = () => {
 
           {/* Per-Key Detail Table */}
           {byKey.length > 0 && (
-            <Card padding="none" elevation="sm" border="neutral" className="overflow-hidden">
+            <div className="overflow-hidden">
               <div className={cx("px-6 py-5 border-b", tokens.border.default)}>
                 <h3 className={cx("text-base font-semibold", tokens.text.primary)}>
                   {t("ai_monitor.per_key_title")}
@@ -413,7 +406,7 @@ export const AdminAiMonitor: React.FC = () => {
                   </div>
                 )}
               </div>
-            </Card>
+            </div>
           )}
 
           {/* Failed / Quota Warning notice */}

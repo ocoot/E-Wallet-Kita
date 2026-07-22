@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
-import { Card } from "../components/ui/Card";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
@@ -313,7 +312,7 @@ export const AdminSupportChat: React.FC = () => {
       </div>
 
       {/* Header */}
-      <Card padding="lg" elevation="sm" border="neutral">
+      <div className="p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
@@ -336,12 +335,12 @@ export const AdminSupportChat: React.FC = () => {
             {t("admin_support_chat.refresh")}
           </button>
         </div>
-      </Card>
+      </div>
 
       {/* List + Detail */}
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4 min-h-[520px]">
         {/* Session list */}
-        <Card padding="none" elevation="sm" border="neutral" className="overflow-hidden flex flex-col">
+        <div className="overflow-hidden flex flex-col">
           {listLoading ? (
             <div className="py-16 flex items-center justify-center">
               <Loader2 className={cx("animate-spin", tokens.adminSupportChat.spinnerText)} size={26} />
@@ -400,10 +399,10 @@ export const AdminSupportChat: React.FC = () => {
               })}
             </div>
           )}
-        </Card>
+        </div>
 
         {/* Detail / thread */}
-        <Card padding="none" elevation="sm" border="neutral" className="overflow-hidden flex flex-col">
+        <div className="overflow-hidden flex flex-col">
           {!selectedSession ? (
             <div className="flex-1 flex items-center justify-center p-10">
               <p className={cx("text-xs text-center max-w-[220px]", tokens.text.faint)}>
@@ -582,7 +581,7 @@ export const AdminSupportChat: React.FC = () => {
               </div>
             </>
           )}
-        </Card>
+        </div>
       </div>
 
       <Modal

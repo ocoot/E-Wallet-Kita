@@ -17,7 +17,6 @@ import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { Input } from "../components/ui/Input";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "../components/ui/ModalShell";
-import { Card } from "../components/ui/Card";
 
 export const Budget: React.FC = () => {
   const { t, locale } = useLanguage();
@@ -224,11 +223,7 @@ export const Budget: React.FC = () => {
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive, bukan hardcode
           shadow-lg lagi di sini. */}
-      <div className="relative">
-        <Card elevation="lg" padding="none" className="overflow-hidden">
-      {/* Accent stripe */}
-      <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
-      <div className="p-6 md:p-8 space-y-6">
+      <div className="space-y-6">
 
       {/* Header */}
       <div className={cx("flex items-start justify-between gap-3.5 flex-wrap border-b pb-6", tokens.settings.sectionBorder)}>
@@ -337,8 +332,6 @@ export const Budget: React.FC = () => {
         </div>
       )}
 
-      </div>{/* end padded content */}
-        </Card>{/* end header card */}
       </div>
 
       {/* Modal: Tambah Anggaran — pilih kategori dari yang belum dianggarkan */}

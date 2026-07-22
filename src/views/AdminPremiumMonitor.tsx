@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
-import { Card } from "../components/ui/Card";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
@@ -188,7 +187,7 @@ export const AdminPremiumMonitor: React.FC = () => {
       </div>
 
       {/* Header Wrapped in One Card Container */}
-      <Card padding="lg" elevation="sm" border="neutral">
+      <div className="p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
@@ -217,7 +216,7 @@ export const AdminPremiumMonitor: React.FC = () => {
             {t("admin.refresh_data")}
           </button>
         </div>
-      </Card>
+      </div>
 
       {/* Dummy QRIS active warning banner */}
       {dummyQrisLoaded && dummyQrisEnabled && (
@@ -228,7 +227,7 @@ export const AdminPremiumMonitor: React.FC = () => {
       )}
 
       {/* Dummy QRIS toggle card */}
-      <Card padding="lg" elevation="sm" border="neutral">
+      <div className="p-6 md:p-8">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className={`p-3 rounded-2xl border ${dummyQrisEnabled ? cx(tokens.adminPremium.sandboxIconBorderActive, tokens.adminPremium.sandboxBadgeBg, tokens.adminPremium.sandboxText) : cx(tokens.toggle.inactiveIconBorder, tokens.surface.subtle)}`}>
@@ -277,7 +276,7 @@ export const AdminPremiumMonitor: React.FC = () => {
           onConfirm={confirmToggleDummyQris}
           onCancel={cancelToggleDummyQris}
         />
-      </Card>
+      </div>
 
       {metrics && (
         <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -289,12 +288,12 @@ export const AdminPremiumMonitor: React.FC = () => {
             { label: t("admin.status_failed"), val: metrics.failedCount, color: tokens.adminPremium.metricRed },
             { label: t("admin.metrics.total"), val: metrics.totalTransactions, color: tokens.text.strong },
           ].map((m, i) => (
-            <Card key={i} padding="md" elevation="sm" border="neutral">
+            <div key={i} className="p-6">
               <p className={cx("text-sm font-medium", tokens.text.muted)}>{m.label}</p>
               <h3 className={`font-bold font-mono tabular-nums text-2xl mt-2 ${m.color}`}>
                 {m.val}
               </h3>
-            </Card>
+            </div>
           ))}
         </div>
       )}
@@ -316,7 +315,7 @@ export const AdminPremiumMonitor: React.FC = () => {
       </div>
 
       {/* Table */}
-      <Card padding="none" elevation="sm" border="neutral" className="overflow-hidden">
+      <div className="overflow-hidden">
         {loading ? (
           <div className="py-16 flex items-center justify-center">
             <Clock className="animate-spin text-indigo-500" size={28} />
@@ -380,7 +379,7 @@ export const AdminPremiumMonitor: React.FC = () => {
             </table>
           </ScrollableTableWrapper>
         )}
-      </Card>
+      </div>
 
       {/* Pagination */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">

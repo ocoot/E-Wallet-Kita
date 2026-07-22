@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
-import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { supabase } from "../lib/supabase";
 import { PremiumVoucher } from "../types";
@@ -252,15 +251,15 @@ export const AdminVoucherManager: React.FC = () => {
           {t: t("voucher.active_vouchers"), v: stats.active, color: "text-emerald-500"},
           {t: t("voucher.inactive_vouchers"), v: stats.inactive, color: tokens.text.muted}
         ].map(s=>(
-          <Card key={s.t} padding="md" elevation="sm" border="neutral">
+          <div key={s.t} className="p-6">
             <p className={cx("text-sm font-medium", tokens.text.muted)}>{s.t}</p>
             <p className={`text-3xl font-bold mt-2 ${s.color}`}>{s.v}</p>
-          </Card>
+          </div>
         ))}
       </div>
 
       {/* Global Premium Price Setting Card */}
-      <Card padding="lg" elevation="sm" border="neutral" className="space-y-6">
+      <div className="p-6 md:p-8 space-y-6">
         <h2 className={cx("text-xl font-bold", tokens.text.onSurface)}>{t("admin.premium_price")}</h2>
         <div className="flex flex-col sm:flex-row gap-4 items-end">
           <div className="flex-1">
@@ -283,9 +282,9 @@ export const AdminVoucherManager: React.FC = () => {
             {t("common.save")}
           </Button>
         </div>
-      </Card>
+      </div>
 
-      <Card padding="lg" elevation="sm" border="neutral">
+      <div className="p-6 md:p-8">
         <h2 className={cx("text-xl font-bold mb-6", tokens.text.onSurface)}>{t("voucher.create_voucher")}</h2>
         <div className="flex gap-4 items-end">
           <div className="flex-1">
@@ -307,9 +306,9 @@ export const AdminVoucherManager: React.FC = () => {
             {t("voucher.create")}
           </Button>
         </div>
-      </Card>
+      </div>
 
-      <Card padding="none" elevation="sm" border="neutral" className="overflow-hidden">
+      <div className="overflow-hidden">
         {loading ? (
           <div className={cx("py-16 text-center text-sm", tokens.text.muted)}>{t("admin.loading")}</div>
         ) : vouchersError ? (
@@ -366,7 +365,7 @@ export const AdminVoucherManager: React.FC = () => {
           </table>
         </div>
         )}
-      </Card>
+      </div>
 
       {/* Pagination Controls */}
       {!loading && !vouchersError && vouchers.length > 0 && (

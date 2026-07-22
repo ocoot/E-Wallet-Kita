@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
-import { Card } from "../components/ui/Card";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -161,7 +160,7 @@ export const AdminMaintenance: React.FC = () => {
       </div>
 
       {/* ── Global Maintenance Toggle ── */}
-      <Card padding="lg" elevation="sm" border="neutral" className="space-y-6">
+      <div className="p-6 md:p-8 space-y-6">
         <div className={cx("border-b pb-5", tokens.border.default)}>
           <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
             <Wrench size={24} className="text-amber-500" />
@@ -245,10 +244,10 @@ export const AdminMaintenance: React.FC = () => {
             <Save size={16} /> {t("admin.maintenance_save_btn")}
           </button>
         </div>
-      </Card>
+      </div>
 
       {/* ── Per-feature lock list ── */}
-      <Card padding="none" elevation="sm" border="neutral" className="overflow-hidden">
+      <div className="overflow-hidden">
         <div className={cx("px-8 py-6 border-b", tokens.border.default)}>
           <p className={cx("font-semibold", tokens.text.primary)}>
             {t("admin.maintenance_feature_lock_title")}
@@ -329,7 +328,7 @@ export const AdminMaintenance: React.FC = () => {
             </div>
           ))}
         </div>
-      </Card>
+      </div>
 
       <LoadingOverlay isOpen={savingAction.isOpen} message={savingAction.message} />
     </div>

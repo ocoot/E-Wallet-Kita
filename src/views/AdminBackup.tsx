@@ -14,7 +14,6 @@ import { Badge } from "../components/ui/Badge";
 import { Input } from "../components/ui/Input";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
-import { Card } from "../components/ui/Card";
 import {
   DatabaseBackup,
   CheckCircle2,
@@ -344,7 +343,7 @@ export const AdminBackup: React.FC = () => {
       <LoadingOverlay isOpen={triggering} message={t("admin.backup_triggering")} />
 
       {/* Card status terakhir */}
-      <Card padding="lg" elevation="sm" border="neutral">
+      <div className="p-6 md:p-8">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 flex items-center justify-center shrink-0">
@@ -429,10 +428,10 @@ export const AdminBackup: React.FC = () => {
             {latest.error_message}
           </div>
         )}
-      </Card>
+      </div>
 
       {/* Riwayat backup */}
-      <Card padding="lg" elevation="sm" border="neutral">
+      <div className="p-6 md:p-8">
         <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
           <h3 className={cx("font-black text-sm", tokens.adminBackup.heading)}>
             {t("admin.backup_history")}
@@ -536,10 +535,10 @@ export const AdminBackup: React.FC = () => {
             </table>
           </ScrollableTableWrapper>
         )}
-      </Card>
+      </div>
 
       {/* Riwayat restore */}
-      <Card padding="lg" elevation="sm" border="neutral">
+      <div className="p-6 md:p-8">
         <h3 className={cx("font-black text-sm mb-4", tokens.adminBackup.heading)}>
           {t("admin.backup_restore_history")}
         </h3>
@@ -584,7 +583,7 @@ export const AdminBackup: React.FC = () => {
             </table>
           </ScrollableTableWrapper>
         )}
-      </Card>
+      </div>
 
       {/* ── Modal: konfirmasi restore ───────────────────────── */}
       {restoreTarget && (
