@@ -318,38 +318,16 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
           onCancel={() => { audioFeedback.playDullPluck(); setReceiptDraft(null); }}
         />
       ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          className={cx("rounded-3xl border shadow-lg overflow-hidden", tokens.settings.cardBorder, tokens.surface.card)}
-        >
-          {/* ── Colour stripe header ─────────────────────────────────── */}
-          <div
-            className={cx("h-1.5 w-full transition-colors duration-300", isExpense ? tokens.newTransaction.headerStripeExpense : tokens.newTransaction.headerStripeIncome)}
-          />
-
-          <div className="p-6 md:p-8 space-y-7">
-            {/* ── Page header ──────────────────────────────────────────── */}
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
-                  {t("transaction.add_title")}
-                </h1>
-                <p className={cx("font-sans text-sm mt-1", tokens.text.muted)}>
-                  {t("transaction.add_desc")}
-                </p>
-              </div>
-              {/* Today mini-summary pill */}
-              {todaySummary && (
-                <div className={cx("shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-xl", tokens.newTransaction.quickAddChipBorder)}>
-                  <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-wider">Hari ini</span>
-                  <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold font-mono tabular-nums text-red-400">−{formatIDR(todaySummary.expense)}</span>
-                  {todaySummary.income > 0 && (
-                    <span className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold font-mono tabular-nums text-emerald-400">+{formatIDR(todaySummary.income)}</span>
-                  )}
-                </div>
-              )}
-            </div>
+        <div className="space-y-7">
+          {/* ── Page header ──────────────────────────────────────────── */}
+          <div>
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+              {t("transaction.add_title")}
+            </h1>
+            <p className={cx("font-sans text-sm mt-1", tokens.text.muted)}>
+              {t("transaction.add_desc")}
+            </p>
+          </div>
 
             {/* ── Formasi tab: pilih satu metode input ──────────────────── */}
             <div className={cx("grid grid-cols-3 gap-1 p-1 rounded-2xl", tokens.newTransaction.segmentedControlBg)}>
@@ -559,7 +537,6 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
             </motion.div>
             )}
           </div>
-        </motion.div>
       )}
 
       {/* Confirmation Modal — nominal, kategori, pos dompet, tanggal, semua bisa diedit */}
