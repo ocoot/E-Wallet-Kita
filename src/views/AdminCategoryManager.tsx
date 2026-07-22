@@ -10,7 +10,7 @@ import { ErrorState } from "../components/ErrorState";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { DropdownField } from "../components/DropdownField";
 import { Button } from "../components/ui/Button";
-import { Tag, Plus, Pencil, Check, X, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Check, X, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface Category {
   id: string;
@@ -168,8 +168,7 @@ export const AdminCategoryManager: React.FC = () => {
       <div className="p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
-              <Tag className="text-purple-500" size={24} />
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
               {t("admin.category_manager_title")}
             </h1>
             <p className={cx("text-sm mt-1", tokens.text.muted)}>

@@ -228,9 +228,6 @@ export const Budget: React.FC = () => {
       {/* Header */}
       <div className={cx("flex items-start justify-between gap-3.5 flex-wrap border-b pb-6", tokens.settings.sectionBorder)}>
         <div className="flex items-center gap-3.5">
-          <div className={cx(tokens.budget.iconChipIndigoSoft, tokens.icon.accent)}>
-            <PiggyBank size={22} />
-          </div>
           <div>
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
               {t("budget.page_title")}

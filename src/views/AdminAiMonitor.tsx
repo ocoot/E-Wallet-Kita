@@ -10,7 +10,6 @@ import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import {
-  Brain,
   RefreshCw,
   CheckCircle,
   XCircle,
@@ -146,8 +145,7 @@ export const AdminAiMonitor: React.FC = () => {
       <div className="p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
-              <Brain size={24} className="text-indigo-500" />
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
               {t("ai_monitor.title")}
             </h1>
             <p className={cx("text-sm mt-1", tokens.text.muted)}>

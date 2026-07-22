@@ -315,8 +315,7 @@ export const AdminSupportChat: React.FC = () => {
       <div className="p-6 md:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
-              <MessagesSquare size={22} className={cx(tokens.icon.accent)} />
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
               {t("admin_support_chat.title")}
             </h1>
             <p className={cx("text-sm mt-1 max-w-xl", tokens.text.muted)}>

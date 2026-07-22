@@ -85,7 +85,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
   onDelete,
 }) => {
   const { t } = useLanguage();
-  const { tokens, cx } = useThemeTokens();
+  const { tokens, cx, isSakura } = useThemeTokens();
   const cfg = getStatusConfig(tokens)[budget.status];
   const clampedPercent = Math.min(100, budget.percent);
   const animPercent = useCountUp(Math.round(budget.percent));
@@ -153,7 +153,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
                 cy={SIZE / 2}
                 r={R}
                 fill="none"
-                stroke="rgba(255,255,255,0.06)"
+                stroke={isSakura ? "rgba(30,41,59,0.10)" : "rgba(255,255,255,0.06)"}
                 strokeWidth={STROKE}
               />
               {/* Progress arc */}
@@ -200,7 +200,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
                 {/* Threshold marker */}
                 {budget.alert_threshold_percent < 100 && (
                   <div
-                    className="absolute top-0 bottom-0 w-px bg-white/30 z-10"
+                    className={cx("absolute top-0 bottom-0 w-px z-10", isSakura ? "bg-slate-900/30" : "bg-white/30")}
                     style={{ left: `${budget.alert_threshold_percent}%` }}
                   />
                 )}

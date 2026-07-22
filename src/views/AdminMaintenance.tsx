@@ -10,7 +10,6 @@ import { useMaintenance } from "../contexts/MaintenanceContext";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ErrorState } from "../components/ErrorState";
 import {
-  Wrench,
   Power,
   Lock,
   Unlock,
@@ -162,8 +161,7 @@ export const AdminMaintenance: React.FC = () => {
       {/* ── Global Maintenance Toggle ── */}
       <div className="p-6 md:p-8 space-y-6">
         <div className={cx("border-b pb-5", tokens.border.default)}>
-          <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
-            <Wrench size={24} className="text-amber-500" />
+          <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
             {t("admin.maintenance_title")}
           </h1>
           <p className={cx("text-sm mt-1", tokens.text.muted)}>
