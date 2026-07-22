@@ -29,7 +29,6 @@ import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { ErrorState } from "../components/ErrorState";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { BottomSheet } from "../components/ui/BottomSheet";
-import { Card } from "../components/ui/Card";
 
 interface HistoryProps {
   transactionsUpdatedTrigger: number;
@@ -265,15 +264,7 @@ export const History: React.FC<HistoryProps> = ({
 
   return (
     <div className="space-y-5">
-      {/* ── Header card ─────────────────────────────────────────────── */}
-      {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
-          div manual ke <Card elevation="lg" padding="none"> supaya shadow
-          elevation-nya diatur terpusat lewat primitive. */}
-      <div className="relative">
-        <Card elevation="lg" padding="none" className="overflow-hidden">
-        {/* Accent stripe */}
-        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
-        <div className="p-6 md:p-8 space-y-6">
+      <div className="space-y-6">
 
           <HistoryExport
             isExportMenuOpen={isExportMenuOpen}
@@ -407,8 +398,6 @@ export const History: React.FC<HistoryProps> = ({
             paginatedCount={paginatedTransactions.length}
             totalItems={totalItems}
           />
-        </div>
-        </Card>
       </div>
 
       {/* ── Modals ──────────────────────────────────────────────────── */}
