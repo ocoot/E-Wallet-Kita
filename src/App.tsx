@@ -25,7 +25,7 @@ import { SupportChatWidget } from "./components/SupportChatWidget";
 import { UpdatePrompt } from "./components/UpdatePrompt";
 import { UpdateCheckingIndicator } from "./components/UpdateCheckingIndicator";
 import { Breadcrumbs } from "./components/Breadcrumbs";
-import { PageRibbonBackground } from "./components/PageRibbonBackground";
+import { usePageRibbonBackground } from "./components/PageRibbonBackground";
 import { SplashScreen } from "./components/SplashScreen";
 import {
   DashboardSkeleton,
@@ -144,6 +144,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   const location = useLocation();
   const { showToast } = useToast();
   const { t } = useLanguage();
+  // Hook harus dipanggil tanpa syarat (aturan Hooks) -- style yang
+  // dihasilkan baru dipakai secara kondisional (halaman non-Dashboard)
+  // di JSX bawah lewat `location.pathname !== "/dashboard"`.
+  const pageRibbon = usePageRibbonBackground();
 
   // ── Item 2.4 (P2): arah transisi antar halaman ala navigasi stack ───
   // Heuristik sederhana murni visual: bandingkan "kedalaman" path
@@ -406,30 +410,32 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
             bawah mobile; md:pb-40 mengembalikan spasi asli di layar desktop
             (yang tidak punya navbar bawah). */}
         <div className="p-4 sm:p-6 lg:p-8 pb-24 md:pb-40">
-          <div className="relative flow-root max-w-7xl mx-auto w-full">
-            {/* REVISI (fix ribbon-tidak-menutupi-breadcrumb): PageRibbonBackground
-                dulu dirender terpisah di DALAM tiap halaman (Wallets.tsx dkk),
-                dalam wrapper `relative flow-root` sendiri yang baru mulai
-                SETELAH breadcrumb + margin-bottomnya -- akibatnya ribbon
-                cuma menutupi Card di bawah breadcrumb, sementara baris
-                breadcrumb sendiri "nampang" di atas background polos
-                halaman (bukan ribbon), kelihatan seperti kotak putih yang
-                menimpa ribbon padahal sebenarnya cuma tidak pernah tumpang
-                tindih sama sekali. Sekarang ribbon dipindah ke SATU tempat
-                di sini (level shared layout), jadi wrapper yang sama
-                membungkus baik breadcrumb maupun konten halaman di
-                bawahnya -- ribbon (absolute, top-0) otomatis "mengintip" di
-                belakang breadcrumb juga, bukan cuma di belakang Card.
-                `flow-root` di wrapper ini (bukan cuma di wrapper per-halaman
-                seperti sebelumnya) mencegah margin-top Card di halaman
-                (mis. `mt-12 sm:mt-14`) collapse menembus lapisan
-                AnimatePresence/motion.div di antaranya.
-                PageRibbonBackground TIDAK lagi dirender per-halaman -- lihat
-                komponen ini untuk histori masalah stacking/z-index yang
-                sudah pernah dicoba. */}
-            {location.pathname !== "/dashboard" && <PageRibbonBackground />}
+          <div
+            className={cx(
+              "relative flow-root max-w-7xl mx-auto w-full",
+              location.pathname !== "/dashboard" && pageRibbon.className
+            )}
+            style={location.pathname !== "/dashboard" ? pageRibbon.style : undefined}
+          >
+            {/* REVISI (fix ribbon-tidak-terlihat / gap-kebesaran / tumpang-tindih):
+                Dua percobaan sebelumnya me-render ribbon sebagai ELEMEN DOM
+                terpisah (baik `position:absolute`+`-z-10` maupun alur-normal
+                dengan margin negatif) yang harus "dikoordinasikan" secara
+                manual dengan posisi breadcrumb/Card lewat z-index atau
+                perhitungan margin -- sumber constant bug (ribbon ketiban
+                background solid halaman karena z-index negatif tanpa
+                stacking-context pembatas, gap kosong kebesaran, dst).
+                Sekarang ribbon BUKAN elemen DOM sama sekali -- murni
+                `background-image` (lihat usePageRibbonBackground di
+                components/PageRibbonBackground.tsx) yang ditempel LANGSUNG
+                ke wrapper flow-root ini (yang sudah membungkus breadcrumb +
+                konten halaman). Background CSS tidak pernah memengaruhi
+                layout elemen lain -- breadcrumb & Card di bawah TIDAK
+                PERLU tahu ribbon ini ada sama sekali, tidak ada z-index/
+                margin overlap yang perlu disesuaikan lagi kalau ribbon
+                berubah ukuran (cukup ubah RIBBON_HEIGHT di satu tempat). */}
             {location.pathname !== "/dashboard" && (
-              <div className="relative z-10 mb-2 sm:mb-3">
+              <div className="relative mb-2 sm:mb-3">
                 <Breadcrumbs />
               </div>
             )}

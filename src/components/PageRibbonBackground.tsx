@@ -1,84 +1,94 @@
-import React from "react";
-import { useThemeTokens } from "../hooks/useThemeTokens";
+import { useMemo } from "react";
+import { useTheme } from "../contexts/ThemeContext";
+import type { CSSProperties } from "react";
 
 /**
- * Ribbon gradient + lengkung (wave) dekoratif -- versi "background-only"
- * dari hero di DashboardHeader.tsx, dipakai di SEMUA halaman lain (Wallet,
- * Budget, Riwayat, Tabungan, Cicilan, Tabungan Emas, Akun/Settings, Admin).
+ * Ribbon gradient + lengkung (wave) dekoratif di belakang breadcrumb, untuk
+ * SEMUA halaman kecuali Dashboard (yang punya hero sendiri, lihat
+ * DashboardHeader.tsx).
  *
- * ARSITEKTUR (revisi -- baca ini sebelum mengubah ukuran ribbon):
- * Versi sebelumnya menyatukan ribbon dengan posisi kartu lewat trik
- * "margin negatif" (ribbon di-render dalam alur normal lalu kartu ditarik
- * naik ke atasnya pakai `-mt-*`). Itu membuat tinggi ribbon & posisi kartu
- * SALING BERGANTUNG secara implisit -- setiap ribbon diubah ukurannya,
- * overlap kartu harus ikut dihitung ulang secara manual, dan gampang
- * salah (kartu jadi tumpang tindih dengan breadcrumb, seperti yang pernah
- * terjadi). Sekarang ribbon ini murni LATAR BELAKANG:
+ * ARSITEKTUR (revisi KETIGA -- baca ini sebelum mengubah ukuran ribbon):
+ * Dua percobaan sebelumnya me-render ribbon sebagai ELEMEN DOM (baik
+ * `position:absolute` maupun alur-normal-dengan-margin-negatif). Keduanya
+ * mengharuskan breadcrumb/Card "tahu" tentang ribbon (lewat z-index atau
+ * margin overlap yang harus dihitung ulang tiap ribbon berubah ukuran) --
+ * sumber constant bug (invisible ribbon, gap kebesaran, tumpang tindih).
  *
- *   - `position: absolute`, `-z-10`, `aria-hidden` -- keluar dari document
- *     flow sepenuhnya. Merender/mengubah ukuran komponen ini TIDAK PERNAH
- *     mendorong atau menggeser elemen lain -- persis seperti background
- *     biasa.
- *   - Tinggi ribbon FIXED (`h-[202px] sm:h-[222px]`) -- sama persis
- *     dengan tinggi hero asli di Dashboard, TIDAK dikecilkan lagi.
- *   - Supaya kartu/konten di bawah breadcrumb tidak tumpang tindih dengan
- *     ribbon maupun breadcrumb, elemen pembungkus konten (Card, dst) di
- *     tiap halaman pemanggil diberi `mt-[186px] sm:mt-[198px]` (POSITIF,
- *     bukan negatif) -- angka ini = tinggi ribbon di atas DIKURANGI
- *     padding atas `<main>` (`p-4`=16px / `p-6`=24px, lihat App.tsx),
- *     karena ribbon bergeser naik `-top-4/-top-6/-top-8` untuk menembus
- *     padding tsb dan menyentuh tepi layar (lihat di bawah).
+ * Sekarang ribbon BUKAN elemen DOM sama sekali -- murni `background-image`
+ * (2 layer: svg lengkung + gradient warna) yang ditempel via hook ini ke
+ * elemen yang SUDAH ADA dan SUDAH membungkus breadcrumb+konten (di
+ * App.tsx). Konsekuensinya:
+ *   - Breadcrumb & konten halaman TIDAK PERNAH perlu tahu ribbon itu ada.
+ *     Tidak ada z-index, tidak ada margin overlap, tidak ada elemen extra
+ *     yang bisa salah tumpuk -- background CSS secara definisi tidak
+ *     pernah memengaruhi layout elemen lain.
+ *   - Mengubah ukuran ribbon = ubah SATU angka (`RIBBON_HEIGHT` di bawah).
+ *     Tidak ada file lain yang perlu disentuh sama sekali.
+ *   - Di bawah ketinggian `RIBBON_HEIGHT`, tidak ada background-image yang
+ *     menutupi lagi -- warna canvas biasa (`tokens.surface.canvas`, sudah
+ *     terpasang di elemen yang sama) otomatis "muncul kembali" dengan
+ *     sendirinya, tanpa perlu Card/apa pun menutupinya secara eksplisit.
  *
- * KALAU ANDA MENGUBAH TINGGI RIBBON DI BAWAH INI (`h-[202px] sm:h-[222px]`),
- * WAJIB update juga `mt-[186px] sm:mt-[198px]` di SEMUA halaman pemanggil
- * (cari `PageRibbonBackground` di src/views) dengan rumus yang sama:
- * mt_baru = tinggi_ribbon_baru - padding_atas_main_pada_breakpoint_itu.
- *
- * Cara pakai di halaman: taruh `<PageRibbonBackground />` sebagai anak
- * pertama dari satu wrapper `relative` (supaya posisi absolute-nya
- * terikat ke wrapper itu, bukan ke ancestor lain yang tidak terduga),
- * lalu beri elemen konten setelahnya class `mt-[186px] sm:mt-[198px]`
- * (TANPA perlu `relative`/`z-10` lagi -- ribbon sudah `-z-10` dan tidak
- * pernah tumpang tindih dengan konten karena margin di atas):
- *
- *   <div className="relative">
- *     <PageRibbonBackground />
- *     <Card className="mt-[186px] sm:mt-[198px] ...">...</Card>
- *   </div>
- *
- * Full-bleed horizontal (-inset-x-4/6/8) + `-top-4/-6/-8` melawan padding
- * `<main>` di App.tsx (`p-4 sm:p-6 lg:p-8`), sama seperti DashboardHeader,
- * supaya ribbon menyentuh tepi layar alih-alih berhenti di dalam padding
- * halaman.
- *
- * PENTING: <Breadcrumbs /> di App.tsx dirender sebagai overlay `absolute`
- * (bukan elemen block biasa) supaya tidak mendorong ribbon/konten turun --
- * lihat App.tsx. Ribbon setinggi 202/222px ini jauh lebih tinggi dari pill
- * breadcrumb (~40-48px), jadi breadcrumb selalu berada di dalam area
- * ribbon, bukan di luarnya.
+ * Batasan yang membuat implementasi ini SEDIKIT berbeda dari versi
+ * elemen-DOM sebelumnya: warna svg lengkung tidak bisa lagi memakai
+ * `fill="currentColor"` + CSS var (SVG yang dipakai lewat CSS
+ * `background-image: url("data:image/svg+xml,...")` diperlakukan browser
+ * sebagai resource terpisah, tidak mewarisi CSS var/`color` dari halaman).
+ * Makanya warnanya di-hardcode di `WAVE_HEX` di bawah -- WAJIB disamakan
+ * manual dengan `--color-slate-950` (dark) / `--color-slate-50` (light) di
+ * index.css kalau suatu saat palet reskin berubah.
  */
-export const PageRibbonBackground: React.FC = () => {
-  const { tokens, cx } = useThemeTokens();
 
-  return (
-    <div
-      aria-hidden="true"
-      className={cx(
-        "absolute -inset-x-4 -top-4 sm:-inset-x-6 sm:-top-6 lg:-inset-x-8 lg:-top-8",
-        "h-[202px] sm:h-[222px] -z-10 overflow-hidden pointer-events-none",
-        tokens.dashboardHeader.heroGradient
-      )}
-    >
-      <svg
-        className={cx("absolute bottom-0 left-0 w-full h-9 sm:h-11 block", tokens.dashboardHeader.waveFill)}
-        viewBox="0 0 264 66"
-        preserveAspectRatio="none"
-      >
-        <path
-          d="M0,28 C48,58 86,10 132,24 C178,38 216,58 264,20 L264,66 L0,66 Z"
-          fill="currentColor"
-        />
-      </svg>
-    </div>
-  );
+const RIBBON_HEIGHT = 220; // px -- satu-satunya angka yang perlu diubah untuk resize ribbon
+const WAVE_HEIGHT = 44; // px -- tinggi area lengkung svg di tepi bawah ribbon
+
+// Harus sinkron dengan index.css: --color-slate-950 (dark) / --color-slate-50 (light).
+// Ini SENGAJA sama dengan warna `tokens.surface.canvas` per tema, supaya
+// lengkung menyatu mulus ke canvas di baliknya (persis niat `waveFill` versi lama).
+const WAVE_HEX: Record<"dark_obsidian" | "light_sakura", string> = {
+  dark_obsidian: "#0A1512",
+  light_sakura: "#F5FAF8",
 };
+
+// Harus sinkron dengan tokens.dashboardHeader.heroGradient di tokens.ts.
+// Boleh tetap pakai var(--color-...) di sini (beda dari WAVE_HEX) karena
+// ini dipasang lewat inline style ke elemen HALAMAN BIASA (bukan data-URI
+// svg terpisah), yang SEPENUHNYA mewarisi CSS custom property halaman.
+const GRADIENT_CSS: Record<"dark_obsidian" | "light_sakura", string> = {
+  dark_obsidian: "linear-gradient(160deg, var(--color-indigo-500), var(--color-emerald-500) 140%)",
+  light_sakura: "linear-gradient(160deg, var(--color-rose-400), var(--color-rose-600) 140%)",
+};
+
+const WAVE_PATH_D = "M0,28 C48,58 86,10 132,24 C178,38 216,58 264,20 L264,66 L0,66 Z";
+
+export function usePageRibbonBackground(): { style: CSSProperties; className: string } {
+  const { theme } = useTheme();
+
+  const style = useMemo<CSSProperties>(() => {
+    const waveHex = WAVE_HEX[theme];
+    const waveSvgDataUri =
+      `data:image/svg+xml,${encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 264 66" preserveAspectRatio="none">` +
+        `<path d="${WAVE_PATH_D}" fill="${waveHex}"/></svg>`
+      )}`;
+
+    return {
+      // Layer pertama (terdaftar duluan) tampil PALING ATAS -- svg lengkung
+      // di atas, gradient di bawah, persis urutan visual yang diinginkan.
+      backgroundImage: `url("${waveSvgDataUri}"), ${GRADIENT_CSS[theme]}`,
+      backgroundRepeat: "no-repeat, no-repeat",
+      // Lengkung diposisikan tepat di tepi bawah area gradient.
+      backgroundPosition: `left ${RIBBON_HEIGHT - WAVE_HEIGHT}px, top`,
+      backgroundSize: `100% ${WAVE_HEIGHT}px, 100% ${RIBBON_HEIGHT}px`,
+    };
+  }, [theme]);
+
+  return {
+    style,
+    // Full-bleed sampai tepi layar (melawan padding `<main>` di App.tsx),
+    // dengan padding pengganti supaya breadcrumb/konten di dalamnya TETAP
+    // di posisi visual yang sama seperti sebelumnya -- murni kosmetik
+    // bleed, tidak menyentuh margin/z-index elemen anak sama sekali.
+    className: "-mx-4 -mt-4 px-4 pt-4 sm:-mx-6 sm:-mt-6 sm:px-6 sm:pt-6 lg:-mx-8 lg:-mt-8 lg:px-8 lg:pt-8",
+  };
+}
