@@ -18,7 +18,6 @@ import { Modal } from "../components/Modal";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { AnimatedNumber } from "../components/ui/AnimatedNumber";
-import { Card } from "../components/ui/Card";
 import { PROVIDER_CATALOG, OTHER_PROVIDER_ID } from "../data/walletProviders";
 
 const GROUP_META: Record<Exclude<WalletType, "general">, { icon: string; labelKey: string; addKey: string; placeholderKey: string }> = {
@@ -110,7 +109,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
       className={cx(
         "rounded-2xl border p-4 space-y-3",
         isGeneral
-          ? cx(tokens.surface.sunken, tokens.border.accent)
+          ? cx(tokens.surface.card, tokens.border.accent)
           : cardSurfaceClass
       )}
     >
@@ -411,13 +410,7 @@ export const Wallets: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
-          div manual ke <Card elevation="lg" padding="none"> supaya shadow
-          elevation-nya diatur terpusat lewat primitive. */}
-      <div className="relative">
-        <Card elevation="lg" padding="none" className="overflow-hidden">
-        <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-indigo-600" />
-        <div className="p-6 md:p-8 space-y-6">
+      <div className="space-y-6">
 
           {/* Header */}
           <div>
@@ -427,7 +420,7 @@ export const Wallets: React.FC = () => {
           </div>
 
           {/* Total banner */}
-          <div className={cx("rounded-2xl border px-5 py-4", tokens.surface.sunken, tokens.border.accent)}>
+          <div className={cx("rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
             <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
               {t("wallet.total_balance")}
             </p>
@@ -448,8 +441,6 @@ export const Wallets: React.FC = () => {
             </div>
           )}
 
-        </div>
-        </Card>
       </div>
 
       {/* E-Wallet / Bank / Cash groups -- masing-masing section terpisah, tanpa dibungkus Card */}
