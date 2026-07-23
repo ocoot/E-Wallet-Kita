@@ -1,4 +1,5 @@
 import React, { useRef, useId } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { useLockBodyScroll } from "../../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../../hooks/useDialogA11y";
@@ -61,6 +62,19 @@ interface ModalShellProps {
  * Hook reusable sudah terintegrasi:
  * - useLockBodyScroll — dikunci selama isOpen = true
  * - useDialogA11y    — focus trap + Escape + return focus
+ *
+ * BUG FIX PENTING: seluruh markup di-render lewat `createPortal` ke
+ * `document.body`. Tanpa ini, `fixed inset-0` di sini akan menempel ke
+ * ancestor `motion.div` transisi halaman di App.tsx -- yang walau "diam"
+ * di `x: 0` tetap punya inline CSS `transform` (begitu cara kerja
+ * Framer Motion), yang menurut spek CSS otomatis jadi containing block
+ * baru untuk descendant `position: fixed`. Efeknya: backdrop tetap
+ * kelihatan menutupi layar (karena terbentang di seluruh box halaman
+ * yang tinggi/scrollable), tapi PANEL modal (`mt-auto`) mendarat di
+ * paling bawah seluruh konten halaman alih-alih di viewport yang
+ * kelihatan -- tampak "blank"/kosong padahal cuma salah posisi. Lihat
+ * penjelasan lebih lengkap di `BottomSheet.tsx` (bug yang sama, gejala
+ * yang sama, ditemukan pertama kali di alur Filter Riwayat Transaksi).
  */
 export const ModalShell: React.FC<ModalShellProps> = ({
   isOpen,
@@ -90,7 +104,7 @@ export const ModalShell: React.FC<ModalShellProps> = ({
 
   const handleBackdropClick = backdropLocked ? undefined : onClose;
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <div className={cx("fixed inset-0 flex items-end md:items-center justify-center p-0 md:p-4 overflow-y-auto", zLayer)}>
@@ -133,6 +147,7 @@ export const ModalShell: React.FC<ModalShellProps> = ({
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };

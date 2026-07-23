@@ -303,12 +303,23 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
 
     if (isOcrLocked) {
       audioFeedback.playDullPluck();
-      showToast(
-        locale === "id"
-          ? "Fitur Unggah Struk adalah fitur premium. Silakan masuk atau daftar akun terlebih dahulu untuk menggunakannya."
-          : "Receipt Upload is a premium feature. Please sign in or register an account to use it.",
-        "error"
-      );
+      // BUG FIX: sebelumnya cabang ini SELALU menampilkan toast "silakan
+      // masuk/daftar akun" (pesan khusus guest) berapa pun status login
+      // user -- termasuk untuk user yang SUDAH login tapi belum premium,
+      // yang jelas membingungkan ("suruh login" padahal sudah login).
+      // Disamakan dengan handleDrop/handleFileChange/requestPick di atas:
+      // guest -> toast ajakan masuk/daftar, sudah login tapi non-premium
+      // -> buka PremiumModal (upsell), bukan toast generik.
+      if (isGuest) {
+        showToast(
+          locale === "id"
+            ? "Fitur Unggah Struk adalah fitur premium. Silakan masuk atau daftar akun terlebih dahulu untuk menggunakannya."
+            : "Receipt Upload is a premium feature. Please sign in or register an account to use it.",
+          "error"
+        );
+      } else {
+        setIsPremiumOpen(true);
+      }
       onSharedFileConsumed?.();
       return;
     }

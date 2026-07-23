@@ -1,4 +1,5 @@
 import React, { useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { X } from "lucide-react";
 import { useLockBodyScroll } from "../../hooks/useLockBodyScroll";
@@ -55,6 +56,26 @@ interface BottomSheetProps {
  * - Grip handle di bagian atas
  * - BlurOverlay sebagai backdrop
  *
+ * BUG FIX PENTING: seluruh markup di-render lewat `createPortal` ke
+ * `document.body`, BUKAN inline di tempat komponen ini dipanggil. Setiap
+ * halaman route di App.tsx dibungkus `motion.div` (animasi transisi
+ * slide antar halaman) yang -- walau sudah "diam" di `x: 0` -- tetap
+ * punya inline CSS `transform` terus-menerus (begitu cara kerja Framer
+ * Motion). Elemen manapun yang punya `transform` aktif otomatis jadi
+ * "containing block" baru untuk descendant `position: fixed` (bagian
+ * dari spek CSS, bukan bug Framer Motion) -- akibatnya `fixed inset-0`
+ * di sheet ini akan menempel ke box halaman (yang jauh lebih tinggi
+ * dari viewport karena berisi konten yang bisa di-scroll), BUKAN ke
+ * viewport asli. Backdrop blur/gelap masih terlihat menutupi layar
+ * (karena dia terbentang di seluruh box halaman yang tinggi, dan
+ * viewport saat ini kebetulan menampilkan sebagian dari box itu), tapi
+ * panel sheet (`mt-auto`, nempel ke BAWAH box tsb) malah mendarat di
+ * paling bawah seluruh konten halaman -- jauh di luar layar yang
+ * kelihatan, alias terlihat "blank"/kosong padahal sebenarnya cuma
+ * salah posisi. Portal ke `document.body` (elemen yang TIDAK pernah di
+ * dalam ancestor ber-transform) menghilangkan masalah ini sepenuhnya --
+ * pola yang sama seperti yang sudah dipakai `DropdownField.tsx`.
+ *
  * Contoh:
  *   <BottomSheet isOpen={isOpen} onClose={() => setIsOpen(false)} title="Pilih Aksi">
  *     <div className="p-4">...</div>
@@ -83,7 +104,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
     closeSheet();
   };
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
@@ -142,6 +163,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
