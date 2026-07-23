@@ -151,7 +151,16 @@ html, body {
   overflow-x: clip;
   transition: background-color 300ms ease;
   -webkit-tap-highlight-color: transparent;
-  touch-action: manipulation;
+  /*
+   * Nonaktifkan pinch-to-zoom (fitur browser bawaan yang "kebawa" ke PWA).
+   * `manipulation` TIDAK cukup di sini -- secara spec artinya "pan-x pan-y
+   * pinch-zoom" (cuma double-tap-zoom yang dihapus, pinch tetap diizinkan).
+   * `pan-x pan-y` secara eksplisit tidak menyertakan pinch-zoom, jadi
+   * panning/scroll normal tetap jalan tapi gesture cubit-zoom mati. Ini
+   * cadangan untuk browser yang tidak sepenuhnya menghormati
+   * `user-scalable=no` di meta viewport (lihat index.html).
+   */
+  touch-action: pan-x pan-y;
   /*
    * Mencegah scroll "bocor" ke browser (mis. memicu pull-to-refresh
    * bawaan Chrome/Safari saat mentok di atas). Aman dipasang bersama
