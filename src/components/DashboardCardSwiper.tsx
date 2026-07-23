@@ -130,14 +130,14 @@ export const DashboardCardSwiper: React.FC<DashboardCardSwiperProps> = ({ childr
           (p-1.5/gap-1 -> p-1/gap-0.5) supaya dot-dot tidak kelihatan
           "mengambang" berjauhan satu sama lain, sambil tetap sisakan area
           sentuh yang wajar. */}
-      <div className="flex items-center justify-center gap-0.5 mt-2">
+      <div className="flex items-center justify-center gap-0.5" style={{ marginTop: "0.375rem" }}>
         {slides.map((_, idx) => (
           <button
             key={idx}
             type="button"
             aria-label={`Slide ${idx + 1}`}
             onClick={() => scrollToIndex(idx)}
-            className="appearance-none bg-transparent border-0 p-1 m-0 flex items-center justify-center cursor-pointer shrink-0 leading-none"
+            className="appearance-none bg-transparent border-0 p-0.5 m-0 flex items-center justify-center cursor-pointer shrink-0 leading-none"
           >
             <span
               className={cx(

@@ -737,7 +737,7 @@ export const themeTokens = {
      * `MobileSettingsDetailPage.tsx` (dipasang sesi ini).
      */
     sectionBorder: "border-slate-800/50 light_sakura:border-rose-100/30",
-    profileCardBgBorder: "bg-slate-950/40 border border-slate-800/60 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50",
+    profileCardBgBorder: "bg-slate-900 border border-slate-800 light_sakura:bg-white light_sakura:border-rose-100/50",
     /** Heading "h3" section pengaturan (mis. "Nama Tampilan", "Keamanan Akun") -- dipakai 5x di Settings.tsx. */
     sectionHeadingBorder:
       "text-slate-200 border-b border-slate-800/10 pb-2.5 light_sakura:text-slate-800 light_sakura:border-rose-100",
@@ -802,7 +802,7 @@ export const themeTokens = {
      * bukan /50). Exact match di 2 file: `Settings.tsx` &
      * `TelegramSettings.tsx` (keduanya dipasang sesi ini).
      */
-    sunkenBorderPanel: "bg-slate-950/40 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50",
+    sunkenBorderPanel: "bg-slate-950 border border-slate-800/50 light_sakura:bg-rose-50/20 light_sakura:border-rose-100/50",
   },
   /**
    * Sesi 52: token per-file untuk `Dashboard.tsx`. Genuinely 1x-pakai
@@ -831,7 +831,7 @@ export const themeTokens = {
    * Genuinely 1x-pakai (dicek cross-file).
    */
   mobileSettingsDetailPage: {
-    backBtn: "bg-slate-950/60 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer light_sakura:bg-rose-50 light_sakura:border-rose-100 light_sakura:text-slate-600 light_sakura:hover:bg-rose-100",
+    backBtn: "text-slate-300 hover:text-white transition-colors cursor-pointer light_sakura:text-slate-600 light_sakura:hover:text-slate-900",
   },
   /**
    * Sesi 53: token per-file untuk `ReceiptUploader.tsx`. Genuinely
