@@ -530,6 +530,14 @@ export const themeTokens = {
     amountInputIncome: "bg-emerald-500/5 border-emerald-500/20 light_sakura:bg-emerald-50/40 light_sakura:border-emerald-200",
     amountDisplayExpense: "text-red-400 light_sakura:text-red-500",
     amountDisplayIncome: "text-emerald-400 light_sakura:text-emerald-600",
+    /** Struktur dasar pill kategori (padding, rounded, lebar border, flex icon+label) --
+     * dipisah dari token warna supaya tetap konsisten dipakai bareng token
+     * warna categoryPillSelected(Expense|Income)/categoryPillInactive di
+     * bawah. Sebelumnya token warna itu dipakai TANPA base structural class
+     * sama sekali di NewTransaction.tsx, jadi pill kategori render sebagai
+     * kotak warna polos nempel di belakang teks (tanpa padding, rounded,
+     * lebar border, atau flex) -- bukan bentuk pill/chip yang proper. */
+    categoryPillBase: "flex items-center gap-1.5 px-3 py-2 rounded-xl border whitespace-nowrap text-xs font-semibold transition-colors cursor-pointer",
     categoryPillSelectedExpense: "bg-red-500/15 border-red-500/50 text-red-300 light_sakura:bg-rose-100 light_sakura:border-rose-400 light_sakura:text-rose-700",
     categoryPillSelectedIncome: "bg-emerald-500/15 border-emerald-500/50 text-emerald-300 light_sakura:bg-emerald-100 light_sakura:border-emerald-400 light_sakura:text-emerald-700",
     /** Background segmented control (toggle jenis transaksi & wallet picker) -- dipakai 2x. */

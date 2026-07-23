@@ -456,7 +456,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                             audioFeedback.playClick();
                             setCategory(cat.key);
                           }}
-                          className={cx("shrink-0", isSelected ? (isExpense ? tokens.newTransaction.categoryPillSelectedExpense : tokens.newTransaction.categoryPillSelectedIncome) : cx(tokens.newTransaction.categoryPillInactive, tokens.text.muted))}
+                          className={cx("shrink-0", tokens.newTransaction.categoryPillBase, isSelected ? (isExpense ? tokens.newTransaction.categoryPillSelectedExpense : tokens.newTransaction.categoryPillSelectedIncome) : cx(tokens.newTransaction.categoryPillInactive, tokens.text.muted))}
                         >
                           <span className="text-sm leading-none">{getCategoryEmoji(cat.key)}</span>
                           <span>{locale === "id" ? cat.label_id || cat.key : cat.label_en || cat.key}</span>

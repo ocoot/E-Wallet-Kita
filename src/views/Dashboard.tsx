@@ -370,8 +370,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
           disembunyikan bersamaan lewat `has-[]:` di label & `empty:hidden`
           di container, supaya tidak ada label section "menggantung" tanpa
           isi kalau ketiga widget di dalamnya sama-sama kosong. */}
-      <div className="[&:has(.financial-monitor-rows:empty)]:hidden">
-        <div className="flex items-center gap-2 mb-3 px-1">
+      <div className="[&:has(.financial-monitor-rows:empty)]:hidden !-mt-3">
+        <div className="flex items-center gap-2 mb-2 px-1">
           <Activity size={14} className={tokens.icon.accent} />
           <h3 className={cx("text-xs font-bold uppercase tracking-wider", tokens.text.muted)}>
             {t("dashboard.financial_monitor_label")}

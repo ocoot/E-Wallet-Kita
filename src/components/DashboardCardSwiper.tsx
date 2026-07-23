@@ -126,15 +126,18 @@ export const DashboardCardSwiper: React.FC<DashboardCardSwiperProps> = ({ childr
       {/* Dot indicator -- ukuran visual pill dibuat kecil & tetap (fixed px,
           bukan cuma class Tailwind) lewat <span> di dalam <button>, supaya
           target sentuh tetap nyaman di mobile (padding di button) tanpa
-          bikin dot itu sendiri tampak besar. */}
-      <div className="flex items-center justify-center gap-1 mt-3">
+          bikin dot itu sendiri tampak besar. Padding button & gap dikecilkan
+          (p-1.5/gap-1 -> p-1/gap-0.5) supaya dot-dot tidak kelihatan
+          "mengambang" berjauhan satu sama lain, sambil tetap sisakan area
+          sentuh yang wajar. */}
+      <div className="flex items-center justify-center gap-0.5 mt-2">
         {slides.map((_, idx) => (
           <button
             key={idx}
             type="button"
             aria-label={`Slide ${idx + 1}`}
             onClick={() => scrollToIndex(idx)}
-            className="appearance-none bg-transparent border-0 p-1.5 m-0 flex items-center justify-center cursor-pointer shrink-0 leading-none"
+            className="appearance-none bg-transparent border-0 p-1 m-0 flex items-center justify-center cursor-pointer shrink-0 leading-none"
           >
             <span
               className={cx(
