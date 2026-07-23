@@ -7,6 +7,7 @@ import { DropdownField } from "./DropdownField";
 import { Button } from "./ui/Button";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "./ui/ModalShell";
+import { audioFeedback } from "../lib/audio";
 
 interface ExportFullModalProps {
   isOpen: boolean;
@@ -53,7 +54,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
       className="p-6"
     >
             <button
-              onClick={onCancel}
+              onClick={() => { audioFeedback.playClick(); onCancel(); }}
               aria-label="Tutup"
               className={cx("absolute top-4 right-4 cursor-pointer", tokens.text.faint, tokens.hover.textInverse)}
             >
@@ -129,7 +130,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
               <Button
                 type="button"
                 variant="ghost"
-                onClick={onCancel}
+                onClick={() => { audioFeedback.playClick(); onCancel(); }}
                 disabled={isGenerating}
                 className="rounded-xl"
               >
@@ -140,7 +141,7 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
                 variant="primary"
                 disabled={!valid || isGenerating}
                 isLoading={isGenerating}
-                onClick={() => onGenerate(fromMonth, toMonth, walletId || null)}
+                onClick={() => { audioFeedback.playClick(); onGenerate(fromMonth, toMonth, walletId || null); }}
                 className="rounded-xl"
               >
                 {t("export.generate_pdf")}

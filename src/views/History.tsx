@@ -22,6 +22,7 @@ import { HistoryPagination } from "../components/HistoryPagination";
 import { HistoryExport } from "../components/HistoryExport";
 import { HistoryDeleteModal } from "../components/HistoryDeleteModal";
 import { HistoryEditModal } from "../components/HistoryEditModal";
+import { PullToRefresh } from "../components/PullToRefresh";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "../components/PremiumModal";
 import { useCategories } from "../hooks/useCategories";
@@ -276,6 +277,7 @@ export const History: React.FC<HistoryProps> = ({
   })();
 
   return (
+    <PullToRefresh onRefresh={loadTransactions}>
     <div className="space-y-5">
       <div className="space-y-6">
 
@@ -495,5 +497,6 @@ export const History: React.FC<HistoryProps> = ({
         />
       </BottomSheet>
     </div>
+    </PullToRefresh>
   );
 };

@@ -13,6 +13,7 @@ import { DropdownField } from "../components/DropdownField";
 import { useNavigate, useLocation } from "react-router-dom";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ReceiptUploader } from "../components/ReceiptUploader";
+import { getPendingSharedFile, clearPendingSharedFile } from "../lib/shareTarget";
 import { ReceiptPreview } from "../components/ReceiptPreview";
 import { VoiceRecorder } from "../components/VoiceRecorder";
 import { useCategories } from "../hooks/useCategories";
@@ -79,6 +80,27 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   useEffect(() => {
     if (userDisplayName) setDisplayName(userDisplayName);
   }, [userDisplayName]);
+
+  // Ambil-alih foto struk yang datang dari alur "Share ke app" (OS share
+  // sheet -> service worker -> IndexedDB, lihat src/lib/shareTarget.ts).
+  // Ditandai lewat query `?shared=1` yang di-redirect oleh
+  // public/share-target-sw.js setelah file berhasil disimpan.
+  const [sharedReceiptFile, setSharedReceiptFile] = useState<File | null>(null);
+  useEffect(() => {
+    if (new URLSearchParams(location.search).get("shared") !== "1") return;
+    let cancelled = false;
+    (async () => {
+      const file = await getPendingSharedFile();
+      if (cancelled) return;
+      if (file) {
+        setSharedReceiptFile(file);
+      }
+      // Bersihkan query string supaya refresh/back tidak memicu ulang.
+      navigate(location.pathname, { replace: true });
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
 
   useEffect(() => {
     if (userDisplayName || !user) return;
@@ -358,7 +380,14 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
             {/* ── AI Receipt uploader (panel) ───────────────────────────── */}
             {activeInputTab === "receipt" && (
-              <ReceiptUploader onParsed={(draft) => setReceiptDraft(draft)} />
+              <ReceiptUploader
+                onParsed={(draft) => setReceiptDraft(draft)}
+                sharedFile={sharedReceiptFile}
+                onSharedFileConsumed={() => {
+                  setSharedReceiptFile(null);
+                  void clearPendingSharedFile();
+                }}
+              />
             )}
 
             {/* ── AI Voice note recorder (panel) ────────────────────────── */}

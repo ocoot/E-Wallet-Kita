@@ -95,7 +95,7 @@ export const AuthCallback: React.FC = () => {
   }, [navigate]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-950 text-white p-6">
+    <div className="flex flex-col items-center justify-center min-h-dvh bg-slate-950 text-white p-6">
       <div className="flex flex-col items-center gap-4 animate-in fade-in duration-700">
         <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
         <div className="text-center space-y-1">

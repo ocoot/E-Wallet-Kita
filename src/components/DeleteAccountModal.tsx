@@ -6,6 +6,7 @@ import { Input } from "./ui/Input";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "./ui/ModalShell";
 import { reportFrontendError } from "../lib/errorReporter";
+import { audioFeedback } from "../lib/audio";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -32,11 +33,16 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
 
   const handleConfirm = async () => {
     if (!isMatch || isDeleting) return;
+    // Getar "berat" (dullPluck) khusus aksi destruktif ireversibel --
+    // konsisten dengan pola sound/haptic lain di app ini (lihat audio.ts),
+    // supaya jari user benar-benar "merasakan" ini bukan aksi biasa.
+    audioFeedback.playDullPluck();
     setIsDeleting(true);
     setError(null);
     try {
       await onConfirm();
     } catch (err: any) {
+      audioFeedback.playAlert();
       setError(err?.message || "DELETE_FAILED");
       setIsDeleting(false);
       void reportFrontendError({
@@ -49,6 +55,7 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
 
   const handleClose = () => {
     if (isDeleting) return;
+    audioFeedback.playClick();
     setInputValue("");
     setError(null);
     onCancel();

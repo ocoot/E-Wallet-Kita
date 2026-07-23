@@ -126,9 +126,27 @@
 html, body {
   font-family: var(--font-sans);
   background-color: #0A1512; /* Giok Malam (dark) — Konsep 04 */
+  /*
+   * `100vh` di browser mobile (Safari iOS, Chrome Android) dihitung dari
+   * tinggi viewport TERBESAR (saat address bar collapse), bukan tinggi
+   * yang benar-benar terlihat saat address bar masih tampil -- akibatnya
+   * ada gap putih di bawah / layout "meloncat" tiap address bar
+   * collapse-expand saat scroll. `100dvh` (dynamic viewport height)
+   * mengikuti tinggi viewport yang sebenarnya terlihat saat itu juga.
+   * `100vh` tetap dipertahankan sebagai fallback untuk browser lama yang
+   * belum mendukung `dvh` (aturan cascade: baris kedua menang kalau
+   * didukung, kalau tidak browser abaikan baris itu & pakai baris pertama).
+   */
   min-height: 100vh;
+  min-height: 100dvh;
   margin: 0;
   padding: 0;
+  /* Font smoothing ala native/system UI -- tanpa ini teks di WebKit
+     (Safari/iOS) dirender sedikit lebih tebal/kasar dibanding app native
+     yang pakai sistem rendering text platform. */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   /*
    * PENTING: JANGAN pakai `overflow-x: hidden` di sini.
    *

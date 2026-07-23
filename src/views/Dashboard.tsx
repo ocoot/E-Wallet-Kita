@@ -23,6 +23,7 @@ import { DashboardWalletSelectorCard } from "../components/DashboardWalletSelect
 import { DashboardCardSwiper } from "../components/DashboardCardSwiper";
 import { useCategories } from "../hooks/useCategories";
 import { Button } from "../components/ui/Button";
+import { PullToRefresh } from "../components/PullToRefresh";
 
 interface DashboardProps {
   transactionsUpdatedTrigger: number;
@@ -126,9 +127,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const labelBalance = t("dashboard.balance");
 
   // Load current month metrics
-  useEffect(() => {
-    const loadData = async () => {
-      const today = new Date();
+  const loadData = React.useCallback(async () => {
+    const today = new Date();
       const currentMonthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`; // e.g., "2026-06"
       
       try {
@@ -181,12 +181,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
         console.error('Dashboard load error:', err);
         setDashboardError(err);
       }
-    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentUser.id]);
 
+  useEffect(() => {
     if (currentUser.id) {
       loadData();
     }
-  }, [currentUser.id, transactionsUpdatedTrigger, reloadCounter]);
+  }, [currentUser.id, transactionsUpdatedTrigger, reloadCounter, loadData]);
 
   // Helper currency formatter
   const formatIDR = (num: number) => {
@@ -267,6 +269,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const chartData = getChartData();
 
   return (
+    <PullToRefresh onRefresh={loadData}>
     <div className="space-y-6 pb-24 relative">
       {/* 1. Welcome/weather card ("dashboard dinamis"). Kartu Pos Dompet
           selector TIDAK LAGI digabung dalam satu strip carousel dengan
@@ -441,5 +444,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </motion.button>
       </div>
     </div>
+    </PullToRefresh>
   );
 };

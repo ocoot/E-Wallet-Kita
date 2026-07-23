@@ -7,6 +7,7 @@ import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "./ui/ModalShell";
+import { audioFeedback } from "../lib/audio";
 
 const CATEGORY_EMOJI: Record<string, string> = {
   food_drink: "", transport: "", shopping: "", health: "",
@@ -107,7 +108,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
               </div>
             </div>
             <button
-              onClick={onCancel}
+              onClick={() => { audioFeedback.playClick(); onCancel(); }}
               aria-label="Tutup"
               className={cx("p-1.5 rounded-lg", tokens.modal.closeBtn)}
             >
@@ -217,7 +218,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
             <Button
               type="button"
               variant="ghost"
-              onClick={onCancel}
+              onClick={() => { audioFeedback.playClick(); onCancel(); }}
               disabled={isSaving}
               className="rounded-xl"
             >
@@ -226,7 +227,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
             <Button
               type="button"
               variant={isExpense ? "danger" : "success"}
-              onClick={onConfirm}
+              onClick={() => { audioFeedback.playChime(); onConfirm(); }}
               disabled={isSaving || !draft.amount || draft.amount <= 0 || confirmBlockedByDuplicate}
               isLoading={isSaving}
               className="rounded-xl"

@@ -6,6 +6,7 @@ import { DropdownField } from "./DropdownField";
 import { Button } from "./ui/Button";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "./ui/ModalShell";
+import { audioFeedback } from "../lib/audio";
 
 interface ExportSummaryModalProps {
   isOpen: boolean;
@@ -40,7 +41,7 @@ export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
       className="p-6"
     >
             <button
-              onClick={onCancel}
+              onClick={() => { audioFeedback.playClick(); onCancel(); }}
               aria-label="Tutup"
               className={cx("absolute top-4 right-4 cursor-pointer", tokens.text.faint, tokens.hover.textInverse)}
             >
@@ -81,7 +82,7 @@ export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
               <Button
                 type="button"
                 variant="ghost"
-                onClick={onCancel}
+                onClick={() => { audioFeedback.playClick(); onCancel(); }}
                 disabled={isGenerating}
                 className="rounded-xl"
               >
@@ -92,7 +93,7 @@ export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
                 variant="primary"
                 disabled={isGenerating}
                 isLoading={isGenerating}
-                onClick={() => onGenerate(walletId || null)}
+                onClick={() => { audioFeedback.playClick(); onGenerate(walletId || null); }}
                 className="rounded-xl"
               >
                 {t("export.confirm_export")}

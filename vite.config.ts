@@ -17,6 +17,12 @@ export default defineConfig(({ mode }) => {
         strategies: 'generateSW',
         workbox: {
           globPatterns: ['**/*.{js,css,png,svg,ico,json,html}'],
+          // Menyuntik `share-target-sw.js` (vanilla JS, lihat file itu untuk
+          // penjelasan lengkap) lewat `importScripts()` classic ke dalam SW
+          // hasil generate Workbox, supaya bisa menangani POST Web Share
+          // Target (`/share-target`) tanpa perlu pindah ke strategi
+          // `injectManifest` yang lebih ribet untuk kebutuhan sekecil ini.
+          importScripts: ['share-target-sw.js'],
           // Catatan (2026-08-15): dulu ada globIgnores + runtimeCaching
           // NetworkOnly khusus untuk `/changelog.json` di sini -- supaya
           // request ke file itu tidak dijawab dari cache SW lama saat
@@ -42,6 +48,20 @@ export default defineConfig(({ mode }) => {
           background_color: '#0f172a',
           theme_color: '#4f46e5',
           categories: ['finance', 'productivity', 'utilities'],
+          // Web Share Target: begitu app ter-install, "E-Wallet Kita" muncul
+          // sebagai salah satu pilihan tujuan saat user menekan "Share" di
+          // Galeri/WhatsApp/aplikasi lain atas sebuah foto struk -- tidak
+          // perlu lagi buka app dulu baru upload manual. Ditangani oleh
+          // `public/share-target-sw.js` (lihat file itu & src/lib/shareTarget.ts
+          // untuk alur lengkapnya).
+          share_target: {
+            action: '/share-target',
+            method: 'POST',
+            enctype: 'multipart/form-data',
+            params: {
+              files: [{ name: 'receipt', accept: ['image/*'], multiple: false }],
+            },
+          },
           icons: [
             { src: '/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
             { src: '/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },

@@ -9,6 +9,8 @@ import { BalanceVisibilityProvider } from "./contexts/BalanceVisibilityContext";
 import { AdminProvider } from "./contexts/AdminContext";
 import { useAuth } from "./contexts/AuthContext";
 import { usePremium } from "./hooks/usePremium";
+import { useBillReminders } from "./hooks/useBillReminders";
+import { useAppBadge } from "./hooks/useAppBadge";
 import { Sidebar } from "./components/Sidebar";
 import { MobileBottomNav } from "./components/MobileBottomNav";
 import { Login } from "./views/Login";
@@ -27,6 +29,7 @@ import { UpdateCheckingIndicator } from "./components/UpdateCheckingIndicator";
 import { Breadcrumbs } from "./components/Breadcrumbs";
 import { usePageRibbonBackground } from "./components/PageRibbonBackground";
 import { SplashScreen } from "./components/SplashScreen";
+import { MainScrollProvider } from "./contexts/MainScrollContext";
 import {
   DashboardSkeleton,
   HistorySkeleton,
@@ -185,6 +188,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [transactionsUpdatedTrigger, setTransactionsUpdatedTrigger] = useState(0);
   const lastRealtimeId = useRef<string | null>(null);
+  // Ref ke elemen <main overflow-y-auto> di bawah -- dibagikan lewat
+  // MainScrollProvider supaya usePullToRefresh (dipakai dari Dashboard/
+  // History) bisa attach touch listener ke scroll container yang benar.
+  const mainScrollRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -250,6 +257,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   }, [showToast]);
 
   const { isPremium, loading: premiumLoading } = usePremium();
+
+  // ── Badge API: angka merah di icon app di home screen ────────────────
+  // Dihitung dari tagihan yang butuh perhatian (belum lunas & overdue/
+  // due_soon dalam 3 hari) -- proxy paling relevan untuk "notifikasi
+  // belum dibaca" yang datanya sudah tersedia bersih lewat
+  // useBillReminders. Dipasang sekali di root layout (bukan di halaman
+  // BillReminders saja) supaya badge tetap ter-update walau user sedang
+  // membuka halaman lain, sama seperti notifikasi native yang jalan di
+  // background. Kalau nanti ada sumber notifikasi lain yang punya status
+  // "belum dibaca" di skema (mis. chat support), tinggal dijumlahkan ke
+  // `badgeCount` di bawah.
+  const { reminders: badgeBillReminders } = useBillReminders(user?.id);
+  const badgeCount = badgeBillReminders.filter(
+    (r) => r.urgency === "overdue" || r.urgency === "due_soon"
+  ).length;
+  useAppBadge(badgeCount);
 
   // Real-time listen to user's database change events on the transactions table
   useEffect(() => {
@@ -362,7 +385,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
 
   return (
     <div className={cx(
-      "relative min-h-screen flex flex-col md:flex-row transition-colors duration-300",
+      "relative min-h-dvh flex flex-col md:flex-row transition-colors duration-300",
       tokens.surface.canvas,
       tokens.text.onSurface
     )}>
@@ -403,9 +426,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
 
       {/* Main active subview frame */}
       <main
-        className={`flex-1 min-h-screen overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}
+        ref={mainScrollRef as React.RefObject<HTMLElement>}
+        className={`flex-1 min-h-dvh overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
+      <MainScrollProvider scrollRef={mainScrollRef}>
         {/* Running text maintenance banner, shown globally above all pages */}
         <MaintenanceBanner />
 
@@ -551,6 +576,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
             </footer>
           </div>
         </div>
+      </MainScrollProvider>
       </main>
 
       {/* Safety Sign-out Modal dialog prompt */}

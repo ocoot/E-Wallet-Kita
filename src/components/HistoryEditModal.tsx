@@ -9,6 +9,7 @@ import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "./ui/ModalShell";
+import { audioFeedback } from "../lib/audio";
 
 interface HistoryEditModalProps {
   transaction: Transaction | null;
@@ -51,7 +52,14 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
     e.preventDefault();
     if (!amount || Number(amount) <= 0) return;
     if (!transactionDate) return;
-    await onSave(transaction.id, category, Number(amount), transactionDate, walletId);
+    audioFeedback.playClick();
+    try {
+      await onSave(transaction.id, category, Number(amount), transactionDate, walletId);
+      audioFeedback.playChime();
+    } catch (err) {
+      audioFeedback.playAlert();
+      throw err;
+    }
   };
 
   return (
@@ -72,7 +80,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
               </h3>
             </div>
             <button
-              onClick={onClose}
+              onClick={() => { audioFeedback.playClick(); onClose(); }}
               aria-label="Tutup"
               className={cx("p-1.5 rounded-lg", tokens.modal.closeBtn)}
             >
@@ -141,7 +149,7 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
               <Button
                 type="button"
                 variant="ghost"
-                onClick={onClose}
+                onClick={() => { audioFeedback.playClick(); onClose(); }}
                 className="rounded-xl"
               >
                 {t("common.cancel")}

@@ -304,7 +304,7 @@ export const Login: React.FC = () => {
   /* ── Render ───────────────────────────────────────── */
   return (
     <div className={cx(
-      "min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-300 relative overflow-hidden",
+      "min-h-dvh flex flex-col items-center justify-center p-4 transition-colors duration-300 relative overflow-hidden",
       tokens.surface.canvas
     )}>
 

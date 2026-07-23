@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { UploadCloud, FileImage, ShieldAlert, CheckCircle, Lock } from "lucide-react";
+import { UploadCloud, FileImage, ShieldAlert, CheckCircle, Lock, Camera, Images } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -13,9 +13,18 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
 
 interface ReceiptUploaderProps {
   onParsed: (draft: any) => void;
+  /**
+   * File yang datang dari alur "Share ke app" (lihat src/lib/shareTarget.ts)
+   * -- begitu ter-set, langsung diproses seolah-olah user memilihnya
+   * lewat dropzone/kamera manual. Parent bertanggung jawab membersihkan
+   * prop ini lagi (mis. jadi `null`) lewat `onSharedFileConsumed`, supaya
+   * tidak terproses ulang tiap re-render.
+   */
+  sharedFile?: File | null;
+  onSharedFileConsumed?: () => void;
 }
 
-export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) => {
+export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, sharedFile, onSharedFileConsumed }) => {
   const { tokens, cx } = useThemeTokens();
   const { session, user } = useAuth();
   const { t, locale } = useLanguage();
@@ -32,6 +41,10 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // Input terpisah dengan atribut `capture="environment"` supaya di HP
+  // langsung membuka aplikasi kamera (bukan cuma file picker seperti
+  // `fileInputRef` di atas) -- meniru tombol "scan struk" khas app native.
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -91,7 +104,9 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
     }
   };
 
-  const handleClickZone = () => {
+  // Dipakai bareng oleh tombol "Buka Kamera" & "Pilih dari Galeri" (juga
+  // klik di area dropzone) -- cuma beda input ref mana yang dibuka.
+  const requestPick = (ref: React.RefObject<HTMLInputElement | null>) => {
     audioFeedback.playClick();
     if (isOcrLocked) {
       if (isGuest) {
@@ -107,7 +122,17 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
       }
       return;
     }
-    fileInputRef.current?.click();
+    ref.current?.click();
+  };
+
+  const handleClickZone = () => requestPick(fileInputRef);
+  const handleOpenCamera = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    requestPick(cameraInputRef);
+  };
+  const handleOpenGallery = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    requestPick(fileInputRef);
   };
 
   const processFile = async (file: File) => {
@@ -268,6 +293,30 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
     }
   };
 
+  // Konsumsi file yang datang dari Web Share Target. Hanya jalan sekali per
+  // file (guard lewat ref) supaya tidak terproses berulang tiap re-render,
+  // dan tetap lewat validasi premium/lock yang sama seperti upload manual.
+  const consumedSharedFileRef = useRef<File | null>(null);
+  React.useEffect(() => {
+    if (!sharedFile || consumedSharedFileRef.current === sharedFile) return;
+    consumedSharedFileRef.current = sharedFile;
+
+    if (isOcrLocked) {
+      audioFeedback.playDullPluck();
+      showToast(
+        locale === "id"
+          ? "Fitur Unggah Struk adalah fitur premium. Silakan masuk atau daftar akun terlebih dahulu untuk menggunakannya."
+          : "Receipt Upload is a premium feature. Please sign in or register an account to use it.",
+        "error"
+      );
+      onSharedFileConsumed?.();
+      return;
+    }
+
+    void processFile(sharedFile).finally(() => onSharedFileConsumed?.());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sharedFile]);
+
   return (
     <div className="w-full space-y-3">
       <label className={cx("font-sans text-xs font-bold uppercase tracking-wider block", tokens.text.mutedAlt)}>
@@ -310,6 +359,17 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
           ref={fileInputRef}
           type="file"
           accept="image/*"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        {/* Input kedua khusus kamera: `capture="environment"` memberi tahu
+            browser mobile untuk langsung membuka kamera belakang, alih-alih
+            file picker biasa seperti input di atas. */}
+        <input
+          ref={cameraInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
           className="hidden"
           onChange={handleFileChange}
         />
@@ -368,6 +428,38 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
           )}
         </AnimatePresence>
       </div>
+
+      {/* Tombol aksi cepat -- pisah jelas antara "buka kamera langsung"
+          vs "pilih dari galeri", supaya di HP user tidak perlu melewati
+          dialog pilihan sumber file browser yang terasa generic/web. */}
+      {!isUploading && (
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={handleOpenCamera}
+            className={cx(
+              "flex items-center justify-center gap-2 py-2.5 rounded-xl border font-sans text-xs font-semibold cursor-pointer transition-all active:scale-95",
+              tokens.receiptUploader.dropzoneBorder,
+              tokens.text.label
+            )}
+          >
+            <Camera size={15} />
+            <span>{locale === "id" ? "Buka Kamera" : "Open Camera"}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleOpenGallery}
+            className={cx(
+              "flex items-center justify-center gap-2 py-2.5 rounded-xl border font-sans text-xs font-semibold cursor-pointer transition-all active:scale-95",
+              tokens.receiptUploader.dropzoneBorder,
+              tokens.text.label
+            )}
+          >
+            <Images size={15} />
+            <span>{locale === "id" ? "Pilih dari Galeri" : "Choose from Gallery"}</span>
+          </button>
+        </div>
+      )}
 
       {/* Error state */}
       {uploadError && (
