@@ -1,6 +1,15 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import html2canvas from "html2canvas";
+// SENGAJA pakai "html2canvas-pro" (bukan "html2canvas" biasa) -- project ini
+// pakai Tailwind v4, yang meng-compile utility opacity (mis. "bg-white/10",
+// "text-white/55" -- banyak dipakai di <ReceiptCard/>) menjadi CSS
+// `color-mix(in oklab, ...)`. html2canvas versi biasa (1.4.1) belum
+// mendukung fungsi warna modern (oklab/oklch/lab/lch/color-mix) dan akan
+// throw "Attempting to parse an unsupported color function". Insiden
+// 23/7/2026: ini kejadian nyata yang tertangkap Monitor Error (source
+// frontend:premium-receipt) begitu wrapper reporting dipasang -- sebelum
+// itu error ini lolos diam-diam, cuma tampil sebagai toast generik ke user.
+import html2canvas from "html2canvas-pro";
 import { ReceiptCard, ReceiptCardData } from "../components/ReceiptCard";
 
 const CAPTURE_WIDTH = 360; // px — cukup lebar biar tajam saat di-scale ke PDF
