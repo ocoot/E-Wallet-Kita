@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { exportSummaryPdf, exportFullPdf } from "../lib/pdf/exportPdf";
 import { getCurrentMonthToDateRange, toISODate } from "../lib/pdf/dateRange";
+import { withErrorReporting } from "../lib/errorReporter";
 
 import { HistoryFilter } from "../components/HistoryFilter";
 import { HistoryGroupedList } from "../components/HistoryGroupedList";
@@ -233,11 +234,17 @@ export const History: React.FC<HistoryProps> = ({
     setIsExporting(true);
     audioFeedback.playClick();
     try {
-      const { start, end } = getCurrentMonthToDateRange();
-      const data = await dbService.getTransactionsBetween(currentUser.id, toISODate(start), toISODate(end));
-      const filename = exportSummaryPdf({ t, userName: currentUser.display_name, transactions: data, categories, wallets: allWallets, walletId });
-      audioFeedback.playChime();
-      showToast(t("export.success_export", { filename }), "success");
+      await withErrorReporting(
+        "frontend:pdf-export",
+        async () => {
+          const { start, end } = getCurrentMonthToDateRange();
+          const data = await dbService.getTransactionsBetween(currentUser.id, toISODate(start), toISODate(end));
+          const filename = exportSummaryPdf({ t, userName: currentUser.display_name, transactions: data, categories, wallets: allWallets, walletId });
+          audioFeedback.playChime();
+          showToast(t("export.success_export", { filename }), "success");
+        },
+        { exportType: "summary", walletId }
+      );
     } catch { audioFeedback.playDullPluck(); showToast(t("export.error_export"), "error"); }
     finally { setIsExporting(false); }
   };
@@ -246,13 +253,19 @@ export const History: React.FC<HistoryProps> = ({
     setIsExporting(true);
     audioFeedback.playClick();
     try {
-      const [ty, tm] = toMonth.split("-").map(Number);
-      const lastDay = new Date(ty, tm, 0).getDate();
-      const data = await dbService.getTransactionsBetween(currentUser.id, `${fromMonth}-01`, `${toMonth}-${String(lastDay).padStart(2, "0")}`);
-      const filename = exportFullPdf({ t, userName: currentUser.display_name, transactions: data, categories, fromMonth, toMonth, wallets: allWallets, walletId });
-      audioFeedback.playChime();
-      showToast(t("export.success_export", { filename }), "success");
-      setIsFullExportOpen(false);
+      await withErrorReporting(
+        "frontend:pdf-export",
+        async () => {
+          const [ty, tm] = toMonth.split("-").map(Number);
+          const lastDay = new Date(ty, tm, 0).getDate();
+          const data = await dbService.getTransactionsBetween(currentUser.id, `${fromMonth}-01`, `${toMonth}-${String(lastDay).padStart(2, "0")}`);
+          const filename = exportFullPdf({ t, userName: currentUser.display_name, transactions: data, categories, fromMonth, toMonth, wallets: allWallets, walletId });
+          audioFeedback.playChime();
+          showToast(t("export.success_export", { filename }), "success");
+          setIsFullExportOpen(false);
+        },
+        { exportType: "full", fromMonth, toMonth, walletId }
+      );
     } catch { audioFeedback.playDullPluck(); showToast(t("export.error_export"), "error"); }
     finally { setIsExporting(false); }
   };

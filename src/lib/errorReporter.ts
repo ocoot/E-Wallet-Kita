@@ -4,7 +4,14 @@ type FrontendErrorSource =
   | "frontend:react-boundary"
   | "frontend:unhandled-rejection"
   | "frontend:runtime"
-  | "frontend:resource";
+  | "frontend:resource"
+  // ── Ditambahkan supaya error di fitur-fitur inti (bukan cuma crash
+  // render/promise yang lolos) juga tercatat -- lihat withErrorReporting
+  // di bawah. Tambah entri baru di sini kalau mau cover fitur lain.
+  | "frontend:transaction"
+  | "frontend:pdf-export"
+  | "frontend:premium-receipt"
+  | "frontend:wallet";
 
 interface ReportFrontendErrorParams {
   source: FrontendErrorSource;
@@ -63,5 +70,50 @@ export async function reportFrontendError({
     });
   } catch (err) {
     console.error("[errorReporter] Gagal mengirim frontend error log (soft-fail):", err);
+  }
+}
+
+/**
+ * Pembungkus generik supaya catch block di tiap fitur (transaksi, export
+ * PDF, struk premium, wallet, dll) TIDAK perlu manual memanggil
+ * `reportFrontendError` + menyusun `context` (stack, dsb) satu-satu.
+ *
+ * PENTING: fungsi ini SENGAJA melempar ulang (`throw`) error aslinya
+ * setelah melaporkannya. Ini BUKAN pengganti try/catch yang sudah ada di
+ * tiap view -- toast, audioFeedback, setState, `finally` untuk
+ * mematikan loading, dll di layar tetap jalan seperti biasa. Cukup
+ * bungkus badan async yang mau dipantau dengan fungsi ini di DALAM
+ * try block yang sudah ada:
+ *
+ *   try {
+ *     await withErrorReporting("frontend:transaction", async () => {
+ *       ...logika asli...
+ *     });
+ *   } catch {
+ *     showToast(...); // tidak berubah
+ *   } finally {
+ *     setIsLoading(false); // tidak berubah
+ *   }
+ *
+ * `context` opsional berguna untuk menambahkan info spesifik fitur (mis.
+ * walletId, orderId) yang membantu triase di Admin Panel > Monitor Error.
+ */
+export async function withErrorReporting<T>(
+  source: FrontendErrorSource,
+  fn: () => Promise<T>,
+  context?: Record<string, unknown>
+): Promise<T> {
+  try {
+    return await fn();
+  } catch (err) {
+    void reportFrontendError({
+      source,
+      message: err instanceof Error ? err.message : String(err),
+      context: {
+        ...context,
+        stack: err instanceof Error ? err.stack?.slice(0, 1500) : null,
+      },
+    });
+    throw err; // rethrow -- catch block asli di caller tetap yang menentukan UX
   }
 }

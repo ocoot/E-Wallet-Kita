@@ -15,6 +15,7 @@ import { sendPremiumReceiptEmail } from "../lib/email";
 import { Modal } from "./Modal";
 import { Button } from "./ui/Button";
 import { getPremiumBasePrice } from "../lib/settings";
+import { withErrorReporting } from "../lib/errorReporter";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "./ui/ModalShell";
 
@@ -158,17 +159,23 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
     if (!tx || !paidAt) return;
     setActionLoading("download");
     try {
-      const pdf = await generatePremiumReceipt({
-        orderId: tx.order_id,
-        amount: tx.amount,
-        totalAmount: tx.total_amount,
-        paidAt,
-        buyerName,
-        sandbox: isSandboxMode(),
-        t,
-      });
-      pdf.save(`Struk-${tx.order_id}.pdf`);
-      showToast(t("premium.receipt_downloaded"), "success");
+      await withErrorReporting(
+        "frontend:premium-receipt",
+        async () => {
+          const pdf = await generatePremiumReceipt({
+            orderId: tx.order_id,
+            amount: tx.amount,
+            totalAmount: tx.total_amount,
+            paidAt,
+            buyerName,
+            sandbox: isSandboxMode(),
+            t,
+          });
+          pdf.save(`Struk-${tx.order_id}.pdf`);
+          showToast(t("premium.receipt_downloaded"), "success");
+        },
+        { action: "download", orderId: tx.order_id }
+      );
     } catch (err) {
       console.error("Error generating or saving PDF:", err);
       showToast(t("premium.receipt_download_failed") || t("toast.error_general"), "error");
@@ -181,20 +188,26 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
     if (!tx || !paidAt || !user?.email) return;
     setActionLoading("email");
     try {
-      await sendPremiumReceiptEmail({
-        email: user.email,
-        customerName: buyerName,
-        orderId: tx.order_id,
-        amount: tx.amount,
-        totalAmount: tx.total_amount,
-        paidAt,
-        buyerName,
-        sandbox: isSandboxMode(),
-        t,
-      });
-      showToast(t("premium.receipt_email_success"), "success");
-      setAskDownload(false);
-      onClose();
+      await withErrorReporting(
+        "frontend:premium-receipt",
+        async () => {
+          await sendPremiumReceiptEmail({
+            email: user.email!,
+            customerName: buyerName,
+            orderId: tx.order_id,
+            amount: tx.amount,
+            totalAmount: tx.total_amount,
+            paidAt,
+            buyerName,
+            sandbox: isSandboxMode(),
+            t,
+          });
+          showToast(t("premium.receipt_email_success"), "success");
+          setAskDownload(false);
+          onClose();
+        },
+        { action: "send-email", orderId: tx.order_id }
+      );
     } catch (err) {
       console.error("Error sending receipt email:", err);
       showToast(t("premium.receipt_email_failed"), "error");

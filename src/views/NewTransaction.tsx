@@ -18,6 +18,7 @@ import { VoiceRecorder } from "../components/VoiceRecorder";
 import { useCategories } from "../hooks/useCategories";
 import { useWallets } from "../hooks/useWallets";
 import { checkSingleCategoryBudget } from "../hooks/useBudgets";
+import { withErrorReporting } from "../lib/errorReporter";
 import { Button } from "../components/ui/Button";
 import { ConfirmTransactionModal, ConfirmTransactionDraft } from "../components/ConfirmTransactionModal";
 
@@ -274,24 +275,30 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     setConfirmDraft(null);
     setIsLoading(true);
     try {
-      const source = confirmSource === "manual" ? "manual" : "ai_web";
-      const savedTx = await dbService.saveTransaction(
-        currentUser.id, draft.type, draft.category,
-        Number(draft.amount), draft.note.trim() || null, source, draft.date, draft.walletId
+      await withErrorReporting(
+        "frontend:transaction",
+        async () => {
+          const source = confirmSource === "manual" ? "manual" : "ai_web";
+          const savedTx = await dbService.saveTransaction(
+            currentUser.id, draft.type, draft.category,
+            Number(draft.amount), draft.note.trim() || null, source, draft.date, draft.walletId
+          );
+          if (savedTx?.id) (window as any).lastSavedTransactionId = savedTx.id;
+          if (confirmSource === "receipt" && receiptDraft?.id) {
+            await dbService.approveReceiptDraft(receiptDraft.id);
+          }
+          showToast(t("toast.success_save"), "success");
+          setAmount("");
+          setNote("");
+          setDate(new Date().toISOString().split("T")[0]);
+          setReceiptDraft(null);
+          refreshWallets();
+          onTransactionAdded();
+          await maybeWarnBudget(draft.category, draft.type);
+          navigate("/dashboard");
+        },
+        { type: draft.type, category: draft.category, source: confirmSource }
       );
-      if (savedTx?.id) (window as any).lastSavedTransactionId = savedTx.id;
-      if (confirmSource === "receipt" && receiptDraft?.id) {
-        await dbService.approveReceiptDraft(receiptDraft.id);
-      }
-      showToast(t("toast.success_save"), "success");
-      setAmount("");
-      setNote("");
-      setDate(new Date().toISOString().split("T")[0]);
-      setReceiptDraft(null);
-      refreshWallets();
-      onTransactionAdded();
-      await maybeWarnBudget(draft.category, draft.type);
-      navigate("/dashboard");
     } catch {
       showToast(t("toast.error_general"), "error");
     } finally {

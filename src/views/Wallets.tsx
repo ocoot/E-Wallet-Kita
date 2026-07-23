@@ -7,6 +7,7 @@ import { useToast } from "../contexts/ToastContext";
 import { useWallets } from "../hooks/useWallets";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { dbService } from "../lib/db";
+import { withErrorReporting } from "../lib/errorReporter";
 import { WalletType, WalletWithBalance } from "../types";
 import { useNavigate } from "react-router-dom";
 import { LoadingOverlay } from "../components/LoadingOverlay";
@@ -318,19 +319,25 @@ export const Wallets: React.FC = () => {
     if (!user?.id || !isFormValid(type)) return;
     setBusy(true);
     try {
-      const catalogMatch = selectedCatalogProvider(type);
-      const finalName = isCatalogType(type) ? (catalogMatch ? catalogMatch.name : newName.trim()) : newName.trim();
-      const finalProvider = catalogMatch ? catalogMatch.name : null;
-      const phone = type === "ewallet" ? (newContact.trim() || null) : null;
-      const account = type === "bank" ? (newContact.trim() || null) : null;
-      await dbService.createWallet(user.id, finalName, type, finalProvider, Number(newStartBalance) || 0, phone, account);
-      showToast(t("wallet.toast_wallet_created"), "success");
-      setCreatingType(null);
-      setSelectedProviderId("");
-      setNewName("");
-      setNewStartBalance("");
-      setNewContact("");
-      await refresh();
+      await withErrorReporting(
+        "frontend:wallet",
+        async () => {
+          const catalogMatch = selectedCatalogProvider(type);
+          const finalName = isCatalogType(type) ? (catalogMatch ? catalogMatch.name : newName.trim()) : newName.trim();
+          const finalProvider = catalogMatch ? catalogMatch.name : null;
+          const phone = type === "ewallet" ? (newContact.trim() || null) : null;
+          const account = type === "bank" ? (newContact.trim() || null) : null;
+          await dbService.createWallet(user.id, finalName, type, finalProvider, Number(newStartBalance) || 0, phone, account);
+          showToast(t("wallet.toast_wallet_created"), "success");
+          setCreatingType(null);
+          setSelectedProviderId("");
+          setNewName("");
+          setNewStartBalance("");
+          setNewContact("");
+          await refresh();
+        },
+        { action: "create", walletType: type }
+      );
     } catch {
       showToast(t("toast.error_general"), "error");
     } finally {
@@ -342,15 +349,21 @@ export const Wallets: React.FC = () => {
     if (!user?.id) return;
     setBusy(true);
     try {
-      const trimmed = contactInput.trim();
-      if (wallet.type === "ewallet") {
-        await dbService.updateWallet(user.id, wallet.id, { phoneNumber: trimmed || null, clearPhoneNumber: !trimmed });
-      } else if (wallet.type === "bank") {
-        await dbService.updateWallet(user.id, wallet.id, { accountNumber: trimmed || null, clearAccountNumber: !trimmed });
-      }
-      showToast(t("wallet.toast_wallet_updated"), "success");
-      setEditingContactId(null);
-      await refresh();
+      await withErrorReporting(
+        "frontend:wallet",
+        async () => {
+          const trimmed = contactInput.trim();
+          if (wallet.type === "ewallet") {
+            await dbService.updateWallet(user.id, wallet.id, { phoneNumber: trimmed || null, clearPhoneNumber: !trimmed });
+          } else if (wallet.type === "bank") {
+            await dbService.updateWallet(user.id, wallet.id, { accountNumber: trimmed || null, clearAccountNumber: !trimmed });
+          }
+          showToast(t("wallet.toast_wallet_updated"), "success");
+          setEditingContactId(null);
+          await refresh();
+        },
+        { action: "save-contact", walletId: wallet.id, walletType: wallet.type }
+      );
     } catch {
       showToast(t("toast.error_general"), "error");
     } finally {
@@ -362,10 +375,16 @@ export const Wallets: React.FC = () => {
     if (!user?.id || balanceInput === "") return;
     setBusy(true);
     try {
-      await dbService.setWalletBalance(user.id, walletId, Number(balanceInput));
-      showToast(t("wallet.toast_balance_updated"), "success");
-      setEditingBalanceId(null);
-      await refresh();
+      await withErrorReporting(
+        "frontend:wallet",
+        async () => {
+          await dbService.setWalletBalance(user.id, walletId, Number(balanceInput));
+          showToast(t("wallet.toast_balance_updated"), "success");
+          setEditingBalanceId(null);
+          await refresh();
+        },
+        { action: "save-balance", walletId }
+      );
     } catch {
       showToast(t("toast.error_general"), "error");
     } finally {
@@ -377,10 +396,16 @@ export const Wallets: React.FC = () => {
     if (!user?.id || !walletToDelete) return;
     setBusy(true);
     try {
-      await dbService.deleteWallet(user.id, walletToDelete.id);
-      showToast(t("wallet.toast_wallet_deleted"), "success");
-      setWalletToDelete(null);
-      await refresh();
+      await withErrorReporting(
+        "frontend:wallet",
+        async () => {
+          await dbService.deleteWallet(user.id, walletToDelete.id);
+          showToast(t("wallet.toast_wallet_deleted"), "success");
+          setWalletToDelete(null);
+          await refresh();
+        },
+        { action: "delete", walletId: walletToDelete.id }
+      );
     } catch {
       showToast(t("toast.error_general"), "error");
     } finally {
