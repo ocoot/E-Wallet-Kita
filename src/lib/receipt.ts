@@ -1,113 +1,40 @@
 import jsPDF from "jspdf";
-import { LOGO_BASE64 } from "./pdf/logoBase64";
-import { PDF_BRAND } from "./pdf/pdfBranding";
+import { ReceiptCardData } from "../components/ReceiptCard";
+import { captureReceiptCardAsPng } from "./receiptRender";
 
-interface ReceiptData {
-  orderId: string;
-  amount: number;
-  totalAmount: number;
-  paidAt: string;
-  buyerName: string;
-  sandbox: boolean;
+interface ReceiptData extends ReceiptCardData {
   t: (key: string, replacements?: Record<string, string | number>) => string;
 }
 
 /**
- * Helper to draw the beautiful brand header with actual logo on dark banner
+ * Membuat PDF struk pembelian Premium dengan MEMOTRET komponen
+ * `<ReceiptCard/>` (lihat `components/ReceiptCard.tsx`) lewat html2canvas —
+ * bukan digambar ulang manual pakai koordinat X/Y jsPDF seperti sebelumnya.
+ *
+ * Karena PDF dan preview di layar (`PremiumModal.tsx` step "success")
+ * sama-sama sumbernya dari `ReceiptCard`, keduanya dijamin selalu identik.
+ * Kalau desain struk mau diubah, cukup edit `ReceiptCard.tsx` satu kali.
  */
-export function drawReceiptBrand(doc: jsPDF, w: number, yStart: number, t?: (key: string) => string): number {
-  let y = yStart;
-  try {
-    const logoSize = 42;
-    doc.addImage(LOGO_BASE64, "PNG", w / 2 - logoSize / 2, y, logoSize, logoSize);
-    y += 52;
-  } catch (e) {
-    console.error("Error drawing logo on receipt:", e);
-    y += 20;
-  }
+export async function generatePremiumReceipt(data: ReceiptData): Promise<jsPDF> {
+  const { t, ...cardData } = data;
+  const { dataUrl, width, height } = await captureReceiptCardAsPng(cardData, t);
 
-  doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(16);
-  doc.text(PDF_BRAND.appName, w / 2, y, { align: "center" });
+  // Konversi ukuran hasil capture (px) ke satuan pt jsPDF, sambil menjaga
+  // rasio asli kartu supaya tidak gepeng/melar di PDF.
+  const MARGIN = 14;
+  const PAGE_W = 320;
+  const imgW = PAGE_W - MARGIN * 2;
+  const imgH = (height / width) * imgW;
+  const PAGE_H = imgH + MARGIN * 2;
 
-  return y;
-}
-
-export function generatePremiumReceipt(data: ReceiptData): jsPDF {
-  const { t } = data;
-  // Adjusted height from 520 to 540 to comfortably accommodate the logo
-  const doc = new jsPDF({ unit: "pt", format: [320, 540] });
-  const W = 320;
-
-  // Header background
-  doc.setFillColor(15, 23, 42);
-  doc.rect(0, 0, W, 130, "F");
-
-  // Draw brand header (Logo + App Name)
-  const brandY = drawReceiptBrand(doc, W, 15, t);
-
-  // Struk type title
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.text(t("premium.receipt_title"), W / 2, brandY + 18, { align: "center" });
-
-  // Status checkmark circle
-  doc.setFillColor(99, 102, 241);
-  doc.circle(W / 2, 130, 22, "F");
-  
-  // Draw an elegant vector checkmark instead of a font glyph
-  doc.setDrawColor(255, 255, 255);
-  doc.setLineWidth(3.5);
-  doc.line(152, 130, 157, 135);
-  doc.line(157, 135, 168, 124);
-
-  let y = 175;
-  doc.setTextColor(30, 41, 59);
-  doc.setFontSize(13);
-  doc.setFont("helvetica", "bold");
-  doc.text(t("premium.receipt_status_success"), W / 2, y, { align: "center" });
-
-  y += 30;
-  doc.setDrawColor(226, 232, 240);
-  doc.line(20, y, W - 20, y);
-
-  const rows: [string, string][] = [
-    [t("premium.receipt_order_no"), data.orderId],
-    [t("premium.receipt_buyer"), data.buyerName],
-    [t("premium.receipt_product"), t("premium.receipt_product_val")],
-    [t("premium.receipt_amount"), `Rp ${data.amount.toLocaleString("id-ID")}`],
-    [t("premium.receipt_total_paid"), `Rp ${data.totalAmount.toLocaleString("id-ID")}`],
-    [t("premium.receipt_method"), "QRIS" + (data.sandbox ? " (Sandbox)" : "")],
-    [t("premium.receipt_date"), new Date(data.paidAt).toLocaleString("id-ID")],
-  ];
-
-  y += 25;
-  doc.setFontSize(10);
-  rows.forEach(([label, value]) => {
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 116, 139);
-    doc.text(label, 25, y);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(30, 41, 59);
-    doc.text(value, W - 25, y, { align: "right" });
-    y += 22;
-  });
-
-  y += 10;
-  doc.line(20, y, W - 20, y);
-  y += 25;
-  doc.setFont("helvetica", "italic");
-  doc.setFontSize(9);
-  doc.setTextColor(148, 163, 184);
-  doc.text(t("premium.receipt_thanks"), W / 2, y, { align: "center" });
-  doc.text(t("premium.receipt_active_forever"), W / 2, y + 14, { align: "center" });
+  const doc = new jsPDF({ unit: "pt", format: [PAGE_W, PAGE_H] });
+  doc.addImage(dataUrl, "PNG", MARGIN, MARGIN, imgW, imgH);
 
   return doc;
 }
 
 export async function generatePremiumReceiptBase64(data: ReceiptData): Promise<string> {
-  const pdf = generatePremiumReceipt(data);
+  const pdf = await generatePremiumReceipt(data);
   const arrayBuffer = pdf.output("arraybuffer");
   const bytes = new Uint8Array(arrayBuffer);
   let binary = "";
@@ -116,4 +43,3 @@ export async function generatePremiumReceiptBase64(data: ReceiptData): Promise<s
   });
   return btoa(binary);
 }
-

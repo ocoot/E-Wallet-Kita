@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { ShieldCheck, Loader2, CheckCircle2, XCircle, Clock, Download, Sparkles, X, Mail } from "lucide-react";
+import { ShieldCheck, Loader2, XCircle, Clock, Download, Sparkles, X, Mail } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
@@ -10,6 +10,7 @@ import { useVoucher } from "../hooks/useVoucher";
 import { DropdownField } from "./DropdownField";
 import { PremiumVoucher, PremiumPricing } from "../types";
 import { generatePremiumReceipt } from "../lib/receipt";
+import { ReceiptCard } from "./ReceiptCard";
 import { sendPremiumReceiptEmail } from "../lib/email";
 import { Modal } from "./Modal";
 import { Button } from "./ui/Button";
@@ -148,16 +149,21 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [step, tx]);
 
+  // Nama pembeli dipakai di 3 tempat (preview ReceiptCard di layar, unduh
+  // PDF, kirim email) -- dihitung sekali di sini supaya ketiganya tidak
+  // pernah beda-beda.
+  const buyerName = displayName || user?.user_metadata?.full_name || user?.email || t("admin.guest_user");
+
   const handleDownloadReceipt = async () => {
     if (!tx || !paidAt) return;
     setActionLoading("download");
     try {
-      const pdf = generatePremiumReceipt({
+      const pdf = await generatePremiumReceipt({
         orderId: tx.order_id,
         amount: tx.amount,
         totalAmount: tx.total_amount,
         paidAt,
-        buyerName: displayName || user?.user_metadata?.full_name || user?.email || t("admin.guest_user"),
+        buyerName,
         sandbox: isSandboxMode(),
         t,
       });
@@ -177,12 +183,12 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
     try {
       await sendPremiumReceiptEmail({
         email: user.email,
-        customerName: displayName || user.user_metadata?.full_name || user.email,
+        customerName: buyerName,
         orderId: tx.order_id,
         amount: tx.amount,
         totalAmount: tx.total_amount,
         paidAt,
-        buyerName: displayName || user.user_metadata?.full_name || user.email,
+        buyerName,
         sandbox: isSandboxMode(),
         t,
       });
@@ -313,9 +319,21 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
 
           {step === "success" && (
             <div className="text-center py-4">
-              <CheckCircle2 className="mx-auto text-emerald-400 mb-3" size={48} />
-              <h3 className={cx("text-lg font-bold", tokens.text.onSurface)}>{t("premium.success_title")}</h3>
-              <p className={cx("text-sm mt-2", tokens.text.mutedAlt)}>{t("premium.success_desc")}</p>
+              <h3 className={cx("text-lg font-bold mb-4", tokens.text.onSurface)}>{t("premium.success_title")}</h3>
+
+              {tx && paidAt && (
+                <ReceiptCard
+                  data={{
+                    orderId: tx.order_id,
+                    buyerName,
+                    amount: tx.amount,
+                    totalAmount: tx.total_amount,
+                    paidAt,
+                    sandbox: isSandboxMode(),
+                  }}
+                  t={t}
+                />
+              )}
 
               {askDownload ? (
                 <div className="flex flex-col gap-3 mt-6">
