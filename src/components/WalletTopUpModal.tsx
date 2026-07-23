@@ -6,6 +6,7 @@ import { useToast } from "../contexts/ToastContext";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { audioFeedback } from "../lib/audio";
 import { dbService } from "../lib/db";
+import { withErrorReporting } from "../lib/errorReporter";
 import { WalletWithBalance } from "../types";
 import { Button } from "./ui/Button";
 import { ModalShell } from "./ui/ModalShell";
@@ -67,10 +68,16 @@ export const WalletTopUpModal: React.FC<WalletTopUpModalProps> = ({
     audioFeedback.playClick();
     setStatus("loading");
     try {
-      await dbService.topUpWallet(user.id, wallet.id, numericAmount, t("walletActions.topup_note"));
-      audioFeedback.playChime();
-      setStatus("success");
-      onSuccess();
+      await withErrorReporting(
+        "frontend:wallet-topup",
+        async () => {
+          await dbService.topUpWallet(user.id, wallet.id, numericAmount, t("walletActions.topup_note"));
+          audioFeedback.playChime();
+          setStatus("success");
+          onSuccess();
+        },
+        { walletId: wallet.id }
+      );
     } catch (err) {
       console.error("WalletTopUpModal top up error:", err);
       audioFeedback.playAlert();

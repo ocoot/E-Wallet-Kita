@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { supabase } from "../lib/supabase";
+import { withErrorReporting } from "../lib/errorReporter";
 import { useToast } from "../contexts/ToastContext";
 import { audioFeedback } from "../lib/audio";
 import { Lock, Eye, EyeOff, Save, CheckCircle2, ShieldCheck, X } from "lucide-react";
@@ -53,12 +54,14 @@ export const ResetPasswordModal: React.FC<ResetPasswordModalProps> = ({ isOpen, 
 
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      await withErrorReporting("frontend:auth", async () => {
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) throw error;
 
-      audioFeedback.playChime();
-      showToast(t("auth.reset_success_toast"), "success");
-      onClose();
+        audioFeedback.playChime();
+        showToast(t("auth.reset_success_toast"), "success");
+        onClose();
+      }, { action: "update-password" });
     } catch (err: any) {
       audioFeedback.playDullPluck();
       triggerShake();

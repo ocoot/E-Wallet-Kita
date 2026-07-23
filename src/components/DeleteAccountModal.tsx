@@ -5,6 +5,7 @@ import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "./ui/ModalShell";
+import { reportFrontendError } from "../lib/errorReporter";
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -38,6 +39,11 @@ export const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({ isOpen, 
     } catch (err: any) {
       setError(err?.message || "DELETE_FAILED");
       setIsDeleting(false);
+      void reportFrontendError({
+        source: "frontend:account-settings",
+        message: err instanceof Error ? err.message : String(err),
+        context: { action: "delete-account", stack: err instanceof Error ? err.stack?.slice(0, 1500) : null },
+      });
     }
   };
 

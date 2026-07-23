@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
+import { withErrorReporting, reportFrontendError } from "../lib/errorReporter";
 import { useToast } from "../contexts/ToastContext";
 import logoUrl from "../assets/images/user_logo_transparent.png";
 import { Mail, Lock, User, LogIn, Sparkles, AlertCircle, Eye, EyeOff } from "lucide-react";
@@ -199,10 +200,12 @@ export const Login: React.FC = () => {
         setConfirmModal((p) => ({ ...p, isOpen: false }));
         setIsLoading(true);
         try {
-          const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
-          if (error) throw error;
-          showToast(t("auth.forgot_password_success"), "success");
-          setIsForgotPassword(false);
+          await withErrorReporting("frontend:auth", async () => {
+            const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+            if (error) throw error;
+            showToast(t("auth.forgot_password_success"), "success");
+            setIsForgotPassword(false);
+          }, { action: "forgot-password" });
         } catch (err: any) { audioFeedback.playDullPluck(); showToast(err.message, "error"); }
         setIsLoading(false);
       }
@@ -235,12 +238,24 @@ export const Login: React.FC = () => {
         setIsLoading(true);
         try {
           if (isSignUp) {
-            const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: displayName } } });
-            if (error) throw error;
-            showToast(t("toast.welcome_signup"), "success");
+            await withErrorReporting("frontend:auth", async () => {
+              const { error } = await supabase.auth.signUp({ email, password, options: { data: { full_name: displayName } } });
+              if (error) throw error;
+              showToast(t("toast.welcome_signup"), "success");
+            }, { action: "signup" });
           } else {
             const { error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) throw error;
+            if (error) {
+              // "Invalid login credentials" adalah kesalahan input pengguna
+              // yang wajar (typo password) -- BUKAN bug, sengaja tidak
+              // dilaporkan supaya Monitor Error tidak dibanjiri percobaan
+              // login yang salah ketik. Error lain (network, 500, dll) tetap
+              // dilaporkan.
+              if (!/invalid login credentials/i.test(error.message || "")) {
+                void reportFrontendError({ source: "frontend:auth", message: error.message, context: { action: "signin" } });
+              }
+              throw error;
+            }
             showToast(t("auth.toast_signin_success"), "success");
             navigate("/dashboard");
           }
@@ -258,7 +273,11 @@ export const Login: React.FC = () => {
         audioFeedback.playClick();
         setConfirmModal((p) => ({ ...p, isOpen: false }));
         setIsLoading(true);
-        try { await signInAsGuest(); audioFeedback.playChime(); showToast(t("toast.welcome_auth"), "success"); navigate("/dashboard"); }
+        try {
+          await withErrorReporting("frontend:auth", async () => {
+            await signInAsGuest(); audioFeedback.playChime(); showToast(t("toast.welcome_auth"), "success"); navigate("/dashboard");
+          }, { action: "guest-login" });
+        }
         catch (e: any) { showToast(e.message, "error"); }
         setIsLoading(false);
       }
@@ -273,7 +292,9 @@ export const Login: React.FC = () => {
         audioFeedback.playClick();
         setConfirmModal((p) => ({ ...p, isOpen: false }));
         setIsLoading(true);
-        try { await signInWithGoogle(); }
+        try {
+          await withErrorReporting("frontend:auth", async () => { await signInWithGoogle(); }, { action: "google-login" });
+        }
         catch (e: any) { showToast(e.message, "error"); }
         setIsLoading(false);
       }

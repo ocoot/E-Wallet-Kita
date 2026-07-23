@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { dbService } from "../lib/db";
+import { withErrorReporting, reportFrontendError } from "../lib/errorReporter";
 import { useSavings, SavingsPocketWithProgress } from "../hooks/useSavings";
 import { useWallets } from "../hooks/useWallets";
 import { SavingsPocketType } from "../types";
@@ -123,23 +124,29 @@ export const Savings: React.FC = () => {
 
     setIsSaving(true);
     try {
-      const payload = {
-        name: trimmedName,
-        pocket_type: form.pocket_type,
-        target_amount: targetNum,
-        target_date: form.target_date || null,
-        notes: form.notes.trim() || null,
-        wallet_id: form.wallet_id || null
-      };
-      if (editTarget) {
-        await dbService.updateSavingsPocket(user.id, editTarget.id, payload);
-      } else {
-        await dbService.createSavingsPocket(user.id, payload);
-      }
-      showToast(t("savings.save_success"), "success");
-      audioFeedback.playClick();
-      closeForm();
-      await refresh();
+      await withErrorReporting(
+        "frontend:savings",
+        async () => {
+          const payload = {
+            name: trimmedName,
+            pocket_type: form.pocket_type,
+            target_amount: targetNum,
+            target_date: form.target_date || null,
+            notes: form.notes.trim() || null,
+            wallet_id: form.wallet_id || null
+          };
+          if (editTarget) {
+            await dbService.updateSavingsPocket(user.id, editTarget.id, payload);
+          } else {
+            await dbService.createSavingsPocket(user.id, payload);
+          }
+          showToast(t("savings.save_success"), "success");
+          audioFeedback.playClick();
+          closeForm();
+          await refresh();
+        },
+        { action: editTarget ? "update" : "create" }
+      );
     } catch { showToast(t("savings.save_error"), "error"); }
     finally { setIsSaving(false); }
   };
@@ -148,9 +155,15 @@ export const Savings: React.FC = () => {
     if (!user || !deleteTarget) return;
     setIsDeleting(true);
     try {
-      const ok = await dbService.deleteSavingsPocket(user.id, deleteTarget.id);
-      if (ok) { showToast(t("savings.delete_success"), "success"); await refresh(); }
-      else showToast(t("savings.delete_error"), "error");
+      await withErrorReporting(
+        "frontend:savings",
+        async () => {
+          const ok = await dbService.deleteSavingsPocket(user.id, deleteTarget.id);
+          if (ok) { showToast(t("savings.delete_success"), "success"); await refresh(); }
+          else showToast(t("savings.delete_error"), "error");
+        },
+        { action: "delete", pocketId: deleteTarget.id }
+      );
     } catch { showToast(t("savings.delete_error"), "error"); }
     finally { setIsDeleting(false); setDeleteTarget(null); }
   };
@@ -159,9 +172,15 @@ export const Savings: React.FC = () => {
     if (!user) return;
     setBusyId(p.id);
     try {
-      await dbService.updateSavingsPocket(user.id, p.id, { is_archived: !p.is_archived });
-      audioFeedback.playClick();
-      await refresh();
+      await withErrorReporting(
+        "frontend:savings",
+        async () => {
+          await dbService.updateSavingsPocket(user.id, p.id, { is_archived: !p.is_archived });
+          audioFeedback.playClick();
+          await refresh();
+        },
+        { action: "toggle-archive", pocketId: p.id }
+      );
     } catch { showToast(t("savings.save_error"), "error"); }
     finally { setBusyId(null); }
   };
@@ -200,7 +219,19 @@ export const Savings: React.FC = () => {
       } else if (msg.includes("INSUFFICIENT_AVAILABLE_BALANCE")) {
         showToast(t("savings.insufficient_available_balance_error"), "error");
       } else {
+        // Bukan penolakan bisnis normal (saldo kurang) -- ini kemungkinan bug,
+        // jadi dilaporkan. Dua kasus di atas SENGAJA tidak dilaporkan supaya
+        // Monitor Error tidak dibanjiri noise "user salah masukin nominal".
         showToast(moveTarget.direction === "deposit" ? t("savings.deposit_error") : t("savings.withdraw_error"), "error");
+        void reportFrontendError({
+          source: "frontend:savings",
+          message: msg || "Unknown deposit/withdraw error",
+          context: {
+            action: moveTarget.direction,
+            pocketId: moveTarget.pocket.id,
+            stack: err?.stack?.slice(0, 1500) ?? null,
+          },
+        });
       }
     } finally { setIsMoving(false); }
   };

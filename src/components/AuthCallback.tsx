@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
+import { reportFrontendError } from '../lib/errorReporter';
 import { Loader2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -81,6 +82,11 @@ export const AuthCallback: React.FC = () => {
         setTimeout(() => navigate('/login', { replace: true }), 2000);
       } catch (error) {
         console.error('Error during auth callback:', error);
+        void reportFrontendError({
+          source: "frontend:auth",
+          message: error instanceof Error ? error.message : String(error),
+          context: { action: "oauth-callback", stack: error instanceof Error ? error.stack?.slice(0, 1500) : null },
+        });
         navigate('/login', { replace: true });
       }
     };

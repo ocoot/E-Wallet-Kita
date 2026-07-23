@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { dbService } from "../lib/db";
+import { withErrorReporting, reportFrontendError } from "../lib/errorReporter";
 import { useGoldSavings } from "../hooks/useGoldSavings";
 import { useWallets } from "../hooks/useWallets";
 import { GoldPocket, GoldBrand, ACTIVE_GOLD_BRANDS } from "../types";
@@ -166,18 +167,21 @@ export const GoldSavings: React.FC = () => {
 
     setIsSaving(true);
     try {
-      if (editTarget) {
-        // Brand sengaja tidak ikut di-submit saat edit -- lihat catatan di
-        // migration (brand acuan harga tidak dianjurkan berubah setelah
-        // pocket punya transaksi, supaya cash_locked_amount tetap bermakna).
-        await dbService.updateGoldPocket(user.id, editTarget.id, { name: trimmedName, notes: form.notes.trim() || null, wallet_id: form.wallet_id || null });
-      } else {
-        await dbService.createGoldPocket(user.id, { name: trimmedName, brand: form.brand, notes: form.notes.trim() || null, wallet_id: form.wallet_id || null });
-      }
-      showToast(t("gold.save_success"), "success");
-      audioFeedback.playClick();
-      closeForm();
-      await refresh();
+      await withErrorReporting(
+        "frontend:gold-savings",
+        async () => {
+          if (editTarget) {
+            await dbService.updateGoldPocket(user.id, editTarget.id, { name: trimmedName, notes: form.notes.trim() || null, wallet_id: form.wallet_id || null });
+          } else {
+            await dbService.createGoldPocket(user.id, { name: trimmedName, brand: form.brand, notes: form.notes.trim() || null, wallet_id: form.wallet_id || null });
+          }
+          showToast(t("gold.save_success"), "success");
+          audioFeedback.playClick();
+          closeForm();
+          await refresh();
+        },
+        { action: editTarget ? "update" : "create" }
+      );
     } catch { showToast(t("gold.save_error"), "error"); }
     finally { setIsSaving(false); }
   };
@@ -186,9 +190,15 @@ export const GoldSavings: React.FC = () => {
     if (!user || !deleteTarget) return;
     setIsDeleting(true);
     try {
-      const ok = await dbService.deleteGoldPocket(user.id, deleteTarget.id);
-      if (ok) { showToast(t("gold.delete_success"), "success"); await refresh(); }
-      else showToast(t("gold.delete_error"), "error");
+      await withErrorReporting(
+        "frontend:gold-savings",
+        async () => {
+          const ok = await dbService.deleteGoldPocket(user.id, deleteTarget.id);
+          if (ok) { showToast(t("gold.delete_success"), "success"); await refresh(); }
+          else showToast(t("gold.delete_error"), "error");
+        },
+        { action: "delete", pocketId: deleteTarget.id }
+      );
     } catch { showToast(t("gold.delete_error"), "error"); }
     finally { setIsDeleting(false); setDeleteTarget(null); }
   };
@@ -197,9 +207,15 @@ export const GoldSavings: React.FC = () => {
     if (!user) return;
     setBusyId(p.id);
     try {
-      await dbService.updateGoldPocket(user.id, p.id, { is_archived: !p.is_archived });
-      audioFeedback.playClick();
-      await refresh();
+      await withErrorReporting(
+        "frontend:gold-savings",
+        async () => {
+          await dbService.updateGoldPocket(user.id, p.id, { is_archived: !p.is_archived });
+          audioFeedback.playClick();
+          await refresh();
+        },
+        { action: "toggle-archive", pocketId: p.id }
+      );
     } catch { showToast(t("gold.save_error"), "error"); }
     finally { setBusyId(null); }
   };
@@ -244,7 +260,22 @@ export const GoldSavings: React.FC = () => {
       else if (msg.includes("PRICE_NOT_AVAILABLE")) showToast(t("gold.price_unavailable_error"), "error");
       else if (msg.includes("INSUFFICIENT_GOLD_BALANCE")) showToast(t("gold.insufficient_gold_error"), "error");
       else if (msg.includes("AMOUNT_TOO_SMALL")) showToast(t("gold.amount_too_small_error"), "error");
-      else showToast(t("gold.move_error"), "error");
+      else {
+        // Kelima kondisi di atas adalah penolakan bisnis normal (harga lagi
+        // stale, saldo kurang, dll) -- BUKAN bug, sengaja tidak dilaporkan
+        // supaya Monitor Error tidak penuh noise. Sisanya (else) kemungkinan
+        // bug beneran, jadi dilaporkan.
+        showToast(t("gold.move_error"), "error");
+        void reportFrontendError({
+          source: "frontend:gold-savings",
+          message: msg || "Unknown gold move error",
+          context: {
+            action: moveTarget.direction,
+            pocketId: moveTarget.pocket.id,
+            stack: err?.stack?.slice(0, 1500) ?? null,
+          },
+        });
+      }
     } finally { setIsMoving(false); }
   };
 

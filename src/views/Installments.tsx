@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { dbService } from "../lib/db";
+import { withErrorReporting } from "../lib/errorReporter";
 import { useCategories } from "../hooks/useCategories";
 import { useInstallments, InstallmentWithProgress } from "../hooks/useInstallments";
 import { useWallets } from "../hooks/useWallets";
@@ -104,22 +105,28 @@ export const Installments: React.FC = () => {
 
     setIsSaving(true);
     try {
-      const payload = {
-        name: trimmedName,
-        category_key: form.category_key,
-        principal_amount: principalNum,
-        monthly_amount: monthlyNum,
-        total_months: totalMonths,
-        start_date: form.start_date,
-        notes: form.notes.trim() || null,
-        wallet_id: form.wallet_id || null
-      };
-      if (editTarget) await dbService.updateInstallment(user.id, editTarget.id, payload);
-      else await dbService.saveInstallment(user.id, payload);
-      showToast(t("installments.save_success"), "success");
-      audioFeedback.playClick();
-      closeForm();
-      await refresh();
+      await withErrorReporting(
+        "frontend:installments",
+        async () => {
+          const payload = {
+            name: trimmedName,
+            category_key: form.category_key,
+            principal_amount: principalNum,
+            monthly_amount: monthlyNum,
+            total_months: totalMonths,
+            start_date: form.start_date,
+            notes: form.notes.trim() || null,
+            wallet_id: form.wallet_id || null
+          };
+          if (editTarget) await dbService.updateInstallment(user.id, editTarget.id, payload);
+          else await dbService.saveInstallment(user.id, payload);
+          showToast(t("installments.save_success"), "success");
+          audioFeedback.playClick();
+          closeForm();
+          await refresh();
+        },
+        { action: editTarget ? "update" : "create" }
+      );
     } catch { showToast(t("installments.save_error"), "error"); }
     finally { setIsSaving(false); }
   };
@@ -128,9 +135,15 @@ export const Installments: React.FC = () => {
     if (!user || !deleteTarget) return;
     setIsDeleting(true);
     try {
-      const ok = await dbService.deleteInstallment(user.id, deleteTarget.id);
-      if (ok) { showToast(t("installments.delete_success"), "success"); await refresh(); }
-      else showToast(t("installments.delete_error"), "error");
+      await withErrorReporting(
+        "frontend:installments",
+        async () => {
+          const ok = await dbService.deleteInstallment(user.id, deleteTarget.id);
+          if (ok) { showToast(t("installments.delete_success"), "success"); await refresh(); }
+          else showToast(t("installments.delete_error"), "error");
+        },
+        { action: "delete", installmentId: deleteTarget.id }
+      );
     } catch { showToast(t("installments.delete_error"), "error"); }
     finally { setIsDeleting(false); setDeleteTarget(null); }
   };
@@ -141,20 +154,26 @@ export const Installments: React.FC = () => {
     const i = payConfirmTarget;
     setBusyId(i.id);
     try {
-      const result = await dbService.markInstallmentMonthPaid(i.id);
-      audioFeedback.playClick();
-      if (result.isCompleted) {
-        showToast(t("installments.marked_paid_completed", { name: i.name }), "success");
-      } else if (result.needsManualAmount) {
-        showToast(t("installments.marked_paid_needs_amount"), "success");
-        setPayConfirmTarget(null);
-        await refresh();
-        navigate("/transactions/new", { state: { prefillCategoryKey: i.category_key, prefillNote: `${i.name} (${result.monthsPaid}/${result.totalMonths})`, prefillType: "expense" } });
-        return;
-      } else {
-        showToast(t("installments.marked_paid"), "success");
-      }
-      await refresh();
+      await withErrorReporting(
+        "frontend:installments",
+        async () => {
+          const result = await dbService.markInstallmentMonthPaid(i.id);
+          audioFeedback.playClick();
+          if (result.isCompleted) {
+            showToast(t("installments.marked_paid_completed", { name: i.name }), "success");
+          } else if (result.needsManualAmount) {
+            showToast(t("installments.marked_paid_needs_amount"), "success");
+            setPayConfirmTarget(null);
+            await refresh();
+            navigate("/transactions/new", { state: { prefillCategoryKey: i.category_key, prefillNote: `${i.name} (${result.monthsPaid}/${result.totalMonths})`, prefillType: "expense" } });
+            return;
+          } else {
+            showToast(t("installments.marked_paid"), "success");
+          }
+          await refresh();
+        },
+        { action: "mark-paid", installmentId: i.id }
+      );
     } catch { showToast(t("installments.save_error"), "error"); }
     finally { setBusyId(null); setPayConfirmTarget(null); }
   };
@@ -165,10 +184,16 @@ export const Installments: React.FC = () => {
     const i = undoConfirmTarget;
     setBusyId(i.id);
     try {
-      await dbService.unmarkInstallmentLastPayment(i.id);
-      audioFeedback.playClick();
-      showToast(t("installments.marked_undo"), "success");
-      await refresh();
+      await withErrorReporting(
+        "frontend:installments",
+        async () => {
+          await dbService.unmarkInstallmentLastPayment(i.id);
+          audioFeedback.playClick();
+          showToast(t("installments.marked_undo"), "success");
+          await refresh();
+        },
+        { action: "undo-paid", installmentId: i.id }
+      );
     } catch { showToast(t("installments.save_error"), "error"); }
     finally { setBusyId(null); setUndoConfirmTarget(null); }
   };

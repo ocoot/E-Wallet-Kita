@@ -6,6 +6,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useMaintenance } from "../contexts/MaintenanceContext";
 import { audioFeedback } from "../lib/audio";
+import { reportFrontendError } from "../lib/errorReporter";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "./PremiumModal";
 import { useThemeTokens } from "../hooks/useThemeTokens";
@@ -245,8 +246,23 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed }) =>
     } catch (err: any) {
       console.error("OCR parse error:", err);
       audioFeedback.playDullPluck();
-      setUploadError(err.message || "Gagal membaca struk belanja.");
-      showToast(err.message || "Gagal memproses struk belanja.", "error");
+      const message = err.message || "Gagal membaca struk belanja.";
+      setUploadError(message);
+      showToast(message, "error");
+
+      // Premium/guest-belum-login/gambar-terlalu-besar adalah penolakan
+      // wajar, bukan bug -- sengaja tidak dilaporkan.
+      const EXPECTED_MESSAGE_PATTERNS = [
+        /premium/i, /guest/i, /sign in or register/i, /masuk atau daftar/i,
+        /terlalu besar/i,
+      ];
+      if (!EXPECTED_MESSAGE_PATTERNS.some((re) => re.test(message))) {
+        void reportFrontendError({
+          source: "frontend:transaction",
+          message,
+          context: { action: "receipt-ocr", stack: err?.stack?.slice(0, 1500) ?? null },
+        });
+      }
     } finally {
       setIsUploading(false);
     }

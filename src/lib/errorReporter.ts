@@ -11,7 +11,17 @@ type FrontendErrorSource =
   | "frontend:transaction"
   | "frontend:pdf-export"
   | "frontend:premium-receipt"
-  | "frontend:wallet";
+  | "frontend:wallet"
+  | "frontend:wallet-topup"
+  | "frontend:wallet-transfer"
+  | "frontend:budget"
+  | "frontend:savings"
+  | "frontend:installments"
+  | "frontend:gold-savings"
+  | "frontend:bill-reminders"
+  | "frontend:auth"
+  | "frontend:account-settings"
+  | "frontend:support-chat";
 
 interface ReportFrontendErrorParams {
   source: FrontendErrorSource;

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabase';
+import { reportFrontendError } from '../lib/errorReporter';
 
 interface AuthContextType {
   user: User | null;
@@ -98,6 +99,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           }
         } catch (err) {
           console.error("AuthContext: sync exception", err);
+          void reportFrontendError({
+            source: "frontend:auth",
+            message: err instanceof Error ? err.message : String(err),
+            context: { action: "post-login-sync", stack: err instanceof Error ? err.stack?.slice(0, 1500) : null },
+          });
         }
       }
       
@@ -125,7 +131,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
+    try {
       await supabase.auth.signOut();
+    } catch (err) {
+      console.error("AuthContext: signOut error", err);
+      void reportFrontendError({
+        source: "frontend:auth",
+        message: err instanceof Error ? err.message : String(err),
+        context: { action: "signout", stack: err instanceof Error ? err.stack?.slice(0, 1500) : null },
+      });
+      // Soft-fail SENGAJA: 3 caller signOut() (Settings.tsx, PrivacySettings.tsx,
+      // App.tsx) tidak membungkus pemanggilan ini dengan try/catch sendiri --
+      // mereka langsung lanjut ke navigate("/login") sesudahnya. Kalau signOut
+      // throw di sini, promise itu jadi unhandled rejection dan alur
+      // logout/navigasi ke halaman login bisa keputus di tengah jalan.
+      // Sesi lokal biasanya sudah dibersihkan oleh Supabase client walau
+      // request ke server gagal, jadi lebih aman diam-diam lanjut daripada
+      // menjebak user di layar yang sama.
+    }
   };
 
   return (

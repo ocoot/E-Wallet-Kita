@@ -5,6 +5,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../lib/supabase";
+import { reportFrontendError } from "../lib/errorReporter";
 import { matchSupportFaqTopic, SUPPORT_FAQ_TOPICS } from "../lib/supportFaq";
 import { Modal } from "./Modal";
 import { EmojiPicker } from "./EmojiPicker";
@@ -296,6 +297,7 @@ export const SupportChatWidget: React.FC = () => {
       setSession(newSession as SupportSessionRow);
     } catch (err: any) {
       showToast(err.message || t("support.admin_chat.error_send_failed"), "error");
+      void reportFrontendError({ source: "frontend:support-chat", message: err?.message || String(err), context: { action: "start-session" } });
     } finally {
       setIsStarting(false);
     }
@@ -328,6 +330,7 @@ export const SupportChatWidget: React.FC = () => {
     } catch (err: any) {
       showToast(err.message || t("support.admin_chat.error_send_failed"), "error");
       setSendBtnState("idle");
+      void reportFrontendError({ source: "frontend:support-chat", message: err?.message || String(err), context: { action: "send-message", sessionId: session.id } });
     }
   };
 
@@ -342,6 +345,7 @@ export const SupportChatWidget: React.FC = () => {
       showToast(t("support.admin_chat.session_closed_toast"), "info");
     } catch (err: any) {
       showToast(err.message || t("support.admin_chat.error_send_failed"), "error");
+      void reportFrontendError({ source: "frontend:support-chat", message: err?.message || String(err), context: { action: "close-session", sessionId: session.id } });
     }
   };
 
@@ -374,9 +378,12 @@ export const SupportChatWidget: React.FC = () => {
       setTimeout(() => setSendBtnState("idle"), 1200);
     } catch (err: any) {
       if (err instanceof AttachmentValidationError) {
+        // Validasi file (terlalu besar / format tidak didukung) -- bukan
+        // bug, sengaja tidak dilaporkan.
         showToast(err.code === "TOO_LARGE" ? "File terlalu besar (maks 5 MB)" : "Format file tidak didukung", "error");
       } else {
         showToast(err.message || t("support.admin_chat.error_send_failed"), "error");
+        void reportFrontendError({ source: "frontend:support-chat", message: err?.message || String(err), context: { action: "send-attachment", sessionId: session.id } });
       }
       setSendBtnState("idle");
     } finally {

@@ -3,6 +3,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { dbService } from "../lib/db";
+import { withErrorReporting } from "../lib/errorReporter";
 import { useCategories } from "../hooks/useCategories";
 import { useBudgets } from "../hooks/useBudgets";
 import { Modal } from "../components/Modal";
@@ -91,15 +92,21 @@ export const Budget: React.FC = () => {
 
     setSavingKey(key);
     try {
-      await dbService.upsertBudget(user.id, key, limitNum, thresholdNum);
-      audioFeedback.playClick();
-      showToast(t("budget.save_success"), "success");
-      setDrafts((prev) => {
-        const next = { ...prev };
-        delete next[key];
-        return next;
-      });
-      await refresh();
+      await withErrorReporting(
+        "frontend:budget",
+        async () => {
+          await dbService.upsertBudget(user.id, key, limitNum, thresholdNum);
+          audioFeedback.playClick();
+          showToast(t("budget.save_success"), "success");
+          setDrafts((prev) => {
+            const next = { ...prev };
+            delete next[key];
+            return next;
+          });
+          await refresh();
+        },
+        { action: "save", categoryKey: key }
+      );
     } catch (err) {
       console.error("Error saving budget:", err);
       showToast(t("budget.save_error"), "error");
@@ -153,11 +160,17 @@ export const Budget: React.FC = () => {
 
     setIsAdding(true);
     try {
-      await dbService.upsertBudget(user.id, addCategoryKey, limitNum, thresholdNum);
-      audioFeedback.playClick();
-      showToast(t("budget.save_success"), "success");
-      await refresh();
-      closeAddModalHistory();
+      await withErrorReporting(
+        "frontend:budget",
+        async () => {
+          await dbService.upsertBudget(user.id, addCategoryKey, limitNum, thresholdNum);
+          audioFeedback.playClick();
+          showToast(t("budget.save_success"), "success");
+          await refresh();
+          closeAddModalHistory();
+        },
+        { action: "add", categoryKey: addCategoryKey }
+      );
     } catch (err) {
       console.error("Error adding budget:", err);
       showToast(t("budget.save_error"), "error");
@@ -170,13 +183,19 @@ export const Budget: React.FC = () => {
     if (!user || !deleteTarget) return;
     setIsDeleting(true);
     try {
-      const ok = await dbService.deleteBudget(user.id, deleteTarget);
-      if (ok) {
-        showToast(t("budget.delete_success"), "success");
-        await refresh();
-      } else {
-        showToast(t("budget.delete_error"), "error");
-      }
+      await withErrorReporting(
+        "frontend:budget",
+        async () => {
+          const ok = await dbService.deleteBudget(user.id, deleteTarget);
+          if (ok) {
+            showToast(t("budget.delete_success"), "success");
+            await refresh();
+          } else {
+            showToast(t("budget.delete_error"), "error");
+          }
+        },
+        { action: "delete", categoryKey: deleteTarget }
+      );
     } catch (err) {
       console.error("Error deleting budget:", err);
       showToast(t("budget.delete_error"), "error");

@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { audioFeedback } from "../lib/audio";
 import { dbService } from "../lib/db";
+import { withErrorReporting } from "../lib/errorReporter";
 import { WalletWithBalance } from "../types";
 import { walletDisplayLabel } from "../lib/walletLabel";
 import { Button } from "./ui/Button";
@@ -102,17 +103,23 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
     audioFeedback.playClick();
     setStatus("loading");
     try {
-      await dbService.transferBetweenWallets(
-        user.id,
-        sourceWallet.id,
-        targetWallet.id,
-        numericAmount,
-        t("walletActions.transfer_note_out", { wallet: targetWallet.name }),
-        t("walletActions.transfer_note_in", { wallet: sourceWallet.name })
+      await withErrorReporting(
+        "frontend:wallet-transfer",
+        async () => {
+          await dbService.transferBetweenWallets(
+            user.id,
+            sourceWallet.id,
+            targetWallet.id,
+            numericAmount,
+            t("walletActions.transfer_note_out", { wallet: targetWallet.name }),
+            t("walletActions.transfer_note_in", { wallet: sourceWallet.name })
+          );
+          audioFeedback.playChime();
+          setStatus("success");
+          onSuccess();
+        },
+        { sourceWalletId: sourceWallet.id, targetWalletId: targetWallet.id }
       );
-      audioFeedback.playChime();
-      setStatus("success");
-      onSuccess();
     } catch (err) {
       console.error("WalletTransferModal transfer error:", err);
       audioFeedback.playAlert();

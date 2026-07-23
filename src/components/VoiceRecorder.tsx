@@ -6,6 +6,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
 import { useMaintenance } from "../contexts/MaintenanceContext";
 import { audioFeedback } from "../lib/audio";
+import { reportFrontendError } from "../lib/errorReporter";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "./PremiumModal";
 import { VoicePreview, VoiceModalStatus } from "./VoicePreview";
@@ -289,6 +290,24 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
       // Tampilkan dialog error yang jelas ke pengguna, alih-alih hanya toast
       setModalError(message);
       setModalStatus("error");
+
+      // Sejumlah pesan di atas adalah penolakan wajar (tidak ada suara
+      // terdeteksi, nominal tidak ketemu, fitur premium, guest belum
+      // login) -- BUKAN bug, sengaja tidak dilaporkan. Selebihnya
+      // (network/API gagal) kemungkinan bug beneran.
+      const EXPECTED_MESSAGE_PATTERNS = [
+        /premium/i, /guest/i, /sign in or register/i, /masuk atau daftar/i,
+        /no speech detected/i, /tidak ada suara/i,
+        /could not detect an amount/i, /nominal tidak terdeteksi/i,
+        /session expired/i, /sesi login berakhir/i,
+      ];
+      if (!EXPECTED_MESSAGE_PATTERNS.some((re) => re.test(message))) {
+        void reportFrontendError({
+          source: "frontend:transaction",
+          message,
+          context: { action: "voice-parse", stack: err?.stack?.slice(0, 1500) ?? null },
+        });
+      }
     } finally {
       setIsProcessing(false);
     }

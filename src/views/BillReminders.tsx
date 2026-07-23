@@ -3,6 +3,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useToast } from "../contexts/ToastContext";
 import { dbService } from "../lib/db";
+import { withErrorReporting } from "../lib/errorReporter";
 import { supabase } from "../lib/supabase";
 import { useCategories } from "../hooks/useCategories";
 import { useBillReminders, BillReminderWithUrgency } from "../hooks/useBillReminders";
@@ -114,13 +115,19 @@ export const BillReminders: React.FC = () => {
     }
     setIsSaving(true);
     try {
-      const payload = { name: trimmedName, category_key: form.category_key, amount: amountNum, recurrence_type: form.recurrence_type, due_day: form.recurrence_type === "monthly" ? Number(form.due_day) : null, due_date: form.recurrence_type !== "monthly" ? form.due_date : null, notes: form.notes.trim() || null, wallet_id: form.wallet_id || null };
-      if (editTarget) await dbService.updateBillReminder(user.id, editTarget.id, payload);
-      else await dbService.saveBillReminder(user.id, payload);
-      showToast(t("bill_reminders.save_success"), "success");
-      audioFeedback.playClick();
-      closeForm();
-      await refresh();
+      await withErrorReporting(
+        "frontend:bill-reminders",
+        async () => {
+          const payload = { name: trimmedName, category_key: form.category_key, amount: amountNum, recurrence_type: form.recurrence_type, due_day: form.recurrence_type === "monthly" ? Number(form.due_day) : null, due_date: form.recurrence_type !== "monthly" ? form.due_date : null, notes: form.notes.trim() || null, wallet_id: form.wallet_id || null };
+          if (editTarget) await dbService.updateBillReminder(user.id, editTarget.id, payload);
+          else await dbService.saveBillReminder(user.id, payload);
+          showToast(t("bill_reminders.save_success"), "success");
+          audioFeedback.playClick();
+          closeForm();
+          await refresh();
+        },
+        { action: editTarget ? "update" : "create" }
+      );
     } catch { showToast(t("bill_reminders.save_error"), "error"); }
     finally { setIsSaving(false); }
   };
@@ -129,9 +136,15 @@ export const BillReminders: React.FC = () => {
     if (!user || !deleteTarget) return;
     setIsDeleting(true);
     try {
-      const ok = await dbService.deleteBillReminder(user.id, deleteTarget.id);
-      if (ok) { showToast(t("bill_reminders.delete_success"), "success"); await refresh(); }
-      else showToast(t("bill_reminders.delete_error"), "error");
+      await withErrorReporting(
+        "frontend:bill-reminders",
+        async () => {
+          const ok = await dbService.deleteBillReminder(user.id, deleteTarget.id);
+          if (ok) { showToast(t("bill_reminders.delete_success"), "success"); await refresh(); }
+          else showToast(t("bill_reminders.delete_error"), "error");
+        },
+        { action: "delete", reminderId: deleteTarget.id }
+      );
     } catch { showToast(t("bill_reminders.delete_error"), "error"); }
     finally { setIsDeleting(false); setDeleteTarget(null); }
   };
@@ -142,23 +155,29 @@ export const BillReminders: React.FC = () => {
     const r = toggleConfirmTarget;
     setTogglingId(r.id);
     try {
-      if (!r.is_paid) {
-        const result = await dbService.markBillPaidWithTransaction(r.id);
-        audioFeedback.playClick();
-        if (result.needsManualAmount) {
-          showToast(t("bill_reminders.marked_paid_needs_amount"), "success");
-          setToggleConfirmTarget(null);
+      await withErrorReporting(
+        "frontend:bill-reminders",
+        async () => {
+          if (!r.is_paid) {
+            const result = await dbService.markBillPaidWithTransaction(r.id);
+            audioFeedback.playClick();
+            if (result.needsManualAmount) {
+              showToast(t("bill_reminders.marked_paid_needs_amount"), "success");
+              setToggleConfirmTarget(null);
+              await refresh();
+              navigate("/transactions/new", { state: { prefillCategoryKey: r.category_key, prefillNote: r.name, prefillType: "expense" } });
+              return;
+            }
+            showToast(t("bill_reminders.marked_paid"), "success");
+          } else {
+            await dbService.unmarkBillPaid(r.id);
+            audioFeedback.playClick();
+            showToast(t("bill_reminders.marked_unpaid"), "success");
+          }
           await refresh();
-          navigate("/transactions/new", { state: { prefillCategoryKey: r.category_key, prefillNote: r.name, prefillType: "expense" } });
-          return;
-        }
-        showToast(t("bill_reminders.marked_paid"), "success");
-      } else {
-        await dbService.unmarkBillPaid(r.id);
-        audioFeedback.playClick();
-        showToast(t("bill_reminders.marked_unpaid"), "success");
-      }
-      await refresh();
+        },
+        { action: r.is_paid ? "mark-unpaid" : "mark-paid", reminderId: r.id }
+      );
     } catch { showToast(t("bill_reminders.save_error"), "error"); }
     finally { setTogglingId(null); setToggleConfirmTarget(null); }
   };
