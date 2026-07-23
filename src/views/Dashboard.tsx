@@ -283,106 +283,112 @@ export const Dashboard: React.FC<DashboardProps> = ({
           DashboardOverviewCard.tsx) digabung jadi SATU carousel swipeable
           (DashboardCardSwiper.tsx) -- keduanya kini "bersebelahan", digeser
           lewat swipe horizontal, dengan dot indicator di bawah -- alih-alih
-          ditumpuk penuh secara vertikal seperti sebelumnya. */}
-      <DashboardCardSwiper>
-        <DashboardWalletSelectorCard
-          formatIDR={formatIDR}
-          transactions={transactions}
-          refreshTrigger={transactionsUpdatedTrigger}
-          onTransactionAdded={onTransactionAdded}
-        />
-        <DashboardOverviewCard
-          refreshTrigger={transactionsUpdatedTrigger}
-          formatIDR={formatIDR}
-          monthlySummary={summary}
-        />
-      </DashboardCardSwiper>
+          ditumpuk penuh secara vertikal seperti sebelumnya.
 
-      {/* Onboarding Interactive Banner for new users */}
-      {showOnboardingBanner && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          className={cx("p-5 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4", tokens.dashboard.goalCompleteBanner)}
-        >
-          <div className="flex items-start gap-3.5">
-            <div className={cx("w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5", tokens.chip.accentEmerald)}>
-              <BookOpen size={20} />
+          Swiper & section "Pantauan Keuangan" sengaja dibungkus BARENG di
+          satu wrapper flex-col dengan gap-2 (8px) -- BUKAN dipisah jadi 2
+          children lepas yang diberi jarak otomatis oleh `space-y-6` induk
+          (24px). Sebelumnya sempat dicoba override manual (class
+          `!-mt-3` yang ternyata syntax Tailwind v3, tidak valid di
+          Tailwind v4 project ini -- makanya tidak pernah kepakai) supaya
+          jaraknya rapat, tapi itu rapuh & gampang salah. Dengan
+          dibungkus 1 wrapper + gap kecil eksplisit, jaraknya predictable
+          tanpa perlu "melawan" cascade space-y dari induk. */}
+      <div className="flex flex-col gap-2">
+        <DashboardCardSwiper>
+          <DashboardWalletSelectorCard
+            formatIDR={formatIDR}
+            transactions={transactions}
+            refreshTrigger={transactionsUpdatedTrigger}
+            onTransactionAdded={onTransactionAdded}
+          />
+          <DashboardOverviewCard
+            refreshTrigger={transactionsUpdatedTrigger}
+            formatIDR={formatIDR}
+            monthlySummary={summary}
+          />
+        </DashboardCardSwiper>
+
+        {/* Onboarding Interactive Banner for new users -- dikasih margin
+            sendiri (mt-4/mb-4) supaya tetap lega meski sekarang duduk di
+            dalam wrapper gap-2 yang rapat. */}
+        {showOnboardingBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className={cx("p-5 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 mt-4 mb-4", tokens.dashboard.goalCompleteBanner)}
+          >
+            <div className="flex items-start gap-3.5">
+              <div className={cx("w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5", tokens.chip.accentEmerald)}>
+                <BookOpen size={20} />
+              </div>
+              <div>
+                <h4 className={cx("text-sm font-bold", tokens.text.onSurface)}>
+                  {t("onboarding.dashboard_banner_title")}
+                </h4>
+                <p className={cx("text-xs mt-0.5 leading-relaxed max-w-2xl", tokens.text.mutedAlt)}>
+                  {t("onboarding.dashboard_banner_desc")}
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className={cx("text-sm font-bold", tokens.text.onSurface)}>
-                {t("onboarding.dashboard_banner_title")}
-              </h4>
-              <p className={cx("text-xs mt-0.5 leading-relaxed max-w-2xl", tokens.text.mutedAlt)}>
-                {t("onboarding.dashboard_banner_desc")}
-              </p>
+            <div className="flex items-center gap-2.5 self-end sm:self-auto">
+              <button
+                onClick={() => {
+                  audioFeedback.playClick();
+                  setShowOnboardingBanner(false);
+                  localStorage.setItem("ewallet_onboarding_completed", "true");
+                }}
+                className={cx("px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-colors", tokens.dashboard.seeAllBtnHover, tokens.text.muted)}
+              >
+                {t("onboarding.dashboard_banner_btn_dismiss")}
+              </button>
+              <Button
+                size="sm"
+                variant="success"
+                onClick={() => {
+                  audioFeedback.playClick();
+                  navigate("/onboarding");
+                }}
+              >
+                {t("onboarding.dashboard_banner_btn_start")}
+              </Button>
             </div>
-          </div>
-          <div className="flex items-center gap-2.5 self-end sm:self-auto">
-            <button
-              onClick={() => {
-                audioFeedback.playClick();
-                setShowOnboardingBanner(false);
-                localStorage.setItem("ewallet_onboarding_completed", "true");
-              }}
-              className={cx("px-3.5 py-1.5 text-xs font-semibold rounded-xl transition-colors", tokens.dashboard.seeAllBtnHover, tokens.text.muted)}
-            >
-              {t("onboarding.dashboard_banner_btn_dismiss")}
-            </button>
-            <Button
-              size="sm"
-              variant="success"
-              onClick={() => {
-                audioFeedback.playClick();
-                navigate("/onboarding");
-              }}
-            >
-              {t("onboarding.dashboard_banner_btn_start")}
-            </Button>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
 
-      {/* 2. Scorecard Summaries -- dipindahkan ke dalam DashboardOverviewCard
-          (strip "Bulan Ini") supaya tidak ada 2 grup kartu saldo terpisah. */}
+        {/* 2. Scorecard Summaries -- dipindahkan ke dalam DashboardOverviewCard
+            (strip "Bulan Ini") supaya tidak ada 2 grup kartu saldo terpisah. */}
 
-      {/* 2b. Budget Summary & Bill Reminders -- digabung jadi SATU grouped
-          list (pola iOS Settings/Wallet): 1 container/border, divider tipis
-          antar baris lewat `divide-y` (otomatis lompat baris yang tidak
-          di-render, mis. widget yang return null karena datanya kosong --
-          divide-y bekerja lewat sibling combinator jadi tidak perlu logic
-          tambahan untuk itu), chevron polos di kanan tiap baris (lihat
-          masing-masing komponen widget). Menggantikan 3 kartu terpisah
-          dengan border penuh 4 sisi yang terasa seperti widget dashboard
-          web terpisah-pisah. */}
-      {/* 2b. Budget Summary & Bill Reminders -- digabung jadi SATU grouped
-          list (pola iOS Settings/Wallet), dengan label section "PANTAUAN
-          KEUANGAN" di atasnya (pola eyebrow yang sama seperti "RINGKASAN
-          KESELURUHAN" di DashboardOverviewCard). 1 container/border,
-          divider tipis antar baris lewat `divide-y` (otomatis lompat baris
-          yang tidak di-render, mis. widget yang return null karena datanya
-          kosong -- divide-y bekerja lewat sibling combinator jadi tidak
-          perlu logic tambahan untuk itu), chevron polos di kanan tiap
-          baris (lihat masing-masing komponen widget). Menggantikan 3 kartu
-          terpisah dengan border penuh 4 sisi yang terasa seperti widget
-          dashboard web terpisah-pisah. Baik label maupun container
-          disembunyikan bersamaan lewat `has-[]:` di label & `empty:hidden`
-          di container, supaya tidak ada label section "menggantung" tanpa
-          isi kalau ketiga widget di dalamnya sama-sama kosong. */}
-      <div className="[&:has(.financial-monitor-rows:empty)]:hidden" style={{ marginTop: "0.25rem" }}>
-        <div className="flex items-center gap-2 mb-1.5 px-1">
-          <Activity size={14} className={tokens.icon.accent} />
-          <h3 className={cx("text-xs font-bold uppercase tracking-wider", tokens.text.muted)}>
-            {t("dashboard.financial_monitor_label")}
-          </h3>
-        </div>
-        <div className={cx("financial-monitor-rows rounded-3xl border overflow-hidden divide-y divide-slate-800 light_sakura:divide-rose-100", tokens.surface.card, tokens.border.accent)}>
-          <DashboardBudgetSummary />
-          <DashboardBillReminders />
-          <DashboardInstallments />
+        {/* 2b. Budget Summary & Bill Reminders -- digabung jadi SATU grouped
+            list (pola iOS Settings/Wallet): 1 container/border, divider tipis
+            antar baris lewat `divide-y` (otomatis lompat baris yang tidak
+            di-render, mis. widget yang return null karena datanya kosong --
+            divide-y bekerja lewat sibling combinator jadi tidak perlu logic
+            tambahan untuk itu), chevron polos di kanan tiap baris (lihat
+            masing-masing komponen widget). Menggantikan 3 kartu terpisah
+            dengan border penuh 4 sisi yang terasa seperti widget dashboard
+            web terpisah-pisah. Dengan label section "PANTAUAN KEUANGAN" di
+            atasnya (pola eyebrow yang sama seperti "RINGKASAN KESELURUHAN"
+            di DashboardOverviewCard). Baik label maupun container
+            disembunyikan bersamaan lewat `has-[]:` di label & `empty:hidden`
+            di container, supaya tidak ada label section "menggantung" tanpa
+            isi kalau ketiga widget di dalamnya sama-sama kosong. */}
+        <div className="[&:has(.financial-monitor-rows:empty)]:hidden">
+          <div className="flex items-center gap-2 mb-1.5 px-1">
+            <Activity size={14} className={tokens.icon.accent} />
+            <h3 className={cx("text-xs font-bold uppercase tracking-wider", tokens.text.muted)}>
+              {t("dashboard.financial_monitor_label")}
+            </h3>
+          </div>
+          <div className={cx("financial-monitor-rows rounded-3xl border overflow-hidden divide-y divide-slate-800 light_sakura:divide-rose-100", tokens.surface.card, tokens.border.accent)}>
+            <DashboardBudgetSummary />
+            <DashboardBillReminders />
+            <DashboardInstallments />
+          </div>
         </div>
       </div>
+
 
       {/* 2c. Alert card (hanya kalau urgent) */}
       <DashboardBudgetAlerts />
