@@ -32,7 +32,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
   const { isFeatureLocked } = useMaintenance();
   const isLocked = isFeatureLocked("receipt_scan");
   
-  const { isPremium, refresh: refreshPremium } = usePremium();
+  const { isPremium, loading: isPremiumStatusLoading, refresh: refreshPremium } = usePremium();
   const isGuest = user?.is_anonymous ?? false;
   const isOcrLocked = isGuest || !isPremium;
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
@@ -299,15 +299,25 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
   const consumedSharedFileRef = useRef<File | null>(null);
   React.useEffect(() => {
     if (!sharedFile || consumedSharedFileRef.current === sharedFile) return;
+
+    // BUG FIX: alur share-target datang dari FULL PAGE LOAD baru (redirect
+    // Service Worker ke /transactions/new?shared=1) -- artinya seluruh App
+    // baru saja mount dari nol, dan `usePremium()` masih dalam proses
+    // fetch status premium ke Supabase (async, default `isPremium=false`
+    // sebelum selesai). File yang di-share sudah siap duluan di IndexedDB,
+    // jadi efek ini bisa saja jalan SEBELUM query premium selesai --
+    // membaca `isPremium=false` yang masih basi dan salah menampilkan
+    // modal upsell Premium ke user yang sebenarnya SUDAH premium. Tunggu
+    // `isPremiumStatusLoading` selesai dulu (efek ini otomatis jalan lagi
+    // begitu nilainya berubah, lihat dependency array di bawah) sebelum
+    // mengevaluasi `isOcrLocked` sama sekali.
+    if (isPremiumStatusLoading) return;
+
     consumedSharedFileRef.current = sharedFile;
 
     if (isOcrLocked) {
       audioFeedback.playDullPluck();
-      // BUG FIX: sebelumnya cabang ini SELALU menampilkan toast "silakan
-      // masuk/daftar akun" (pesan khusus guest) berapa pun status login
-      // user -- termasuk untuk user yang SUDAH login tapi belum premium,
-      // yang jelas membingungkan ("suruh login" padahal sudah login).
-      // Disamakan dengan handleDrop/handleFileChange/requestPick di atas:
+      // Lihat catatan di handleDrop/handleFileChange/requestPick di atas:
       // guest -> toast ajakan masuk/daftar, sudah login tapi non-premium
       // -> buka PremiumModal (upsell), bukan toast generik.
       if (isGuest) {
@@ -326,7 +336,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
 
     void processFile(sharedFile).finally(() => onSharedFileConsumed?.());
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sharedFile]);
+  }, [sharedFile, isPremiumStatusLoading]);
 
   return (
     <div className="w-full space-y-3">

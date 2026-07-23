@@ -94,6 +94,11 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
       if (cancelled) return;
       if (file) {
         setSharedReceiptFile(file);
+        // Pastikan tab yang tampil adalah "Struk", bukan default "Manual",
+        // supaya ReceiptUploader (yang menerima sharedFile) benar-benar
+        // ter-render. Sebelumnya activeInputTab tidak pernah diubah di sini,
+        // jadi file numpang di state tapi user tetap lihat panel Manual.
+        setActiveInputTab("receipt");
       }
       // Bersihkan query string supaya refresh/back tidak memicu ulang.
       navigate(location.pathname, { replace: true });
