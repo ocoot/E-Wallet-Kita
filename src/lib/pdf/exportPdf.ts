@@ -2,6 +2,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import { Transaction, Category } from "../../types.js";
 import { drawPdfBrandHeader } from "./pdfBranding.js";
+import { shareFile } from "../nativeShare.js";
 
 export type TFunc = (key: string, replacements?: Record<string, string | number>) => string;
 
@@ -442,7 +443,31 @@ const renderDocument = (ctx: ExportContext, docNumber: string): jsPDF => {
  * No page is left blank: if there are zero transactions, a localized
  * "no transactions" message is shown instead of an empty table.
  */
-export const exportSummaryPdf = (params: {
+/**
+ * Menyelesaikan dokumen PDF: kirim lewat share-sheet OS asli (mode
+ * "share", lihat lib/nativeShare.ts) atau simpan langsung ke unduhan
+ * browser (mode "download", perilaku lama -- tetap default). Kalau mode
+ * "share" diminta tapi browser tidak mendukung `navigator.share` dengan
+ * `files` (atau share gagal karena sebab lain di luar user membatalkan),
+ * diam-diam fallback ke `doc.save()` supaya tombol tetap berfungsi di
+ * semua browser.
+ */
+async function finalizeDoc(
+  doc: jsPDF,
+  filename: string,
+  mode: "download" | "share",
+  shareTitle: string
+): Promise<void> {
+  if (mode === "share") {
+    const blob = doc.output("blob");
+    const file = new File([blob], filename, { type: "application/pdf" });
+    const shared = await shareFile(file, shareTitle);
+    if (shared) return;
+  }
+  doc.save(filename);
+}
+
+export const exportSummaryPdf = async (params: {
   t: TFunc;
   userName: string;
   transactions: Transaction[];
@@ -450,8 +475,10 @@ export const exportSummaryPdf = (params: {
   wallets?: PdfWalletInfo[];
   /** ID pos dompet buat filter opsional -- null/undefined berarti "Semua Pos". */
   walletId?: string | null;
+  /** "download" (bawaan, `doc.save()`) atau "share" (Web Share API). */
+  mode?: "download" | "share";
 }) => {
-  const { t, userName, transactions, categories, wallets, walletId } = params;
+  const { t, userName, transactions, categories, wallets, walletId, mode = "download" } = params;
   const { start, end } = getCurrentMonthToDateRange();
   const walletFilterLabel = walletId ? resolveWalletLabel(walletId, wallets, t) : null;
   const scopedTransactions = walletId ? transactions.filter(tx => tx.wallet_id === walletId) : transactions;
@@ -459,6 +486,7 @@ export const exportSummaryPdf = (params: {
     ? `${toISODate(start)} - ${toISODate(end)} · ${walletFilterLabel}`
     : `${toISODate(start)} - ${toISODate(end)}`;
   const docNumber = generateDocNumber();
+  const reportTitle = t("export.summary_report_title");
 
   const doc = renderDocument(
     {
@@ -467,7 +495,7 @@ export const exportSummaryPdf = (params: {
       transactions: scopedTransactions,
       categories,
       periodLabel,
-      reportTitle: t("export.summary_report_title"),
+      reportTitle,
       wallets,
       walletFilterLabel,
     },
@@ -479,7 +507,7 @@ export const exportSummaryPdf = (params: {
   const filename = sanitizeFilename(
     `${filePrefix}_${monthLabel}-${start.getFullYear()}_${docNumber}.pdf`
   );
-  doc.save(filename);
+  await finalizeDoc(doc, filename, mode, reportTitle);
   return filename;
 };
 
@@ -488,7 +516,7 @@ export const exportSummaryPdf = (params: {
  * by the caller before invoking this function). Always queries the full
  * range from the database (no row-count cap), letting autoTable paginate.
  */
-export const exportFullPdf = (params: {
+export const exportFullPdf = async (params: {
   t: TFunc;
   userName: string;
   transactions: Transaction[];
@@ -497,8 +525,10 @@ export const exportFullPdf = (params: {
   toMonth: string;
   wallets?: PdfWalletInfo[];
   walletId?: string | null;
+  /** "download" (bawaan, `doc.save()`) atau "share" (Web Share API). */
+  mode?: "download" | "share";
 }) => {
-  const { t, userName, transactions, categories, fromMonth, toMonth, wallets, walletId } = params;
+  const { t, userName, transactions, categories, fromMonth, toMonth, wallets, walletId, mode = "download" } = params;
   const { start, end } = getMonthRange(fromMonth, toMonth);
   const walletFilterLabel = walletId ? resolveWalletLabel(walletId, wallets, t) : null;
   const scopedTransactions = walletId ? transactions.filter(tx => tx.wallet_id === walletId) : transactions;
@@ -506,6 +536,7 @@ export const exportFullPdf = (params: {
     ? `${toISODate(start)} - ${toISODate(end)} · ${walletFilterLabel}`
     : `${toISODate(start)} - ${toISODate(end)}`;
   const docNumber = generateDocNumber();
+  const reportTitle = t("export.full_report_title");
 
   const doc = renderDocument(
     {
@@ -514,7 +545,7 @@ export const exportFullPdf = (params: {
       transactions: scopedTransactions,
       categories,
       periodLabel,
-      reportTitle: t("export.full_report_title"),
+      reportTitle,
       wallets,
       walletFilterLabel,
     },
@@ -529,7 +560,7 @@ export const exportFullPdf = (params: {
   const filename = sanitizeFilename(
     `${filePrefix}_${fromLabel}-${toLabel}_${docNumber}.pdf`
   );
-  doc.save(filename);
+  await finalizeDoc(doc, filename, mode, reportTitle);
   return filename;
 };
 

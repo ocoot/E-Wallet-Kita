@@ -30,6 +30,8 @@ import { Breadcrumbs } from "./components/Breadcrumbs";
 import { usePageRibbonBackground } from "./components/PageRibbonBackground";
 import { SplashScreen } from "./components/SplashScreen";
 import { MainScrollProvider } from "./contexts/MainScrollContext";
+import { AppLockProvider, useAppLock } from "./contexts/AppLockContext";
+import { AppLockScreen } from "./components/AppLockScreen";
 import {
   DashboardSkeleton,
   HistorySkeleton,
@@ -88,6 +90,8 @@ const ThemeSettings = lazy(() => import("./views/settings/ThemeSettings").then(m
 const PwaSettings = lazy(() => import("./views/settings/PwaSettings").then(m => ({ default: m.PwaSettings })));
 const TelegramSettings = lazy(() => import("./views/settings/TelegramSettings").then(m => ({ default: m.TelegramSettings })));
 const PrivacySettings = lazy(() => import("./views/settings/PrivacySettings").then(m => ({ default: m.PrivacySettings })));
+const AppLockSettings = lazy(() => import("./views/settings/AppLockSettings").then(m => ({ default: m.AppLockSettings })));
+const SoundHapticsSettings = lazy(() => import("./views/settings/SoundHapticsSettings").then(m => ({ default: m.SoundHapticsSettings })));
 
 function RouteFallback() {
   // We can't call useLocation() here since Suspense boundary may trigger
@@ -147,6 +151,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   const location = useLocation();
   const { showToast } = useToast();
   const { t } = useLanguage();
+  const { isLocked } = useAppLock();
   // Hook harus dipanggil tanpa syarat (aturan Hooks) -- style yang
   // dihasilkan baru dipakai secara kondisional (halaman non-Dashboard)
   // di JSX bawah lewat `location.pathname !== "/dashboard"`.
@@ -383,6 +388,13 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
     return <Navigate to="/login" replace />;
   }
 
+  // Digambar SEBELUM konten utama (saldo/riwayat/dll) di-mount sama sekali
+  // -- lihat AppLockContext.tsx untuk kapan `isLocked` di-set true (buka
+  // app pertama kali & kembali dari background setelah timeout).
+  if (isLocked) {
+    return <AppLockScreen />;
+  }
+
   return (
     <div className={cx(
       "relative min-h-dvh flex flex-col md:flex-row transition-colors duration-300",
@@ -509,6 +521,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                   <Route path="/settings/pwa" element={<FeatureLockGate featureKey="settings"><PwaSettings /></FeatureLockGate>} />
                   <Route path="/settings/telegram" element={<FeatureLockGate featureKey="settings"><TelegramSettings /></FeatureLockGate>} />
                   <Route path="/settings/privacy" element={<FeatureLockGate featureKey="settings"><PrivacySettings /></FeatureLockGate>} />
+                  <Route path="/settings/app-lock" element={<FeatureLockGate featureKey="settings"><AppLockSettings /></FeatureLockGate>} />
+                  <Route path="/settings/sound" element={<FeatureLockGate featureKey="settings"><SoundHapticsSettings /></FeatureLockGate>} />
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/admin" element={
                     adminLoading
@@ -667,6 +681,7 @@ export default function App() {
           <MaintenanceProvider>
             <CategoriesProvider>
             <BalanceVisibilityProvider>
+            <AppLockProvider>
               <Routes>
                  <Route path="/login" element={<Login />} />
                  <Route path="/auth/callback" element={<AuthCallback />} />
@@ -676,6 +691,7 @@ export default function App() {
                 isOpen={isRecoveringPassword} 
                 onClose={() => setIsRecoveringPassword(false)} 
               />
+            </AppLockProvider>
             </BalanceVisibilityProvider>
             </CategoriesProvider>
           </MaintenanceProvider>

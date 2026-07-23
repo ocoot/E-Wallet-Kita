@@ -12,6 +12,7 @@ import {
   Sparkles,
   ChevronRight,
   CheckCircle,
+  Volume2,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeTokens } from "../../hooks/useThemeTokens";
@@ -158,6 +159,12 @@ export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
             />
           )}
           <MenuRow
+            to="/settings/app-lock"
+            icon={<Lock size={16} />}
+            label={t("settings.menu_app_lock")}
+            desc={t("settings.menu_app_lock_desc")}
+          />
+          <MenuRow
             to="/settings/notifications"
             icon={<Bell size={16} />}
             label={t("settings.menu_notifications")}
@@ -183,6 +190,12 @@ export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
             icon={<SunMoon size={16} />}
             label={t("settings.menu_theme")}
             rightText={theme === "dark_obsidian" ? t("settings.theme_short_dark") : t("settings.theme_short_light")}
+          />
+          <MenuRow
+            to="/settings/sound"
+            icon={<Volume2 size={16} />}
+            label={t("settings.menu_sound_haptics")}
+            desc={t("settings.menu_sound_haptics_desc")}
           />
           <MenuRow
             to="/settings/pwa"

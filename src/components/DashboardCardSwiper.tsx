@@ -1,5 +1,6 @@
-import React, { useLayoutEffect, useRef, useState } from "react";
+import React, { useLayoutEffect, useRef, useState, useEffect } from "react";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { audioFeedback } from "../lib/audio";
 
 interface DashboardCardSwiperProps {
   /** Setiap child dirender sebagai satu slide penuh-lebar, digeser lewat swipe horizontal native (scroll-snap) -- bukan carousel JS custom, supaya terasa seperti native mobile swipe & tetap ringan. */
@@ -87,6 +88,18 @@ export const DashboardCardSwiper: React.FC<DashboardCardSwiperProps> = ({ childr
   const handleScroll = () => {
     applyHeightFromScroll();
   };
+
+  // Getar halus setiap kali kartu aktif berpindah lewat swipe -- sebelumnya
+  // gesture ini (murni scroll-snap native, bukan tombol) tidak memicu
+  // feedback apa pun. `useRef` (bukan bandingkan langsung di render) supaya
+  // getar TIDAK ikut terpicu saat render pertama (activeIndex mulai di 0).
+  const previousIndexRef = useRef(0);
+  useEffect(() => {
+    if (previousIndexRef.current !== activeIndex) {
+      audioFeedback.tapHaptic();
+      previousIndexRef.current = activeIndex;
+    }
+  }, [activeIndex]);
 
   const scrollToIndex = (idx: number) => {
     const el = scrollRef.current;

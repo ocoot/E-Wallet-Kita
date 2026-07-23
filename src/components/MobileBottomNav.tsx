@@ -7,8 +7,6 @@ import {
   LogOut,
   Globe,
   SunMoon,
-  Volume2,
-  VolumeX,
   ShieldCheck,
   ShieldAlert,
   Lock,
@@ -70,8 +68,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   const { close: closeSheet } = useBackGestureTrap(isMoreOpen, setIsMoreOpen);
   useDialogA11y(isMoreOpen, sheetRef, closeSheet);
 
-  const [isMuted, setIsMuted] = useState(audioFeedback.getIsMuted());
-
   const isGuest = user?.is_anonymous ?? false;
   const displayName = userDisplayName || user?.user_metadata?.full_name || user?.email || t("admin.guest_user");
 
@@ -84,16 +80,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
   const activeId = menuItems.find((item) => location.pathname === item.path)?.id;
   const isMoreActive = !!activeId && !primaryIds.has(activeId);
-
-  const toggleMute = () => {
-    const nextMute = audioFeedback.toggleMute();
-    setIsMuted(nextMute);
-    if (!nextMute) {
-      audioFeedback.playChime();
-    } else {
-      audioFeedback.playClick();
-    }
-  };
 
   const toggleLanguage = () => {
     audioFeedback.playClick();
@@ -144,6 +130,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 key={item.id}
                 to={item.path}
                 aria-label={item.label}
+                onClick={() => audioFeedback.tapHaptic()}
                 className="flex-1 flex flex-col items-center justify-center min-w-0 cursor-pointer select-none"
               >
                 <div className="relative -translate-y-4">
@@ -171,6 +158,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             <Link
               key={item.id}
               to={item.path}
+              onClick={() => audioFeedback.tapHaptic()}
               className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-3 min-w-0 cursor-pointer select-none transition-transform active:scale-90"
             >
               <div className="relative">
@@ -228,7 +216,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
         {/* Tombol "Lainnya" -- membuka bottom-sheet berisi sisa menu */}
         <button
-          onClick={() => setIsMoreOpen(true)}
+          onClick={() => { audioFeedback.tapHaptic(); setIsMoreOpen(true); }}
           className="relative flex-1 flex flex-col items-center justify-center gap-0.5 py-3 min-w-0 cursor-pointer select-none transition-transform active:scale-90"
         >
           <MoreHorizontal
@@ -386,7 +374,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
 
               {/* Footer -- kontrol bahasa/tema/suara + keluar */}
               <SafeArea inset="bottom" basePadding={16} className={cx("shrink-0 px-6 py-4 space-y-4 border-t", tokens.border.accent)}>
-                <div className="grid grid-cols-3 gap-1.5">
+                <div className="grid grid-cols-2 gap-1.5">
                   <button
                     onClick={toggleLanguage}
                     className={cx(
@@ -408,22 +396,6 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                   >
                     <SunMoon size={13} className="mb-0.5" />
                     <span>{theme === "dark_obsidian" ? t("common.dark") : t("common.light")}</span>
-                  </button>
-                  <button
-                    onClick={toggleMute}
-                    className={cx(
-                      "flex flex-col items-center justify-center py-2 rounded-xl border font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-semibold cursor-pointer transition-colors",
-                      tokens.mobileBottomNav.footerBtn,
-                      tokens.text.secondary
-                    )}
-                    title="Mute / Unmute"
-                  >
-                    {isMuted ? (
-                      <VolumeX size={13} className={cx("mb-0.5", tokens.text.danger)} />
-                    ) : (
-                      <Volume2 size={13} className={cx(tokens.icon.accent, "mb-0.5")} />
-                    )}
-                    <span>{isMuted ? t("common.muted") : t("common.sound")}</span>
                   </button>
                 </div>
 

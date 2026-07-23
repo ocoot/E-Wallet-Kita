@@ -13,8 +13,6 @@ import {
   SunMoon,
   ShieldCheck,
   ShieldAlert,
-  Volume2,
-  VolumeX,
   Lock,
 } from "lucide-react";
 import { audioFeedback } from "../lib/audio";
@@ -89,18 +87,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const menuItems = useNavItems();
 
   const activeTab = menuItems.find(item => location.pathname === item.path)?.id || "dashboard";
-
-  const [isMuted, setIsMuted] = useState(audioFeedback.getIsMuted());
-
-  const toggleMute = () => {
-    const nextMute = audioFeedback.toggleMute();
-    setIsMuted(nextMute);
-    if (!nextMute) {
-      audioFeedback.playChime();
-    } else {
-      audioFeedback.playClick();
-    }
-  };
 
   const toggleLanguage = () => {
     audioFeedback.playClick();
@@ -230,7 +216,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className={cx("p-4 border-t space-y-3", tokens.border.accent)}>
           {/* Theme, Language, and Sound inline switcher controls */}
           <div className="relative min-h-[36px]">
-            <div className={`transition-all duration-300 ${isCollapsed ? "opacity-0 scale-75 pointer-events-none absolute inset-x-0 top-0" : "opacity-100 scale-100 grid grid-cols-3 gap-1"}`}>
+            <div className={`transition-all duration-300 ${isCollapsed ? "opacity-0 scale-75 pointer-events-none absolute inset-x-0 top-0" : "opacity-100 scale-100 grid grid-cols-2 gap-1"}`}>
               <button
                 onClick={toggleLanguage}
                 title={t("settings.language")}
@@ -246,18 +232,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               >
                 <SunMoon size={11} className="mb-0.5" />
                 <span>{theme === "dark_obsidian" ? t("common.dark") : t("common.light")}</span>
-              </button>
-              <button
-                onClick={toggleMute}
-                title="Toggle Effects Sound"
-                className={cx("flex flex-col items-center justify-center py-1.5 rounded-xl border hover:bg-slate-900 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold cursor-pointer", tokens.sidebar.footerAction, tokens.text.secondary)}
-              >
-                {isMuted ? (
-                  <VolumeX size={11} className={cx("mb-0.5", tokens.text.danger)} />
-                ) : (
-                  <Volume2 size={11} className={cx("mb-0.5", tokens.icon.accent)} />
-                )}
-                <span>{isMuted ? t("common.muted") : t("common.sound")}</span>
               </button>
             </div>
 
@@ -275,17 +249,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 className={cx(tokens.sidebar.collapsedIconBtn, tokens.text.secondary)}
               >
                 <SunMoon size={14} />
-              </button>
-              <button
-                onClick={toggleMute}
-                title="Mute / Unmute"
-                className={cx(tokens.sidebar.collapsedIconBtn, tokens.text.secondary)}
-              >
-                {isMuted ? (
-                  <VolumeX size={14} className={cx(tokens.text.danger)} />
-                ) : (
-                  <Volume2 size={14} className={cx(tokens.icon.accent)} />
-                )}
               </button>
             </div>
           </div>

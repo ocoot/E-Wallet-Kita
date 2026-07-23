@@ -11,13 +11,43 @@
  * iOS Safari/WebKit TIDAK punya Vibration API sama sekali (termasuk saat
  * PWA berjalan standalone) -- makanya di-feature-detect lewat
  * `'vibrate' in navigator`, bukan diasumsikan selalu ada. Dibungkus try/
- * catch & pola gagal-diam yang sama seperti method audio lain di file
- * ini, dan ikut tunduk ke toggle `isMuted` yang sama supaya 1 preference
- * pengguna ("suara & getar mati") konsisten mengontrol keduanya.
+ * catch & pola gagal-diam yang sama seperti method audio lain di file ini.
+ *
+ * Preferensi suara & getar SEKARANG TERPISAH (dulu satu toggle `isMuted`
+ * mengontrol keduanya sekaligus) -- lihat menu Pengaturan > Suara & Getar.
+ * Ini supaya user yang ingin tetap merasakan getar halus tapi mematikan
+ * bunyi klik (mis. di ruang rapat) atau sebaliknya, bisa mengatur masing-
+ * masing secara independen. Kedua preferensi dipersist ke localStorage
+ * supaya tidak reset tiap reload/tutup app -- sebelumnya toggle ini SAMA
+ * SEKALI tidak disimpan.
  */
+const STORAGE_KEY_SOUND_MUTED = "ewk_sound_muted";
+const STORAGE_KEY_HAPTIC_ENABLED = "ewk_haptic_enabled";
+
+function readBoolPref(key: string, fallback: boolean): boolean {
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (raw === null) return fallback;
+    return raw === "1";
+  } catch {
+    return fallback;
+  }
+}
+
+function writeBoolPref(key: string, value: boolean): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(key, value ? "1" : "0");
+  } catch {
+    // localStorage diblokir/penuh -- preferensi cukup tidak persist, bukan error fatal.
+  }
+}
+
 class AudioFeedbackService {
   private ctx: AudioContext | null = null;
-  private isMuted: boolean = false;
+  private isMuted: boolean = readBoolPref(STORAGE_KEY_SOUND_MUTED, false);
+  private hapticEnabled: boolean = readBoolPref(STORAGE_KEY_HAPTIC_ENABLED, true);
 
   private initCtx() {
     if (this.isMuted) return;
@@ -34,7 +64,7 @@ class AudioFeedbackService {
   }
 
   private vibrate(pattern: number | number[]) {
-    if (this.isMuted) return;
+    if (!this.hapticEnabled) return;
     try {
       if (typeof navigator !== "undefined" && "vibrate" in navigator) {
         navigator.vibrate(pattern);
@@ -46,9 +76,35 @@ class AudioFeedbackService {
     }
   }
 
+  /**
+   * Getar mikro TANPA bunyi -- dipakai untuk interaksi murni navigasi/UI
+   * (ganti tab bawah, swipe kartu, pilih item) yang sebelumnya tidak
+   * memicu feedback apa pun sama sekali. Sengaja dipisah dari
+   * playClick()/dst (yang juga membunyikan Web Audio) supaya tap navigasi
+   * ringan tidak "berisik" kalau dipakai berulang-ulang cepat.
+   */
+  tapHaptic() {
+    this.vibrate(6);
+  }
+
   toggleMute() {
     this.isMuted = !this.isMuted;
+    writeBoolPref(STORAGE_KEY_SOUND_MUTED, this.isMuted);
     return this.isMuted;
+  }
+
+  setMuted(muted: boolean) {
+    this.isMuted = muted;
+    writeBoolPref(STORAGE_KEY_SOUND_MUTED, muted);
+  }
+
+  getIsHapticEnabled() {
+    return this.hapticEnabled;
+  }
+
+  setHapticEnabled(enabled: boolean) {
+    this.hapticEnabled = enabled;
+    writeBoolPref(STORAGE_KEY_HAPTIC_ENABLED, enabled);
   }
 
   getIsMuted() {

@@ -230,7 +230,7 @@ export const History: React.FC<HistoryProps> = ({
     return t("transaction.source_telegram");
   };
 
-  const handleExportSummary = async (walletId: string | null) => {
+  const handleExportSummary = async (walletId: string | null, mode: "download" | "share" = "download") => {
     setIsSummaryConfirmOpen(false);
     setIsExporting(true);
     audioFeedback.playClick();
@@ -240,7 +240,7 @@ export const History: React.FC<HistoryProps> = ({
         async () => {
           const { start, end } = getCurrentMonthToDateRange();
           const data = await dbService.getTransactionsBetween(currentUser.id, toISODate(start), toISODate(end));
-          const filename = exportSummaryPdf({ t, userName: currentUser.display_name, transactions: data, categories, wallets: allWallets, walletId });
+          const filename = await exportSummaryPdf({ t, userName: currentUser.display_name, transactions: data, categories, wallets: allWallets, walletId, mode });
           audioFeedback.playChime();
           showToast(t("export.success_export", { filename }), "success");
         },
@@ -250,7 +250,7 @@ export const History: React.FC<HistoryProps> = ({
     finally { setIsExporting(false); }
   };
 
-  const handleExportFull = async (fromMonth: string, toMonth: string, walletId: string | null) => {
+  const handleExportFull = async (fromMonth: string, toMonth: string, walletId: string | null, mode: "download" | "share" = "download") => {
     setIsExporting(true);
     audioFeedback.playClick();
     try {
@@ -260,7 +260,7 @@ export const History: React.FC<HistoryProps> = ({
           const [ty, tm] = toMonth.split("-").map(Number);
           const lastDay = new Date(ty, tm, 0).getDate();
           const data = await dbService.getTransactionsBetween(currentUser.id, `${fromMonth}-01`, `${toMonth}-${String(lastDay).padStart(2, "0")}`);
-          const filename = exportFullPdf({ t, userName: currentUser.display_name, transactions: data, categories, fromMonth, toMonth, wallets: allWallets, walletId });
+          const filename = await exportFullPdf({ t, userName: currentUser.display_name, transactions: data, categories, fromMonth, toMonth, wallets: allWallets, walletId, mode });
           audioFeedback.playChime();
           showToast(t("export.success_export", { filename }), "success");
           setIsFullExportOpen(false);

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FileText, X } from "lucide-react";
+import { FileText, X, Share2 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { isRangeValid, diffMonthsInclusive, MAX_RANGE_MONTHS } from "../lib/pdf/dateRange";
 import { useWallets } from "../hooks/useWallets";
@@ -9,11 +9,14 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "./ui/ModalShell";
 import { audioFeedback } from "../lib/audio";
 
+// Lihat catatan yang sama di ExportSummaryModal.tsx.
+const isShareLikelySupported = typeof navigator !== "undefined" && typeof navigator.share === "function";
+
 interface ExportFullModalProps {
   isOpen: boolean;
   monthOptions: { value: string; label: string }[];
   onCancel: () => void;
-  onGenerate: (fromMonth: string, toMonth: string, walletId: string | null) => void;
+  onGenerate: (fromMonth: string, toMonth: string, walletId: string | null, mode?: "download" | "share") => void;
   isGenerating?: boolean;
 }
 
@@ -136,12 +139,24 @@ export const ExportFullModal: React.FC<ExportFullModalProps> = ({
               >
                 {t("common.cancel")}
               </Button>
+              {isShareLikelySupported && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={!valid || isGenerating}
+                  icon={<Share2 size={15} />}
+                  onClick={() => { audioFeedback.playClick(); onGenerate(fromMonth, toMonth, walletId || null, "share"); }}
+                  className="rounded-xl"
+                >
+                  {t("export.btn_share")}
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="primary"
                 disabled={!valid || isGenerating}
                 isLoading={isGenerating}
-                onClick={() => { audioFeedback.playClick(); onGenerate(fromMonth, toMonth, walletId || null); }}
+                onClick={() => { audioFeedback.playClick(); onGenerate(fromMonth, toMonth, walletId || null, "download"); }}
                 className="rounded-xl"
               >
                 {t("export.generate_pdf")}

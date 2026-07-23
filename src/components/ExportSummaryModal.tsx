@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FileText, X } from "lucide-react";
+import { FileText, X, Share2 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useWallets } from "../hooks/useWallets";
 import { DropdownField } from "./DropdownField";
@@ -8,11 +8,19 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "./ui/ModalShell";
 import { audioFeedback } from "../lib/audio";
 
+// Web Share API (dengan dukungan `files`) tidak ada di semua browser --
+// terutama Firefox & sebagian besar browser desktop non-Chromium.
+// Deteksi kasar di level modul (bukan per-render) cukup untuk memutuskan
+// APAKAH tombol "Bagikan" ditampilkan sama sekali; pengecekan lebih tepat
+// (`canShareFiles`, yang butuh instance File nyata) baru dilakukan saat
+// PDF sudah selesai dibuat, dengan fallback diam-diam ke unduhan biasa.
+const isShareLikelySupported = typeof navigator !== "undefined" && typeof navigator.share === "function";
+
 interface ExportSummaryModalProps {
   isOpen: boolean;
   periodLabel: { start: string; end: string };
   onCancel: () => void;
-  onGenerate: (walletId: string | null) => void;
+  onGenerate: (walletId: string | null, mode?: "download" | "share") => void;
   isGenerating?: boolean;
 }
 
@@ -88,12 +96,24 @@ export const ExportSummaryModal: React.FC<ExportSummaryModalProps> = ({
               >
                 {t("common.cancel")}
               </Button>
+              {isShareLikelySupported && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={isGenerating}
+                  icon={<Share2 size={15} />}
+                  onClick={() => { audioFeedback.playClick(); onGenerate(walletId || null, "share"); }}
+                  className="rounded-xl"
+                >
+                  {t("export.btn_share")}
+                </Button>
+              )}
               <Button
                 type="button"
                 variant="primary"
                 disabled={isGenerating}
                 isLoading={isGenerating}
-                onClick={() => { audioFeedback.playClick(); onGenerate(walletId || null); }}
+                onClick={() => { audioFeedback.playClick(); onGenerate(walletId || null, "download"); }}
                 className="rounded-xl"
               >
                 {t("export.confirm_export")}

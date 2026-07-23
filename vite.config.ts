@@ -97,9 +97,9 @@ export default defineConfig(({ mode }) => {
           // di desktop Chrome/Edge, yang menampilkan preview UI sebelum
           // user klik "Install"). form_factor "wide" cocok untuk rasio
           // screenshot-home.png (1280x900, ~4:3 landscape).
-          // NOTE: belum ada screenshot form_factor "narrow" (mobile) yang
-          // representatif -- sebaiknya ditambahkan menyusul (lihat catatan
-          // di respons chat).
+          // screenshot-mobile-home.png (form_factor "narrow") melengkapi
+          // sisi mobile (Android Chrome/Samsung Internet menampilkan
+          // preview form_factor "narrow" di install prompt/PWA listing).
           screenshots: [
             {
               src: '/screenshot-home.png',
@@ -107,6 +107,13 @@ export default defineConfig(({ mode }) => {
               type: 'image/png',
               form_factor: 'wide',
               label: 'Dashboard E-Wallet Kita',
+            },
+            {
+              src: '/screenshot-mobile-home.png',
+              sizes: '1080x2340',
+              type: 'image/png',
+              form_factor: 'narrow',
+              label: 'Dashboard E-Wallet Kita (Mobile)',
             },
           ],
         },
