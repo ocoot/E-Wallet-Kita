@@ -9,6 +9,7 @@ import { useAdmin } from "../hooks/useAdmin";
 import { useMaintenance } from "../contexts/MaintenanceContext";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { ErrorState } from "../components/ErrorState";
+import { reportFrontendError } from "../lib/errorReporter";
 import {
   Power,
   Lock,
@@ -66,6 +67,11 @@ export const AdminMaintenance: React.FC = () => {
     } catch (err: any) {
       showToast(err.message || t("admin.maintenance_load_error"), "error");
       setLoadError(true);
+      void reportFrontendError({
+        source: "frontend:admin-maintenance",
+        message: err?.message || String(err),
+        context: { action: "load-all" },
+      });
     } finally {
       setLoading(false);
     }
@@ -89,6 +95,11 @@ export const AdminMaintenance: React.FC = () => {
       await loadAll();
     } catch (err: any) {
       showToast(err.message || t("admin.maintenance_save_error"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-maintenance",
+        message: err?.message || String(err),
+        context: { action: "save-maintenance-mode" },
+      });
     } finally {
       setSavingAction({ isOpen: false, message: "" });
     }
@@ -109,6 +120,11 @@ export const AdminMaintenance: React.FC = () => {
       await refresh();
     } catch (err: any) {
       showToast(err.message || t("admin.maintenance_feature_update_error"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-maintenance",
+        message: err?.message || String(err),
+        context: { action: "toggle-feature-lock", featureKey, nextLocked },
+      });
     } finally {
       setSavingAction({ isOpen: false, message: "" });
     }
@@ -135,6 +151,11 @@ export const AdminMaintenance: React.FC = () => {
       await refresh();
     } catch (err: any) {
       showToast(err.message || t("admin.maintenance_feature_update_error"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-maintenance",
+        message: err?.message || String(err),
+        context: { action: "toggle-sandbox-bypass", featureKey, nextBypass },
+      });
     } finally {
       setSavingAction({ isOpen: false, message: "" });
     }

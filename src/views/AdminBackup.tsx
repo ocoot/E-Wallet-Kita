@@ -14,6 +14,7 @@ import { Badge } from "../components/ui/Badge";
 import { Input } from "../components/ui/Input";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
+import { reportFrontendError } from "../lib/errorReporter";
 import {
   DatabaseBackup,
   CheckCircle2,
@@ -112,6 +113,11 @@ export const AdminBackup: React.FC = () => {
     } catch (err: any) {
       console.error(err);
       setLoadError(true);
+      void reportFrontendError({
+        source: "frontend:admin-backup",
+        message: err?.message || String(err),
+        context: { action: "load-status" },
+      });
     } finally {
       setLoading(false);
     }
@@ -130,6 +136,11 @@ export const AdminBackup: React.FC = () => {
       // Soft-fail: fitur restore per-tabel jadi tidak bisa dipakai, tapi
       // halaman utama (status + trigger backup) tetap harus berfungsi.
       console.error("Gagal memuat daftar tabel yang boleh di-restore:", err);
+      void reportFrontendError({
+        source: "frontend:admin-backup",
+        message: err instanceof Error ? err.message : String(err),
+        context: { action: "load-restorable-tables" },
+      });
     }
   }, []);
 
@@ -181,6 +192,11 @@ export const AdminBackup: React.FC = () => {
       startPolling();
     } catch (err: any) {
       showToast(err.message || t("admin.backup_trigger_error"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-backup",
+        message: err?.message || String(err),
+        context: { action: "trigger-backup" },
+      });
     } finally {
       setTriggering(false);
     }
@@ -229,6 +245,11 @@ export const AdminBackup: React.FC = () => {
       void result;
     } catch (err: any) {
       showToast(err.message || t("admin.backup_restore_error"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-backup",
+        message: err?.message || String(err),
+        context: { action: "restore", backupLogId: restoreTarget.id, scope: restoreScope },
+      });
     } finally {
       setRestoreSubmitting(false);
     }
@@ -289,6 +310,11 @@ export const AdminBackup: React.FC = () => {
       startPolling();
     } catch (err: any) {
       showToast(err.message || t("admin.backup_delete_error"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-backup",
+        message: err?.message || String(err),
+        context: { action: "delete-backup-logs" },
+      });
     } finally {
       setDeleteSubmitting(false);
     }

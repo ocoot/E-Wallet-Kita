@@ -11,6 +11,7 @@ import { requestFcmToken, saveFcmToken } from "../../lib/firebase";
 import { ToggleSwitch } from "../../components/ui/ToggleSwitch";
 import { Button } from "../../components/ui/Button";
 import { MobileSettingsDetailPage } from "../../components/settings/MobileSettingsDetailPage";
+import { reportFrontendError } from "../../lib/errorReporter";
 
 type BrowserPermState = "granted" | "denied" | "default" | "unsupported";
 
@@ -48,6 +49,13 @@ export const NotificationSettings: React.FC = () => {
       } else if (nextStatus === "denied") {
         showToast(t("settings.notif_permission_denied_toast"), "error");
       }
+    } catch (err: any) {
+      showToast(t("settings.notif_save_error"), "error");
+      void reportFrontendError({
+        source: "frontend:settings-notification",
+        message: err?.message || String(err),
+        context: { action: "enable-push-notifications" },
+      });
     } finally {
       setIsRequestingPerm(false);
     }
@@ -61,7 +69,15 @@ export const NotificationSettings: React.FC = () => {
         .select("telegram_chat_id")
         .eq("id", user.id)
         .single();
-      if (!error && data?.telegram_chat_id) setIsTelegramLinked(true);
+      if (!error && data?.telegram_chat_id) {
+        setIsTelegramLinked(true);
+      } else if (error) {
+        void reportFrontendError({
+          source: "frontend:settings-notification",
+          message: error.message,
+          context: { action: "fetch-telegram-status" },
+        });
+      }
     };
     fetchTelegramStatus();
   }, [user]);

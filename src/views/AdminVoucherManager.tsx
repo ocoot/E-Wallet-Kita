@@ -14,6 +14,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { Trash2, PlusCircle, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { reportFrontendError } from "../lib/errorReporter";
 
 interface PremiumVoucherWithUsage extends PremiumVoucher {
   usage_count?: number;
@@ -66,6 +67,11 @@ export const AdminVoucherManager: React.FC = () => {
       showToast(error.message, "error");
       setVouchersError(true);
       setLoading(false);
+      void reportFrontendError({
+        source: "frontend:admin-voucher",
+        message: error.message,
+        context: { action: "fetch-vouchers" },
+      });
       return;
     }
 
@@ -110,13 +116,26 @@ export const AdminVoucherManager: React.FC = () => {
       const { error } = await supabase
         .from("premium_vouchers")
         .insert({ code, discount_percent: Number(percent), created_by: session.user.id });
-      if (error) { showToast(error.message, "error"); return; }
+      if (error) {
+        showToast(error.message, "error");
+        void reportFrontendError({
+          source: "frontend:admin-voucher",
+          message: error.message,
+          context: { action: "create-voucher" },
+        });
+        return;
+      }
       showToast(t("voucher.success_create"), "success");
       await fetchVouchers();
       setCode("");
       setPercent("");
     } catch (err: any) {
       showToast(err?.message || t("toast.error_general"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-voucher",
+        message: err?.message || String(err),
+        context: { action: "create-voucher" },
+      });
     } finally {
       setIsCreating(false);
     }
@@ -127,12 +146,25 @@ export const AdminVoucherManager: React.FC = () => {
     setSavingAction({ isOpen: true, message: t("admin.maintenance_saving") });
     try {
       const { error } = await supabase.from("premium_vouchers").update({ is_active: false, revoked_at: new Date().toISOString() }).eq("id", revokeTarget.id);
-      if (error) { showToast(error.message, "error"); return; }
+      if (error) {
+        showToast(error.message, "error");
+        void reportFrontendError({
+          source: "frontend:admin-voucher",
+          message: error.message,
+          context: { action: "revoke-voucher", voucherId: revokeTarget.id },
+        });
+        return;
+      }
       setRevokeTarget(null);
       showToast(t("voucher.success_revoke") || "Voucher berhasil dinonaktifkan", "success");
       await fetchVouchers();
     } catch (err: any) {
       showToast(err?.message || t("toast.error_general"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-voucher",
+        message: err?.message || String(err),
+        context: { action: "revoke-voucher" },
+      });
     } finally {
       setSavingAction({ isOpen: false, message: "" });
     }
@@ -149,6 +181,11 @@ export const AdminVoucherManager: React.FC = () => {
 
       if (error) {
         showToast(error.message, "error");
+        void reportFrontendError({
+          source: "frontend:admin-voucher",
+          message: error.message,
+          context: { action: "activate-voucher", voucherId: activateTarget.id },
+        });
         return;
       }
 
@@ -157,6 +194,11 @@ export const AdminVoucherManager: React.FC = () => {
       await fetchVouchers();
     } catch (err: any) {
       showToast(err?.message || t("toast.error_general"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-voucher",
+        message: err?.message || String(err),
+        context: { action: "activate-voucher" },
+      });
     } finally {
       setSavingAction({ isOpen: false, message: "" });
     }
@@ -173,6 +215,11 @@ export const AdminVoucherManager: React.FC = () => {
 
       if (countError) {
         showToast(countError.message, "error");
+        void reportFrontendError({
+          source: "frontend:admin-voucher",
+          message: countError.message,
+          context: { action: "delete-voucher-count-check", voucherId: deleteTarget.id },
+        });
         return;
       }
 
@@ -189,6 +236,11 @@ export const AdminVoucherManager: React.FC = () => {
 
       if (deleteError) {
         showToast(deleteError.message, "error");
+        void reportFrontendError({
+          source: "frontend:admin-voucher",
+          message: deleteError.message,
+          context: { action: "delete-voucher", voucherId: deleteTarget.id },
+        });
         return;
       }
 
@@ -197,6 +249,11 @@ export const AdminVoucherManager: React.FC = () => {
       await fetchVouchers();
     } catch (err: any) {
       showToast(err?.message || t("toast.error_general"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-voucher",
+        message: err?.message || String(err),
+        context: { action: "delete-voucher" },
+      });
     } finally {
       setSavingAction({ isOpen: false, message: "" });
     }
@@ -212,6 +269,11 @@ export const AdminVoucherManager: React.FC = () => {
     setIsSavingPrice(false);
     if (error) {
       showToast(error.message, "error");
+      void reportFrontendError({
+        source: "frontend:admin-voucher",
+        message: error.message,
+        context: { action: "save-premium-price" },
+      });
       return;
     }
     showToast(t("admin.price_updated"), "success");

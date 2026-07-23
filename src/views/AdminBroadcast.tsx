@@ -8,6 +8,7 @@ import { useAdmin } from "../hooks/useAdmin";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { Button } from "../components/ui/Button";
 import { Send, Users, MessageSquare, AlertTriangle, Bell, RefreshCw } from "lucide-react";
+import { reportFrontendError } from "../lib/errorReporter";
 
 type BroadcastChannel = "telegram" | "push" | "both";
 
@@ -51,6 +52,11 @@ export const AdminBroadcast: React.FC = () => {
     } catch (err) {
       console.error("Error loading broadcast targets:", err);
       setTargetsError(true);
+      void reportFrontendError({
+        source: "frontend:admin-broadcast",
+        message: err instanceof Error ? err.message : String(err),
+        context: { action: "load-target-counts" },
+      });
     }
   };
 
@@ -86,6 +92,11 @@ export const AdminBroadcast: React.FC = () => {
         } catch (err: any) {
           results.telegram = { successCount: 0, failCount: linkedCount ?? 0 };
           console.error("Telegram broadcast failed:", err);
+          void reportFrontendError({
+            source: "frontend:admin-broadcast",
+            message: err?.message || String(err),
+            context: { action: "send-telegram" },
+          });
         }
       }
 
@@ -110,6 +121,11 @@ export const AdminBroadcast: React.FC = () => {
         } catch (err: any) {
           results.push = { successCount: 0, failCount: pushTokenCount ?? 0 };
           console.error("Push broadcast failed:", err);
+          void reportFrontendError({
+            source: "frontend:admin-broadcast",
+            message: err?.message || String(err),
+            context: { action: "send-push" },
+          });
         }
       }
 
@@ -140,6 +156,11 @@ export const AdminBroadcast: React.FC = () => {
       }
     } catch (err: any) {
       showToast(err.message || "Broadcast gagal", "error");
+      void reportFrontendError({
+        source: "frontend:admin-broadcast",
+        message: err?.message || String(err),
+        context: { action: "send-broadcast", channel },
+      });
     } finally {
       setSending(false);
     }

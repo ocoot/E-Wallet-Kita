@@ -15,6 +15,7 @@ import { PremiumModal } from "../../components/PremiumModal";
 import { MobileSettingsDetailPage } from "../../components/settings/MobileSettingsDetailPage";
 import { Button } from "../../components/ui/Button";
 import { UserSession } from "../../types";
+import { reportFrontendError } from "../../lib/errorReporter";
 
 interface ProfileSettingsProps {
   onUserPrefUpdated: (user: UserSession) => void;
@@ -88,6 +89,11 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onUserPrefUpda
         );
       } else {
         showToast(err.message || t("settings.toast_avatar_error"), "error");
+        void reportFrontendError({
+          source: "frontend:settings-profile",
+          message: err?.message || String(err),
+          context: { action: "upload-avatar" },
+        });
       }
     } finally {
       setIsUploadingAvatar(false);
@@ -121,6 +127,11 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({ onUserPrefUpda
       showToast(t("toast.success_profile"), "success");
     } catch (err: any) {
       showToast(err.message, "error");
+      void reportFrontendError({
+        source: "frontend:settings-profile",
+        message: err?.message || String(err),
+        context: { action: "update-profile-name" },
+      });
     }
   };
 

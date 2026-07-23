@@ -11,6 +11,7 @@ import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
+import { reportFrontendError } from "../lib/errorReporter";
 import {
   CheckCircle, Clock, XCircle, AlertCircle,
   TrendingUp, RefreshCw, ChevronLeft, ChevronRight, FlaskConical, AlertTriangle
@@ -72,7 +73,15 @@ export const AdminPremiumMonitor: React.FC = () => {
 
   const loadMetrics = useCallback(async () => {
     const { data, error } = await supabase.rpc("get_admin_revenue_metrics");
-    if (error) { console.error(error); return; }
+    if (error) {
+      console.error(error);
+      void reportFrontendError({
+        source: "frontend:admin-premium-monitor",
+        message: error.message || String(error),
+        context: { action: "load-metrics" },
+      });
+      return;
+    }
     setMetrics(data);
   }, []);
 
@@ -87,6 +96,11 @@ export const AdminPremiumMonitor: React.FC = () => {
       setDummyQrisEnabled(data?.value === "true");
     } catch (err: any) {
       console.error("Gagal memuat status dummy_qris_enabled:", err.message || err);
+      void reportFrontendError({
+        source: "frontend:admin-premium-monitor",
+        message: err?.message || String(err),
+        context: { action: "load-dummy-qris-setting" },
+      });
     } finally {
       setDummyQrisLoaded(true);
     }
@@ -110,6 +124,11 @@ export const AdminPremiumMonitor: React.FC = () => {
       showToast(t("admin.dummy_qris_update_success"), "success");
     } catch (err: any) {
       showToast(err.message || t("toast.error_general"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-premium-monitor",
+        message: err?.message || String(err),
+        context: { action: "save-dummy-qris-setting", nextValue },
+      });
     } finally {
       setSavingDummyQris(false);
       setPendingDummyQrisValue(null);
@@ -141,6 +160,11 @@ export const AdminPremiumMonitor: React.FC = () => {
     } catch (err: any) {
       showToast(err.message || t("toast.error_general"), "error");
       setTransactionsError(true);
+      void reportFrontendError({
+        source: "frontend:admin-premium-monitor",
+        message: err?.message || String(err),
+        context: { action: "load-transactions", statusFilter },
+      });
     } finally {
       setLoading(false);
     }
@@ -205,6 +229,11 @@ export const AdminPremiumMonitor: React.FC = () => {
                 showToast(t("admin.refresh_success"), "success");
               } catch (err: any) {
                 showToast(err.message || t("toast.error_general"), "error");
+                void reportFrontendError({
+                  source: "frontend:admin-premium-monitor",
+                  message: err?.message || String(err),
+                  context: { action: "manual-refresh" },
+                });
               } finally {
                 setRefreshing(false);
               }

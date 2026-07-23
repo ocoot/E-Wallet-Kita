@@ -11,6 +11,7 @@ import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { DropdownField } from "../components/DropdownField";
 import { Button } from "../components/ui/Button";
 import { Plus, Pencil, Check, X, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { reportFrontendError } from "../lib/errorReporter";
 
 interface Category {
   id: string;
@@ -75,6 +76,11 @@ export const AdminCategoryManager: React.FC = () => {
     if (error) { 
       showToast(t("toast.error_general"), "error"); 
       setCategoriesError(true);
+      void reportFrontendError({
+        source: "frontend:admin-category",
+        message: error.message,
+        context: { action: "load-categories" },
+      });
     } else { 
       setCategories(data || []); 
     }
@@ -113,7 +119,15 @@ export const AdminCategoryManager: React.FC = () => {
         p_description_en: editForm.description_en || null,
         p_priority: editForm.priority,
       });
-      if (error) { showToast(error.message, "error"); return; }
+      if (error) {
+        showToast(error.message, "error");
+        void reportFrontendError({
+          source: "frontend:admin-category",
+          message: error.message,
+          context: { action: "save-edit", key },
+        });
+        return;
+      }
       showToast("Category updated", "success");
       setEditingKey(null);
       loadCategories();
@@ -138,7 +152,15 @@ export const AdminCategoryManager: React.FC = () => {
         p_description_en: addForm.description_en || null,
         p_priority: addForm.priority,
       });
-      if (error) { showToast(error.message, "error"); return; }
+      if (error) {
+        showToast(error.message, "error");
+        void reportFrontendError({
+          source: "frontend:admin-category",
+          message: error.message,
+          context: { action: "add-category", key: addForm.key },
+        });
+        return;
+      }
       showToast("Category added", "success");
       setShowAddForm(false);
       setAddForm({ 

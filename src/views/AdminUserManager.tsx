@@ -10,6 +10,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { reportFrontendError } from "../lib/errorReporter";
 import {
   User,
   Mail,
@@ -82,6 +83,11 @@ export const AdminUserManager: React.FC = () => {
 
       if (error) {
         console.error(t("admin.metrics_error"), error);
+        void reportFrontendError({
+          source: "frontend:admin-user-manager",
+          message: error.message || String(error),
+          context: { action: "load-metrics" },
+        });
         return;
       }
 
@@ -93,6 +99,11 @@ export const AdminUserManager: React.FC = () => {
       });
     } catch (err) {
       console.error("Metrik exception:", err);
+      void reportFrontendError({
+        source: "frontend:admin-user-manager",
+        message: err instanceof Error ? err.message : String(err),
+        context: { action: "load-metrics" },
+      });
     }
   }, [t]);
 
@@ -173,6 +184,11 @@ export const AdminUserManager: React.FC = () => {
       console.error(t("admin.fetch_error"), err);
       showToast(t("admin.fetch_error"), "error");
       setUsersError(true);
+      void reportFrontendError({
+        source: "frontend:admin-user-manager",
+        message: err?.message || String(err),
+        context: { action: "fetch-users", page, pageSize, searchQuery, roleFilter, premiumFilter, banFilter },
+      });
     } finally {
       setLoading(false);
     }
@@ -219,6 +235,11 @@ export const AdminUserManager: React.FC = () => {
         } catch (err: any) {
           console.error(err);
           showToast(err.message || "Failed to update", "error");
+          void reportFrontendError({
+            source: "frontend:admin-user-manager",
+            message: err?.message || String(err),
+            context: { action: "toggle-premium", targetUserId: targetUser.id, nextPremium },
+          });
         } finally {
           setActionLoading({ isOpen: false, message: "" });
         }
@@ -269,6 +290,11 @@ export const AdminUserManager: React.FC = () => {
         } catch (err: any) {
           console.error(err);
           showToast(err.message || "Failed", "error");
+          void reportFrontendError({
+            source: "frontend:admin-user-manager",
+            message: err?.message || String(err),
+            context: { action: "toggle-ban", targetUserId: targetUser.id, nextBanned },
+          });
         } finally {
           setActionLoading({ isOpen: false, message: "" });
         }
@@ -319,6 +345,11 @@ export const AdminUserManager: React.FC = () => {
         } catch (err: any) {
           console.error(err);
           showToast(err.message || "Failed", "error");
+          void reportFrontendError({
+            source: "frontend:admin-user-manager",
+            message: err?.message || String(err),
+            context: { action: "toggle-role", targetUserId: targetUser.id, nextRole },
+          });
         } finally {
           setActionLoading({ isOpen: false, message: "" });
         }
@@ -376,6 +407,11 @@ export const AdminUserManager: React.FC = () => {
       loadMetrics();
     } catch (err: any) {
       showToast(err.message || "Bulk action gagal", "error");
+      void reportFrontendError({
+        source: "frontend:admin-user-manager",
+        message: err?.message || String(err),
+        context: { action: "bulk-action", bulkAction: action, count: selectedIds.size },
+      });
     } finally {
       setBulkLoading(false);
       setActionLoading({ isOpen: false, message: "" });
@@ -417,6 +453,11 @@ export const AdminUserManager: React.FC = () => {
       showToast("Data pengguna berhasil diekspor ke CSV", "success");
     } catch (err: any) {
       showToast(err.message || "Gagal ekspor CSV", "error");
+      void reportFrontendError({
+        source: "frontend:admin-user-manager",
+        message: err?.message || String(err),
+        context: { action: "export-csv" },
+      });
     }
   };
 

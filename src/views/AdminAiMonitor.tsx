@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { reportFrontendError } from "../lib/errorReporter";
 import { AdminBackBar } from "../components/AdminBackBar";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -117,6 +118,11 @@ export const AdminAiMonitor: React.FC = () => {
     } else {
       console.error("[AdminAiMonitor] RPC error:", error);
       setLoadError(true);
+      void reportFrontendError({
+        source: "frontend:admin-ai-monitor",
+        message: error?.message || "get_ai_usage_summary failed",
+        context: { action: "load-summary", period },
+      });
     }
     setLoading(false);
     setRefreshing(false);

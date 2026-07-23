@@ -13,6 +13,7 @@ import { audioFeedback } from "../../lib/audio";
 import { Modal } from "../../components/Modal";
 import { PremiumModal } from "../../components/PremiumModal";
 import { MobileSettingsDetailPage } from "../../components/settings/MobileSettingsDetailPage";
+import { reportFrontendError } from "../../lib/errorReporter";
 
 /** Halaman detail "Bot Telegram" (mobile). */
 export const TelegramSettings: React.FC = () => {
@@ -106,6 +107,11 @@ export const TelegramSettings: React.FC = () => {
       setTimerSeconds(600);
     } catch (err: any) {
       showToast(t("settings.toast_generate_code_error", { message: err.message }), "error");
+      void reportFrontendError({
+        source: "frontend:settings-telegram",
+        message: err?.message || String(err),
+        context: { action: "generate-link-code" },
+      });
     }
   };
 
@@ -139,6 +145,11 @@ export const TelegramSettings: React.FC = () => {
       showToast(t("toast.success_unlink"), "success");
     } catch (err: any) {
       showToast(err.message, "error");
+      void reportFrontendError({
+        source: "frontend:settings-telegram",
+        message: err?.message || String(err),
+        context: { action: "unlink-telegram" },
+      });
     }
   };
 

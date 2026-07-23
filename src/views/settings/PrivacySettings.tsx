@@ -10,6 +10,7 @@ import { audioFeedback } from "../../lib/audio";
 import { exportMyData, deleteMyAccount } from "../../lib/privacy";
 import { DeleteAccountModal } from "../../components/DeleteAccountModal";
 import { MobileSettingsDetailPage } from "../../components/settings/MobileSettingsDetailPage";
+import { reportFrontendError } from "../../lib/errorReporter";
 
 /** Halaman detail "Privasi & Data" (mobile) -- unduh data & hapus akun. */
 export const PrivacySettings: React.FC = () => {
@@ -30,6 +31,11 @@ export const PrivacySettings: React.FC = () => {
       showToast(t("settings.privacy_export_success"), "success");
     } catch (err: any) {
       showToast(t("settings.privacy_export_error"), "error");
+      void reportFrontendError({
+        source: "frontend:settings-privacy",
+        message: err?.message || String(err),
+        context: { action: "export-my-data" },
+      });
     } finally {
       setIsExportingData(false);
     }

@@ -12,6 +12,7 @@ import { EmojiPicker } from "../components/EmojiPicker";
 import { audioFeedback } from "../lib/audio";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { uploadChatAttachment, AttachmentValidationError } from "../lib/chatAttachment";
+import { reportFrontendError } from "../lib/errorReporter";
 import {
   MessagesSquare,
   Send,
@@ -118,6 +119,11 @@ export const AdminSupportChat: React.FC = () => {
     } catch (err: any) {
       console.error("[AdminSupportChat] loadSessions error:", err);
       setListError(true);
+      void reportFrontendError({
+        source: "frontend:admin-support-chat",
+        message: err?.message || String(err),
+        context: { action: "load-sessions" },
+      });
     } finally {
       setListLoading(false);
     }
@@ -230,6 +236,11 @@ export const AdminSupportChat: React.FC = () => {
     } catch (err: any) {
       audioFeedback.playDullPluck();
       showToast(err.message || t("admin_support_chat.toast_error"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-support-chat",
+        message: err?.message || String(err),
+        context: { action: "send-reply", sessionId: selectedId },
+      });
     } finally {
       setIsSending(false);
     }
@@ -246,6 +257,11 @@ export const AdminSupportChat: React.FC = () => {
       loadSessions();
     } catch (err: any) {
       showToast(err.message || t("admin_support_chat.toast_error"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-support-chat",
+        message: err?.message || String(err),
+        context: { action: "close-session", sessionId: selectedId },
+      });
     }
   };
 
@@ -278,6 +294,11 @@ export const AdminSupportChat: React.FC = () => {
         showToast(err.code === "TOO_LARGE" ? "File terlalu besar (maks 5 MB)" : "Format file tidak didukung", "error");
       } else {
         showToast(err.message || t("admin_support_chat.toast_error"), "error");
+        void reportFrontendError({
+          source: "frontend:admin-support-chat",
+          message: err?.message || String(err),
+          context: { action: "send-attachment", sessionId: selectedId },
+        });
       }
     } finally {
       setIsSending(false);

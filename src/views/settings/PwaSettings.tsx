@@ -7,6 +7,7 @@ import { useThemeTokens } from "../../hooks/useThemeTokens";
 import { audioFeedback } from "../../lib/audio";
 import { MobileSettingsDetailPage } from "../../components/settings/MobileSettingsDetailPage";
 import { Button } from "../../components/ui/Button";
+import { reportFrontendError } from "../../lib/errorReporter";
 
 /** Halaman detail "Instalasi Aplikasi" / PWA (mobile). */
 export const PwaSettings: React.FC = () => {
@@ -57,11 +58,19 @@ export const PwaSettings: React.FC = () => {
       return;
     }
     promptEvent.prompt();
-    const { outcome } = await promptEvent.userChoice;
-    if (outcome === "accepted") {
-      window.deferredPrompt = null;
-      setCanInstall(false);
-      showToast(t("toast.success_pwa"), "success");
+    try {
+      const { outcome } = await promptEvent.userChoice;
+      if (outcome === "accepted") {
+        window.deferredPrompt = null;
+        setCanInstall(false);
+        showToast(t("toast.success_pwa"), "success");
+      }
+    } catch (err: any) {
+      void reportFrontendError({
+        source: "frontend:settings-pwa",
+        message: err?.message || String(err),
+        context: { action: "install-prompt" },
+      });
     }
   };
 

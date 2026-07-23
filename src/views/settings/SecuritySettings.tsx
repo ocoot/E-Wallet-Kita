@@ -9,6 +9,7 @@ import { audioFeedback } from "../../lib/audio";
 import { Input } from "../../components/ui/Input";
 import { Button } from "../../components/ui/Button";
 import { MobileSettingsDetailPage } from "../../components/settings/MobileSettingsDetailPage";
+import { reportFrontendError } from "../../lib/errorReporter";
 
 /** Halaman detail "Kata Sandi & Keamanan" (mobile). */
 export const SecuritySettings: React.FC = () => {
@@ -72,6 +73,11 @@ export const SecuritySettings: React.FC = () => {
     } catch (err: any) {
       audioFeedback.playDullPluck();
       showToast(err.message || t("toast.error_general"), "error");
+      void reportFrontendError({
+        source: "frontend:settings-security",
+        message: err?.message || String(err),
+        context: { action: "change-password" },
+      });
     } finally {
       setIsChangingPassword(false);
     }

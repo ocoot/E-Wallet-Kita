@@ -21,7 +21,27 @@ type FrontendErrorSource =
   | "frontend:bill-reminders"
   | "frontend:auth"
   | "frontend:account-settings"
-  | "frontend:support-chat";
+  | "frontend:support-chat"
+  // ── Admin Panel (masing-masing sub-halaman hasil pemecahan hub-and-spoke,
+  // lihat AdminBackBar.tsx) & halaman-halaman settings kecil yang tadinya
+  // belum terpasang error monitoring.
+  | "frontend:admin-user-manager"
+  | "frontend:admin-premium-monitor"
+  | "frontend:admin-voucher"
+  | "frontend:admin-category"
+  | "frontend:admin-broadcast"
+  | "frontend:admin-support-chat"
+  | "frontend:admin-ai-monitor"
+  | "frontend:admin-maintenance"
+  | "frontend:admin-backup"
+  | "frontend:settings-profile"
+  | "frontend:settings-security"
+  | "frontend:settings-privacy"
+  | "frontend:settings-notification"
+  | "frontend:settings-pwa"
+  | "frontend:settings-telegram"
+  | "frontend:settings-language"
+  | "frontend:settings-theme";
 
 interface ReportFrontendErrorParams {
   source: FrontendErrorSource;
