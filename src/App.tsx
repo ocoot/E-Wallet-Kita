@@ -402,7 +402,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
       />
 
       {/* Main active subview frame */}
-      <main className={`flex-1 min-h-screen overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}>
+      <main
+        className={`flex-1 min-h-screen overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}
+        style={{ paddingTop: "env(safe-area-inset-top)" }}
+      >
         {/* Running text maintenance banner, shown globally above all pages */}
         <MaintenanceBanner />
 

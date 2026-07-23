@@ -2,6 +2,18 @@
  * High-Fidelity Web Audio API Sound Synthesizer
  * Provides premium, latency-free mechanical click ticks and success/delete audio feedback cues
  * dynamically without downloading any heavy, external asset audio files.
+ *
+ * Sejak revisi ini, service ini juga memicu getar (Vibration API) yang
+ * selaras dengan tiap jenis bunyi -- getar asli di Android terasa jauh
+ * lebih "native" dibanding cuma feedback suara/visual. Dipasang di sini
+ * (bukan di tiap komponen satu-satu) supaya otomatis ikut aktif di semua
+ * tempat yang sudah memanggil audioFeedback.playClick()/dst. Catatan:
+ * iOS Safari/WebKit TIDAK punya Vibration API sama sekali (termasuk saat
+ * PWA berjalan standalone) -- makanya di-feature-detect lewat
+ * `'vibrate' in navigator`, bukan diasumsikan selalu ada. Dibungkus try/
+ * catch & pola gagal-diam yang sama seperti method audio lain di file
+ * ini, dan ikut tunduk ke toggle `isMuted` yang sama supaya 1 preference
+ * pengguna ("suara & getar mati") konsisten mengontrol keduanya.
  */
 class AudioFeedbackService {
   private ctx: AudioContext | null = null;
@@ -21,6 +33,19 @@ class AudioFeedbackService {
     }
   }
 
+  private vibrate(pattern: number | number[]) {
+    if (this.isMuted) return;
+    try {
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+        navigator.vibrate(pattern);
+      }
+    } catch {
+      // Sejumlah browser melempar kalau dipanggil di luar user-gesture
+      // atau di iframe cross-origin -- gagal diam saja, sama seperti
+      // pola audio di atas.
+    }
+  }
+
   toggleMute() {
     this.isMuted = !this.isMuted;
     return this.isMuted;
@@ -35,6 +60,7 @@ class AudioFeedbackService {
    */
   playClick() {
     if (this.isMuted) return;
+    this.vibrate(8);
     try {
       this.initCtx();
       if (!this.ctx) return;
@@ -65,6 +91,7 @@ class AudioFeedbackService {
    */
   playChime() {
     if (this.isMuted) return;
+    this.vibrate([10, 40, 15]);
     try {
       this.initCtx();
       if (!this.ctx) return;
@@ -103,6 +130,7 @@ class AudioFeedbackService {
    */
   playDullPluck() {
     if (this.isMuted) return;
+    this.vibrate(20);
     try {
       this.initCtx();
       if (!this.ctx) return;
@@ -139,6 +167,7 @@ class AudioFeedbackService {
    */
   playAlert() {
     if (this.isMuted) return;
+    this.vibrate([15, 60, 15]);
     try {
       this.initCtx();
       if (!this.ctx) return;
