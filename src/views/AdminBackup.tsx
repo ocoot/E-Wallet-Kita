@@ -394,7 +394,7 @@ export const AdminBackup: React.FC = () => {
       <LoadingOverlay isOpen={triggering} message={t("admin.backup_triggering")} />
 
       {/* Card status terakhir */}
-      <div className="p-6 md:p-8">
+      <div className={cx("p-6 md:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-start gap-3">
             <div>
