@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { dbService } from "../lib/db";
 import { BillReminder } from "../types";
+import { reportFrontendError } from "../lib/errorReporter";
 
 export type BillUrgency = "overdue" | "due_soon" | "upcoming" | "paid";
 
@@ -105,6 +106,11 @@ export function useBillReminders(userId: string | undefined) {
       setReminders(enriched);
     } catch (err) {
       console.error("useBillReminders error:", err);
+      void reportFrontendError({
+        source: "frontend:bill-reminders",
+        message: err instanceof Error ? err.message : String(err),
+        context: { fn: "useBillReminders.load" },
+      });
       setError(err);
     } finally {
       setLoading(false);

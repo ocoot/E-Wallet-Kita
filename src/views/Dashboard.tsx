@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { dbService } from "../lib/db";
+import { reportFrontendError } from "../lib/errorReporter";
 import { supabase } from "../lib/supabase";
 import { UserSession, Transaction } from "../types";
 import { useAuth } from "../contexts/AuthContext";
@@ -179,6 +180,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
         setSparkPoints(historyPoints);
       } catch (err) {
         console.error('Dashboard load error:', err);
+        void reportFrontendError({
+          source: "frontend:dashboard",
+          message: err instanceof Error ? err.message : String(err),
+          context: { fn: "Dashboard.loadData" },
+        });
         setDashboardError(err);
       }
     // eslint-disable-next-line react-hooks/exhaustive-deps

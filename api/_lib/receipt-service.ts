@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { logError } from './errorLogger.js';
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -24,6 +25,12 @@ export async function createReceiptDraft(
     if (!walletErr) defaultWalletId = walletId as string;
   } catch (err) {
     console.error("Gagal resolve wallet default untuk receipt draft:", err);
+    void logError(supabaseBackend, {
+      source: "receipt-service",
+      message: err instanceof Error ? err.message : String(err),
+      userId,
+      context: { fn: "createReceiptDraft", stage: "resolve-default-wallet" },
+    });
   }
 
   const { data, error } = await supabaseBackend

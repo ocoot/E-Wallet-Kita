@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { dbService } from "../lib/db";
 import { Budget, Category } from "../types";
+import { reportFrontendError } from "../lib/errorReporter";
 
 export type BudgetStatus = "safe" | "warning" | "danger";
 
@@ -59,6 +60,11 @@ export function useBudgets(userId: string | undefined) {
       setBudgets(withProgress);
     } catch (err) {
       console.error("useBudgets error:", err);
+      void reportFrontendError({
+        source: "frontend:budget",
+        message: err instanceof Error ? err.message : String(err),
+        context: { fn: "useBudgets.load" },
+      });
       setError(err);
     } finally {
       setLoading(false);

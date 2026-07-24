@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "./LanguageContext";
 import { useAdminContext } from "./AdminContext";
+import { reportFrontendError } from "../lib/errorReporter";
 
 interface FeatureLock {
   feature_key: string;
@@ -62,6 +63,11 @@ export const MaintenanceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       const { data, error } = await supabase.rpc("get_maintenance_status");
       if (error) {
         console.error("Gagal memuat status maintenance:", error.message);
+        void reportFrontendError({
+          source: "frontend:maintenance-status",
+          message: error.message,
+          context: { fn: "MaintenanceProvider.fetchStatus" },
+        });
         return;
       }
       if (data) {
@@ -81,6 +87,11 @@ export const MaintenanceProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }
     } catch (err) {
       console.error("Exception memuat status maintenance:", err);
+      void reportFrontendError({
+        source: "frontend:maintenance-status",
+        message: err instanceof Error ? err.message : String(err),
+        context: { fn: "MaintenanceProvider.fetchStatus" },
+      });
     } finally {
       setLoading(false);
     }

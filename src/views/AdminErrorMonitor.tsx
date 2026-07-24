@@ -11,6 +11,7 @@ import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
+import { reportFrontendError } from "../lib/errorReporter";
 import {
   AlertTriangle,
   XCircle,
@@ -100,7 +101,15 @@ export const AdminErrorMonitor: React.FC = () => {
 
   const loadStats = useCallback(async () => {
     const { data, error } = await supabase.rpc("admin_get_error_stats", { p_hours: periodHours });
-    if (error) { console.error("[AdminErrorMonitor] stats RPC error:", error); return; }
+    if (error) {
+      console.error("[AdminErrorMonitor] stats RPC error:", error);
+      void reportFrontendError({
+        source: "frontend:admin-error-monitor",
+        message: error.message,
+        context: { fn: "loadStats", periodHours },
+      });
+      return;
+    }
     setStats(data as ErrorStats);
   }, [periodHours]);
 
@@ -125,6 +134,11 @@ export const AdminErrorMonitor: React.FC = () => {
       setTotalCount(countRes.data || 0);
     } catch (err: any) {
       showToast(err.message || t("toast.error_general"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-error-monitor",
+        message: err instanceof Error ? err.message : String(err),
+        context: { fn: "loadLogs", page, pageSize, levelFilter, sourceFilter },
+      });
       setLogsError(true);
     } finally {
       setLogsLoading(false);

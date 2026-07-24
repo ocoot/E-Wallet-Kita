@@ -1,4 +1,5 @@
 import { SupabaseClient } from '@supabase/supabase-js';
+import { logError } from './errorLogger.js';
 
 /**
  * Helper maintenance mode untuk dipakai di sisi backend (bot Telegram).
@@ -47,6 +48,11 @@ export async function getMaintenanceStatus(
     const { data, error } = await supabase.rpc('get_maintenance_status');
     if (error || !data) {
       console.error('Gagal memuat status maintenance:', error?.message);
+      void logError(supabase, {
+        source: "maintenance",
+        message: error?.message || "get_maintenance_status returned no data",
+        context: { fn: "getMaintenanceStatus" },
+      });
       return FALLBACK_STATUS;
     }
     return {
@@ -57,6 +63,11 @@ export async function getMaintenanceStatus(
     };
   } catch (err) {
     console.error('Exception saat memuat status maintenance:', err);
+    void logError(supabase, {
+      source: "maintenance",
+      message: err instanceof Error ? err.message : String(err),
+      context: { fn: "getMaintenanceStatus" },
+    });
     return FALLBACK_STATUS;
   }
 }

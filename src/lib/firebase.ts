@@ -1,5 +1,6 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getMessaging, Messaging, getToken, deleteToken, onMessage } from 'firebase/messaging';
+import { reportFrontendError } from './errorReporter';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
@@ -24,7 +25,12 @@ function getOrInitMessaging(): Messaging | null {
     app = initializeApp(firebaseConfig);
     messaging = getMessaging(app);
     return messaging;
-  } catch {
+  } catch (err) {
+    void reportFrontendError({
+      source: "frontend:fcm-push",
+      message: err instanceof Error ? err.message : String(err),
+      context: { fn: "getOrInitMessaging" },
+    });
     return null;
   }
 }
@@ -64,6 +70,11 @@ function getFcmServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | 
     .register('/firebase-messaging-sw.js', { scope: '/firebase-cloud-messaging-push-scope/' })
     .catch((err) => {
       console.error('[FCM] Failed to register firebase-messaging-sw.js:', err);
+      void reportFrontendError({
+        source: "frontend:fcm-push",
+        message: err instanceof Error ? err.message : String(err),
+        context: { fn: "getFcmServiceWorkerRegistration" },
+      });
       return null;
     });
 
@@ -146,6 +157,11 @@ export const requestFcmToken = async (): Promise<string | null> => {
     return cachedToken;
   } catch (err) {
     console.error('[FCM] Error getting token:', err);
+    void reportFrontendError({
+      source: "frontend:fcm-push",
+      message: err instanceof Error ? err.message : String(err),
+      context: { fn: "requestFcmToken" },
+    });
     return null;
   }
 };
@@ -222,6 +238,11 @@ export const saveFcmToken = async (
     }
   } catch (err) {
     console.error("[FCM] Error saving token to DB:", err);
+    void reportFrontendError({
+      source: "frontend:fcm-push",
+      message: err instanceof Error ? err.message : String(err),
+      context: { fn: "saveFcmToken", userId },
+    });
   }
 };
 
@@ -310,6 +331,11 @@ export const clearFcmToken = async (
         // Non-fatal: even if the SDK-side revoke fails (e.g. no active
         // registration), we still want to remove the DB row below.
         console.warn('[FCM] deleteToken() failed, continuing with DB cleanup:', err);
+        void reportFrontendError({
+          source: "frontend:fcm-push",
+          message: err instanceof Error ? err.message : String(err),
+          context: { fn: "clearFcmToken.deleteToken", userId, severity: "non-fatal" },
+        });
       });
     }
     cachedToken = null;
@@ -335,5 +361,10 @@ export const clearFcmToken = async (
   } catch (err) {
     // Non-fatal: logout must still proceed even if token cleanup fails.
     console.error('[FCM] Error clearing token on logout:', err);
+    void reportFrontendError({
+      source: "frontend:fcm-push",
+      message: err instanceof Error ? err.message : String(err),
+      context: { fn: "clearFcmToken", userId, severity: "critical-token-leak-risk" },
+    });
   }
 };

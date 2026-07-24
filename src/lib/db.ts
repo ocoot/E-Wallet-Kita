@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { reportFrontendError } from "./errorReporter";
 import { Transaction, Category, Budget, BillReminder, Installment, AccumulatedBalance, SavingsPocket, SavingsPocketEntry, SavingsSummary, SavingsPocketType, GoldPocket, GoldPocketEntry, GoldHoldingsSummary, GoldBrand, ACTIVE_GOLD_BRANDS, Wallet, WalletWithBalance, WalletType } from "../types";
 
 export const dbService = {
@@ -371,9 +372,39 @@ export const dbService = {
       return { outgoing, incoming };
     } catch (err) {
       console.error('Error creating incoming transfer leg, rolling back outgoing leg:', err);
+      void reportFrontendError({
+        source: "frontend:wallet-transfer",
+        message: err instanceof Error ? err.message : String(err),
+        context: {
+          stage: "incoming-leg-failed",
+          userId,
+          fromWalletId,
+          toWalletId,
+          amount,
+          outgoingTransactionId: outgoing.id,
+          stack: err instanceof Error ? err.stack?.slice(0, 1500) : null,
+        },
+      });
       const rolledBack = await dbService.deleteTransaction(userId, outgoing.id);
       if (!rolledBack) {
+        // Ini kondisi paling parah: leg keluar (expense) sudah kebentuk di
+        // pos asal, leg masuk (income) gagal dibuat, DAN rollback-nya juga
+        // gagal -- saldo user bisa "bocor" tanpa jejak transaksi yang benar.
+        // Wajib tercatat di error_logs, bukan cuma console.
         console.error('Failed to roll back outgoing transfer leg', outgoing.id);
+        void reportFrontendError({
+          source: "frontend:wallet-transfer",
+          message: `Gagal rollback outgoing transfer leg (transaction id: ${outgoing.id})`,
+          context: {
+            stage: "rollback-failed",
+            severity: "critical",
+            userId,
+            fromWalletId,
+            toWalletId,
+            amount,
+            outgoingTransactionId: outgoing.id,
+          },
+        });
       }
       throw err;
     }

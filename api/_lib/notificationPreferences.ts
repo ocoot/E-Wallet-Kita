@@ -15,6 +15,8 @@
  * notify_support_reply_push() di migration 20260819010000, tidak diubah).
  */
 
+import { logError } from "./errorLogger.js";
+
 export type NotificationPreferenceKey =
   | "push_transaction"
   | "telegram_budget_alert"
@@ -60,6 +62,13 @@ export async function isNotificationEnabled(
 
     if (error) {
       console.warn(`[notificationPreferences] Gagal baca preferensi (${key}), fail-open ke true:`, error.message);
+      void logError(supabaseBackend, {
+        source: "notification-preferences",
+        level: "warning",
+        message: error.message,
+        userId,
+        context: { fn: "isNotificationEnabled", key },
+      });
       return ALL_ENABLED[key];
     }
     if (!data) return ALL_ENABLED[key];
@@ -68,6 +77,13 @@ export async function isNotificationEnabled(
     return typeof value === "boolean" ? value : ALL_ENABLED[key];
   } catch (err) {
     console.warn(`[notificationPreferences] Exception baca preferensi (${key}), fail-open ke true:`, err);
+    void logError(supabaseBackend, {
+      source: "notification-preferences",
+      level: "warning",
+      message: err instanceof Error ? err.message : String(err),
+      userId,
+      context: { fn: "isNotificationEnabled", key },
+    });
     return ALL_ENABLED[key];
   }
 }
@@ -90,11 +106,23 @@ export async function getUsersWithDisabledPreference(
 
     if (error) {
       console.warn(`[notificationPreferences] Gagal ambil daftar disabled (${key}), fail-open (tidak ada yang di-skip):`, error.message);
+      void logError(supabaseBackend, {
+        source: "notification-preferences",
+        level: "warning",
+        message: error.message,
+        context: { fn: "getUsersWithDisabledPreference", key },
+      });
       return new Set();
     }
     return new Set((data || []).map((row: { user_id: string }) => row.user_id));
   } catch (err) {
     console.warn(`[notificationPreferences] Exception ambil daftar disabled (${key}), fail-open:`, err);
+    void logError(supabaseBackend, {
+      source: "notification-preferences",
+      level: "warning",
+      message: err instanceof Error ? err.message : String(err),
+      context: { fn: "getUsersWithDisabledPreference", key },
+    });
     return new Set();
   }
 }

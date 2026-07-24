@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { dbService } from "../lib/db";
 import { GoldPocket, GoldHoldingsSummary, GoldBrand } from "../types";
+import { reportFrontendError } from "../lib/errorReporter";
 
 export interface GoldPriceRow {
   brand: GoldBrand;
@@ -66,6 +67,11 @@ export function useGoldSavings(userId: string | undefined) {
       setPrices(pricesRes as GoldPriceRow[]);
     } catch (err) {
       console.error("useGoldSavings error:", err);
+      void reportFrontendError({
+        source: "frontend:gold-savings",
+        message: err instanceof Error ? err.message : String(err),
+        context: { fn: "useGoldSavings.load" },
+      });
       setError(err);
     } finally {
       setLoading(false);

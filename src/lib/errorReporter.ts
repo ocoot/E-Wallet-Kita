@@ -9,6 +9,12 @@ type FrontendErrorSource =
   // render/promise yang lolos) juga tercatat -- lihat withErrorReporting
   // di bawah. Tambah entri baru di sini kalau mau cover fitur lain.
   | "frontend:transaction"
+  | "frontend:dashboard"
+  | "frontend:categories"
+  | "frontend:maintenance-status"
+  | "frontend:admin-role-check"
+  | "frontend:fcm-push"
+  | "frontend:admin-error-monitor"
   | "frontend:pdf-export"
   | "frontend:premium-receipt"
   | "frontend:wallet"

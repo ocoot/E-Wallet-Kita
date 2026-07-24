@@ -173,7 +173,13 @@ export const History: React.FC<HistoryProps> = ({
   const executeEditSave = async (id: string, category: string, amount: number, transactionDate: string, walletId: string | null) => {
     setIsEditSaving(true);
     try {
-      await dbService.updateTransaction(currentUser.id, id, { category, amount, transaction_date: transactionDate, wallet_id: walletId });
+      await withErrorReporting(
+        "frontend:transaction",
+        async () => {
+          await dbService.updateTransaction(currentUser.id, id, { category, amount, transaction_date: transactionDate, wallet_id: walletId });
+        },
+        { action: "edit", transactionId: id, walletId }
+      );
       audioFeedback.playChime();
       showToast(t("toast.success_update"), "success");
       setEditTarget(null);
@@ -190,7 +196,11 @@ export const History: React.FC<HistoryProps> = ({
     if (!deleteTargetId) return;
     setIsLoading(true);
     try {
-      const res = await dbService.deleteTransaction(currentUser.id, deleteTargetId);
+      const res = await withErrorReporting(
+        "frontend:transaction",
+        () => dbService.deleteTransaction(currentUser.id, deleteTargetId),
+        { action: "delete", transactionId: deleteTargetId }
+      );
       if (res) { audioFeedback.playChime(); showToast(t("toast.success_delete"), "success"); onTransactionUpdated(); }
       else { audioFeedback.playDullPluck(); showToast(t("toast.error_general"), "error"); }
       setDeleteTargetId(null);
@@ -207,7 +217,11 @@ export const History: React.FC<HistoryProps> = ({
     setIsDeleteAllOpen(false);
     setIsLoading(true);
     try {
-      await dbService.purgeAllTransactions(currentUser.id);
+      await withErrorReporting(
+        "frontend:transaction",
+        () => dbService.purgeAllTransactions(currentUser.id),
+        { action: "delete-all" }
+      );
       audioFeedback.playChime();
       showToast(t("toast.success_delete_all"), "success");
       setDeleteAllConfirmText("");

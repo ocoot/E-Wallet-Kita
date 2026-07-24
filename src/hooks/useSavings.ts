@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { dbService } from "../lib/db";
 import { SavingsPocket, SavingsSummary } from "../types";
+import { reportFrontendError } from "../lib/errorReporter";
 
 export interface SavingsPocketWithProgress extends SavingsPocket {
   /** 0-100, null kalau pocket tidak punya target_amount */
@@ -45,6 +46,11 @@ export function useSavings(userId: string | undefined) {
       setSummary(summaryRes);
     } catch (err) {
       console.error("useSavings error:", err);
+      void reportFrontendError({
+        source: "frontend:savings",
+        message: err instanceof Error ? err.message : String(err),
+        context: { fn: "useSavings.load" },
+      });
       setError(err);
     } finally {
       setLoading(false);

@@ -185,6 +185,11 @@ async function sendBudgetWarningIfNeeded(
     await sendTelegramMessage(chatId, message);
   } catch (err) {
     console.error("Error sending budget warning via Telegram:", err);
+    void logError(supabaseBackend, {
+      source: "telegram-webhook:budget-warning",
+      message: err instanceof Error ? err.message : String(err),
+      context: { chatId },
+    });
   }
 }
 
@@ -846,6 +851,11 @@ async function handleReceiptPhoto(message: any, maintenanceStatus: MaintenanceSt
 
   } catch (err: any) {
     console.error("handleReceiptPhoto error:", err);
+    void logError(supabaseBackend, {
+      source: "telegram-webhook:receipt-photo",
+      message: err?.message ?? String(err),
+      context: { chatId },
+    });
     await sendTelegramMessage(chatId, lang === "id" 
       ? `*Gagal Membaca Foto Struk*\n_Penyebab: ${err.message || 'Error internal parser struk'}_`
       : `*Failed to Process Receipt Photo*\n_Reason: ${err.message || 'Internal parser error'}_`);
@@ -993,6 +1003,12 @@ async function handleVoiceNote(message: any, maintenanceStatus: MaintenanceStatu
     );
   } catch (err: any) {
     console.error(`[${traceId}] handleVoiceNote error (di luar transcribeVoiceNote — kemungkinan getFile/download Telegram gagal, lihat log di atas):`, err?.message ?? err);
+    void logError(supabaseBackend, {
+      source: "telegram-webhook:voice-note-handler",
+      message: err?.message ?? String(err),
+      context: { chatId },
+      traceId,
+    });
     await sendTelegramMessage(chatId, tr("voiceTranscribeError", lang));
   }
 }
@@ -1231,6 +1247,12 @@ export default async (req: VercelRequest, res: VercelResponse) => {
               }
             } catch (err) {
               console.error('[FCM] Failed to send transaction push:', err);
+              void logError(supabaseBackend, {
+                source: "telegram-webhook:fcm-push",
+                level: "warning",
+                message: err instanceof Error ? err.message : String(err),
+                context: { fn: "tx_approve transaction push" },
+              });
             }
           }
         }
@@ -1351,9 +1373,20 @@ export default async (req: VercelRequest, res: VercelResponse) => {
               }
             } catch (fcmErr) {
               console.error('[FCM] Failed to send receipt push:', fcmErr);
+              void logError(supabaseBackend, {
+                source: "telegram-webhook:fcm-push",
+                level: "warning",
+                message: fcmErr instanceof Error ? fcmErr.message : String(fcmErr),
+                context: { fn: "rcpt_approve receipt push" },
+              });
             }
           }
         } catch (err: any) {
+          void logError(supabaseBackend, {
+            source: "telegram-webhook:tx-approve",
+            message: err?.message ?? String(err),
+            context: { chatId, msgId },
+          });
           await answerTelegramCallback(queryId, tr("cbSaveFailed", lang));
           await editTelegramMessage(chatId, msgId, tr("msgSaveFailed", lang, err.message));
         }
@@ -1493,6 +1526,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           );
         } catch (err: any) {
           console.error("pdf_all error:", err);
+          void logError(supabaseBackend, {
+            source: "telegram-webhook:pdf-export",
+            message: err?.message ?? String(err),
+            context: { fn: "pdf_all", chatId },
+          });
           await sendTelegramMessage(chatId, tr("riwayatError", lang));
         }
       }
@@ -1528,6 +1566,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           );
         } catch (err: any) {
           console.error("pdf_setwallet error:", err);
+          void logError(supabaseBackend, {
+            source: "telegram-webhook:pdf-export",
+            message: err?.message ?? String(err),
+            context: { fn: "pdf_setwallet", chatId },
+          });
           await sendTelegramMessage(chatId, tr("riwayatError", lang));
         }
       }
@@ -1727,6 +1770,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             await sendTelegramMessage(chatId, tr("linkSuccess", lang, userDisplay));
           }
         } catch (err: any) {
+          void logError(supabaseBackend, {
+            source: "telegram-webhook:account-link",
+            message: err?.message ?? String(err),
+            context: { fn: "link", chatId },
+          });
           await sendTelegramMessage(chatId, tr("linkInternalError", lang, err.message));
         }
 
@@ -1743,6 +1791,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
             await sendTelegramMessage(chatId, tr("unlinkSuccess", lang));
           }
         } catch (err: any) {
+          void logError(supabaseBackend, {
+            source: "telegram-webhook:account-link",
+            message: err?.message ?? String(err),
+            context: { fn: "unlink", chatId },
+          });
           await sendTelegramMessage(chatId, tr("unlinkFailed", lang, err.message));
         }
         res.status(200).json({ ok: true }); return;
@@ -1791,6 +1844,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
         } catch (err: any) {
           console.error("/saldo error:", err);
+          void logError(supabaseBackend, {
+            source: "telegram-webhook:cmd-saldo",
+            message: err?.message ?? String(err),
+            context: { chatId },
+          });
           await sendTelegramMessage(chatId, tr("saldoError", lang));
         }
         res.status(200).json({ ok: true }); return;
@@ -1832,6 +1890,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           }
         } catch (err: any) {
           console.error("/riwayat error:", err);
+          void logError(supabaseBackend, {
+            source: "telegram-webhook:cmd-riwayat",
+            message: err?.message ?? String(err),
+            context: { chatId },
+          });
           await sendTelegramMessage(chatId, tr("riwayatError", lang));
         }
         res.status(200).json({ ok: true }); return;
@@ -1900,6 +1963,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
           await sendTelegramMessage(chatId, msg);
         } catch (err: any) {
           console.error("/hargaemas error:", err);
+          void logError(supabaseBackend, {
+            source: "telegram-webhook:cmd-hargaemas",
+            message: err?.message ?? String(err),
+            context: { chatId },
+          });
           await sendTelegramMessage(chatId, tr("hargaEmasError", lang));
         }
         res.status(200).json({ ok: true }); return;
@@ -2028,6 +2096,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
         } catch (err: any) {
           console.error("/pdf error:", err);
+          void logError(supabaseBackend, {
+            source: "telegram-webhook:pdf-export",
+            message: err?.message ?? String(err),
+            context: { fn: "/pdf", chatId },
+          });
           await sendTelegramMessage(chatId, tr("riwayatError", lang));
         }
         res.status(200).json({ ok: true }); return;
@@ -2071,6 +2144,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
 
         } catch (err: any) {
           console.error("/hapus error:", err);
+          void logError(supabaseBackend, {
+            source: "telegram-webhook:cmd-hapus",
+            message: err?.message ?? String(err),
+            context: { chatId },
+          });
           await sendTelegramMessage(chatId, tr("hapusError", lang, err.message));
         }
         res.status(200).json({ ok: true }); return;
@@ -2131,6 +2209,11 @@ export default async (req: VercelRequest, res: VercelResponse) => {
       } catch (parseError: any) {
         const errType = parseError?.name ?? "UnknownError";
         console.error(`parseFinancialQuery failed [${errType}]:`, parseError?.message ?? parseError);
+        void logError(supabaseBackend, {
+          source: "telegram-webhook:parse-financial-query",
+          message: parseError?.message ?? String(parseError),
+          context: { chatId, errType },
+        });
         await sendTelegramMessage(chatId, tr("parseError", lang));
       }
 

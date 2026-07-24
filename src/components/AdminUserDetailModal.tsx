@@ -7,6 +7,7 @@ import {
   X, Shield, Ban, Crown, Mail, MessageCircle, Calendar, Hash, Wallet, TrendingUp, TrendingDown
 } from "lucide-react";
 import { ModalShell } from "./ui/ModalShell";
+import { reportFrontendError } from "../lib/errorReporter";
 
 interface UserDetail extends UserProfile {
   telegram_chat_id?: number | null;
@@ -65,6 +66,11 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
         } as UserDetail);
       } catch (err) {
         console.error("Error loading user details:", err);
+        void reportFrontendError({
+          source: "frontend:admin-user-manager",
+          message: err instanceof Error ? err.message : String(err),
+          context: { fn: "AdminUserDetailModal.loadDetail", targetUserId: user.id },
+        });
         setLoadError(true);
       } finally {
         setLoading(false);

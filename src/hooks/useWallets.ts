@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { dbService } from "../lib/db";
 import { WalletWithBalance } from "../types";
 import { useAuth } from "../contexts/AuthContext";
+import { reportFrontendError } from "../lib/errorReporter";
 
 /**
  * Mengambil daftar Pos Dompet (E-Wallet, Rekening, Cash, Saldo Total) milik
@@ -37,6 +38,11 @@ export function useWallets() {
       setWallets(data);
     } catch (err) {
       console.error("useWallets error:", err);
+      void reportFrontendError({
+        source: "frontend:wallet",
+        message: err instanceof Error ? err.message : String(err),
+        context: { fn: "useWallets.refresh", silent: !!options?.silent },
+      });
       if (!options?.silent) setWallets([]);
       setError(err);
     } finally {

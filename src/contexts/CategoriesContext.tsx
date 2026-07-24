@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { dbService } from "../lib/db";
 import { Category } from "../types";
+import { reportFrontendError } from "../lib/errorReporter";
 
 interface CategoriesContextType {
   categories: Category[];
@@ -38,6 +39,11 @@ export const CategoriesProvider = ({ children }: { children: React.ReactNode }) 
       setCategories(data);
     } catch (err) {
       console.error("CategoriesProvider error:", err);
+      void reportFrontendError({
+        source: "frontend:categories",
+        message: err instanceof Error ? err.message : String(err),
+        context: { fn: "CategoriesProvider.refresh" },
+      });
     } finally {
       setLoading(false);
     }

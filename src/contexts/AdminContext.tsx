@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./AuthContext";
+import { reportFrontendError } from "../lib/errorReporter";
 
 interface AdminContextType {
   isAdmin: boolean;
@@ -48,6 +49,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // Kalau kita timpa ke false, user yang sah jadi "ditendang" keluar
         // dari Admin Panel walau role-nya sebenarnya tidak berubah.
         console.error("Gagal memuat role admin (mempertahankan status sebelumnya):", error.message);
+        void reportFrontendError({
+          source: "frontend:admin-role-check",
+          message: error.message,
+          context: { fn: "AdminProvider.refreshAdmin", userId },
+        });
         return;
       }
 
@@ -56,6 +62,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       lastResolvedUserId.current = userId;
     } catch (err) {
       console.error("Exception saat memuat status admin (mempertahankan status sebelumnya):", err);
+      void reportFrontendError({
+        source: "frontend:admin-role-check",
+        message: err instanceof Error ? err.message : String(err),
+        context: { fn: "AdminProvider.refreshAdmin", userId },
+      });
     } finally {
       setLoading(false);
     }

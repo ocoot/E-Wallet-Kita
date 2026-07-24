@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { dbService } from "../lib/db";
 import { Installment } from "../types";
+import { reportFrontendError } from "../lib/errorReporter";
 
 export interface InstallmentWithProgress extends Installment {
   /** 0-100, dibulatkan */
@@ -60,6 +61,11 @@ export function useInstallments(userId: string | undefined) {
       setInstallments(enriched);
     } catch (err) {
       console.error("useInstallments error:", err);
+      void reportFrontendError({
+        source: "frontend:installments",
+        message: err instanceof Error ? err.message : String(err),
+        context: { fn: "useInstallments.load" },
+      });
       setError(err);
     } finally {
       setLoading(false);

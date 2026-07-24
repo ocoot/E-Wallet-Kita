@@ -1,4 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
+import { createClient } from "@supabase/supabase-js";
+import { logError } from "./errorLogger.js";
+
+const supabaseLogger = createClient(
+  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+);
 
 // ─────────────────────────────────────────────────────────────
 // Voice note transcription (audio → plain text)
@@ -101,6 +108,11 @@ export async function transcribeVoiceNote(
 
   if (!ai) {
     console.error(`[${traceId}] transcribeVoiceNote aborted — tidak ada Gemini API key yang tersedia (GEMINI_API_KEY maupun GEMINI_API_KEY_1 sama-sama kosong). No model was attempted.`);
+    void logError(supabaseLogger, {
+      source: "voice-transcriber",
+      message: "Aborted: no Gemini API key configured (GEMINI_API_KEY and GEMINI_API_KEY_1 both empty).",
+      traceId,
+    });
     return null;
   }
 
@@ -174,5 +186,14 @@ export async function transcribeVoiceNote(
     `Input: ${describeAudioForLog(base64Audio, mimeType)}. ` +
     `Last thrown error: ${lastError ? describeGeminiError(lastError) : "none (all attempts returned empty, no exceptions)"}`
   );
+  void logError(supabaseLogger, {
+    source: "voice-transcriber",
+    message: "All Gemini models failed to transcribe voice note.",
+    traceId,
+    context: {
+      attempts,
+      lastError: lastError ? describeGeminiError(lastError) : null,
+    },
+  });
   return null;
 }

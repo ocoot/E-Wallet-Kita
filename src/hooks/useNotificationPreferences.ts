@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../lib/supabase";
+import { reportFrontendError } from "../lib/errorReporter";
 
 /**
  * Kategori notifikasi yang bisa di-toggle di Settings. SENGAJA TIDAK
@@ -60,6 +61,11 @@ export function useNotificationPreferences(userId: string | undefined) {
 
       if (error) {
         console.error("useNotificationPreferences load error:", error);
+        void reportFrontendError({
+          source: "frontend:settings-notification",
+          message: error.message,
+          context: { fn: "useNotificationPreferences.load" },
+        });
         setPreferences(DEFAULT_PREFERENCES);
       } else if (data) {
         setPreferences({ ...DEFAULT_PREFERENCES, ...data });
@@ -70,6 +76,11 @@ export function useNotificationPreferences(userId: string | undefined) {
       }
     } catch (err) {
       console.error("useNotificationPreferences load exception:", err);
+      void reportFrontendError({
+        source: "frontend:settings-notification",
+        message: err instanceof Error ? err.message : String(err),
+        context: { fn: "useNotificationPreferences.load" },
+      });
       setPreferences(DEFAULT_PREFERENCES);
     } finally {
       setLoading(false);
@@ -100,6 +111,11 @@ export function useNotificationPreferences(userId: string | undefined) {
         return true;
       } catch (err) {
         console.error(`useNotificationPreferences setPreference(${key}) error:`, err);
+        void reportFrontendError({
+          source: "frontend:settings-notification",
+          message: err instanceof Error ? err.message : String(err),
+          context: { fn: "useNotificationPreferences.setPreference", key, value },
+        });
         // Rollback -- jangan biarkan UI menampilkan status yang sebenarnya
         // gagal tersimpan.
         setPreferences((prev) => ({ ...prev, [key]: previous }));

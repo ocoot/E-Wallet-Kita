@@ -1,3 +1,11 @@
+import { createClient } from "@supabase/supabase-js";
+import { logError } from "./errorLogger.js";
+
+const supabaseLogger = createClient(
+  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "",
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ""
+);
+
 // Retry wrapper for Telegram API calls (up to 2 retries)
 async function withRetry<T>(fn: () => Promise<T>, retries = 2, delayMs = 500): Promise<T> {
   let lastErr: unknown;
@@ -31,6 +39,11 @@ export async function sendTelegramMessage(chatId: number, text: string, replyMar
     });
   } catch (err) {
     console.error(`sendTelegramMessage to ${chatId} failed after retries:`, err);
+    void logError(supabaseLogger, {
+      source: "telegram",
+      message: err instanceof Error ? err.message : String(err),
+      context: { fn: "sendTelegramMessage", chatId },
+    });
   }
 }
 
@@ -69,6 +82,11 @@ export async function editTelegramMessage(chatId: number, messageId: number, tex
     });
   } catch (err) {
     console.error(`editTelegramMessage for ${chatId}/${messageId} failed after retries:`, err);
+    void logError(supabaseLogger, {
+      source: "telegram",
+      message: err instanceof Error ? err.message : String(err),
+      context: { fn: "editTelegramMessage", chatId, messageId },
+    });
   }
 }
 
@@ -85,6 +103,11 @@ export async function answerTelegramCallback(callbackQueryId: string, text?: str
     });
   } catch (err) {
     console.error(`answerTelegramCallback ${callbackQueryId} failed after retries:`, err);
+    void logError(supabaseLogger, {
+      source: "telegram",
+      message: err instanceof Error ? err.message : String(err),
+      context: { fn: "answerTelegramCallback", callbackQueryId },
+    });
   }
 }
 

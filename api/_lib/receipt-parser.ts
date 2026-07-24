@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
 import { createClient } from "@supabase/supabase-js";
 import { getActiveCategories, generateCategoryPrompt, validateCategoryKey, Category } from "./categories.js";
+import { logError } from "./errorLogger.js";
 
 // ─── Supabase service-role client (server-side only) ───────────────────────
 const supabaseLogger = createClient(
@@ -361,5 +362,15 @@ export async function parseReceipt(imageBase64: string, source = "receipt_parser
     }
   }
   
+  const attemptedProviders = {
+    gemini: GEMINI_KEYS.length,
+    openai: OPENAI_KEYS.length,
+    anthropic: CLAUDE_KEYS.length,
+  };
+  void logError(supabaseLogger, {
+    source: "receipt-parser",
+    message: "All receipt parsing services are currently unavailable or overloaded.",
+    context: { source, attemptedProviders },
+  });
   throw new Error("All receipt parsing services are currently unavailable or overloaded.");
 }

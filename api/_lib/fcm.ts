@@ -1,6 +1,12 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getMessaging } from 'firebase-admin/messaging';
 import { createClient } from '@supabase/supabase-js';
+import { logError } from './errorLogger.js';
+
+const supabaseLogger = createClient(
+  process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+);
 
 function ensureApp() {
   const apps = getApps();
@@ -146,6 +152,12 @@ export async function sendPushNotificationToUser(
 
   if (error) {
     console.error('[FCM] Failed to fetch push tokens for user:', error.message);
+    void logError(supabaseLogger, {
+      source: "fcm",
+      message: error.message,
+      userId,
+      context: { fn: "sendPushNotificationToUser.fetchTokens" },
+    });
     return { successCount: 0, failCount: 0 };
   }
 
@@ -159,7 +171,13 @@ export async function sendPushNotificationToUser(
     try {
       await sendPushNotification(tokens[0], title, body, data);
       return { successCount: 1, failCount: 0 };
-    } catch {
+    } catch (err) {
+      void logError(supabaseLogger, {
+        source: "fcm",
+        message: err instanceof Error ? err.message : String(err),
+        userId,
+        context: { fn: "sendPushNotificationToUser.singleDevice" },
+      });
       return { successCount: 0, failCount: 1 };
     }
   }
