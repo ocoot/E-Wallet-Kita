@@ -45,8 +45,15 @@ export default defineConfig(({ mode }) => {
           display: 'standalone',
           display_override: ['window-controls-overlay', 'standalone'],
           orientation: 'portrait-primary',
-          background_color: '#0f172a',
-          theme_color: '#4f46e5',
+          // Disamakan dengan warna dark_obsidian (tema default saat pertama
+          // install/belum ada preferensi tersimpan): background_color = warna
+          // canvas dasar (splash screen sebelum CSS termuat), theme_color =
+          // warna awal gradient ribbon (lihat STATUS_BAR_COLOR di
+          // ThemeContext.tsx & GRADIENT_CSS di PageRibbonBackground.tsx) --
+          // dipakai browser/OS untuk title bar & task switcher saat PWA
+          // ter-install standalone. Sebelumnya masih ungu sisa scaffold Vite.
+          background_color: '#0A1512',
+          theme_color: '#3FBE9B',
           categories: ['finance', 'productivity', 'utilities'],
           // Web Share Target: begitu app ter-install, "E-Wallet Kita" muncul
           // sebagai salah satu pilihan tujuan saat user menekan "Share" di

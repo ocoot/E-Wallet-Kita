@@ -11,12 +11,18 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-// Warna latar asli tiap tema (lihat html/body & .light_sakura di src/index.css).
-// Status bar HP disamakan dengan warna ini lewat <meta name="theme-color">
-// supaya menyatu dengan tampilan app, bukan warna ungu sisa scaffold Vite.
+// Warna status bar HP disamakan dengan warna AWAL gradient ribbon/hero
+// (lihat GRADIENT_CSS di PageRibbonBackground.tsx & tokens.dashboardHeader.heroGradient
+// di tokens.ts) -- BUKAN lagi warna canvas polos -- supaya status bar menyatu
+// dengan ribbon berwarna di bagian atas tiap halaman (termasuk hero Dashboard),
+// bukan terlihat sebagai strip putih/gelap terpisah di atas ribbon.
+// WAJIB disamakan manual dengan stop pertama gradient di kedua file itu kalau
+// suatu saat palet ribbon berubah:
+//   dark_obsidian: var(--color-indigo-500) -> #3FBE9B
+//   light_sakura:  var(--color-rose-400)   -> #4CA98A
 const STATUS_BAR_COLOR: Record<Theme, string> = {
-  dark_obsidian: "#0A1512",
-  light_sakura: "#F5FAF8",
+  dark_obsidian: "#3FBE9B",
+  light_sakura: "#4CA98A",
 };
 
 function applyStatusBarColor(theme: Theme) {
