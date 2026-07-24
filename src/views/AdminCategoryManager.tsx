@@ -220,7 +220,7 @@ export const AdminCategoryManager: React.FC = () => {
 
       {/* Add Form */}
       {showAddForm && (
-        <div className="p-8 space-y-6">
+        <div className={cx("p-8 space-y-6 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
           <h3 className={cx("font-semibold", tokens.text.onSurface)}>{t("admin.add_category_title")}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InputField label={t("admin.key_label")} value={addForm.key}
@@ -273,7 +273,7 @@ export const AdminCategoryManager: React.FC = () => {
       ) : categoriesError ? (
         <ErrorState onRetry={loadCategories} />
       ) : (
-        <div className="overflow-hidden">
+        <div className={cx("rounded-2xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
           <ScrollableTableWrapper>
             <table className={cx("w-full text-left text-sm min-w-[900px]", tokens.text.label)}>
               <thead className={cx("uppercase text-xs", tokens.text.muted, tokens.surface.subtle)}>

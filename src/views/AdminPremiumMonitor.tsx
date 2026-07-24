@@ -345,7 +345,7 @@ export const AdminPremiumMonitor: React.FC = () => {
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden">
+      <div className={cx("rounded-2xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
         {loading ? (
           <div className="py-16 flex items-center justify-center">
             <Clock className="animate-spin text-indigo-500" size={28} />

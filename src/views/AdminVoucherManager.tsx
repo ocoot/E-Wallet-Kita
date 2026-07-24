@@ -323,7 +323,7 @@ export const AdminVoucherManager: React.FC = () => {
       </div>
 
       {/* Global Premium Price Setting Card */}
-      <div className="p-6 md:p-8 space-y-6">
+      <div className={cx("p-6 md:p-8 space-y-6 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <h2 className={cx("text-xl font-bold", tokens.text.onSurface)}>{t("admin.premium_price")}</h2>
         <div className="flex flex-col sm:flex-row gap-4 items-end">
           <div className="flex-1">
@@ -348,7 +348,7 @@ export const AdminVoucherManager: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-6 md:p-8">
+      <div className={cx("p-6 md:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <h2 className={cx("text-xl font-bold mb-6", tokens.text.onSurface)}>{t("voucher.create_voucher")}</h2>
         <div className="flex gap-4 items-end">
           <div className="flex-1">
@@ -372,7 +372,7 @@ export const AdminVoucherManager: React.FC = () => {
         </div>
       </div>
 
-      <div className="overflow-hidden">
+      <div className={cx("rounded-2xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
         {loading ? (
           <div className={cx("py-16 text-center text-sm", tokens.text.muted)}>{t("admin.loading")}</div>
         ) : vouchersError ? (

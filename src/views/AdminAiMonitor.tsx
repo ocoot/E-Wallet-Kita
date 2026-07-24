@@ -271,7 +271,7 @@ export const AdminAiMonitor: React.FC = () => {
 
           {/* Per-Key Detail Table */}
           {byKey.length > 0 && (
-            <div className="overflow-hidden">
+            <div className={cx("rounded-2xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
               <div className={cx("px-6 py-5 border-b", tokens.border.default)}>
                 <h3 className={cx("text-base font-semibold", tokens.text.primary)}>
                   {t("ai_monitor.per_key_title")}

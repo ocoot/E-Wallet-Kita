@@ -266,7 +266,7 @@ export const AdminMaintenance: React.FC = () => {
       </div>
 
       {/* ── Per-feature lock list ── */}
-      <div className="overflow-hidden">
+      <div className={cx("rounded-2xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
         <div className={cx("px-8 py-6 border-b", tokens.border.default)}>
           <p className={cx("font-semibold", tokens.text.primary)}>
             {t("admin.maintenance_feature_lock_title")}
