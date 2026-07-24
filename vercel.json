@@ -123,7 +123,7 @@
         },
         {
           "key": "Permissions-Policy",
-          "value": "geolocation=(self), microphone=(self), camera=(), payment=()"
+          "value": "geolocation=(self), microphone=(self), camera=(self), payment=()"
         },
         {
           "key": "Strict-Transport-Security",
