@@ -55,8 +55,11 @@ export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> =
       className="max-w-3xl mx-auto space-y-5 pb-24 md:hidden"
     >
       <div className="space-y-5">
-          {/* Header: back button + title */}
-          <div className={cx("flex items-center gap-3 border-b pb-4", tokens.settings.sectionBorder)}>
+          {/* Header: back button + title, dibungkus card solid (bukan lagi
+              teks mengambang langsung di atas ribbon gradient) supaya
+              kontras subtitle terjamin di semua kondisi, dan visualnya
+              menyatu dengan card-card konten di bawahnya. */}
+          <div className={cx("flex items-center gap-3 rounded-2xl border shadow-sm px-4 py-3.5", tokens.settings.profileCardBgBorder)}>
             <button
               type="button"
               onClick={handleBack}
@@ -66,7 +69,7 @@ export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> =
               <ChevronLeft size={18} />
             </button>
             <div className="min-w-0">
-              <h1 className={cx("font-sans font-bold text-lg tracking-tight truncate", tokens.text.primary)}>
+              <h1 className={cx("font-sans font-bold text-lg tracking-tight truncate", tokens.text.heading)}>
                 {title}
               </h1>
               {description && (

@@ -438,10 +438,13 @@ export const Wallets: React.FC = () => {
       <div className="space-y-6">
 
           {/* Header */}
-          <div>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+          <div className={cx("rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
               {t("wallet.title")}
             </h1>
+            <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
+              {t("wallet.desc")}
+            </p>
           </div>
 
           {/* Total banner */}

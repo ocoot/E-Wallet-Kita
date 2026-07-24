@@ -354,10 +354,13 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
       ) : (
         <div className="space-y-7">
           {/* ── Page header ──────────────────────────────────────────── */}
-          <div>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+          <div className={cx("rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
               {t("transaction.add_title")}
             </h1>
+            <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
+              {t("transaction.add_subtitle")}
+            </p>
           </div>
 
             {/* ── Formasi tab: pilih satu metode input ──────────────────── */}
