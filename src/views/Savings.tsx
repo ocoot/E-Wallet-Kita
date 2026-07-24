@@ -300,7 +300,7 @@ export const Savings: React.FC = () => {
             </button>
           </div>
           <div className="flex items-center justify-center gap-1.5">
-            <button onClick={() => { audioFeedback.playClick(); openEditForm(p); }} className={cx("p-1.5 rounded-lg transition-colors cursor-pointer", tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)}><Edit2 size={12} /></button>
+            <button onClick={() => { audioFeedback.playClick(); openEditForm(p); }} className={cx("p-1.5 rounded-lg transition-colors cursor-pointer", tokens.chip.editIconBtn)}><Edit2 size={12} /></button>
             <button onClick={() => toggleArchive(p)} disabled={busyId === p.id}
               title={p.is_archived ? t("savings.unarchive_button") : t("savings.archive_button")}
               className={cx("p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-colors cursor-pointer disabled:opacity-50", tokens.text.warning)}>

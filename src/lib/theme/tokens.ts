@@ -119,6 +119,18 @@ export const themeTokens = {
      * sesi 53).
      */
     subtleRose: "divide-slate-800/60 light_sakura:divide-rose-100/60",
+    /**
+     * Audit inkonsistensi (sesi ini): tabel admin (AdminErrorMonitor,
+     * AdminAiMonitor, AdminPremiumMonitor, AdminVoucherManager,
+     * AdminCategoryManager, AdminUserManager, AdminBackup) sebelumnya
+     * HANYA punya `divide-y` (garis pemisah antar-BARIS) tapi tidak
+     * pernah punya garis pemisah antar-KOLOM sama sekali -- dipasang di
+     * tiap elemen <tr> (baik thead maupun tbody) berdampingan dengan
+     * warna yang identik dengan `admin.tableDivide` / `errorMonitor.
+     * tableDivide` / `adminPremium.tableDivide` yang sudah ada (exact
+     * match warna, hanya beda axis utility-nya).
+     */
+    tableColumn: "divide-x divide-slate-800 light_sakura:divide-slate-100",
   },
 
   hover: {
@@ -195,6 +207,19 @@ export const themeTokens = {
      */
     badgeEmerald: "bg-emerald-500/15 text-emerald-300 font-bold light_sakura:bg-emerald-50 light_sakura:text-emerald-700",
     badgeRose: "bg-rose-500/15 text-rose-300 font-bold light_sakura:bg-rose-50 light_sakura:text-rose-600",
+    /**
+     * Audit inkonsistensi (sesi ini): tombol ikon pensil "Edit" berulang
+     * kali dipasangkan `surface.subtle` + `hover.surface` + `text.muted`
+     * (bg-slate-800 light_sakura:bg-slate-50) sebagai kotak pembungkusnya
+     * -- di light_sakura, bg-slate-50 di atas surface.card putih nyaris
+     * tidak kontras (kotak jadi terlihat transparan), TIDAK SEPERTI tombol
+     * Hapus di sebelahnya yang sudah punya tint merah (bg-red-500/10) yang
+     * jelas kontras. Token ini menyamakan tombol Edit supaya sama-sama
+     * bertint (indigo/rose) dan kontras di kedua tema. Exact match
+     * diverifikasi di 3 file: BillReminders.tsx, Savings.tsx,
+     * Installments.tsx (semua tombol ikon pensil "Edit" transaksi/pos).
+     */
+    editIconBtn: "bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 light_sakura:bg-rose-500/10 light_sakura:hover:bg-rose-500/20 light_sakura:text-rose-500",
   },
 
   /**
@@ -254,12 +279,18 @@ export const themeTokens = {
      */
     inactiveTrack: "bg-slate-700 light_sakura:bg-slate-200",
     /**
-     * Sesi 49: border+teks kotak ikon "inactive" (dipasangkan dengan
-     * `surface.subtle` untuk bg-nya). Exact match diverifikasi di 2 file:
-     * AdminMaintenance.tsx (toggle global) & AdminPremiumMonitor.tsx
-     * (toggle sandbox QRIS).
+     * Audit inkonsistensi (sesi ini): kotak ikon "inactive" SEBELUMNYA
+     * dipasangkan dengan `surface.subtle` untuk bg-nya (bg-slate-800
+     * light_sakura:bg-slate-50 + border-slate-100) -- di light_sakura,
+     * bg-slate-50/border-slate-100 di atas surface.card putih nyaris
+     * tidak kontras sama sekali (kotak ikon jadi terlihat "hilang"/
+     * transparan, lihat laporan pengguna soal ikon flask "Mode Dummy
+     * QRIS" & power "Mode Maintenance Global"). Sekarang jadi SATU token
+     * mandiri (bg+border+teks) dengan kontras yang jelas di kedua tema.
+     * Exact match diverifikasi di 2 file: AdminMaintenance.tsx (toggle
+     * global) & AdminPremiumMonitor.tsx (toggle sandbox QRIS).
      */
-    inactiveIconBorder: "border-slate-700 light_sakura:border-slate-100 text-slate-500",
+    inactiveIconBox: "bg-slate-800 border-slate-700 text-slate-500 light_sakura:bg-slate-100 light_sakura:border-slate-200 light_sakura:text-slate-500",
   },
 
   login: {

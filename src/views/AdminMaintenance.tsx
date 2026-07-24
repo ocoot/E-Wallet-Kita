@@ -200,7 +200,7 @@ export const AdminMaintenance: React.FC = () => {
 
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-2xl border ${isActive ? tokens.adminMaintenance.toggleIconActive : cx(tokens.surface.subtle, tokens.toggle.inactiveIconBorder)}`}>
+            <div className={`p-3 rounded-2xl border ${isActive ? tokens.adminMaintenance.toggleIconActive : tokens.toggle.inactiveIconBox}`}>
               <Power size={20} />
             </div>
             <div>

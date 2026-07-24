@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { UploadCloud, FileImage, ShieldAlert, CheckCircle, Lock, Camera, Images, X, RotateCcw } from "lucide-react";
+import { UploadCloud, FileImage, ShieldAlert, CheckCircle, Lock, Camera, X, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -237,7 +237,9 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
     return true;
   };
 
-  // Dipakai oleh tombol "Pilih dari Galeri" & klik di area dropzone.
+  // Dipakai oleh klik di area dropzone (tombol "Pilih dari Galeri" terpisah
+  // sudah dihapus -- audit duplikasi fitur, area dropzone ini sudah bisa
+  // diklik/drag untuk memilih file dari galeri).
   const requestPick = (ref: React.RefObject<HTMLInputElement | null>) => {
     if (!checkOcrAccessOrBlock()) return;
     ref.current?.click();
@@ -248,10 +250,6 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
     e.stopPropagation();
     if (!checkOcrAccessOrBlock()) return;
     void startLiveCamera();
-  };
-  const handleOpenGallery = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    requestPick(fileInputRef);
   };
 
   const processFile = async (file: File) => {
@@ -569,36 +567,24 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
         </AnimatePresence>
       </div>
 
-      {/* Tombol aksi cepat -- pisah jelas antara "buka kamera langsung"
-          vs "pilih dari galeri", supaya di HP user tidak perlu melewati
-          dialog pilihan sumber file browser yang terasa generic/web. */}
+      {/* Tombol aksi cepat -- HANYA "buka kamera langsung", supaya di HP
+          user tidak perlu melewati dialog pilihan sumber file browser yang
+          terasa generic/web. Tombol "Pilih dari Galeri" sengaja TIDAK ada
+          lagi di sini (audit duplikasi fitur) karena area dropzone di atas
+          sudah bisa di-klik/drag untuk memilih file dari galeri. */}
       {!isUploading && (
-        <div className="grid grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={handleOpenCamera}
-            className={cx(
-              "flex items-center justify-center gap-2 py-2.5 rounded-xl border font-sans text-xs font-semibold cursor-pointer transition-all active:scale-95",
-              tokens.receiptUploader.dropzoneBorder,
-              tokens.text.label
-            )}
-          >
-            <Camera size={15} />
-            <span>{locale === "id" ? "Buka Kamera" : "Open Camera"}</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleOpenGallery}
-            className={cx(
-              "flex items-center justify-center gap-2 py-2.5 rounded-xl border font-sans text-xs font-semibold cursor-pointer transition-all active:scale-95",
-              tokens.receiptUploader.dropzoneBorder,
-              tokens.text.label
-            )}
-          >
-            <Images size={15} />
-            <span>{locale === "id" ? "Pilih dari Galeri" : "Choose from Gallery"}</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={handleOpenCamera}
+          className={cx(
+            "w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border font-sans text-xs font-semibold cursor-pointer transition-all active:scale-95",
+            tokens.receiptUploader.dropzoneBorder,
+            tokens.text.label
+          )}
+        >
+          <Camera size={15} />
+          <span>{locale === "id" ? "Buka Kamera" : "Open Camera"}</span>
+        </button>
       )}
 
       {/* Error state */}

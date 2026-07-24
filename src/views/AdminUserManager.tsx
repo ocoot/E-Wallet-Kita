@@ -670,7 +670,7 @@ export const AdminUserManager: React.FC = () => {
             <ScrollableTableWrapper>
             <table className="w-full text-left border-collapse table-auto min-w-[900px]">
               <thead>
-                <tr className={cx("border-b text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider", tokens.border.default, tokens.surface.subtle, tokens.text.mutedAlt)}>
+                <tr className={cx("border-b text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider", tokens.border.default, tokens.surface.subtle, tokens.text.mutedAlt, tokens.divide.tableColumn)}>
                   <th className="px-4 py-4 w-10">
                     <input
                        type="checkbox"
@@ -693,7 +693,7 @@ export const AdminUserManager: React.FC = () => {
                   return (
                     <tr
                       key={user.id}
-                      className={cx("transition-all duration-150", tokens.hover.surface, user.is_banned ? "bg-red-950/10" : "")}
+                      className={cx("transition-all duration-150", tokens.hover.surface, user.is_banned ? "bg-red-950/10" : "", tokens.divide.tableColumn)}
                     >
                       {/* Checkbox column */}
                       <td className="px-4 py-4">

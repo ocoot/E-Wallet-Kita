@@ -281,7 +281,7 @@ export const AdminAiMonitor: React.FC = () => {
               <ScrollableTableWrapper>
                 <table className={cx("w-full text-left text-sm min-w-[900px]", tokens.text.label)}>
                   <thead className={cx("uppercase text-xs font-semibold", tokens.text.muted, tokens.surface.subtle)}>
-                    <tr>
+                    <tr className={tokens.divide.tableColumn}>
                       <th className="px-6 py-4">{t("ai_monitor.col_key")}</th>
                       <th className="px-6 py-4">{t("ai_monitor.col_model")}</th>
                       <th className="px-6 py-4 text-right">{t("ai_monitor.col_total")}</th>
@@ -299,7 +299,7 @@ export const AdminAiMonitor: React.FC = () => {
                       return (
                         <tr
                           key={`${k.provider}-${k.key_alias}-${k.model}`}
-                          className={cx("transition-colors", tokens.hover.surface)}
+                          className={cx("transition-colors", tokens.hover.surface, tokens.divide.tableColumn)}
                         >
                           <td className="px-6 py-4">
                             <span className={cx("px-2 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold uppercase mr-2", tokens.surface.sunken, tokens.text.accent)}>

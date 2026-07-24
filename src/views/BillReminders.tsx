@@ -357,7 +357,7 @@ export const BillReminders: React.FC = () => {
                                   )}>
                                   {togglingId === r.id ? <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" /> : r.is_paid ? <><Circle size={12} /> {t("bill_reminders.mark_unpaid")}</> : <><CheckCircle2 size={12} /> {t("bill_reminders.mark_paid")}</>}
                                 </button>
-                                <button onClick={() => { audioFeedback.playClick(); openEditForm(r); }} className={cx("p-2 rounded-xl transition-colors cursor-pointer", tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)}><Edit2 size={13} /></button>
+                                <button onClick={() => { audioFeedback.playClick(); openEditForm(r); }} className={cx("p-2 rounded-xl transition-colors cursor-pointer", tokens.chip.editIconBtn)}><Edit2 size={13} /></button>
                                 <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(r); }} className={cx("p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer", tokens.text.danger)}><Trash2 size={13} /></button>
                               </div>
                             </div>

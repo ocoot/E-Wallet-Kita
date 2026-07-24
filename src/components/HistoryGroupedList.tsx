@@ -35,10 +35,13 @@ interface HistoryTransactionRowProps {
 
 // ── Item transaksi dengan swipe-to-delete/edit (P3 3.1) ──
 // Pola native list iOS/Android: geser item ke kiri untuk memunculkan aksi
-// Edit/Hapus di belakangnya. Tombol Edit/Hapus yang sudah ada sebelumnya
-// TETAP dipertahankan apa adanya di baris konten (bukan cuma dipindah ke
-// panel swipe) supaya pengguna keyboard/screen reader tetap punya cara
-// mengakses aksi ini tanpa perlu melakukan gesture drag.
+// Edit/Hapus di belakangnya. Tombol Edit/Hapus tap terpisah yang dulu ada
+// di baris konten SUDAH DIHAPUS (audit duplikasi fitur -- swipe panel di
+// bawah ini adalah satu-satunya jalur aksi Edit/Hapus sekarang). Supaya
+// pengguna keyboard/screen reader tetap bisa menjangkau aksi ini tanpa
+// perlu gesture drag, tombol di panel swipe TIDAK LAGI diberi
+// `tabIndex={isOpen ? 0 : -1}` (dulu jadi non-focusable saat tertutup) --
+// sekarang default-focusable seperti <button> pada umumnya.
 const HistoryTransactionRow: React.FC<HistoryTransactionRowProps> = ({
   tx,
   categoryLabel,
@@ -90,11 +93,9 @@ const HistoryTransactionRow: React.FC<HistoryTransactionRowProps> = ({
       <div
         className="absolute inset-y-0 right-0 flex"
         style={{ width: SWIPE_ACTIONS_WIDTH }}
-        aria-hidden={!isOpen}
       >
         <button
           type="button"
-          tabIndex={isOpen ? 0 : -1}
           onClick={() => {
             onEditItem(tx);
             closeSwipe();
@@ -111,7 +112,6 @@ const HistoryTransactionRow: React.FC<HistoryTransactionRowProps> = ({
         </button>
         <button
           type="button"
-          tabIndex={isOpen ? 0 : -1}
           onClick={() => {
             onDeleteItem(tx.id);
             closeSwipe();
@@ -128,7 +128,8 @@ const HistoryTransactionRow: React.FC<HistoryTransactionRowProps> = ({
         </button>
       </div>
 
-      {/* Konten baris -- digeser lewat drag, tombol Edit/Hapus tap tetap ada */}
+      {/* Konten baris -- digeser lewat drag untuk memunculkan panel aksi
+          Edit/Hapus di belakangnya (satu-satunya jalur aksi sekarang). */}
       <motion.div
         drag="x"
         dragDirectionLock
@@ -171,25 +172,13 @@ const HistoryTransactionRow: React.FC<HistoryTransactionRowProps> = ({
           </p>
         </div>
 
-        {/* Nominal + actions */}
+        {/* Nominal -- aksi Edit/Hapus SUDAH ada di panel swipe (lihat di
+            atas), jadi tidak diduplikasi lagi sebagai tombol tap terpisah
+            di sini (audit duplikasi fitur). */}
         <div className="flex items-center gap-1 shrink-0">
           <span className={`font-mono tabular-nums font-bold text-sm ${isExpense ? tokens.text.danger : tokens.text.success}`}>
             {isExpense ? "-" : "+"}{formatIDR(tx.amount)}
           </span>
-          <button
-            onClick={() => onEditItem(tx)}
-            aria-label={t("common.edit")}
-            className="btn-mobile-target p-2 rounded-lg text-slate-500 select-none hover:text-indigo-400 hover:bg-indigo-500/10 transition-[transform,background-color,color] cursor-pointer active:scale-90"
-          >
-            <Pencil size={13} />
-          </button>
-          <button
-            onClick={() => onDeleteItem(tx.id)}
-            aria-label={t("common.delete")}
-            className="btn-mobile-target p-2 rounded-lg text-slate-500 select-none hover:text-red-400 hover:bg-red-500/10 transition-[transform,background-color,color] cursor-pointer active:scale-90"
-          >
-            <Trash2 size={13} />
-          </button>
         </div>
       </motion.div>
     </motion.div>

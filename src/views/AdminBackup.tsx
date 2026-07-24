@@ -504,7 +504,7 @@ export const AdminBackup: React.FC = () => {
           <ScrollableTableWrapper>
             <table className="w-full text-xs">
               <thead>
-                <tr className={cx(tokens.adminBackup.tableHeader, tokens.text.mutedAlt)}>
+                <tr className={cx(tokens.adminBackup.tableHeader, tokens.text.mutedAlt, tokens.divide.tableColumn)}>
                   <th className="py-2 pr-3 w-8">
                     <input
                       type="checkbox"
@@ -529,7 +529,7 @@ export const AdminBackup: React.FC = () => {
                   return (
                     <tr
                       key={row.id}
-                      className={cx(tokens.adminBackup.tableRow, row.deleted_at && "opacity-40")}
+                      className={cx(tokens.adminBackup.tableRow, tokens.divide.tableColumn, row.deleted_at && "opacity-40")}
                     >
                       <td className="py-2.5 pr-3">
                         <input
@@ -651,7 +651,7 @@ export const AdminBackup: React.FC = () => {
           <ScrollableTableWrapper>
             <table className="w-full text-xs">
               <thead>
-                <tr className={cx(tokens.adminBackup.tableHeader, tokens.text.mutedAlt)}>
+                <tr className={cx(tokens.adminBackup.tableHeader, tokens.text.mutedAlt, tokens.divide.tableColumn)}>
                   <th className="py-2 pr-4">{t("admin.backup_col_time")}</th>
                   <th className="py-2 pr-4">{t("admin.backup_col_status")}</th>
                   <th className="py-2 pr-4">{t("admin.backup_restore_col_scope")}</th>
@@ -662,7 +662,7 @@ export const AdminBackup: React.FC = () => {
                 {paginatedRestoreHistory.map(row => (
                   <tr
                     key={row.id}
-                    className={tokens.adminBackup.tableRow}
+                    className={cx(tokens.adminBackup.tableRow, tokens.divide.tableColumn)}
                   >
                     <td className={cx("py-2.5 pr-4 whitespace-nowrap", tokens.text.secondary)}>
                       {new Date(row.started_at).toLocaleString(locale === "id" ? "id-ID" : "en-US")}

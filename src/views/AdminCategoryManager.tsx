@@ -277,7 +277,7 @@ export const AdminCategoryManager: React.FC = () => {
           <ScrollableTableWrapper>
             <table className={cx("w-full text-left text-sm min-w-[900px]", tokens.text.label)}>
               <thead className={cx("uppercase text-xs", tokens.text.muted, tokens.surface.subtle)}>
-                <tr>
+                <tr className={tokens.divide.tableColumn}>
                   <th className="px-6 py-4">Priority</th>
                   <th className="px-6 py-4">{t("admin.table_key_col")}</th>
                   <th className="px-6 py-4">{t("admin.table_label_id_col")}</th>
@@ -290,7 +290,7 @@ export const AdminCategoryManager: React.FC = () => {
               </thead>
               <tbody className={cx("divide-y", tokens.errorMonitor.tableDivide)}>
                 {(pageSize === "all" ? categories : categories.slice(page * pageSize, (page + 1) * pageSize)).map(cat => (
-                  <tr key={cat.key} className={`transition-colors ${!cat.is_active ? "opacity-60" : ""} ${tokens.errorMonitor.tableRowHover}`}>
+                  <tr key={cat.key} className={cx("transition-colors", !cat.is_active ? "opacity-60" : "", tokens.errorMonitor.tableRowHover, tokens.divide.tableColumn)}>
                     <td className="px-6 py-4">
                       {editingKey === cat.key ? (
                         <input type="number" value={editForm.priority} onChange={e => setEditForm(f => ({ ...f, priority: Number(e.target.value) || 0 }))}

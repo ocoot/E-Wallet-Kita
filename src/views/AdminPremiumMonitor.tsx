@@ -259,7 +259,7 @@ export const AdminPremiumMonitor: React.FC = () => {
       <div className="p-6 md:p-8">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className={`p-3 rounded-2xl border ${dummyQrisEnabled ? cx(tokens.adminPremium.sandboxIconBorderActive, tokens.adminPremium.sandboxBadgeBg, tokens.adminPremium.sandboxText) : cx(tokens.toggle.inactiveIconBorder, tokens.surface.subtle)}`}>
+            <div className={`p-3 rounded-2xl border ${dummyQrisEnabled ? cx(tokens.adminPremium.sandboxIconBorderActive, tokens.adminPremium.sandboxBadgeBg, tokens.adminPremium.sandboxText) : tokens.toggle.inactiveIconBox}`}>
               <FlaskConical size={20} />
             </div>
             <div>
@@ -357,7 +357,7 @@ export const AdminPremiumMonitor: React.FC = () => {
           <ScrollableTableWrapper>
             <table className={cx("w-full text-left text-sm min-w-[900px]", tokens.text.label)}>
               <thead className={cx("uppercase text-xs", tokens.text.muted, tokens.surface.subtle)}>
-                <tr>
+                <tr className={tokens.divide.tableColumn}>
                   <th className="px-6 py-4">{t("admin.user_col")}</th>
                   <th className="px-6 py-4">{t("admin.order_id")}</th>
                   <th className="px-6 py-4">{t("admin.amount_col")}</th>
@@ -372,7 +372,7 @@ export const AdminPremiumMonitor: React.FC = () => {
                   const cfg = statusConfig[tx.status] || statusConfig.FAILED;
                   const StatusIcon = cfg.icon;
                   return (
-                    <tr key={tx.id} className={tokens.adminPremium.tableRowHover}>
+                    <tr key={tx.id} className={cx(tokens.adminPremium.tableRowHover, tokens.divide.tableColumn)}>
                       <td className="px-6 py-4">
                         <p className={cx("font-semibold", tokens.text.primary)}>{tx.display_name || "—"}</p>
                         <p className={cx("text-xs", tokens.text.muted)}>{tx.email || "—"}</p>

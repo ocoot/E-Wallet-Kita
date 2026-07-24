@@ -376,7 +376,7 @@ export const Installments: React.FC = () => {
                           <RotateCcw size={13} />
                         </button>
                       )}
-                      <button onClick={() => { audioFeedback.playClick(); openEditForm(i); }} className={cx("p-2 rounded-xl transition-colors cursor-pointer", tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)}><Edit2 size={13} /></button>
+                      <button onClick={() => { audioFeedback.playClick(); openEditForm(i); }} className={cx("p-2 rounded-xl transition-colors cursor-pointer", tokens.chip.editIconBtn)}><Edit2 size={13} /></button>
                       <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(i); }} className={cx("p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer", tokens.text.danger)}><Trash2 size={13} /></button>
                     </div>
                   </div>

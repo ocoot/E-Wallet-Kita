@@ -382,7 +382,7 @@ export const AdminVoucherManager: React.FC = () => {
         <div className="overflow-x-auto">
           <table className={cx("w-full text-left text-sm min-w-[700px]", tokens.text.label)}>
             <thead className={cx("uppercase text-xs", tokens.text.muted, tokens.surface.subtle)}>
-              <tr>
+              <tr className={tokens.divide.tableColumn}>
                 <th className="p-6">{t("voucher.code")}</th>
                 <th className="p-6">{t("voucher.discount", { percent: "" }).replace("{percent}%", "").trim()}</th>
                 <th className="p-6">{t("voucher.active")}</th>
@@ -395,7 +395,7 @@ export const AdminVoucherManager: React.FC = () => {
               {(pageSize === "all" ? vouchers : vouchers.slice(page * pageSize, (page + 1) * pageSize)).map(v => {
                 const usageCount = v.usage_count || 0;
                 return (
-                  <tr key={v.id} className={cx("transition-colors", tokens.hover.surface)}>
+                  <tr key={v.id} className={cx("transition-colors", tokens.hover.surface, tokens.divide.tableColumn)}>
                     <td className={cx("p-6 font-semibold", tokens.text.primary)}>{v.code}</td>
                     <td className="p-6">{v.discount_percent}%</td>
                     <td className="p-6">
