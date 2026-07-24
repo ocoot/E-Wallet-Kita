@@ -479,7 +479,7 @@ export const AdminBackup: React.FC = () => {
       </div>
 
       {/* Riwayat backup */}
-      <div className="p-6 md:p-8">
+      <div className={cx("p-6 md:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
           <h3 className={cx("font-black text-sm", tokens.adminBackup.heading)}>
             {t("admin.backup_history")}
@@ -637,7 +637,7 @@ export const AdminBackup: React.FC = () => {
       </div>
 
       {/* Riwayat restore */}
-      <div className="p-6 md:p-8">
+      <div className={cx("p-6 md:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <h3 className={cx("font-black text-sm mb-4", tokens.adminBackup.heading)}>
           {t("admin.backup_restore_history")}
         </h3>
