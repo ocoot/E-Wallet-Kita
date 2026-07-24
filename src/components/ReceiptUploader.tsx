@@ -1,5 +1,6 @@
-import React, { useState, useRef } from "react";
-import { UploadCloud, FileImage, ShieldAlert, CheckCircle, Lock, Camera, Images } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { UploadCloud, FileImage, ShieldAlert, CheckCircle, Lock, Camera, Images, X, RotateCcw } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -41,10 +42,120 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  // Input terpisah dengan atribut `capture="environment"` supaya di HP
-  // langsung membuka aplikasi kamera (bukan cuma file picker seperti
-  // `fileInputRef` di atas) -- meniru tombol "scan struk" khas app native.
+  // Input `capture="environment"` dipertahankan sebagai FALLBACK saja --
+  // lihat catatan panjang di `startLiveCamera` di bawah kenapa ini tidak
+  // lagi jadi jalur utama tombol "Buka Kamera".
   const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Live camera (getUserMedia) ──────────────────────────────────────
+  // Insiden 24/7/2026: tombol "Buka Kamera" ternyata membuka galeri/file
+  // chooser di banyak device, PADAHAL `cameraInputRef` sudah benar diberi
+  // `capture="environment"` terpisah dari `fileInputRef`. Root cause-nya
+  // BUKAN bug di kode ini -- atribut `capture` di elemen <input type=file>
+  // cuma "hint" ke browser/OS, bukan kontrak yang dijamin. Banyak
+  // kombinasi Android WebView/Chrome versi tertentu, browser non-Chrome
+  // (Samsung Internet, in-app browser Telegram/Instagram, dst), atau HP
+  // yang default handler galerinya "menang" atas intent kamera, akan
+  // tetap menampilkan file/photo picker biasa -- sama persis seperti
+  // tombol "Pilih dari Galeri".
+  //
+  // Fix-nya: pakai `navigator.mediaDevices.getUserMedia` untuk buka feed
+  // kamera LANGSUNG di dalam app (live <video> + tombol jepret -> capture
+  // frame ke <canvas> -> jadi File), yang perilakunya konsisten di semua
+  // browser modern & tidak bergantung pada heuristik OS. `cameraInputRef`
+  // lama tetap disimpan sebagai fallback kalau getUserMedia tidak
+  // tersedia/izin ditolak/tidak ada kamera, supaya tombol tidak pernah
+  // dead-end.
+  const [showLiveCamera, setShowLiveCamera] = useState(false);
+  const [isCameraStarting, setIsCameraStarting] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const captureCanvasRef = useRef<HTMLCanvasElement>(null);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
+  const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+
+  const stopLiveCamera = () => {
+    cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+    cameraStreamRef.current = null;
+    setShowLiveCamera(false);
+  };
+
+  // Bersihkan stream kalau komponen unmount saat kamera masih terbuka
+  // (mis. user navigasi pindah tab lain ditengah sesi kamera).
+  useEffect(() => {
+    return () => {
+      cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+    };
+  }, []);
+
+  const startLiveCamera = async (mode: "environment" | "user" = facingMode) => {
+    if (!navigator.mediaDevices?.getUserMedia) {
+      // Browser lama / non-secure context tidak dukung getUserMedia sama
+      // sekali -- fallback ke input file capture lama. Akses sudah dicek
+      // oleh pemanggil (`handleOpenCamera`), jadi langsung klik saja.
+      cameraInputRef.current?.click();
+      return;
+    }
+    setIsCameraStarting(true);
+    try {
+      // Hentikan stream lama dulu (mis. saat switch kamera depan/belakang)
+      cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: mode } },
+        audio: false,
+      });
+      cameraStreamRef.current = stream;
+      setFacingMode(mode);
+      setShowLiveCamera(true);
+    } catch (err) {
+      // Izin ditolak / tidak ada kamera / device tidak dukung constraint
+      // -- fallback ke file-picker kamera lama daripada tombol mati total.
+      showToast(
+        locale === "id"
+          ? "Tidak bisa mengakses kamera langsung, membuka pemilih file sebagai gantinya."
+          : "Couldn't access the camera directly, opening the file picker instead.",
+        "error"
+      );
+      cameraInputRef.current?.click();
+    } finally {
+      setIsCameraStarting(false);
+    }
+  };
+
+  // Begitu modal live camera tampil dan elemen <video> ter-mount, sambungkan
+  // stream yang sudah didapat ke situ.
+  useEffect(() => {
+    if (showLiveCamera && videoRef.current && cameraStreamRef.current) {
+      videoRef.current.srcObject = cameraStreamRef.current;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [showLiveCamera]);
+
+  const handleSwitchFacing = () => {
+    audioFeedback.playClick();
+    startLiveCamera(facingMode === "environment" ? "user" : "environment");
+  };
+
+  const handleCapturePhoto = () => {
+    const video = videoRef.current;
+    const canvas = captureCanvasRef.current;
+    if (!video || !canvas || video.videoWidth === 0) return;
+    audioFeedback.playClick();
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return;
+        const file = new File([blob], `struk-${Date.now()}.jpg`, { type: "image/jpeg" });
+        stopLiveCamera();
+        void processFile(file);
+      },
+      "image/jpeg",
+      0.9
+    );
+  };
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -104,9 +215,10 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
     }
   };
 
-  // Dipakai bareng oleh tombol "Buka Kamera" & "Pilih dari Galeri" (juga
-  // klik di area dropzone) -- cuma beda input ref mana yang dibuka.
-  const requestPick = (ref: React.RefObject<HTMLInputElement | null>) => {
+  // Cek lock premium/guest yang sama dipakai baik oleh jalur file-input
+  // (`requestPick`) maupun jalur live camera (`startLiveCamera`).
+  // Return true = boleh lanjut, false = sudah ditangani (toast/premium modal).
+  const checkOcrAccessOrBlock = (): boolean => {
     audioFeedback.playClick();
     if (isOcrLocked) {
       if (isGuest) {
@@ -120,15 +232,22 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
       } else {
         setIsPremiumOpen(true);
       }
-      return;
+      return false;
     }
+    return true;
+  };
+
+  // Dipakai oleh tombol "Pilih dari Galeri" & klik di area dropzone.
+  const requestPick = (ref: React.RefObject<HTMLInputElement | null>) => {
+    if (!checkOcrAccessOrBlock()) return;
     ref.current?.click();
   };
 
   const handleClickZone = () => requestPick(fileInputRef);
   const handleOpenCamera = (e: React.MouseEvent) => {
     e.stopPropagation();
-    requestPick(cameraInputRef);
+    if (!checkOcrAccessOrBlock()) return;
+    void startLiveCamera();
   };
   const handleOpenGallery = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -509,6 +628,64 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
           refreshPremium();
         }}
       />
+
+      {/* Canvas tersembunyi buat "jepret" frame video jadi File -- tidak
+          pernah dirender terlihat, cuma dipakai sebagai buffer gambar. */}
+      <canvas ref={captureCanvasRef} className="hidden" />
+
+      {/* Live camera overlay -- di-portal ke document.body (lihat catatan
+          bug containing-block di ModalShell.tsx untuk alasannya) supaya
+          selalu full-screen di atas seluruh app, bukan cuma di dalam
+          card ReceiptUploader ini. */}
+      {showLiveCamera &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="flex-1 w-full h-full object-cover"
+            />
+
+            {/* Top bar: tutup kamera */}
+            <div className="absolute top-0 inset-x-0 flex items-center justify-between p-4 pt-[max(1rem,env(safe-area-inset-top))]">
+              <button
+                type="button"
+                onClick={stopLiveCamera}
+                aria-label={locale === "id" ? "Tutup kamera" : "Close camera"}
+                className="p-2.5 rounded-full bg-black/40 text-white backdrop-blur-sm active:scale-95 transition-transform cursor-pointer"
+              >
+                <X size={20} />
+              </button>
+              <button
+                type="button"
+                onClick={handleSwitchFacing}
+                aria-label={locale === "id" ? "Ganti kamera" : "Switch camera"}
+                className="p-2.5 rounded-full bg-black/40 text-white backdrop-blur-sm active:scale-95 transition-transform cursor-pointer"
+              >
+                <RotateCcw size={20} />
+              </button>
+            </div>
+
+            {/* Bottom bar: tombol jepret */}
+            <div className="absolute bottom-0 inset-x-0 flex items-center justify-center pb-[max(2rem,env(safe-area-inset-bottom))] pt-6 bg-gradient-to-t from-black/70 to-transparent">
+              <button
+                type="button"
+                onClick={handleCapturePhoto}
+                aria-label={locale === "id" ? "Jepret struk" : "Capture receipt"}
+                className="w-16 h-16 rounded-full border-4 border-white bg-white/20 active:scale-90 transition-transform cursor-pointer"
+              />
+            </div>
+
+            {isCameraStarting && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                <span className="w-10 h-10 border-3 border-white/20 border-t-white rounded-full animate-spin" />
+              </div>
+            )}
+          </div>,
+          document.body
+        )}
       </>
       )}
     </div>
