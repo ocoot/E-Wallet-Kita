@@ -465,7 +465,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
         // Fitur sedang dikunci admin lewat tab Maintenance — tampilkan
         // status terkunci, jangan render zone upload sama sekali supaya
         // tidak bisa diklik/drop file.
-        <div className="relative overflow-hidden p-6 rounded-2xl border-2 border-dashed border-amber-500/30 bg-amber-500/5 flex flex-col items-center justify-center min-h-[160px] text-center">
+        <div className="relative overflow-hidden p-6 rounded-2xl border-2 border-dashed border-amber-500/30 bg-amber-500/10 flex flex-col items-center justify-center min-h-[160px] text-center">
           <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/30 text-amber-400 mb-2">
             <Lock size={24} />
           </div>
@@ -487,7 +487,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
         onDrop={handleDrop}
         className={`relative overflow-hidden cursor-pointer p-6 rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center min-h-[160px] text-center
           ${isDragActive 
-            ? "border-indigo-500 bg-indigo-500/5" 
+            ? "border-indigo-500 bg-indigo-500/10"
             : tokens.receiptUploader.dropzoneBorder
           }
           ${isUploading ? "pointer-events-none opacity-80" : ""}
@@ -592,7 +592,7 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
         <motion.div
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-3 rounded-xl border border-red-500/20 bg-red-500/5 flex items-start gap-2.5 text-red-400"
+          className="p-3 rounded-xl border border-red-500/25 bg-red-500/10 flex items-start gap-2.5 text-red-400"
         >
           <ShieldAlert size={16} className="mt-0.5 shrink-0" />
           <div className="space-y-0.5">

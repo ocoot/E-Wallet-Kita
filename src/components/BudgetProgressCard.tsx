@@ -106,7 +106,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
       transition={{ type: "spring", duration: 0.45 }}
       className={cx(
         "rounded-2xl border overflow-hidden",
-        tokens.surface.sunken,
+        tokens.surface.card,
         tokens.border.accent
       )}
     >
@@ -239,7 +239,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
 
             {/* Spent / Remaining */}
             <div className="grid grid-cols-2 gap-2">
-              <div className={cx("rounded-xl px-3 py-2", tokens.surface.card)}>
+              <div className={cx("rounded-xl px-3 py-2", tokens.surface.subtle)}>
                 <p className={cx("text-[clamp(0.5062rem,2.34vw,0.5625rem)] uppercase tracking-wider font-bold mb-0.5", tokens.text.faint)}>
                   Terpakai
                 </p>
@@ -250,7 +250,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
                   {formatIDR(budget.spent)}
                 </p>
               </div>
-              <div className={cx("rounded-xl px-3 py-2", tokens.surface.card)}>
+              <div className={cx("rounded-xl px-3 py-2", tokens.surface.subtle)}>
                 <p className={cx("text-[clamp(0.5062rem,2.34vw,0.5625rem)] uppercase tracking-wider font-bold mb-0.5", tokens.text.faint)}>
                   {overBudget ? "Melebihi" : "Sisa"}
                 </p>

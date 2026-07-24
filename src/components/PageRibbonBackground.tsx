@@ -59,7 +59,14 @@ const GRADIENT_CSS: Record<"dark_obsidian" | "light_sakura", string> = {
   light_sakura: "linear-gradient(160deg, var(--color-rose-400), var(--color-rose-600) 140%)",
 };
 
-const WAVE_PATH_D = "M0,28 C48,58 86,10 132,24 C178,38 216,58 264,20 L264,66 L0,66 Z";
+// REVISI: endpoint kiri & kanan diubah dari y=28/y=20 menjadi y=0 supaya
+// fill wave menyentuh SUDUT ATAS SVG di kedua tepi — menghilangkan artefak
+// garis vertikal (batas lurus antara area fill dan area transparan) yang
+// sebelumnya muncul di tepi kiri & kanan layar karena wave tidak mencapai
+// puncak viewBox di sana (gradient masih terlihat di atas wave, dibatasi
+// garis vertikal lurus oleh sisi fill). Bentuk lengkung di bagian tengah
+// tidak berubah signifikan (control point sama, hanya anchor bergeser).
+const WAVE_PATH_D = "M0,0 C48,58 86,10 132,24 C178,38 216,58 264,0 L264,66 L0,66 Z";
 
 export function usePageRibbonBackground(): { style: CSSProperties; className: string } {
   const { theme } = useTheme();

@@ -417,7 +417,7 @@ export const AdminAiMonitor: React.FC = () => {
 
           {/* Failed / Quota Warning notice */}
           {byKey.some((k) => quotaRate(k.quota_exceeded_calls, k.total_calls) > 20) && (
-            <div className={cx("flex items-start gap-4 rounded-3xl border p-6 bg-amber-500/5", tokens.border.accent)}>
+            <div className={cx("flex items-start gap-4 rounded-3xl border p-6 bg-amber-500/10", tokens.border.accent)}>
               <AlertTriangle size={20} className={cx("mt-0.5 shrink-0", tokens.text.warning)} />
               <div>
                 <p className={cx("text-sm font-semibold", tokens.text.warning)}>{t("ai_monitor.high_quota_warning_title")}</p>

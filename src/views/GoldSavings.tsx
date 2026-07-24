@@ -419,7 +419,7 @@ export const GoldSavings: React.FC = () => {
                   <Edit2 size={12} /> {t("common.edit")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); toggleArchive(p); }} disabled={busyId === p.id} tabIndex={isFlipped ? 0 : -1}
-                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-amber-500/10 text-amber-500 hover:bg-amber-500/20">
+                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-amber-500/15 text-amber-500 hover:bg-amber-500/25">
                   {p.is_archived ? <ArchiveRestore size={12} /> : <Archive size={12} />} {t(p.is_archived ? "gold.unarchive_button" : "gold.archive_button")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); audioFeedback.playClick(); setDeleteTarget(p); }} tabIndex={isFlipped ? 0 : -1}
@@ -549,7 +549,7 @@ export const GoldSavings: React.FC = () => {
                         className={cx(
                           "shrink-0 px-4 py-0.5 border-r",
                           tokens.border.default,
-                          isStaleVsOthers ? "bg-amber-500/5" : ""
+                          isStaleVsOthers ? "bg-amber-500/10" : ""
                         )}
                       >
                         <p className="text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-bold text-slate-400 uppercase tracking-wide whitespace-nowrap">{t(`gold.brand_${pr.brand}`)}</p>

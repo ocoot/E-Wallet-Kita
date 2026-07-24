@@ -83,7 +83,7 @@ export const PrivacySettings: React.FC = () => {
           </motion.button>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-red-500/5 border border-red-500/20 space-y-2.5">
+        <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/25 space-y-2.5">
           <div className="flex items-start gap-2.5">
             <Trash2 size={14} className="text-red-400 mt-0.5 shrink-0" />
             <div>

@@ -368,7 +368,7 @@ export const AdminErrorMonitor: React.FC = () => {
                         <tr className={tokens.errorMonitor.tableRowExpanded}>
                           <td colSpan={5} className="px-6 py-4">
                             <p className="text-xs text-slate-500 mb-2">{formatDate(log.created_at)}{log.trace_id ? ` · trace: ${log.trace_id}` : ""}</p>
-                            <pre className={cx("text-xs whitespace-pre-wrap break-all font-mono p-3 rounded-xl border", tokens.text.mutedAlt, tokens.surface.card, tokens.border.default)}>
+                            <pre className={cx("text-xs whitespace-pre-wrap break-all font-mono p-3 rounded-xl border", tokens.text.mutedAlt, tokens.surface.sunken, tokens.border.default)}>
                               {JSON.stringify(log.context, null, 2)}
                             </pre>
                           </td>

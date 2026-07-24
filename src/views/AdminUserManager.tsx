@@ -518,14 +518,14 @@ export const AdminUserManager: React.FC = () => {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 shadow-sm space-y-2">
+            <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4 shadow-sm space-y-2">
               <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.warning)}>
                 {t("admin.metrics.premium")}
               </p>
               <h2 className={cx("font-sans font-black text-2xl", tokens.text.warning)}>
                 {metrics.premiumUsers}
               </h2>
-              <div className="h-1 rounded-full bg-amber-900/30 overflow-hidden bg-amber-500/10">
+              <div className="h-1 rounded-full overflow-hidden bg-amber-500/15">
                 <div className="h-full rounded-full bg-amber-500 transition-all duration-700"
                   style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.premiumUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
               </div>
@@ -541,7 +541,7 @@ export const AdminUserManager: React.FC = () => {
               <h2 className={cx("font-sans font-black text-2xl", tokens.text.accent)}>
                 {metrics.adminUsers}
               </h2>
-              <div className="h-1 rounded-full bg-indigo-900/30 overflow-hidden bg-indigo-500/10">
+              <div className="h-1 rounded-full overflow-hidden bg-indigo-500/15">
                 <div className="h-full rounded-full bg-indigo-500 transition-all duration-700"
                   style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.adminUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
               </div>
@@ -554,7 +554,7 @@ export const AdminUserManager: React.FC = () => {
               <h2 className={cx("font-sans font-black text-2xl", tokens.text.danger)}>
                 {metrics.bannedUsers}
               </h2>
-              <div className="h-1 rounded-full bg-red-900/30 overflow-hidden bg-red-500/10">
+              <div className="h-1 rounded-full overflow-hidden bg-red-500/15">
                 <div className="h-full rounded-full bg-red-500 transition-all duration-700"
                   style={{ width: metrics.totalUsers > 0 ? `${Math.round((metrics.bannedUsers / metrics.totalUsers) * 100)}%` : "0%" }} />
               </div>
@@ -627,8 +627,8 @@ export const AdminUserManager: React.FC = () => {
             {[
               { label: "Grant Premium",  action: "grant_premium"  as const, color: tokens.admin.bulkActionBtnGrant },
               { label: "Revoke Premium", action: "revoke_premium" as const, color: cx("border text-slate-400 hover:text-white light_sakura:hover:text-slate-900 transition-colors", tokens.border.default, tokens.hover.surface, tokens.surface.card) },
-              { label: "Ban Semua",      action: "ban"            as const, color: "text-red-400 border-red-500/30 bg-red-500/10 hover:bg-red-500/20" },
-              { label: "Unban Semua",    action: "unban"          as const, color: "text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20" },
+              { label: "Ban Semua",      action: "ban"            as const, color: "text-red-400 border-red-500/30 bg-red-500/15 hover:bg-red-500/25 light_sakura:bg-red-50 light_sakura:text-red-600 light_sakura:border-red-200 light_sakura:hover:bg-red-100" },
+              { label: "Unban Semua",    action: "unban"          as const, color: "text-emerald-400 border-emerald-500/30 bg-emerald-500/15 hover:bg-emerald-500/25 light_sakura:bg-emerald-50 light_sakura:text-emerald-600 light_sakura:border-emerald-200 light_sakura:hover:bg-emerald-100" },
             ].map(({ label, action, color }) => (
               <button
                 key={action}
@@ -816,8 +816,8 @@ export const AdminUserManager: React.FC = () => {
                             onClick={() => handleToggleBan(user)}
                             className={cx("p-1.5 rounded-lg border transition-all focus:outline-none disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer",
                               user.is_banned
-                                ? cx("border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20", tokens.text.success)
-                                : cx("border-red-500/20 bg-red-500/10 hover:bg-red-500/20", tokens.text.danger))}
+                                ? cx("border-emerald-500/30 bg-emerald-500/15 hover:bg-emerald-500/25 light_sakura:bg-emerald-50 light_sakura:border-emerald-200 light_sakura:hover:bg-emerald-100", tokens.text.success)
+                                : cx("border-red-500/30 bg-red-500/15 hover:bg-red-500/25 light_sakura:bg-red-50 light_sakura:border-red-200 light_sakura:hover:bg-red-100", tokens.text.danger))}
                             title={user.is_banned ? t("admin.restore_title") : t("admin.suspend_title")}
                           >
                             {user.is_banned ? <UserCheck size={12} /> : <UserX size={12} />}

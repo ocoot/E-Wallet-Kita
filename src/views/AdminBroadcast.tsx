@@ -239,7 +239,7 @@ export const AdminBroadcast: React.FC = () => {
             setMessage(t("admin.update_notif_message_default"));
             setIsUpdateNotif(true);
           }}
-          className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl border border-dashed border-indigo-500/40 light_sakura:border-rose-300 bg-indigo-500/5 hover:bg-indigo-500/10 light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100 text-left transition-colors cursor-pointer"
+          className="w-full flex items-center gap-3 px-5 py-3.5 rounded-2xl border border-dashed border-indigo-500/40 light_sakura:border-rose-300 bg-indigo-500/10 hover:bg-indigo-500/15 light_sakura:bg-rose-50 light_sakura:hover:bg-rose-100 text-left transition-colors cursor-pointer"
         >
           <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-400 light_sakura:bg-rose-100 light_sakura:text-rose-600 shrink-0">
             <RefreshCw size={18} />

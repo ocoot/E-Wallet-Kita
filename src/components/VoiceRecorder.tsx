@@ -351,7 +351,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
       </label>
 
       {isLocked ? (
-        <div className="relative overflow-hidden p-6 rounded-2xl border-2 border-dashed border-amber-500/30 bg-amber-500/5 flex flex-col items-center justify-center min-h-[140px] text-center">
+        <div className="relative overflow-hidden p-6 rounded-2xl border-2 border-dashed border-amber-500/30 bg-amber-500/10 flex flex-col items-center justify-center min-h-[140px] text-center">
           <div className="p-3 bg-amber-500/10 rounded-xl border border-amber-500/30 text-amber-400 mb-2">
             <Lock size={24} />
           </div>
@@ -367,7 +367,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
           className={cx(
             "relative overflow-hidden p-6 rounded-2xl border-2 border-dashed transition-all duration-300 flex flex-col items-center justify-center min-h-[140px] text-center",
             isRecording
-              ? "border-red-500 bg-red-500/5"
+              ? "border-red-500 bg-red-500/10"
               : cx(tokens.border.accent, tokens.surface.sunken)
           )}
         >

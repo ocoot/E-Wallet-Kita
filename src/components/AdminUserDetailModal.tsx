@@ -139,7 +139,7 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
             <div className="flex flex-wrap gap-2">
               <span className={cx(
                 "px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase border flex items-center gap-1",
-                detail.role === "owner" && "bg-red-500/10 border-red-500/20 text-red-400",
+                detail.role === "owner" && "bg-red-500/15 border-red-500/30 text-red-400 light_sakura:bg-red-50 light_sakura:border-red-100 light_sakura:text-red-600",
                 detail.role === "admin" && tokens.adminUserModal.roleAdmin,
                 detail.role === "user" && tokens.adminUserModal.roleUser
               )}>
@@ -147,13 +147,13 @@ export const AdminUserDetailModal: React.FC<Props> = ({ user, onClose }) => {
                 {detail.role}
               </span>
               {detail.is_premium && (
-                <span className="px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center gap-1">
+                <span className="px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase bg-amber-500/15 border border-amber-500/30 text-amber-400 light_sakura:bg-amber-50 light_sakura:border-amber-100 light_sakura:text-amber-700 flex items-center gap-1">
                   <Crown size={9} />
                   Premium
                 </span>
               )}
               {detail.is_banned && (
-                <span className="px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase bg-red-500/10 border border-red-500/20 text-red-400 flex items-center gap-1">
+                <span className="px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-black uppercase bg-red-500/15 border border-red-500/30 text-red-400 light_sakura:bg-red-50 light_sakura:border-red-100 light_sakura:text-red-600 flex items-center gap-1">
                   <Ban size={9} />
                   {t("admin.suspended_badge")}
                 </span>

@@ -260,7 +260,7 @@ export const Savings: React.FC = () => {
                   : "conic-gradient(rgba(148,163,184,0.25) 360deg, rgba(148,163,184,0.15) 0deg)"
               }}
             >
-              <div className={cx("w-[62px] h-[62px] rounded-full flex flex-col items-center justify-center", tokens.surface.card)}>
+              <div className={cx("w-[62px] h-[62px] rounded-full flex flex-col items-center justify-center", tokens.surface.subtle)}>
                 <Icon size={16} className={colorClasses.split(" ")[0]} />
                 {pct != null && <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold mt-0.5", tokens.text.label)}>{pct}%</span>}
               </div>
@@ -306,7 +306,7 @@ export const Savings: React.FC = () => {
               className={cx("p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-colors cursor-pointer disabled:opacity-50", tokens.text.warning)}>
               {p.is_archived ? <ArchiveRestore size={12} /> : <Archive size={12} />}
             </button>
-            <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(p); }} className={cx("p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer", tokens.text.danger)}><Trash2 size={12} /></button>
+            <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(p); }} className={cx("p-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 transition-colors cursor-pointer", tokens.text.danger)}><Trash2 size={12} /></button>
           </div>
         </div>
       </motion.div>
