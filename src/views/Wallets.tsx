@@ -19,6 +19,7 @@ import { Modal } from "../components/Modal";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { AnimatedNumber } from "../components/ui/AnimatedNumber";
+import { DashboardCardSwiper } from "../components/DashboardCardSwiper";
 import { PROVIDER_CATALOG, OTHER_PROVIDER_ID } from "../data/walletProviders";
 
 const GROUP_META: Record<Exclude<WalletType, "general">, { icon: string; labelKey: string; addKey: string; placeholderKey: string }> = {
@@ -596,9 +597,9 @@ export const Wallets: React.FC = () => {
                 {items.length === 0 ? (
                   <p className="font-sans text-xs text-slate-500 italic px-1">{t("wallet.empty_group")}</p>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <DashboardCardSwiper>
                     {items.map((w) => <WalletCard key={w.id} wallet={w} {...walletCardSharedProps} />)}
-                  </div>
+                  </DashboardCardSwiper>
                 )}
           </div>
         );
