@@ -95,7 +95,7 @@ export const ConfirmTransactionModal: React.FC<ConfirmTransactionModalProps> = (
     >
           <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`rounded-full p-2.5 ${isExpense ? "bg-red-500/15 text-red-400" : "bg-emerald-500/15 text-emerald-400"}`}>
+              <div className={`rounded-full p-2.5 ${isExpense ? "bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-600" : "bg-emerald-500/15 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:text-emerald-700"}`}>
                 <CheckCircle2 size={20} />
               </div>
               <div>

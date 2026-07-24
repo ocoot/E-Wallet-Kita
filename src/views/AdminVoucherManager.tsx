@@ -10,6 +10,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { Modal } from "../components/Modal";
 import { DropdownField } from "../components/DropdownField";
 import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { LoadingOverlay } from "../components/LoadingOverlay";
@@ -398,14 +399,14 @@ export const AdminVoucherManager: React.FC = () => {
                     <td className={cx("p-6 font-semibold", tokens.text.primary)}>{v.code}</td>
                     <td className="p-6">{v.discount_percent}%</td>
                     <td className="p-6">
-                      <span className={cx("px-3 py-1 rounded-full text-xs font-semibold", v.is_active ? cx("bg-emerald-500/10", tokens.text.success) : cx(tokens.surface.sunken, tokens.text.muted))}>
+                      <Badge tone={v.is_active ? "success" : "neutral"} className="normal-case tracking-normal">
                         {v.is_active ? t("voucher.active") : t("voucher.inactive_vouchers")}
-                      </span>
+                      </Badge>
                     </td>
                     <td className="p-6">
-                      <span className={cx("px-3 py-1 rounded-full text-xs font-semibold", usageCount === 0 ? cx(tokens.surface.sunken, tokens.text.muted) : cx("bg-indigo-500/10", tokens.text.accent))}>
+                      <Badge tone={usageCount === 0 ? "neutral" : "info"} className="normal-case tracking-normal">
                         {usageCount === 0 ? t("voucher.never_used") : t("voucher.used_times", { count: usageCount }).replace("{count}", String(usageCount))}
-                      </span>
+                      </Badge>
                     </td>
                     <td className={cx("p-6", tokens.text.label)}>
                       {formatDate(v.last_used_at)}

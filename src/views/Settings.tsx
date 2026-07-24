@@ -42,6 +42,7 @@ import { PremiumModal } from "../components/PremiumModal";
 import { uploadAvatar, AvatarValidationError } from "../lib/avatar";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
+import { Badge } from "../components/ui/Badge";
 import { Card } from "../components/ui/Card";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
@@ -973,9 +974,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 {isTelegramLocked && <Lock size={12} className={tokens.telegramCard.lockedIconText} />}
               </h3>
               {isTelegramLinked && !isTelegramLocked && (
-                <span className="px-2 py-0.5 text-[clamp(0.5062rem,2.34vw,0.5625rem)] font-bold tracking-wider uppercase bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/30">
-                  {t("common.active")}
-                </span>
+                <Badge tone="success">{t("common.active")}</Badge>
               )}
             </div>
 

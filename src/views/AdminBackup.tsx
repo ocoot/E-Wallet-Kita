@@ -751,7 +751,7 @@ export const AdminBackup: React.FC = () => {
           >
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="flex items-center gap-3">
-                <div className="rounded-full p-2.5 bg-amber-500/15 text-amber-400 shrink-0">
+                <div className="rounded-full p-2.5 bg-amber-500/15 text-amber-400 light_sakura:bg-amber-50 light_sakura:text-amber-700 shrink-0">
                   <AlertTriangle size={20} />
                 </div>
                 <h3 className={cx("font-black text-sm", tokens.adminBackup.heading)}>
@@ -887,7 +887,7 @@ export const AdminBackup: React.FC = () => {
             className={cx("relative z-10 w-full max-w-sm my-auto rounded-2xl border border-red-500/30 p-6 shadow-2xl outline-none", tokens.surface.card)}
           >
             <div className="flex items-center gap-3 mb-4">
-              <div className="rounded-full p-2.5 bg-red-500/15 text-red-400 shrink-0">
+              <div className="rounded-full p-2.5 bg-red-500/15 text-red-400 light_sakura:bg-red-50 light_sakura:text-red-600 shrink-0">
                 <Trash2 size={20} />
               </div>
               <h3 className={cx("font-black text-sm", tokens.adminBackup.heading)}>

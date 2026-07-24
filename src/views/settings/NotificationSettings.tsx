@@ -107,12 +107,12 @@ export const NotificationSettings: React.FC = () => {
                 paling atas supaya user paham kenapa toggle di bawah
                 mungkin belum efektif kalau izin belum diberikan. */}
             {permStatus === "unsupported" ? null : permStatus === "granted" ? (
-              <div className={cx("flex items-center gap-2.5 p-3.5 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)]", "bg-emerald-500/10 text-emerald-400")}>
+              <div className={cx("flex items-center gap-2.5 p-3.5 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)]", tokens.settings.innerCardBgBorder, tokens.text.success)}>
                 <BellRing size={15} className="shrink-0" />
                 <span>{t("settings.notif_permission_granted_desc")}</span>
               </div>
             ) : permStatus === "denied" ? (
-              <div className={cx("flex items-start gap-2.5 p-3.5 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed", "bg-red-500/10 text-red-400")}>
+              <div className={cx("flex items-start gap-2.5 p-3.5 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed", tokens.settings.innerCardBgBorder, tokens.text.danger)}>
                 <ShieldAlert size={15} className="shrink-0 mt-0.5" />
                 <span>{t("settings.notif_permission_denied_desc")}</span>
               </div>
