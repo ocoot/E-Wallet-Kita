@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { supabase } from "../lib/supabase";
 import { PremiumVoucher } from "../types";
@@ -314,10 +315,10 @@ export const AdminVoucherManager: React.FC = () => {
           {t: t("voucher.active_vouchers"), v: stats.active, color: "text-emerald-500"},
           {t: t("voucher.inactive_vouchers"), v: stats.inactive, color: tokens.text.muted}
         ].map(s=>(
-          <div key={s.t} className="p-6">
+          <Card key={s.t} padding="sm" border="neutral" elevation="sm">
             <p className={cx("text-sm font-medium", tokens.text.muted)}>{s.t}</p>
             <p className={`text-3xl font-bold mt-2 ${s.color}`}>{s.v}</p>
-          </div>
+          </Card>
         ))}
       </div>
 

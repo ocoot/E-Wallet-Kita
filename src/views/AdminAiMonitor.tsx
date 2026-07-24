@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { reportFrontendError } from "../lib/errorReporter";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { Card } from "../components/ui/Card";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAdmin } from "../hooks/useAdmin";
@@ -212,7 +213,7 @@ export const AdminAiMonitor: React.FC = () => {
                 const sharePercent = grandTotal > 0 ? Math.round((p.total_calls / grandTotal) * 100) : 0;
 
                 return (
-                  <div key={p.provider} className="p-6 space-y-4">
+                  <Card key={p.provider} padding="md" border="neutral" elevation="sm" className="space-y-4">
                     <div className="flex items-center justify-between">
                       <span className={cx("px-3 py-1 rounded-full text-xs font-semibold uppercase", tokens.surface.sunken, tokens.text.accent)}>
                         {p.provider}
@@ -262,7 +263,7 @@ export const AdminAiMonitor: React.FC = () => {
                         <p className={cx("text-xs", tokens.text.muted)}>{t("ai_monitor.failed")}</p>
                       </div>
                     </div>
-                  </div>
+                  </Card>
                 );
               })
             )}

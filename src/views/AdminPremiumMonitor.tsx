@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { Card } from "../components/ui/Card";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
@@ -317,12 +318,12 @@ export const AdminPremiumMonitor: React.FC = () => {
             { label: t("admin.status_failed"), val: metrics.failedCount, color: tokens.adminPremium.metricRed },
             { label: t("admin.metrics.total"), val: metrics.totalTransactions, color: tokens.text.strong },
           ].map((m, i) => (
-            <div key={i} className="p-6">
+            <Card key={i} padding="sm" border="neutral" elevation="sm">
               <p className={cx("text-sm font-medium", tokens.text.muted)}>{m.label}</p>
               <h3 className={`font-bold font-mono tabular-nums text-2xl mt-2 ${m.color}`}>
                 {m.val}
               </h3>
-            </div>
+            </Card>
           ))}
         </div>
       )}

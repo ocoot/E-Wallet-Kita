@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { Card } from "../components/ui/Card";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
@@ -257,7 +258,7 @@ export const AdminErrorMonitor: React.FC = () => {
 
           {/* By-source breakdown */}
           {sources.length > 0 && (
-            <div className="p-6">
+            <Card padding="md" border="neutral" elevation="sm">
               <p className={cx("text-sm font-semibold mb-4", tokens.text.secondary)}>
                 {t("error_monitor.by_source_title")}
               </p>
@@ -281,7 +282,7 @@ export const AdminErrorMonitor: React.FC = () => {
                   );
                 })}
               </div>
-            </div>
+            </Card>
           )}
         </>
       )}
@@ -311,7 +312,7 @@ export const AdminErrorMonitor: React.FC = () => {
       </div>
 
       {/* Log table */}
-      <div className="overflow-hidden">
+      <div className={cx("rounded-2xl border shadow-sm overflow-hidden", tokens.surface.card, tokens.border.default)}>
         {logsLoading ? (
           <div className="py-16 flex items-center justify-center">
             <Activity className="animate-pulse text-red-500" size={28} />
