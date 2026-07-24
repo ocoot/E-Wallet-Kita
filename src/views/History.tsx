@@ -85,7 +85,7 @@ export const History: React.FC<HistoryProps> = ({
   const [filterWalletId, setFilterWalletId] = useState<string | null>(
     (locationState as any)?.filterWalletId || null
   );
-  const [pageSize, setPageSize] = useState<number | "all">(10);
+  const [pageSize, setPageSize] = useState<number | "all">(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);

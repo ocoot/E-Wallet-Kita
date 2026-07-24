@@ -878,6 +878,8 @@
     "showing_all_keys": "Showing all {count} keys",
     "showing_all_transactions": "Showing all {count} transactions",
     "showing_all_vouchers": "Showing all {count} vouchers",
+    "showing_all_backups": "Showing all {count} backup logs",
+    "showing_all_restores": "Showing all {count} restore logs",
     "proceed": "Proceed",
     "cancel": "Cancel",
     "maintenance_admin_bypass_note": "Admins and owners always have access to all features, even during maintenance mode. Feature locks only apply to regular users.",

@@ -95,7 +95,7 @@ export const AdminErrorMonitor: React.FC = () => {
   const [periodHours, setPeriodHours] = useState<24 | 168 | 720>(24);
   const [levelFilter, setLevelFilter] = useState<"all" | ErrorLogRow["level"]>("all");
   const [sourceFilter, setSourceFilter] = useState("all");
-  const [pageSize, setPageSize] = useState<number | "all">(15);
+  const [pageSize, setPageSize] = useState<number | "all">(5);
   const [page, setPage] = useState(0);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
@@ -393,6 +393,7 @@ export const AdminErrorMonitor: React.FC = () => {
               setPageSize(v === "all" ? "all" : Number(v));
             }}
             options={[
+              { value: "5", label: "5" },
               { value: "10", label: "10" },
               { value: "15", label: "15" },
               { value: "25", label: "25" },

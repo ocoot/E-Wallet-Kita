@@ -67,7 +67,7 @@ export const AdminUserManager: React.FC = () => {
   });
 
   // Pagination state
-  const [pageSize, setPageSize] = useState<number | "all">(20);
+  const [pageSize, setPageSize] = useState<number | "all">(5);
   const [page, setPage] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
 

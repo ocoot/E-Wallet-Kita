@@ -57,7 +57,7 @@ export const AdminCategoryManager: React.FC = () => {
     isOpen: false,
     message: ""
   });
-  const [pageSize, setPageSize] = useState<number | "all">(10);
+  const [pageSize, setPageSize] = useState<number | "all">(5);
   const [page, setPage] = useState(0);
 
   useEffect(() => {

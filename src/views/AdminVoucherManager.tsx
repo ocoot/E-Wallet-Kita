@@ -31,7 +31,7 @@ export const AdminVoucherManager: React.FC = () => {
   const [deleteTarget, setDeleteTarget] = useState<PremiumVoucherWithUsage | null>(null);
   const [premiumPrice, setPremiumPrice] = useState("20000");
   const [isSavingPrice, setIsSavingPrice] = useState(false);
-  const [pageSize, setPageSize] = useState<number | "all">(10);
+  const [pageSize, setPageSize] = useState<number | "all">(5);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [vouchersError, setVouchersError] = useState(false);
@@ -390,7 +390,7 @@ export const AdminVoucherManager: React.FC = () => {
                 <th className="p-6 text-right">{t("voucher.actions")}</th>
               </tr>
             </thead>
-            <tbody className={cx("divide-y", tokens.border.default)}>
+            <tbody className={cx("divide-y", tokens.errorMonitor.tableDivide)}>
               {(pageSize === "all" ? vouchers : vouchers.slice(page * pageSize, (page + 1) * pageSize)).map(v => {
                 const usageCount = v.usage_count || 0;
                 return (

@@ -878,6 +878,8 @@
     "showing_all_keys": "Menampilkan semua {count} kunci",
     "showing_all_transactions": "Menampilkan semua {count} transaksi",
     "showing_all_vouchers": "Menampilkan semua {count} voucher",
+    "showing_all_backups": "Menampilkan semua {count} riwayat backup",
+    "showing_all_restores": "Menampilkan semua {count} riwayat restore",
     "proceed": "Lanjutkan",
     "cancel": "Batal",
     "maintenance_admin_bypass_note": "Admin dan owner selalu dapat mengakses semua fitur meski mode maintenance aktif. Kunci fitur hanya berlaku untuk pengguna biasa.",

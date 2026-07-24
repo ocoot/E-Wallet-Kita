@@ -52,7 +52,7 @@ export const AdminPremiumMonitor: React.FC = () => {
   const [metrics, setMetrics] = useState<RevenueMetrics | null>(null);
   const [transactions, setTransactions] = useState<PremiumTransaction[]>([]);
   const [totalCount, setTotalCount] = useState(0);
-  const [pageSize, setPageSize] = useState<number | "all">(15);
+  const [pageSize, setPageSize] = useState<number | "all">(5);
   const [page, setPage] = useState(0);
   const [statusFilter, setStatusFilter] = useState("all");
   const [loading, setLoading] = useState(true);

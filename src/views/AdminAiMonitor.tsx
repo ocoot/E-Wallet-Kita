@@ -95,7 +95,7 @@ export const AdminAiMonitor: React.FC = () => {
   const [loadError, setLoadError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [period, setPeriod]       = useState<PeriodOption>(30);
-  const [pageSize, setPageSize]   = useState<number | "all">(10);
+  const [pageSize, setPageSize]   = useState<number | "all">(5);
   const [page, setPage]   = useState(0);
 
   const byKey = summary?.by_key ?? [];
@@ -290,7 +290,7 @@ export const AdminAiMonitor: React.FC = () => {
                       <th className="px-6 py-4">{t("ai_monitor.col_last_used")}</th>
                     </tr>
                   </thead>
-                  <tbody className={cx("divide-y", tokens.border.default)}>
+                  <tbody className={cx("divide-y", tokens.errorMonitor.tableDivide)}>
                     {(pageSize === "all" ? byKey : byKey.slice(page * pageSize, (page + 1) * pageSize)).map((k) => {
                       const sRate   = successRate(k.success_calls, k.total_calls);
                       const qRate   = quotaRate(k.quota_exceeded_calls, k.total_calls);

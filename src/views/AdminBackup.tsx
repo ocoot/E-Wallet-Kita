@@ -12,6 +12,7 @@ import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
 import { Input } from "../components/ui/Input";
+import { DropdownField } from "../components/DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { reportFrontendError } from "../lib/errorReporter";
@@ -27,6 +28,8 @@ import {
   Trash2,
   AlertTriangle,
   X,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 interface BackupLogRow {
@@ -86,6 +89,14 @@ export const AdminBackup: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [triggering, setTriggering] = useState(false);
+
+  // Pagination - riwayat backup
+  const [historyPage, setHistoryPage] = useState(0);
+  const [historyPageSize, setHistoryPageSize] = useState<number | "all">(5);
+
+  // Pagination - riwayat restore
+  const [restorePage, setRestorePage] = useState(0);
+  const [restorePageSize, setRestorePageSize] = useState<number | "all">(5);
 
   // Bulk delete
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -258,6 +269,20 @@ export const AdminBackup: React.FC = () => {
   const restorePanelRef = useRef<HTMLDivElement>(null);
   useLockBodyScroll(restoreTarget !== null);
   useDialogA11y(restoreTarget !== null, restorePanelRef, closeRestoreModal);
+
+  // ── Pagination ───────────────────────────────────────────
+  useEffect(() => { setHistoryPage(0); }, [historyPageSize, history.length]);
+  useEffect(() => { setRestorePage(0); }, [restorePageSize, restoreHistory.length]);
+
+  const paginatedHistory = historyPageSize === "all"
+    ? history
+    : history.slice(historyPage * historyPageSize, (historyPage + 1) * historyPageSize);
+  const historyTotalPages = historyPageSize === "all" ? 1 : Math.max(1, Math.ceil(history.length / historyPageSize));
+
+  const paginatedRestoreHistory = restorePageSize === "all"
+    ? restoreHistory
+    : restoreHistory.slice(restorePage * restorePageSize, (restorePage + 1) * restorePageSize);
+  const restoreTotalPages = restorePageSize === "all" ? 1 : Math.max(1, Math.ceil(restoreHistory.length / restorePageSize));
 
   // ── Bulk delete ──────────────────────────────────────────
   const selectableIds = useMemo(
@@ -499,7 +524,7 @@ export const AdminBackup: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {history.map(row => {
+                {paginatedHistory.map(row => {
                   const selectable = row.status !== "running" && !row.deleted_at;
                   return (
                     <tr
@@ -558,6 +583,57 @@ export const AdminBackup: React.FC = () => {
             </table>
           </ScrollableTableWrapper>
         )}
+
+        {history.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">
+            {/* Page Size Selector */}
+            <div className="flex items-center gap-2">
+              <span>{t("admin.rows_per_page")}</span>
+              <DropdownField
+                className="w-24"
+                value={String(historyPageSize)}
+                onChange={(v) => setHistoryPageSize(v === "all" ? "all" : Number(v))}
+                options={[
+                  { value: "5", label: "5" },
+                  { value: "10", label: "10" },
+                  { value: "15", label: "15" },
+                  { value: "20", label: "20" },
+                  { value: "all", label: t("common.all") },
+                ]}
+              />
+            </div>
+
+            {/* Pagination Info & Buttons */}
+            {historyPageSize !== "all" && history.length > historyPageSize ? (
+              <div className="flex items-center gap-4">
+                <div>
+                  {historyPage * historyPageSize + 1}–{Math.min((historyPage + 1) * historyPageSize, history.length)} dari {history.length}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={historyPage === 0}
+                    onClick={() => setHistoryPage(p => p - 1)}
+                    className={cx("p-2 rounded-xl border disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.border.default, tokens.surface.card, tokens.hover.surface)}
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <span className={cx("font-medium", tokens.text.onSurface)}>{historyPage + 1} / {historyTotalPages}</span>
+                  <button
+                    disabled={(historyPage + 1) * historyPageSize >= history.length}
+                    onClick={() => setHistoryPage(p => p + 1)}
+                    className={cx("p-2 rounded-xl border disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.border.default, tokens.surface.card, tokens.hover.surface)}
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-slate-500 text-xs">
+                {t("admin.showing_all_backups").replace("{count}", history.length.toString())}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Riwayat restore */}
@@ -583,7 +659,7 @@ export const AdminBackup: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {restoreHistory.map(row => (
+                {paginatedRestoreHistory.map(row => (
                   <tr
                     key={row.id}
                     className={tokens.adminBackup.tableRow}
@@ -605,6 +681,57 @@ export const AdminBackup: React.FC = () => {
               </tbody>
             </table>
           </ScrollableTableWrapper>
+        )}
+
+        {restoreHistory.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2 mt-4 font-sans text-xs text-slate-400">
+            {/* Page Size Selector */}
+            <div className="flex items-center gap-2">
+              <span>{t("admin.rows_per_page")}</span>
+              <DropdownField
+                className="w-24"
+                value={String(restorePageSize)}
+                onChange={(v) => setRestorePageSize(v === "all" ? "all" : Number(v))}
+                options={[
+                  { value: "5", label: "5" },
+                  { value: "10", label: "10" },
+                  { value: "15", label: "15" },
+                  { value: "20", label: "20" },
+                  { value: "all", label: t("common.all") },
+                ]}
+              />
+            </div>
+
+            {/* Pagination Info & Buttons */}
+            {restorePageSize !== "all" && restoreHistory.length > restorePageSize ? (
+              <div className="flex items-center gap-4">
+                <div>
+                  {restorePage * restorePageSize + 1}–{Math.min((restorePage + 1) * restorePageSize, restoreHistory.length)} dari {restoreHistory.length}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    disabled={restorePage === 0}
+                    onClick={() => setRestorePage(p => p - 1)}
+                    className={cx("p-2 rounded-xl border disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.border.default, tokens.surface.card, tokens.hover.surface)}
+                  >
+                    <ChevronLeft size={14} />
+                  </button>
+                  <span className={cx("font-medium", tokens.text.onSurface)}>{restorePage + 1} / {restoreTotalPages}</span>
+                  <button
+                    disabled={(restorePage + 1) * restorePageSize >= restoreHistory.length}
+                    onClick={() => setRestorePage(p => p + 1)}
+                    className={cx("p-2 rounded-xl border disabled:opacity-50 cursor-pointer", tokens.text.label, tokens.border.default, tokens.surface.card, tokens.hover.surface)}
+                  >
+                    <ChevronRight size={14} />
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-slate-500 text-xs">
+                {t("admin.showing_all_restores").replace("{count}", restoreHistory.length.toString())}
+              </div>
+            )}
+          </div>
         )}
       </div>
 
