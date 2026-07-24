@@ -183,10 +183,10 @@ export const AdminBroadcast: React.FC = () => {
         </div>
       </div>
 
-      <div className="p-8 space-y-6">
+      <div className={cx("p-8 space-y-6 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         {/* Header inside Card Container */}
         <div className={cx("border-b pb-5", tokens.border.default)}>
-          <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
+          <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.heading)}>
             <Send className="text-indigo-500" size={24} />
             {t("admin.broadcast_title")}
           </h1>

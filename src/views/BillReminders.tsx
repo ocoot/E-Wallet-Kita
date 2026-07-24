@@ -213,12 +213,12 @@ export const BillReminders: React.FC = () => {
       <div className="space-y-6">
 
           {/* Header */}
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border shadow-sm px-5 py-4", tokens.surface.card, tokens.border.accent)}>
             <div>
-              <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+              <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
                 {t("bill_reminders.page_title")}
               </h1>
-              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.heroSubtitle)}>
+              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
                 {t("bill_reminders.page_subtitle")}
               </p>
             </div>

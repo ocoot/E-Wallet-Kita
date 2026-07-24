@@ -171,14 +171,15 @@ export const AdminErrorMonitor: React.FC = () => {
         </div>
       </div>
 
-      {/* Header */}
-      <div className="p-6 md:p-8">
+      {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
+          langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
+      <div className={cx("p-6 md:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
               {t("error_monitor.title")}
             </h1>
-            <p className={cx("text-sm mt-1", tokens.text.heroSubtitle)}>
+            <p className={cx("text-sm mt-1", tokens.text.muted)}>
               {t("error_monitor.desc")}
             </p>
           </div>

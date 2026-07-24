@@ -472,16 +472,16 @@ export const AdminUserManager: React.FC = () => {
 
       {/* Header + quick actions -- Wrapped in One Card Container, konsisten
           dengan pola header di halaman Admin* lainnya (mis. AdminPremiumMonitor). */}
-      <div className="overflow-hidden">
+      <div className={cx("overflow-hidden rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
         <div className="p-6 md:p-8 space-y-6">
           <div className={cx("flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6", tokens.border.default)}>
             <div>
-              <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.primary)}>
+              <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.heading)}>
                 <User className={cx(tokens.text.accent)} size={24} />
                 {t("admin.tab_users")}
               </h1>
-              <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.heroSubtitle)}>
+              <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.muted)}>
                 {t("admin.tab_users_desc")}
               </p>
             </div>

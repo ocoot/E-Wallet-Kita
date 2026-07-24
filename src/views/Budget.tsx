@@ -245,13 +245,13 @@ export const Budget: React.FC = () => {
       <div className="space-y-6">
 
       {/* Header */}
-      <div className={cx("flex items-start justify-between gap-3.5 flex-wrap border-b pb-6", tokens.settings.sectionBorder)}>
+      <div className={cx("flex items-start justify-between gap-3.5 flex-wrap rounded-2xl border shadow-sm px-5 py-4", tokens.surface.card, tokens.border.accent)}>
         <div className="flex items-center gap-3.5">
           <div>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
               {t("budget.page_title")}
             </h1>
-            <p className={cx("text-xs mt-0.5 max-w-xl leading-relaxed", tokens.text.heroSubtitle)}>
+            <p className={cx("text-xs mt-0.5 max-w-xl leading-relaxed", tokens.text.muted)}>
               {t("budget.page_subtitle")}
             </p>
           </div>

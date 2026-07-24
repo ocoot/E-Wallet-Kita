@@ -180,12 +180,12 @@ export const AdminMaintenance: React.FC = () => {
       </div>
 
       {/* ── Global Maintenance Toggle ── */}
-      <div className="p-6 md:p-8 space-y-6">
+      <div className={cx("p-6 md:p-8 space-y-6 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className={cx("border-b pb-5", tokens.border.default)}>
-          <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+          <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
             {t("admin.maintenance_title")}
           </h1>
-          <p className={cx("text-sm mt-1", tokens.text.heroSubtitle)}>
+          <p className={cx("text-sm mt-1", tokens.text.muted)}>
             {t("admin.maintenance_desc")}
           </p>
         </div>

@@ -78,11 +78,11 @@ export const AdminPanel: React.FC = () => {
       <div className="space-y-6">
 
           {/* Page title */}
-          <div className={cx("flex flex-col border-b pb-6", tokens.settings.sectionBorder)}>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+          <div className={cx("flex flex-col rounded-2xl border shadow-sm px-5 py-4", tokens.surface.card, tokens.border.accent)}>
+            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
               {t("nav.admin_panel")}
             </h1>
-            <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.heroSubtitle)}>
+            <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.muted)}>
               {t("admin.panel_desc")}
             </p>
           </div>
