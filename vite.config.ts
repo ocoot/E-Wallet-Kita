@@ -59,7 +59,7 @@ export default defineConfig(({ mode }) => {
             method: 'POST',
             enctype: 'multipart/form-data',
             params: {
-              files: [{ name: 'receipt', accept: ['image/*'], multiple: false }],
+              files: [{ name: 'receipt', accept: ['image/*'] }],
             },
           },
           icons: [
