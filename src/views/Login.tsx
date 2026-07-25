@@ -330,49 +330,110 @@ export const Login: React.FC = () => {
   /* ── Render ───────────────────────────────────────── */
   return (
     <div className={cx(
-      "min-h-dvh flex flex-col items-center justify-center p-4 transition-colors duration-300 relative overflow-hidden",
+      "min-h-dvh flex flex-col md:flex-row transition-colors duration-300 relative overflow-hidden",
       tokens.surface.canvas
     )}>
 
-      {/* Page-level ambient glow */}
-      <div className={cx("absolute -left-32 top-0 w-96 h-96 rounded-full pointer-events-none", tokens.login.ambientGlow1)} />
-      <div className={cx("absolute right-0 bottom-0 w-80 h-80 rounded-full pointer-events-none", tokens.login.ambientGlow2)} />
+      {/* ══════════════════════════════════════════════
+          LEFT — Brand panel (desktop, full viewport height)
+      ══════════════════════════════════════════════ */}
+      <div className={cx(
+        "relative hidden md:flex md:w-[45%] flex-shrink-0 flex-col p-10 lg:p-14 overflow-hidden",
+        tokens.login.brandPanelBg
+      )}>
 
-      {/* ── Outer card wrapper with spotlight border ── */}
-      <motion.div
-        ref={cardRef}
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: "easeOut" }}
-        onMouseMove={handleCardMouse}
-        onMouseEnter={() => setSpotlightVisible(true)}
-        onMouseLeave={() => setSpotlightVisible(false)}
-        className={cx(
-          "w-full max-w-[880px] relative z-10 rounded-3xl overflow-hidden flex flex-col md:flex-row border border-white/[0.06] light_sakura:border-slate-200/60",
-          tokens.login.cardShadow
-        )}
-      >
-        {/* Spotlight glow — follows cursor */}
-        {spotlightVisible && (
-          <div
-            className="absolute inset-0 pointer-events-none z-50 opacity-60 transition-opacity duration-300"
-            style={{
-              background: `radial-gradient(400px circle at ${spotlightPos.x}px ${spotlightPos.y}px, rgba(63, 190, 155, 0.06), transparent 60%)`,
-            }}
-          />
-        )}
+        <BrandPanelMesh />
 
-        {/* ══════════════════════════════════════════════
-            LEFT — Brand / Welcome panel
-        ══════════════════════════════════════════════ */}
+        <div className="relative z-10">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="flex items-center gap-3 mb-10"
+          >
+            <img
+              src={logoUrl}
+              alt="E-Wallet Kita"
+              className="w-9 h-9 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
+            />
+            <span className="font-semibold text-sm tracking-[-0.01em] text-white/90">
+              E-Wallet Kita
+            </span>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.55 }}
+            className="font-bold text-[clamp(2rem,3.5vw,2.75rem)] leading-[1.1] tracking-[-0.04em] text-white mb-4"
+          >
+            {t("auth.login_title")}
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.55 }}
+            className="text-sm text-white/55 leading-relaxed max-w-[30ch]"
+          >
+            {t("auth.login_subtitle")}
+          </motion.p>
+        </div>
+
+        <div className="relative z-10 my-auto flex justify-center py-8">
+          <BrandLogoMark />
+        </div>
+
+        <div className="relative z-10 mt-auto flex flex-col gap-5">
+          <div className="flex flex-col gap-2">
+            <StatChip icon={<ShieldCheck size={13} />} value="" label="End-to-end encrypted" delay={0.55} />
+            <StatChip icon={<Cloud size={13} />} value="" label="Cloud sync across devices" delay={0.65} />
+            <StatChip icon={<Activity size={13} />} value="" label="Real-time transaction tracking" delay={0.75} />
+          </div>
+
+          <div className={cx("h-px", tokens.login.divider)} />
+
+          <div className={cx("flex items-center gap-1.5 p-1 rounded-full backdrop-blur-sm", tokens.login.tabBg)}>
+            <button
+              type="button"
+              onClick={() => goToAuthMode(false)}
+              disabled={isLoading}
+              className={cx(
+                "flex-1 py-2 rounded-full text-xs font-semibold transition-all disabled:opacity-40",
+                !isSignUp && !isForgotPassword
+                  ? tokens.login.tabBtnActive
+                  : tokens.login.tabBtnInactive
+              )}
+            >
+              {t("auth.panel_tab_signin")}
+            </button>
+            <button
+              type="button"
+              onClick={() => goToAuthMode(true)}
+              disabled={isLoading}
+              className={cx(
+                "flex-1 py-2 rounded-full text-xs font-semibold transition-all disabled:opacity-40",
+                isSignUp && !isForgotPassword
+                  ? tokens.login.tabBtnActive
+                  : tokens.login.tabBtnInactive
+              )}
+            >
+              {t("auth.panel_tab_signup")}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════
+          MOBILE-ONLY — Welcome landing panel
+      ══════════════════════════════════════════════ */}
+      {mobileStage === "landing" && (
         <div className={cx(
-          "relative md:w-[42%] flex-shrink-0 hidden md:flex flex-col p-10 overflow-hidden",
+          "relative flex md:hidden flex-col p-8 min-h-dvh overflow-hidden",
           tokens.login.brandPanelBg
         )}>
 
           <BrandPanelMesh />
 
-          {/* Brand header */}
           <div className="relative z-10">
             <motion.div
               initial={{ opacity: 0, scale: 0.85 }}
@@ -394,7 +455,7 @@ export const Login: React.FC = () => {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.55 }}
-              className="font-bold text-[2rem] leading-[1.15] tracking-[-0.03em] text-white mb-3"
+              className="font-bold text-2xl leading-[1.15] tracking-[-0.025em] text-white mb-3"
             >
               {t("auth.login_title")}
             </motion.h1>
@@ -402,157 +463,77 @@ export const Login: React.FC = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.55 }}
-              className="text-sm text-white/55 leading-relaxed max-w-[26ch]"
+              className="text-sm text-white/55 leading-relaxed"
             >
               {t("auth.login_subtitle")}
             </motion.p>
           </div>
 
-          {/* Logo mark — its own dedicated space, never overlapping the
-              header text above or the chips/tabs below */}
-          <div className="relative z-10 my-10 flex justify-center">
-            <BrandLogoMark />
+          <div className="relative z-10 my-auto flex justify-center py-6">
+            <BrandLogoMark compact />
           </div>
 
-          {/* Bottom block: stat chips + Sign In/Sign Up tab switcher,
-              grouped together so spacing stays even regardless of card height */}
-          <div className="relative z-10 mt-auto flex flex-col gap-5">
-            {/* Floating stat chips */}
-            <div className="flex flex-col gap-2">
-              <StatChip icon={<ShieldCheck size={13} />} value="" label="End-to-end encrypted" delay={0.55} />
-              <StatChip icon={<Cloud size={13} />} value="" label="Cloud sync across devices" delay={0.65} />
-              <StatChip icon={<Activity size={13} />} value="" label="Real-time transaction tracking" delay={0.75} />
-            </div>
-
-            {/* Divider to visually separate chips from the tab switcher */}
-            <div className={cx("h-px", tokens.login.divider)} />
-
-            {/* Desktop Sign In / Sign Up tab switcher */}
-            <div className={cx("flex items-center gap-1.5 p-1 rounded-full backdrop-blur-sm", tokens.login.tabBg)}>
-              <button
-                type="button"
-                onClick={() => goToAuthMode(false)}
-                disabled={isLoading}
-                className={cx(
-                  "flex-1 py-2 rounded-full text-xs font-semibold transition-all disabled:opacity-40",
-                  !isSignUp && !isForgotPassword
-                    ? tokens.login.tabBtnActive
-                    : tokens.login.tabBtnInactive
-                )}
-              >
-                {t("auth.panel_tab_signin")}
-              </button>
-              <button
-                type="button"
-                onClick={() => goToAuthMode(true)}
-                disabled={isLoading}
-                className={cx(
-                  "flex-1 py-2 rounded-full text-xs font-semibold transition-all disabled:opacity-40",
-                  isSignUp && !isForgotPassword
-                    ? tokens.login.tabBtnActive
-                    : tokens.login.tabBtnInactive
-                )}
-              >
-                {t("auth.panel_tab_signup")}
-              </button>
-            </div>
+          <div className="relative z-10 mt-auto flex flex-col gap-2.5">
+            <motion.button
+              whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
+              type="button"
+              onClick={() => goToAuthMode(false)}
+              className={cx(
+                "w-full py-3.5 rounded-xl text-sm font-semibold shadow-[0_4px_24px_rgba(0,0,0,0.25)] flex items-center justify-center gap-2",
+                tokens.login.tabBtnActive
+              )}
+            >
+              <LogIn size={15} />
+              <span>{t("auth.btn_signin")}</span>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
+              type="button"
+              onClick={() => goToAuthMode(true)}
+              className="w-full py-3.5 rounded-xl text-sm font-semibold
+                         border border-white/30 text-white
+                         flex items-center justify-center gap-2
+                         hover:bg-white/10 transition-colors"
+            >
+              <User size={15} />
+              <span>{t("auth.btn_signup")}</span>
+            </motion.button>
           </div>
         </div>
+      )}
 
-        {/* ══════════════════════════════════════════════
-            MOBILE-ONLY — Welcome landing panel
-            Shown before the form, mirrors the brand panel above but
-            full-width, with explicit Sign In / Create Account buttons.
-        ══════════════════════════════════════════════ */}
-        {mobileStage === "landing" && (
-          <div className={cx(
-            "relative flex md:hidden flex-col p-8 overflow-hidden",
-            tokens.login.brandPanelBg
-          )}>
-
-            <BrandPanelMesh />
-
-            <div className="relative z-10">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2, duration: 0.5 }}
-                className="flex items-center gap-3 mb-8"
-              >
-                <img
-                  src={logoUrl}
-                  alt="E-Wallet Kita"
-                  className="w-9 h-9 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
-                />
-                <span className="font-semibold text-sm tracking-[-0.01em] text-white/90">
-                  E-Wallet Kita
-                </span>
-              </motion.div>
-
-              <motion.h1
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.55 }}
-                className="font-bold text-2xl leading-[1.15] tracking-[-0.025em] text-white mb-3"
-              >
-                {t("auth.login_title")}
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.55 }}
-                className="text-sm text-white/55 leading-relaxed"
-              >
-                {t("auth.login_subtitle")}
-              </motion.p>
-            </div>
-
-            {/* Logo mark — own dedicated space, clear of the subtitle above
-                and the buttons below */}
-            <div className="relative z-10 my-9 flex justify-center">
-              <BrandLogoMark compact />
-            </div>
-
-            {/* Sign In / Create Account entry buttons */}
-            <div className="relative z-10 flex flex-col gap-2.5">
-              <motion.button
-                whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
-                type="button"
-                onClick={() => goToAuthMode(false)}
-                className={cx(
-                  "w-full py-3.5 rounded-xl text-sm font-semibold shadow-[0_4px_24px_rgba(0,0,0,0.25)] flex items-center justify-center gap-2",
-                  tokens.login.tabBtnActive
-                )}
-              >
-                <LogIn size={15} />
-                <span>{t("auth.btn_signin")}</span>
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
-                type="button"
-                onClick={() => goToAuthMode(true)}
-                className="w-full py-3.5 rounded-xl text-sm font-semibold
-                           border border-white/30 text-white
-                           flex items-center justify-center gap-2
-                           hover:bg-white/10 transition-colors"
-              >
-                <User size={15} />
-                <span>{t("auth.btn_signup")}</span>
-              </motion.button>
-            </div>
-          </div>
-        )}
-
-        {/* ══════════════════════════════════════════════
-            RIGHT — Form panel
-        ══════════════════════════════════════════════ */}
-        <div className={cx(
-          "flex-1 flex-col justify-center p-8 md:p-10",
+      {/* ══════════════════════════════════════════════
+          RIGHT — Form panel (full viewport height)
+      ══════════════════════════════════════════════ */}
+      <motion.div
+        ref={cardRef}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.15 }}
+        onMouseMove={handleCardMouse}
+        onMouseEnter={() => setSpotlightVisible(true)}
+        onMouseLeave={() => setSpotlightVisible(false)}
+        className={cx(
+          "flex-1 relative flex-col items-center justify-center p-8 md:p-12 lg:p-16 min-h-dvh",
           tokens.surface.card,
           mobileStage === "form" ? "flex" : "hidden md:flex"
-        )}>
+        )}
+      >
 
-          {/* Mobile-only brand mark + back button */}
+        <div className={cx("absolute -left-32 top-0 w-96 h-96 rounded-full pointer-events-none", tokens.login.ambientGlow1)} />
+        <div className={cx("absolute right-0 bottom-0 w-80 h-80 rounded-full pointer-events-none", tokens.login.ambientGlow2)} />
+
+        {spotlightVisible && (
+          <div
+            className="absolute inset-0 pointer-events-none z-50 opacity-60 transition-opacity duration-300"
+            style={{
+              background: `radial-gradient(400px circle at ${spotlightPos.x}px ${spotlightPos.y}px, rgba(63, 190, 155, 0.06), transparent 60%)`,
+            }}
+          />
+        )}
+
+        <div className="relative z-10 w-full max-w-md">
+
           <div className="flex md:hidden items-center justify-between mb-7">
             <div className="flex items-center gap-2.5">
               <img
@@ -576,7 +557,6 @@ export const Login: React.FC = () => {
 
           <AnimatePresence mode="wait">
 
-            {/* ── Forgot Password view ── */}
             {isForgotPassword ? (
               <motion.div
                 key="forgot"
@@ -599,18 +579,21 @@ export const Login: React.FC = () => {
 
                 <motion.div animate={shakeControls}>
                   <form onSubmit={handleForgotPassword} className="space-y-4">
-                    <InputField
-                      icon={<Mail size={15} />}
-                      label={t("auth.label_email")}
-                      type="email"
-                      placeholder={t("auth.placeholder_email")}
-                      value={email}
-                      onChange={setEmail}
-                      disabled={isLoading}
-                      required
-                      autoComplete="email"
-                    />
+                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05, duration: 0.35 }}>
+                      <InputField
+                        icon={<Mail size={15} />}
+                        label={t("auth.label_email")}
+                        type="email"
+                        placeholder={t("auth.placeholder_email")}
+                        value={email}
+                        onChange={setEmail}
+                        disabled={isLoading}
+                        required
+                        autoComplete="email"
+                      />
+                    </motion.div>
                     <motion.button
+                      initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.35 }}
                       whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
                       type="submit" disabled={isLoading}
                       className={cx(
@@ -638,7 +621,6 @@ export const Login: React.FC = () => {
               </motion.div>
 
             ) : (
-              /* ── Sign In / Sign Up view ── */
               <motion.div
                 key={isSignUp ? "signup" : "signin"}
                 initial={{ opacity: 0, x: 16 }}
@@ -646,7 +628,6 @@ export const Login: React.FC = () => {
                 exit={{ opacity: 0, x: -16 }}
                 transition={{ duration: 0.28 }}
               >
-                {/* Section heading */}
                 <div className="mb-7">
                   <h2 className={cx("font-bold text-xl tracking-[-0.02em] mb-0.5", tokens.text.primary)}>
                     {isSignUp ? t("auth.btn_signup") : t("auth.btn_signin")}
@@ -656,93 +637,98 @@ export const Login: React.FC = () => {
                   </p>
                 </div>
 
-                {/* ── Email form ── */}
                 <motion.div animate={shakeControls}>
                   <form onSubmit={handleEmailAuth} className="space-y-3.5">
                     {isSignUp && (
-                      <InputField
-                        icon={<User size={15} />}
-                        label={t("auth.label_display_name")}
-                        type="text"
-                        placeholder={t("auth.placeholder_display_name")}
-                        value={displayName}
-                        onChange={setDisplayName}
-                        disabled={isLoading}
-                        required
-                        autoComplete="name"
-                      />
+                      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.04, duration: 0.35 }}>
+                        <InputField
+                          icon={<User size={15} />}
+                          label={t("auth.label_display_name")}
+                          type="text"
+                          placeholder={t("auth.placeholder_display_name")}
+                          value={displayName}
+                          onChange={setDisplayName}
+                          disabled={isLoading}
+                          required
+                          autoComplete="name"
+                        />
+                      </motion.div>
                     )}
 
-                    <InputField
-                      icon={<Mail size={15} />}
-                      label={t("auth.label_email")}
-                      type="email"
-                      placeholder={t("auth.placeholder_email")}
-                      value={email}
-                      onChange={setEmail}
-                      disabled={isLoading}
-                      required
-                      autoComplete="email"
-                    />
-
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between items-center">
-                        <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold tracking-[0.12em] uppercase", tokens.text.muted)}>
-                          {t("auth.label_password")}
-                        </label>
-                        {!isSignUp && (
-                          <button
-                            type="button"
-                            onClick={() => { audioFeedback.playClick(); setIsForgotPassword(true); }}
-                            disabled={isLoading}
-                            className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] hover:underline cursor-pointer", tokens.icon.accent)}
-                          >
-                            {t("auth.forgot_password")}
-                          </button>
-                        )}
-                      </div>
+                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08, duration: 0.35 }}>
                       <InputField
-                        icon={<Lock size={15} />}
-                        label=""
-                        type={showPassword ? "text" : "password"}
-                        placeholder="••••••••"
-                        value={password}
-                        onChange={setPassword}
+                        icon={<Mail size={15} />}
+                        label={t("auth.label_email")}
+                        type="email"
+                        placeholder={t("auth.placeholder_email")}
+                        value={email}
+                        onChange={setEmail}
                         disabled={isLoading}
                         required
-                        minLength={6}
-                        autoComplete={isSignUp ? "new-password" : "current-password"}
-                        rightAddon={
-                          <button
-                            type="button"
-                            tabIndex={-1}
-                            onClick={() => setShowPassword((v) => !v)}
-                            className={cx(tokens.login.eyeBtn)}
-                          >
-                            {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
-                          </button>
-                        }
+                        autoComplete="email"
                       />
-                    </div>
+                    </motion.div>
 
-                    {/* Primary CTA */}
-                    <motion.button
-                      whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
-                      type="submit" disabled={isLoading}
-                      className={cx(
-                        "w-full py-3.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:pointer-events-none mt-1",
-                        tokens.login.ctaBtn
-                      )}
-                    >
-                      {isLoading
-                        ? <span className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin" />
-                        : <><LogIn size={15} /><span>{isSignUp ? t("auth.btn_signup") : t("auth.btn_signin")}</span></>
-                      }
-                    </motion.button>
+                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12, duration: 0.35 }}>
+                      <div className="space-y-1.5">
+                        <div className="flex justify-between items-center">
+                          <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold tracking-[0.12em] uppercase", tokens.text.muted)}>
+                            {t("auth.label_password")}
+                          </label>
+                          {!isSignUp && (
+                            <button
+                              type="button"
+                              onClick={() => { audioFeedback.playClick(); setIsForgotPassword(true); }}
+                              disabled={isLoading}
+                              className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] hover:underline cursor-pointer", tokens.icon.accent)}
+                            >
+                              {t("auth.forgot_password")}
+                            </button>
+                          )}
+                        </div>
+                        <InputField
+                          icon={<Lock size={15} />}
+                          label=""
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          value={password}
+                          onChange={setPassword}
+                          disabled={isLoading}
+                          required
+                          minLength={6}
+                          autoComplete={isSignUp ? "new-password" : "current-password"}
+                          rightAddon={
+                            <button
+                              type="button"
+                              tabIndex={-1}
+                              onClick={() => setShowPassword((v) => !v)}
+                              className={cx(tokens.login.eyeBtn)}
+                            >
+                              {showPassword ? <EyeOff size={14} /> : <Eye size={14} />}
+                            </button>
+                          }
+                        />
+                      </div>
+                    </motion.div>
+
+                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16, duration: 0.35 }}>
+                      <motion.button
+                        whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
+                        type="submit" disabled={isLoading}
+                        className={cx(
+                          "w-full py-3.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:pointer-events-none mt-1",
+                          tokens.login.ctaBtn
+                        )}
+                      >
+                        {isLoading
+                          ? <span className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin" />
+                          : <><LogIn size={15} /><span>{isSignUp ? t("auth.btn_signup") : t("auth.btn_signin")}</span></>
+                        }
+                      </motion.button>
+                    </motion.div>
                   </form>
                 </motion.div>
 
-                {/* Toggle sign in ↔ sign up */}
                 <div className="text-center mt-4">
                   <button
                     onClick={() => { audioFeedback.playClick(); setIsSignUp(!isSignUp); }}
@@ -753,7 +739,6 @@ export const Login: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Divider */}
                 <div className="relative my-5 flex items-center">
                   <div className={cx("flex-1 h-px", tokens.login.formDivider)} />
                   <span className={cx("px-3 text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold uppercase tracking-widest", tokens.text.faint)}>
@@ -762,72 +747,67 @@ export const Login: React.FC = () => {
                   <div className={cx("flex-1 h-px", tokens.login.formDivider)} />
                 </div>
 
-                {/* Instant login buttons */}
-                <div className="space-y-2.5">
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.35 }}>
+                  <div className="space-y-2.5">
+                    <motion.button
+                      whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
+                      type="button" onClick={handleGoogleLogin} disabled={isLoading}
+                      className={cx(
+                        "w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2.5 transition-all disabled:opacity-40",
+                        tokens.login.googleBtn
+                      )}
+                    >
+                      <svg viewBox="0 0 24 24" width="16" height="16" className="shrink-0">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.08H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.92l2.85-2.22.81-.6z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.08l3.66 2.84c.87-2.6 3.3-4.54 6.16-4.54z"/>
+                      </svg>
+                      <span>{t("auth.login_google")}</span>
+                    </motion.button>
 
-                  {/* Google */}
-                  <motion.button
-                    whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
-                    type="button" onClick={handleGoogleLogin} disabled={isLoading}
-                    className={cx(
-                      "w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2.5 transition-all disabled:opacity-40",
-                      tokens.login.googleBtn
-                    )}
-                  >
-                    <svg viewBox="0 0 24 24" width="16" height="16" className="shrink-0">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                      <path fill="#FBBC05" d="M5.84 14.1c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.08H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.92l2.85-2.22.81-.6z"/>
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.08l3.66 2.84c.87-2.6 3.3-4.54 6.16-4.54z"/>
-                    </svg>
-                    <span>{t("auth.login_google")}</span>
-                  </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
+                      type="button" onClick={handleGuestLogin} disabled={isLoading}
+                      className={cx(
+                        "w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-40",
+                        tokens.login.guestBtn
+                      )}
+                    >
+                      <Sparkles size={14} />
+                      <span>{t("auth.login_guest")}</span>
+                    </motion.button>
+                  </div>
 
-                  {/* Guest */}
-                  <motion.button
-                    whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }}
-                    type="button" onClick={handleGuestLogin} disabled={isLoading}
-                    className={cx(
-                      "w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all disabled:opacity-40",
-                      tokens.login.guestBtn
-                    )}
-                  >
-                    <Sparkles size={14} />
-                    <span>{t("auth.login_guest")}</span>
-                  </motion.button>
-                </div>
-
-                {/* Guest disclaimer */}
-                <div className={cx(
-                  "mt-5 flex gap-2 p-3 rounded-xl text-[clamp(0.5625rem,2.6vw,0.625rem)] leading-relaxed",
-                  tokens.login.disclaimerBgBorder,
-                  tokens.text.muted
-                )}>
-                  <AlertCircle size={13} className={cx("shrink-0 mt-0.5", tokens.login.disclaimerIcon)} />
-                  <p>{t("auth.guest_disclaimer")}</p>
-                </div>
+                  <div className={cx(
+                    "mt-5 flex gap-2 p-3 rounded-xl text-[clamp(0.5625rem,2.6vw,0.625rem)] leading-relaxed",
+                    tokens.login.disclaimerBgBorder,
+                    tokens.text.muted
+                  )}>
+                    <AlertCircle size={13} className={cx("shrink-0 mt-0.5", tokens.login.disclaimerIcon)} />
+                    <p>{t("auth.guest_disclaimer")}</p>
+                  </div>
+                </motion.div>
               </motion.div>
             )}
           </AnimatePresence>
         </div>
+
+        <footer className="relative z-10 mt-8 md:absolute md:bottom-6 md:left-0 md:right-0 text-center text-xs text-slate-500 transition-colors duration-300">
+          <p>
+            &copy; {new Date().getFullYear()} E-Wallet Kita App. All Rights Reserved | Budi Hertanto |{" "}
+            <a
+              href="https://github.com/ocoot"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cx("transition-colors duration-200 underline inline-flex items-center gap-1", tokens.login.footerLink)}
+            >
+              Github: @ocoot
+            </a>
+          </p>
+        </footer>
       </motion.div>
 
-      {/* Footer Copyright */}
-      <footer className="mt-8 relative z-10 text-center text-xs text-slate-500 transition-colors duration-300">
-        <p>
-          © {new Date().getFullYear()} E-Wallet Kita App. All Rights Reserved | Budi Hertanto |{" "}
-          <a 
-            href="https://github.com/ocoot" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className={cx("transition-colors duration-200 underline inline-flex items-center gap-1", tokens.login.footerLink)}
-          >
-            Github: @ocoot
-          </a>
-        </p>
-      </footer>
-
-      {/* ── Confirmation Modal ── */}
       <Modal
         isOpen={confirmModal.isOpen}
         title={confirmModal.title}
@@ -839,7 +819,6 @@ export const Login: React.FC = () => {
         onCancel={() => { audioFeedback.playClick(); setConfirmModal((p) => ({ ...p, isOpen: false })); }}
       />
 
-      {/* ── Full-screen loading overlay ── */}
       <AnimatePresence>
         {isLoading && (
           <motion.div
