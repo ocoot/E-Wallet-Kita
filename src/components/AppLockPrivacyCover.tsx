@@ -40,7 +40,11 @@ export const AppLockPrivacyCover = forwardRef<HTMLDivElement>((_, ref) => {
       // State awal: tak terlihat & tidak menghalangi interaksi. SEMUA
       // perubahan setelah ini dilakukan lewat `ref.style` langsung di
       // AppLockContext -- BUKAN lewat prop/state React -- demi kecepatan.
-      style={{ opacity: 0, pointerEvents: "none" }}
+      // `willChange: opacity` sengaja dipasang permanen (bukan cuma saat
+      // animasi) supaya browser sudah menyiapkan compositor layer elemen
+      // ini SEBELUM dibutuhkan -- mengurangi risiko frame pertama yang
+      // ter-drop/telat saat opacity di-toggle mendadak lewat `ref.style`.
+      style={{ opacity: 0, pointerEvents: "none", willChange: "opacity" }}
       aria-hidden="true"
       className={cx(
         // `tokens.surface.canvas` sengaja translucent di tema light_sakura
