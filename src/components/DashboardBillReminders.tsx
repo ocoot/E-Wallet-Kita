@@ -42,7 +42,7 @@ export const DashboardBillReminders: React.FC = () => {
       <button
         type="button"
         onClick={() => { audioFeedback.playClick(); navigate("/bill-reminders"); }}
-        className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left cursor-pointer"
+        className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left cursor-pointer transition-colors hover:bg-white/[0.02] light_sakura:hover:bg-slate-900/[0.02]"
       >
         <div className="flex items-center gap-3 min-w-0">
           <div className="min-w-0">

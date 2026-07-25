@@ -214,12 +214,12 @@ export const BillReminders: React.FC = () => {
       <div className="space-y-6">
 
           {/* Header */}
-          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border shadow-sm px-5 py-4", tokens.surface.card, tokens.border.accent)}>
+          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border px-5 py-5", tokens.surface.card, tokens.border.accent)}>
             <div>
-              <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
+              <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
                 {t("bill_reminders.page_title")}
               </h1>
-              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
+              <p className={cx("text-xs mt-1 leading-relaxed", tokens.text.muted)}>
                 {t("bill_reminders.page_subtitle")}
               </p>
             </div>
@@ -227,7 +227,7 @@ export const BillReminders: React.FC = () => {
               variant="success"
               onClick={() => { audioFeedback.playClick(); openAddForm(); }}
               icon={<Plus size={16} />}
-              className="shrink-0"
+              className="shrink-0 rounded-full"
             >
               {t("bill_reminders.add_button")}
             </Button>
@@ -245,19 +245,19 @@ export const BillReminders: React.FC = () => {
               tanpa bergantung pada apa pun di baliknya. */}
           {reminders.length > 0 && (
             <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
-              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl border border-l-4 border-l-red-500", tokens.surface.card, tokens.border.default)}>
+              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2.5 rounded-full border border-l-4 border-l-red-500", tokens.surface.card, tokens.border.default)}>
                 <AlertCircle size={13} className={cx(tokens.text.danger)} />
-                <span className={cx("font-bold text-lg leading-none", tokens.text.danger)}>{overdueCount}</span>
+                <span className={cx("font-bold text-lg leading-none tabular-nums", tokens.text.danger)}>{overdueCount}</span>
                 <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider leading-none", tokens.text.muted)}>Terlambat</span>
               </div>
-              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl border border-l-4 border-l-amber-500", tokens.surface.card, tokens.border.default)}>
+              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2.5 rounded-full border border-l-4 border-l-amber-500", tokens.surface.card, tokens.border.default)}>
                 <AlertTriangle size={13} className={cx(tokens.text.warning)} />
-                <span className={cx("font-bold text-lg leading-none", tokens.text.warning)}>{dueSoonCount}</span>
+                <span className={cx("font-bold text-lg leading-none tabular-nums", tokens.text.warning)}>{dueSoonCount}</span>
                 <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider leading-none", tokens.text.muted)}>Segera</span>
               </div>
-              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2 rounded-2xl border border-l-4 border-l-emerald-500", tokens.surface.card, tokens.border.default)}>
+              <div className={cx("shrink-0 flex items-center gap-2 pl-3 pr-4 py-2.5 rounded-full border border-l-4 border-l-emerald-500", tokens.surface.card, tokens.border.default)}>
                 <CheckCircle2 size={13} className={cx(tokens.text.success)} />
-                <span className={cx("font-bold text-lg leading-none", tokens.text.success)}>{paidCount}</span>
+                <span className={cx("font-bold text-lg leading-none tabular-nums", tokens.text.success)}>{paidCount}</span>
                 <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider leading-none", tokens.text.muted)}>Lunas</span>
               </div>
             </div>
@@ -277,7 +277,7 @@ export const BillReminders: React.FC = () => {
                   <motion.button key={hour} whileTap={{ scale: 0.95 }} type="button" disabled={isSavingReminderHour}
                     onClick={() => handleSelectReminderHour(hour)}
                     className={cx(
-                      "cursor-pointer px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-colors disabled:opacity-50",
+                      "cursor-pointer px-3.5 py-2 rounded-full text-xs font-bold font-mono transition-all active:scale-95 disabled:opacity-50",
                       billReminderHour === hour
                         ? "bg-emerald-500 hover:bg-emerald-400 text-white shadow-sm light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
                         : cx(tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)
@@ -321,18 +321,18 @@ export const BillReminders: React.FC = () => {
                     return (
                       <React.Fragment key={r.id}>
                         {groupLabel && (
-                          <div className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest text-slate-500 mb-2 mt-5 first:mt-0">{groupLabel}</div>
+                          <div className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest mb-2 mt-5 first:mt-0", tokens.text.muted)}>{groupLabel}</div>
                         )}
                         <motion.div initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }}
                           className="relative mb-3">
                           {/* Timeline dot */}
                           <span className={cx("absolute -left-5 top-4 w-2.5 h-2.5 rounded-full ring-4", tokens.billReminders.timelineRing, cfg.stripe)} />
-                          <div className={cx("rounded-2xl border overflow-hidden", tokens.surface.sunken, tokens.border.default)}>
+                          <div className={cx("rounded-2xl border overflow-hidden transition-shadow duration-200 hover:shadow-lg hover:shadow-black/5 light_sakura:hover:shadow-slate-200/60", tokens.surface.sunken, tokens.border.default)}>
                             <div className="p-4 space-y-3">
                               {/* Top row */}
                               <div className="flex items-start justify-between gap-2">
                                 <div className="min-w-0">
-                                  <p className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>{r.name}</p>
+                                  <p className={cx("font-sans font-bold text-sm truncate tracking-tight", tokens.text.heading)}>{r.name}</p>
                                   <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">{getCategoryLabel(r.category_key)} · {recurrenceLabel(r.recurrence_type)} · {dueDateLabel(r)}</p>
                                 </div>
                                 <span className={cx("font-mono tabular-nums font-bold text-sm shrink-0", tokens.text.primary)}>{formatIDR(r.amount)}</span>
@@ -340,7 +340,7 @@ export const BillReminders: React.FC = () => {
 
                               {/* Status + days left */}
                               <div className="flex items-center justify-between">
-                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold shrink-0 ${cfg.badge}`}>{cfg.icon}{cfg.label}</span>
+                                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold shrink-0 ${cfg.badge}`}>{cfg.icon}{cfg.label}</span>
                                 {!r.is_paid && r.urgency !== "overdue" && (
                                   <span className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)]", tokens.text.muted)}>{t("bill_reminders.days_left", { days: r.daysUntilDue })}</span>
                                 )}
@@ -351,15 +351,15 @@ export const BillReminders: React.FC = () => {
                               <div className="flex items-center gap-2 pt-1">
                                 <button onClick={() => requestTogglePaid(r)} disabled={togglingId === r.id}
                                   className={cx(
-                                    "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50",
+                                    "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-xs font-bold transition-all active:scale-[0.97] cursor-pointer disabled:opacity-50",
                                     r.is_paid
                                       ? cx(tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)
                                       : cx("bg-emerald-500/10 hover:bg-emerald-500/20", tokens.text.success)
                                   )}>
                                   {togglingId === r.id ? <div className="w-3.5 h-3.5 border border-current border-t-transparent rounded-full animate-spin" /> : r.is_paid ? <><Circle size={12} /> {t("bill_reminders.mark_unpaid")}</> : <><CheckCircle2 size={12} /> {t("bill_reminders.mark_paid")}</>}
                                 </button>
-                                <button onClick={() => { audioFeedback.playClick(); openEditForm(r); }} className={cx("p-2 rounded-xl transition-colors cursor-pointer", tokens.chip.editIconBtn)}><Edit2 size={13} /></button>
-                                <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(r); }} className={cx("p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer", tokens.text.danger)}><Trash2 size={13} /></button>
+                                <button onClick={() => { audioFeedback.playClick(); openEditForm(r); }} className={cx("p-2 rounded-full transition-all active:scale-90 cursor-pointer", tokens.chip.editIconBtn)}><Edit2 size={13} /></button>
+                                <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(r); }} className={cx("p-2 rounded-full bg-red-500/10 hover:bg-red-500/20 transition-all active:scale-90 cursor-pointer", tokens.text.danger)}><Trash2 size={13} /></button>
                               </div>
                             </div>
                           </div>
@@ -382,7 +382,7 @@ export const BillReminders: React.FC = () => {
       >
         <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-teal-400" />
         <div className="p-6 space-y-4">
-          <h2 id="bill-reminder-form-title" className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
+          <h2 id="bill-reminder-form-title" className={cx("font-sans font-extrabold text-lg tracking-tight", tokens.text.heading)}>
             {editTarget ? t("bill_reminders.edit_title") : t("bill_reminders.add_title")}
           </h2>
           {/* Name */}
@@ -395,7 +395,7 @@ export const BillReminders: React.FC = () => {
           />
           {/* Category */}
           <div>
-            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_category")}</label>
+            <label className={cx("block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mb-1.5", tokens.text.muted)}>{t("bill_reminders.form_category")}</label>
             <DropdownField
               value={form.category_key}
               onChange={(v) => setForm(f => ({ ...f, category_key: v }))}
@@ -411,12 +411,12 @@ export const BillReminders: React.FC = () => {
           />
           {/* Recurrence */}
           <div>
-            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("bill_reminders.form_recurrence")}</label>
+            <label className={cx("block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mb-1.5", tokens.text.muted)}>{t("bill_reminders.form_recurrence")}</label>
             <div className="flex gap-2">
               {(["monthly", "yearly", "one_time"] as RecurrenceType[]).map(type => (
                 <button key={type} onClick={() => setForm(f => ({ ...f, recurrence_type: type }))}
                   className={cx(
-                    "flex-1 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer",
+                    "flex-1 py-2.5 rounded-full text-xs font-bold transition-all active:scale-95 cursor-pointer",
                     form.recurrence_type === type
                       ? "bg-emerald-500 hover:bg-emerald-400 text-white light_sakura:bg-rose-500 light_sakura:hover:bg-rose-400"
                       : cx(tokens.surface.subtle, tokens.hover.surface, tokens.text.muted)
@@ -446,7 +446,7 @@ export const BillReminders: React.FC = () => {
           )}
           {/* Notes */}
           <div>
-            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
+            <label className={cx("block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mb-1.5", tokens.text.muted)}>{t("wallet.label_pos")}</label>
             <DropdownField
               value={form.wallet_id}
               onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
@@ -466,8 +466,8 @@ export const BillReminders: React.FC = () => {
           />
           {/* Actions */}
           <div className="flex gap-3 pt-1">
-            <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
-            <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
+            <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-full font-bold text-sm">{t("common.cancel")}</Button>
+            <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-full font-bold text-sm">{t("common.save")}</Button>
           </div>
         </div>
       </ModalShell>

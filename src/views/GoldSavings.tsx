@@ -395,13 +395,13 @@ export const GoldSavings: React.FC = () => {
             >
               <div className="grid grid-cols-2 gap-1.5 h-full content-center">
                 <button onClick={(e) => { e.stopPropagation(); openMove(p, "buy"); }} disabled={busyId === p.id || p.is_archived} tabIndex={isFlipped ? 0 : -1}
-                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
+                  className="flex items-center justify-center gap-1 py-2 rounded-full text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
                   <ArrowDownCircle size={12} /> {t("gold.buy_button")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); openMove(p, "sell"); }} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0 || !price?.buyback_price_per_gram} tabIndex={isFlipped ? 0 : -1}
                   title={!price?.buyback_price_per_gram ? t("gold.buyback_unavailable_hint") : undefined}
                   className={cx(
-                    "flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50",
+                    "flex items-center justify-center gap-1 py-2 rounded-full text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50",
                     tokens.gold.actionBtnBg,
                     tokens.text.accent
                   )}
@@ -409,24 +409,24 @@ export const GoldSavings: React.FC = () => {
                   <ArrowUpCircle size={12} /> {t("gold.sell_button")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); openMove(p, "manual_add"); }} disabled={busyId === p.id || p.is_archived} tabIndex={isFlipped ? 0 : -1}
-                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-sky-500/15 text-sky-400 hover:bg-sky-500/25">
+                  className="flex items-center justify-center gap-1 py-2 rounded-full text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50 bg-sky-500/15 text-sky-400 hover:bg-sky-500/25">
                   <PackagePlus size={12} /> {t("gold.manual_add_button_short")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); openMove(p, "manual_remove"); }} disabled={busyId === p.id || p.is_archived || p.grams_owned <= 0} tabIndex={isFlipped ? 0 : -1}
-                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-slate-700/40 text-slate-400 hover:bg-slate-700/60">
+                  className="flex items-center justify-center gap-1 py-2 rounded-full text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50 bg-slate-700/40 text-slate-400 hover:bg-slate-700/60">
                   <PackageMinus size={12} /> {t("gold.manual_remove_button_short")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); audioFeedback.playClick(); openEditForm(p); }} tabIndex={isFlipped ? 0 : -1}
-                  className={cx("flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer", tokens.gold.editBtnBg, tokens.text.label)}>
+                  className={cx("flex items-center justify-center gap-1 py-2 rounded-full text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-bold transition-all active:scale-95 cursor-pointer", tokens.gold.editBtnBg, tokens.text.label)}>
                   <Edit2 size={12} /> {t("common.edit")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); toggleArchive(p); }} disabled={busyId === p.id} tabIndex={isFlipped ? 0 : -1}
-                  className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-amber-500/15 text-amber-500 hover:bg-amber-500/25">
+                  className="flex items-center justify-center gap-1 py-2 rounded-full text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50 bg-amber-500/15 text-amber-500 hover:bg-amber-500/25">
                   {p.is_archived ? <ArchiveRestore size={12} /> : <Archive size={12} />} {t(p.is_archived ? "gold.unarchive_button" : "gold.archive_button")}
                 </button>
                 <button onClick={(e) => { e.stopPropagation(); audioFeedback.playClick(); setDeleteTarget(p); }} tabIndex={isFlipped ? 0 : -1}
                   className={cx(
-                    "col-span-2 flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold transition-colors cursor-pointer",
+                    "col-span-2 flex items-center justify-center gap-1 py-2 rounded-full text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-bold transition-all active:scale-95 cursor-pointer",
                     tokens.gold.deleteBtnBg,
                     tokens.text.danger
                   )}
@@ -437,7 +437,7 @@ export const GoldSavings: React.FC = () => {
             </div>
           </div>
         </div>
-        <p className="text-center text-[clamp(0.5062rem,2.34vw,0.5625rem)] text-slate-500 mt-1.5 select-none">
+        <p className={cx("text-center text-[clamp(0.5062rem,2.34vw,0.5625rem)] mt-1.5 select-none", tokens.text.muted)}>
           {t(isFlipped ? "gold.card_tap_hint_front" : "gold.card_tap_hint_actions")}
         </p>
       </motion.div>
@@ -468,17 +468,17 @@ export const GoldSavings: React.FC = () => {
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="space-y-6">
 
-          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border shadow-sm px-5 py-4", tokens.surface.card, tokens.border.accent)}>
+          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
             <div>
-              <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
+              <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
                 {t("gold.page_title")}
               </h1>
-              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
+              <p className={cx("text-xs mt-1 leading-relaxed", tokens.text.muted)}>
                 {t("gold.page_subtitle")}
               </p>
             </div>
             <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-sm transition-colors shadow-lg shadow-amber-500/20 shrink-0 cursor-pointer">
+              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition-all active:scale-95 shadow-lg shadow-amber-500/20 shrink-0 cursor-pointer">
               <Plus size={16} /> {t("gold.add_button")}
             </button>
           </div>
@@ -486,11 +486,11 @@ export const GoldSavings: React.FC = () => {
           {/* Pola resmi grid statistik 4-angka: grid-cols-2 sm:grid-cols-4 gap-3 (acuan yang dipakai juga di AdminErrorMonitor, AdminBackup, AdminUserManager) */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className={cx("rounded-2xl px-3 py-3", tokens.gold.statGramsBgBorder)}>
-              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_total_grams")}</span>
+              <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("gold.stat_total_grams")}</span>
               <p className={cx("font-bold text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.warning)}>{formatGrams(summary.total_grams)}</p>
             </div>
             <div className={cx("rounded-2xl px-3 py-3", tokens.gold.statValBgBorder)}>
-              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_market_value")}</span>
+              <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("gold.stat_market_value")}</span>
               <p className={cx("font-bold font-mono text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.accentStrong)}>{formatIDR(summary.total_market_value)}</p>
               {/* Footnote "estimasi" -- nilai ini dihitung dari harga acuan
                   (sumber + margin app), bukan harga jual resmi yang bisa
@@ -499,7 +499,7 @@ export const GoldSavings: React.FC = () => {
               <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-slate-500 mt-0.5 leading-snug">{t("gold.stat_market_value_note")}</p>
             </div>
             <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.subtle, tokens.border.strong)}>
-              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_cash_locked")}</span>
+              <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("gold.stat_cash_locked")}</span>
               <p className={cx("font-bold font-mono text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.secondary)}>{formatIDR(summary.total_cash_locked)}</p>
               {/* Sejak migration 20260814000000_decouple_gold_simulation_from_balance.sql,
                   angka ini TIDAK LAGI berarti "uang yang terpotong dari
@@ -509,7 +509,7 @@ export const GoldSavings: React.FC = () => {
               <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-slate-500 mt-0.5 leading-snug">{t("gold.stat_cash_locked_note")}</p>
             </div>
             <div className={cx("rounded-2xl border px-3 py-3", summary.unrealized_gain_loss >= 0 ? tokens.gold.gainBgBorder : tokens.gold.lossBgBorder)}>
-              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_gain_loss")}</span>
+              <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("gold.stat_gain_loss")}</span>
               <p className={cx(
                 "font-bold font-mono text-sm sm:text-lg leading-tight whitespace-nowrap tabular-nums tracking-tight",
                 summary.unrealized_gain_loss >= 0 ? tokens.text.success : tokens.text.danger
@@ -601,7 +601,7 @@ export const GoldSavings: React.FC = () => {
       >
         <div className="h-1 w-full bg-gradient-to-r from-amber-500 to-yellow-500" />
         <div className="p-6 space-y-4">
-          <h2 id="gold-form-title" className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
+          <h2 id="gold-form-title" className={cx("font-sans font-extrabold text-lg tracking-tight", tokens.text.heading)}>
             {editTarget ? t("gold.edit_title") : t("gold.add_title")}
           </h2>
           <Input
@@ -613,7 +613,7 @@ export const GoldSavings: React.FC = () => {
             accent="amber"
           />
           <div>
-            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("gold.form_brand")}</label>
+            <label className={cx("block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mb-1.5", tokens.text.muted)}>{t("gold.form_brand")}</label>
             <DropdownField
               accent="amber"
               value={form.brand}
@@ -621,12 +621,12 @@ export const GoldSavings: React.FC = () => {
               onChange={(v) => setForm(f => ({ ...f, brand: v as GoldBrand }))}
               options={formBrandOptions.map(b => ({ value: b, label: t(`gold.brand_${b}`) }))}
             />
-            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5 leading-relaxed">
+            <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] mt-1.5 leading-relaxed", tokens.text.muted)}>
               {editTarget ? t("gold.form_brand_locked_hint") : t("gold.form_brand_hint")}
             </p>
           </div>
           <div>
-            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
+            <label className={cx("block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mb-1.5", tokens.text.muted)}>{t("wallet.label_pos")}</label>
             <DropdownField
               accent="amber"
               value={form.wallet_id}
@@ -647,8 +647,8 @@ export const GoldSavings: React.FC = () => {
             accent="amber"
           />
           <div className="flex gap-3 pt-1">
-            <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
-            <Button variant="warning" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
+            <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-full font-bold text-sm">{t("common.cancel")}</Button>
+            <Button variant="warning" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-full font-bold text-sm">{t("common.save")}</Button>
           </div>
         </div>
       </ModalShell>
@@ -666,10 +666,10 @@ export const GoldSavings: React.FC = () => {
             <div className={`h-1 w-full ${copy.barClass}`} />
             <div className="p-6 space-y-4">
               <div>
-                <h2 id="gold-move-title" className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
+                <h2 id="gold-move-title" className={cx("font-sans font-extrabold text-lg tracking-tight", tokens.text.heading)}>
                   {t(copy.title, { name: moveTarget.pocket.name })}
                 </h2>
-                <p className="text-xs text-slate-400 mt-1">{t(copy.desc)}</p>
+                <p className={cx("text-xs mt-1", tokens.text.muted)}>{t(copy.desc)}</p>
               </div>
               {/* Disclaimer simulasi -- HANYA untuk buy/sell (isSimulated),
                   karena manual_add/manual_remove tidak menyentuh harga
@@ -721,8 +721,8 @@ export const GoldSavings: React.FC = () => {
                 accent="amber"
               />
               <div className="flex gap-3 pt-1">
-                <Button variant="secondary" onClick={closeMoveModal} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
-                <Button variant={copy.buttonVariant} onClick={executeMove} disabled={isMoving} isLoading={isMoving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">
+                <Button variant="secondary" onClick={closeMoveModal} className="flex-1 py-3 rounded-full font-bold text-sm">{t("common.cancel")}</Button>
+                <Button variant={copy.buttonVariant} onClick={executeMove} disabled={isMoving} isLoading={isMoving} className="flex-1 py-3 rounded-full font-bold text-sm">
                   {t(copy.button)}
                 </Button>
               </div>

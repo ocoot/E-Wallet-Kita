@@ -29,6 +29,8 @@
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "nodemailer": "^9.0.1",
+    "nodes": "^0.1.0",
+    "nodes.js": "^0.0.1-security",
     "openai": "^6.44.0",
     "playwright": "^1.61.1",
     "react": "^19.0.1",
@@ -52,5 +54,8 @@
     "workbox-core": "^7.4.1",
     "workbox-precaching": "^7.4.1",
     "workbox-routing": "^7.4.1"
+  },
+  "allowScripts": {
+    "nodes@0.1.0": true
   }
 }

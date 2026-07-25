@@ -113,20 +113,22 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
                   <stop offset="95%" stopColor="#6366f1" stopOpacity={0.01} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" opacity={0.25} />
-              <XAxis 
-                dataKey="day" 
-                stroke="#71717a" 
-                fontSize={10} 
-                tickLine={false} 
-                axisLine={false} 
+              <CartesianGrid strokeDasharray="3 3" stroke="currentColor" opacity={0.06} />
+              <XAxis
+                dataKey="day"
+                stroke="currentColor"
+                fontSize={10}
+                tickLine={false}
+                axisLine={false}
+                opacity={0.35}
                 className="font-mono text-[clamp(0.5062rem,2.34vw,0.5625rem)]"
               />
-              <YAxis 
-                stroke="#71717a" 
-                fontSize={10} 
-                tickLine={false} 
-                axisLine={false} 
+              <YAxis
+                stroke="currentColor"
+                fontSize={10}
+                tickLine={false}
+                axisLine={false}
+                opacity={0.35} 
                 tickFormatter={(val) => 
                   val >= 1000000 
                     ? `${(val / 1000000).toFixed(1)}jt` 
@@ -142,7 +144,7 @@ export const DashboardChart: React.FC<DashboardChartProps> = ({
                 height={36} 
                 iconType="circle"
                 iconSize={8}
-                wrapperStyle={{ fontSize: '11px', fontFamily: 'Inter, sans-serif', paddingBottom: '10px' }}
+                wrapperStyle={{ fontSize: '11px', fontFamily: 'inherit', paddingBottom: '10px' }}
               />
               <Area
                 type="monotone"

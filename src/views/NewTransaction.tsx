@@ -373,10 +373,8 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   const isExpense = type === "expense";
 
   // ── Render ────────────────────────────────────────────────────────────
-  // Container width: "tier form single-column" (max-w-2xl). Lihat catatan
-  // tier container di App.tsx untuk aturan lengkapnya.
   return (
-    <div className="max-w-2xl mx-auto space-y-4">
+    <div className="space-y-4">
       {receiptDraft ? (
         <ReceiptPreview
           draft={receiptDraft}
@@ -386,29 +384,61 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
       ) : (
         <div className="space-y-7">
           {/* ── Page header ──────────────────────────────────────────── */}
-          <div className={cx("rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
+          <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+            <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
+            <div className="px-5 py-4">
+            <h1 className={cx("font-sans font-bold text-2xl tracking-[-0.025em]", tokens.text.heading)}>
               {t("transaction.add_title")}
             </h1>
             <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
               {t("transaction.add_subtitle")}
             </p>
+
+            {/* Today mini summary — shows daily running total */}
+            {todaySummary && (todaySummary.income > 0 || todaySummary.expense > 0) && (
+              <div className={cx("flex items-center gap-3 mt-3 text-xs font-mono tabular-nums", tokens.text.muted)}>
+                {todaySummary.expense > 0 && (
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                    <span className="text-red-400 font-semibold">−{formatIDR(todaySummary.expense)}</span>
+                    <span className="opacity-60">{t("transaction.today_label") || "hari ini"}</span>
+                  </span>
+                )}
+                {todaySummary.income > 0 && (
+                  <span className="flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <span className="text-emerald-400 font-semibold">+{formatIDR(todaySummary.income)}</span>
+                  </span>
+                )}
+              </div>
+            )}
+            </div>
           </div>
 
             {/* ── Formasi tab: pilih satu metode input ──────────────────── */}
-            <div className={cx("grid grid-cols-3 gap-1 p-1 rounded-2xl border", tokens.surface.card, tokens.border.accent)}>
+            <div className={cx("relative grid grid-cols-3 gap-1 p-1 rounded-2xl border", tokens.surface.card, tokens.border.accent)}>
+              {/* Sliding active indicator */}
+              <motion.div
+                layoutId="input-tab-indicator"
+                className={cx("absolute inset-y-1 rounded-xl", tokens.newTransaction.walletSelectedActive)}
+                style={{
+                  width: "calc(33.333% - 2.67px)",
+                  left: activeInputTab === "receipt" ? "4px" : activeInputTab === "voice" ? "calc(33.333% + 0px)" : "calc(66.666% - 2px)",
+                }}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              />
               {([
-                { key: "receipt", label: "Struk", icon: "" },
-                { key: "voice", label: "Suara", icon: "" },
-                { key: "manual", label: "Manual", icon: "" },
+                { key: "receipt", label: "Struk", icon: "📸" },
+                { key: "voice", label: "Suara", icon: "🎙" },
+                { key: "manual", label: "Manual", icon: "✍" },
               ] as const).map(tab => (
                 <button
                   key={tab.key}
                   type="button"
                   onClick={() => { audioFeedback.playClick(); setActiveInputTab(tab.key); }}
-                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-sans text-xs font-bold transition-colors cursor-pointer ${
+                  className={`relative z-10 flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-sans text-xs font-bold transition-colors cursor-pointer ${
                     activeInputTab === tab.key
-                      ? tokens.newTransaction.walletSelectedActive
+                      ? "text-white"
                       : cx(tokens.newTransaction.inactiveHoverText, tokens.text.faint)
                   }`}
                 >
@@ -445,11 +475,22 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                   <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                     {t("transaction.label_type")}
                   </label>
-                  <div className={cx("grid grid-cols-2 gap-2 p-1 rounded-2xl", tokens.newTransaction.segmentedControlBg)}>
+                  <div className={cx("relative grid grid-cols-2 gap-1 p-1 rounded-2xl", tokens.newTransaction.segmentedControlBg)}>
+                    <motion.div
+                      layoutId="type-toggle-indicator"
+                      className={cx("absolute inset-y-1 rounded-xl", isExpense ? tokens.newTransaction.typeToggleActiveExpense : tokens.newTransaction.typeToggleActiveIncome)}
+                      style={{
+                        width: "calc(50% - 4px)",
+                        left: isExpense ? "4px" : "calc(50% + 0px)",
+                      }}
+                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    />
                     <button
                       type="button"
                       onClick={() => { audioFeedback.playClick(); setType("expense"); }}
-                      className={cx("py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2", isExpense ? tokens.newTransaction.typeToggleActiveExpense : cx(tokens.newTransaction.inactiveHoverText, tokens.text.faint))}
+                      className={`relative z-10 py-3 rounded-xl font-sans text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-2 ${
+                        isExpense ? "text-white" : cx(tokens.newTransaction.inactiveHoverText, tokens.text.faint)
+                      }`}
                     >
                       <span className="text-base leading-none"> </span>
                       {t("transaction.expense")}
@@ -457,7 +498,9 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                     <button
                       type="button"
                       onClick={() => { audioFeedback.playClick(); setType("income"); }}
-                      className={cx("py-3 rounded-xl font-sans text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2", !isExpense ? tokens.newTransaction.typeToggleActiveIncome : cx(tokens.newTransaction.inactiveHoverText, tokens.text.faint))}
+                      className={`relative z-10 py-3 rounded-xl font-sans text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-2 ${
+                        !isExpense ? "text-white" : cx(tokens.newTransaction.inactiveHoverText, tokens.text.faint)
+                      }`}
                     >
                       <span className="text-base leading-none"> </span>
                       {t("transaction.income")}
@@ -470,16 +513,15 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                   <label className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                     {t("transaction.label_amount")}
                   </label>
-                  <div className={cx("rounded-2xl border transition-colors duration-200 px-5 py-4 space-y-2", isExpense ? tokens.newTransaction.amountInputExpense : tokens.newTransaction.amountInputIncome)}>
-                    {/* Live formatted preview */}
+                  <div className={cx("rounded-2xl border transition-colors duration-200 px-5 pt-4 pb-3 space-y-3", isExpense ? tokens.newTransaction.amountInputExpense : tokens.newTransaction.amountInputIncome)}>
                     <AnimatePresence mode="wait">
                       {amountDisplay ? (
                         <motion.div
                           key="amount-val"
-                          initial={{ opacity: 0, y: -6 }}
+                          initial={{ opacity: 0, y: -8 }}
                           animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 6 }}
-                          className={cx("font-mono font-black text-3xl tracking-tight tabular-nums leading-none", isExpense ? tokens.newTransaction.amountDisplayExpense : tokens.newTransaction.amountDisplayIncome)}
+                          exit={{ opacity: 0, y: 8 }}
+                          className={cx("font-mono font-black text-5xl tracking-[-0.03em] tabular-nums leading-none", isExpense ? tokens.newTransaction.amountDisplayExpense : tokens.newTransaction.amountDisplayIncome)}
                         >
                           {isExpense ? "−" : "+"}{amountDisplay}
                         </motion.div>
@@ -489,7 +531,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
-                          className={cx("font-sans font-black text-3xl tracking-tight leading-none", tokens.newTransaction.amountDisplayPlaceholder)}
+                          className={cx("font-mono font-black text-5xl tracking-[-0.03em] leading-none", tokens.newTransaction.amountDisplayPlaceholder)}
                         >
                           Rp 0
                         </motion.div>
@@ -503,7 +545,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                       disabled={isLoading}
                       value={amount}
                       onChange={(e) => setAmount(e.target.value !== "" ? parseInt(e.target.value) || 0 : "")}
-                      className={cx("w-full bg-transparent border-none outline-none font-sans text-sm", tokens.newTransaction.amountInputPlaceholder, tokens.text.label)}
+                      className={cx("w-full bg-transparent outline-none font-sans text-xs border-t pt-2.5", tokens.newTransaction.amountInputPlaceholder, tokens.text.faint, tokens.border.accent)}
                     />
                   </div>
                 </div>
@@ -545,7 +587,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                     onChange={(v) => setWalletId(v || null)}
                     disabled={isLoading}
                     placeholder={t("wallet.label_pos")}
-                    className="[&>button]:bg-slate-900 [&>button]:border-slate-800 light_sakura:[&>button]:bg-white light_sakura:[&>button]:border-rose-100"
+                    className="[&>button]:rounded-xl [&>button]:bg-slate-900 [&>button]:border [&>button]:border-slate-800 light_sakura:[&>button]:bg-white light_sakura:[&>button]:border-rose-100"
                     options={activeWallets.map((w) => {
                       const icon = w.type === "general" ? "" : w.type === "ewallet" ? "" : w.type === "bank" ? "" : "";
                       return { value: w.id, label: `${icon} ${w.name}${(w.provider && w.provider !== w.name) ? ` · ${w.provider}` : ""} (${formatIDR(w.balance)})` };
@@ -567,7 +609,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                       value={date}
                       max={new Date().toISOString().split("T")[0]}
                       onChange={(e) => setDate(e.target.value)}
-                      className={cx("w-full px-4 py-3 border rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors", tokens.settings.otpInputBg, tokens.text.onSurface, tokens.border.accent)}
+                      className={cx("w-full px-4 py-3 border rounded-xl font-sans text-xs outline-none transition-colors focus:ring-2 focus:ring-offset-0 focus:ring-indigo-500/30 focus:border-indigo-500", tokens.surface.card, tokens.text.onSurface, tokens.border.accent)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -580,28 +622,31 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                       disabled={isLoading}
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
-                      className={cx("w-full px-4 py-3 border rounded-xl font-sans text-xs outline-none focus:border-indigo-500 transition-colors placeholder:text-slate-600", tokens.settings.otpInputBg, tokens.text.onSurface, tokens.border.accent)}
+                      className={cx("w-full px-4 py-3 border rounded-xl font-sans text-xs outline-none transition-colors focus:ring-2 focus:ring-offset-0 focus:ring-indigo-500/30 focus:border-indigo-500", tokens.surface.card, tokens.text.onSurface, tokens.border.accent, "placeholder:opacity-40")}
                     />
                   </div>
                 </div>
 
                 {/* 5 ── Submit preview + button ─────────────────────────── */}
-                <div className="flex items-center justify-between gap-4 pt-1">
-                  {/* Confirmation preview */}
+                <div className="flex items-center justify-between gap-4 pt-2">
                   {amountDisplay && (
-                    <div className={cx("flex items-center gap-2 text-xs min-w-0", tokens.text.muted)}>
+                    <motion.div
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      className={cx("flex items-center gap-2 text-xs font-medium min-w-0 px-3 py-1.5 rounded-lg", tokens.surface.card, tokens.border.accent, "border")}
+                    >
                       <span className="text-base leading-none">{getCategoryEmoji(category)}</span>
-                      <span className="truncate">
+                      <span className={cx("truncate", tokens.text.muted)}>
                         {getCategoryLabel(category)} · {date}
                       </span>
-                    </div>
+                    </motion.div>
                   )}
                   <Button
                     type="submit"
                     variant={isExpense ? "danger" : "success"}
                     disabled={isLoading || amount === "" || amount === 0}
                     isLoading={isLoading}
-                    className="ml-auto rounded-xl py-3 px-6 text-xs"
+                    className="ml-auto rounded-full py-3 px-6 text-xs font-bold"
                   >
                     {t("transaction.btn_submit")}
                   </Button>

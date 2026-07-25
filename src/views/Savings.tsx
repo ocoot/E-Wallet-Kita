@@ -275,7 +275,7 @@ export const Savings: React.FC = () => {
 
           <div>
             <p className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>{p.name}</p>
-            <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] text-slate-500 mt-0.5">{t(`savings.pocket_type_${p.pocket_type}`)}</p>
+            <p className={cx("text-[clamp(0.5906rem,2.73vw,0.6562rem)] mt-0.5", tokens.text.muted)}>{t(`savings.pocket_type_${p.pocket_type}`)}</p>
           </div>
 
           {p.target_amount != null ? (
@@ -284,16 +284,16 @@ export const Savings: React.FC = () => {
             <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold font-mono tabular-nums", tokens.text.onSurface)}>{formatIDR(p.current_amount)}</p>
           )}
 
-          {p.notes && <p className="text-[clamp(0.5906rem,2.73vw,0.6562rem)] text-slate-500 italic truncate">{p.notes}</p>}
+          {p.notes && <p className={cx("text-[clamp(0.5906rem,2.73vw,0.6562rem)] italic truncate", tokens.text.muted)}>{p.notes}</p>}
 
           <div className="grid grid-cols-2 gap-1.5 pt-1">
             <button onClick={() => openMove(p, "deposit")} disabled={busyId === p.id || p.is_archived}
-              className="flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
+              className="flex items-center justify-center gap-1 py-2 rounded-full text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25">
               <ArrowDownCircle size={12} /> {t("savings.deposit_button")}
             </button>
             <button onClick={() => openMove(p, "withdraw")} disabled={busyId === p.id || p.is_archived || p.current_amount <= 0}
               className={cx(
-                "flex items-center justify-center gap-1 py-2 rounded-xl text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-semibold transition-colors cursor-pointer disabled:opacity-50",
+                "flex items-center justify-center gap-1 py-2 rounded-full text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50",
                 tokens.savings.actionBtnBg,
                 tokens.text.accent
               )}>
@@ -301,13 +301,13 @@ export const Savings: React.FC = () => {
             </button>
           </div>
           <div className="flex items-center justify-center gap-1.5">
-            <button onClick={() => { audioFeedback.playClick(); openEditForm(p); }} className={cx("p-1.5 rounded-lg transition-colors cursor-pointer", tokens.chip.editIconBtn)}><Edit2 size={12} /></button>
+            <button onClick={() => { audioFeedback.playClick(); openEditForm(p); }} className={cx("p-1.5 rounded-full transition-all active:scale-90 cursor-pointer", tokens.chip.editIconBtn)}><Edit2 size={12} /></button>
             <button onClick={() => toggleArchive(p)} disabled={busyId === p.id}
               title={p.is_archived ? t("savings.unarchive_button") : t("savings.archive_button")}
-              className={cx("p-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-colors cursor-pointer disabled:opacity-50", tokens.text.warning)}>
+              className={cx("p-1.5 rounded-full bg-amber-500/10 hover:bg-amber-500/20 transition-all active:scale-90 cursor-pointer disabled:opacity-50", tokens.text.warning)}>
               {p.is_archived ? <ArchiveRestore size={12} /> : <Archive size={12} />}
             </button>
-            <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(p); }} className={cx("p-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 transition-colors cursor-pointer", tokens.text.danger)}><Trash2 size={12} /></button>
+            <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(p); }} className={cx("p-1.5 rounded-full bg-red-500/15 hover:bg-red-500/25 transition-all active:scale-90 cursor-pointer", tokens.text.danger)}><Trash2 size={12} /></button>
           </div>
         </div>
       </motion.div>
@@ -322,12 +322,12 @@ export const Savings: React.FC = () => {
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="space-y-6">
 
-          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border shadow-sm px-5 py-4", tokens.surface.card, tokens.border.accent)}>
+          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
             <div>
-              <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
+              <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
                 {t("savings.page_title")}
               </h1>
-              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
+              <p className={cx("text-xs mt-1 leading-relaxed", tokens.text.muted)}>
                 {t("savings.page_subtitle")}
               </p>
             </div>
@@ -343,15 +343,15 @@ export const Savings: React.FC = () => {
 
           <div className="grid grid-cols-3 gap-2">
             <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
-              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_total_saved")}</span>
+              <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("savings.stat_total_saved")}</span>
               <p className={cx("font-bold font-mono text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.success)}>{formatIDR(summary.total_saved)}</p>
             </div>
             <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
-              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_available_balance")}</span>
+              <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("savings.stat_available_balance")}</span>
               <p className={cx("font-bold font-mono text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.accentStrong)}>{availableBalance != null ? formatIDR(availableBalance) : "-"}</p>
             </div>
             <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
-              <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("savings.stat_pocket_count")}</span>
+              <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("savings.stat_pocket_count")}</span>
               <p className={cx("font-bold text-2xl", tokens.text.onSurface)}>{summary.pocket_count}</p>
             </div>
           </div>
@@ -389,7 +389,7 @@ export const Savings: React.FC = () => {
       >
         <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-indigo-500" />
         <div className="p-6 space-y-4">
-          <h2 id="savings-form-title" className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
+          <h2 id="savings-form-title" className={cx("font-sans font-extrabold text-lg tracking-tight", tokens.text.heading)}>
             {editTarget ? t("savings.edit_title") : t("savings.add_title")}
           </h2>
           <Input
@@ -400,7 +400,7 @@ export const Savings: React.FC = () => {
             placeholder={t("savings.form_name_placeholder")}
           />
           <div>
-            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("savings.form_type")}</label>
+            <label className={cx("block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mb-1.5", tokens.text.muted)}>{t("savings.form_type")}</label>
             <DropdownField
               value={form.pocket_type}
               onChange={(v) => setForm(f => ({ ...f, pocket_type: v as SavingsPocketType }))}
@@ -423,7 +423,7 @@ export const Savings: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
+            <label className={cx("block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mb-1.5", tokens.text.muted)}>{t("wallet.label_pos")}</label>
             <DropdownField
               value={form.wallet_id}
               onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
@@ -442,8 +442,8 @@ export const Savings: React.FC = () => {
             placeholder={t("savings.form_notes_placeholder")}
           />
           <div className="flex gap-3 pt-1">
-            <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
-            <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
+            <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-full font-bold text-sm">{t("common.cancel")}</Button>
+            <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-full font-bold text-sm">{t("common.save")}</Button>
           </div>
         </div>
       </ModalShell>
@@ -461,7 +461,7 @@ export const Savings: React.FC = () => {
             <div className={`h-1 w-full ${moveTarget.direction === "deposit" ? "bg-emerald-500" : "bg-indigo-500"}`} />
             <div className="p-6 space-y-4">
               <div>
-                <h2 id="savings-move-title" className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
+                <h2 id="savings-move-title" className={cx("font-sans font-extrabold text-lg tracking-tight", tokens.text.heading)}>
                   {t(moveTarget.direction === "deposit" ? "savings.deposit_title" : "savings.withdraw_title", { name: moveTarget.pocket.name })}
                 </h2>
                 <p className="text-xs text-slate-400 mt-1">
@@ -496,13 +496,13 @@ export const Savings: React.FC = () => {
                 onChange={e => setMoveNote(e.target.value)}
               />
               <div className="flex gap-3 pt-1">
-                <Button variant="secondary" onClick={closeMoveModal} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
+                <Button variant="secondary" onClick={closeMoveModal} className="flex-1 py-3 rounded-full font-bold text-sm">{t("common.cancel")}</Button>
                 <Button
                   variant="success"
                   onClick={executeMove}
                   disabled={isMoving}
                   isLoading={isMoving}
-                  className="flex-1 py-3 rounded-2xl font-semibold text-sm"
+                  className="flex-1 py-3 rounded-full font-bold text-sm"
                 >
                   {t(moveTarget.direction === "deposit" ? "savings.deposit_button" : "savings.withdraw_button")}
                 </Button>

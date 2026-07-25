@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { motion } from "motion/react";
 import { reportFrontendError } from "../lib/errorReporter";
 import { AdminBackBar } from "../components/AdminBackBar";
 import { Card } from "../components/ui/Card";
@@ -151,7 +152,9 @@ export const AdminAiMonitor: React.FC = () => {
 
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
-      <div className={cx("p-6 sm:p-7 lg:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+      <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+        <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
+        <div className="p-6 sm:p-7 lg:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
@@ -184,12 +187,13 @@ export const AdminAiMonitor: React.FC = () => {
             <button
               onClick={() => load(true)}
               disabled={refreshing}
-              className={cx("flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border cursor-pointer transition-colors disabled:opacity-50", tokens.border.default, tokens.surface.subtle, tokens.hover.surface, tokens.text.label)}
+              className={cx("flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border cursor-pointer transition-all duration-200 disabled:opacity-50 active:scale-[0.98]", tokens.border.default, tokens.surface.subtle, tokens.hover.surface, tokens.text.label)}
             >
               <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
               {t("ai_monitor.refresh")}
             </button>
           </div>
+        </div>
         </div>
       </div>
 

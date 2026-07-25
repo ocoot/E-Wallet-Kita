@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "motion/react";
 import { AdminBackBar } from "../components/AdminBackBar";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -183,7 +184,9 @@ export const AdminBroadcast: React.FC = () => {
         </div>
       </div>
 
-      <div className={cx("p-8 space-y-6 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+      <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+        <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
+        <div className="p-8 space-y-6">
         {/* Header inside Card Container */}
         <div className={cx("border-b pb-5", tokens.border.default)}>
           <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.heading)}>
@@ -381,6 +384,7 @@ export const AdminBroadcast: React.FC = () => {
             )}
           </div>
         )}
+        </div>
       </div>
 
       {/* Loading overlay for mass notifications */}

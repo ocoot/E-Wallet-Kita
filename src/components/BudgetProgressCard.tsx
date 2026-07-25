@@ -105,14 +105,14 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", duration: 0.45 }}
       className={cx(
-        "rounded-2xl border overflow-hidden",
+        "rounded-2xl border overflow-hidden transition-shadow duration-200 hover:shadow-lg hover:shadow-black/5 light_sakura:hover:shadow-slate-200/60",
         tokens.surface.card,
         tokens.border.accent
       )}
     >
       {/* Top accent stripe */}
       <div
-        className="h-0.5 w-full"
+        className="h-1 w-full"
         style={{ background: `linear-gradient(90deg, ${cfg.barFrom}, ${cfg.barTo})` }}
       />
 
@@ -123,7 +123,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
             <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest mb-0.5", tokens.text.faint)}>
               {t("budget.page_title")}
             </p>
-            <h3 className={cx("font-semibold text-sm truncate leading-snug", tokens.text.primary)}>
+            <h3 className={cx("font-bold text-sm truncate leading-snug tracking-tight", tokens.text.primary)}>
               {label}
             </h3>
           </div>
@@ -177,7 +177,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
             {/* Center label */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span
-                className="text-lg font-black leading-none tabular-nums"
+                className="text-xl font-black leading-none tabular-nums tracking-tight"
                 style={{ color: cfg.barFrom }}
               >
                 {animPercent > 999 ? "999+" : animPercent}%
@@ -196,7 +196,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
                 <span>Rp0</span>
                 <span>{formatIDR(budget.monthly_limit)}</span>
               </div>
-              <div className={cx("relative h-3 rounded-full overflow-hidden", tokens.surface.sunken)}>
+              <div className={cx("relative h-2.5 rounded-full overflow-hidden", tokens.surface.sunken)}>
                 {/* Threshold marker */}
                 {budget.alert_threshold_percent < 100 && (
                   <div
@@ -278,7 +278,7 @@ export const BudgetProgressCard: React.FC<BudgetProgressCardProps> = ({
             <button
               onClick={onDelete}
               className={cx(
-                "text-[clamp(0.5625rem,2.6vw,0.625rem)] font-medium transition-colors cursor-pointer",
+                "text-[clamp(0.5625rem,2.6vw,0.625rem)] font-medium transition-all cursor-pointer active:scale-95 px-3 py-1.5 rounded-full",
                 tokens.budgetProgressCard.deleteBtn
               )}
             >

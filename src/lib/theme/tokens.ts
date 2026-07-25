@@ -93,7 +93,7 @@ export const themeTokens = {
     /** Background sekunder (nested box di dalam card, input, dsb). */
     subtle: "bg-slate-800 light_sakura:bg-slate-50",
     /** Background "tenggelam" -- kartu kecil di dalam Card, chip non-interaktif. */
-    sunken: "bg-slate-950/40 light_sakura:bg-rose-50/30",
+    sunken: "bg-slate-950/40 light_sakura:bg-rose-50/60",
   },
 
   border: {

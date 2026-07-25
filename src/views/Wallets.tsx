@@ -109,7 +109,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       className={cx(
-        "rounded-2xl border p-4 space-y-3",
+        "rounded-2xl border p-4 space-y-3 transition-shadow duration-200 hover:shadow-lg hover:shadow-black/5 light_sakura:hover:shadow-slate-200/60",
         isGeneral
           ? cx(tokens.surface.card, tokens.border.accent)
           : cardSurfaceClass
@@ -225,7 +225,7 @@ const WalletCard: React.FC<WalletCardProps> = ({
         </div>
       ) : (
         <>
-          <p className={cx("font-mono font-black text-xl tabular-nums", tokens.text.primary)}>
+          <p className={cx("font-mono font-black text-2xl tracking-[-0.02em] tabular-nums leading-none", tokens.text.primary)}>
             <AnimatedNumber value={wallet.balance} format={formatIDR} />
           </p>
           {wallet.earmarked_amount > 0 && (
@@ -236,13 +236,13 @@ const WalletCard: React.FC<WalletCardProps> = ({
           <div className="flex items-center gap-2 pt-1">
             <button
               onClick={() => { setEditingBalanceId(wallet.id); setBalanceInput(Math.round(wallet.balance)); }}
-              className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold cursor-pointer", tokens.surface.sunken, tokens.hover.surface, tokens.text.label)}
+              className={cx("flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold cursor-pointer transition-all active:scale-95", tokens.surface.sunken, tokens.hover.surface, tokens.text.label)}
             >
               <Pencil size={11} /> {t("wallet.edit_balance")}
             </button>
             <button
               onClick={() => navigate("/transactions", { state: { filterWalletId: wallet.id } })}
-              className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold cursor-pointer", tokens.surface.sunken, tokens.hover.surface, tokens.text.label)}
+              className={cx("flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold cursor-pointer transition-all active:scale-95", tokens.surface.sunken, tokens.hover.surface, tokens.text.label)}
             >
               <HistoryIcon size={11} /> {t("wallet.view_history")}
             </button>
@@ -434,30 +434,28 @@ export const Wallets: React.FC = () => {
     handleSaveBalance,
   };
 
-  // Container width: "tier manajemen" (max-w-4xl) -- disamakan dengan
-  // Settings.tsx. Lihat catatan tier container di App.tsx.
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="space-y-6">
       <div className="space-y-6">
 
-          {/* Header */}
-          <div className={cx("rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
-              {t("wallet.title")}
-            </h1>
-            <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
-              {t("wallet.desc")}
-            </p>
-          </div>
-
-          {/* Total banner */}
-          <div className={cx("rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
-            <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
-              {t("wallet.total_balance")}
-            </p>
-            <p className={cx("font-mono font-black text-3xl tabular-nums mt-1", tokens.text.primary)}>
-              <AnimatedNumber value={totalBalance} format={formatIDR} />
-            </p>
+          {/* Hero — merged header + total balance */}
+          <div className={cx("rounded-2xl border px-5 py-6 space-y-4", tokens.surface.card, tokens.border.accent)}>
+            <div>
+              <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
+                {t("wallet.title")}
+              </h1>
+              <p className={cx("text-xs mt-1 leading-relaxed", tokens.text.muted)}>
+                {t("wallet.desc")}
+              </p>
+            </div>
+            <div className={cx("border-t pt-4", tokens.border.accent)}>
+              <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
+                {t("wallet.total_balance")}
+              </p>
+              <p className={cx("font-mono font-black text-5xl tracking-[-0.03em] tabular-nums mt-1 leading-none", tokens.text.primary)}>
+                <AnimatedNumber value={totalBalance} format={formatIDR} />
+              </p>
+            </div>
           </div>
 
           {/* General wallet (Saldo Total) */}
@@ -479,14 +477,14 @@ export const Wallets: React.FC = () => {
         const meta = GROUP_META[type];
         const items = grouped(type);
         return (
-          <div key={type} className="space-y-2">
+          <div key={type} className="space-y-3">
                 <div className="flex items-center justify-between">
                   <h2 className={cx("font-sans text-xs font-bold uppercase tracking-wider flex items-center gap-1.5", tokens.text.label)}>
-                    <span>{meta.icon}</span> {t(meta.labelKey)}
+                    <span className="text-base">{meta.icon}</span> {t(meta.labelKey)}
                   </h2>
                   <button
                     onClick={() => openCreateForm(type)}
-                    className={cx("flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold cursor-pointer", tokens.surface.sunken, tokens.hover.surface, tokens.text.accent)}
+                    className={cx("flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold cursor-pointer transition-all active:scale-95", tokens.surface.sunken, tokens.hover.surface, tokens.text.accent, "border", tokens.border.accent)}
                   >
                     <Plus size={12} /> {t(meta.addKey)}
                   </button>

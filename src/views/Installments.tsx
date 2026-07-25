@@ -223,12 +223,12 @@ export const Installments: React.FC = () => {
       <div className="space-y-6">
 
           {/* Header */}
-          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border shadow-sm px-5 py-4", tokens.surface.card, tokens.border.accent)}>
+          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
             <div>
-              <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
+              <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
                 {t("installments.page_title")}
               </h1>
-              <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
+              <p className={cx("text-xs mt-1 leading-relaxed", tokens.text.muted)}>
                 {t("installments.page_subtitle")}
               </p>
             </div>
@@ -246,15 +246,15 @@ export const Installments: React.FC = () => {
           {installments.length > 0 && (
             <div className="grid grid-cols-3 gap-2">
               <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
-                <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_active")}</span>
+                <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("installments.stat_active")}</span>
                 <p className={cx("font-bold text-2xl", tokens.text.accentStrong)}>{activeCount}</p>
               </div>
               <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
-                <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_completed")}</span>
+                <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("installments.stat_completed")}</span>
                 <p className={cx("font-bold text-2xl", tokens.text.success)}>{completedCount}</p>
               </div>
               <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
-                <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("installments.stat_monthly_commitment")}</span>
+                <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("installments.stat_monthly_commitment")}</span>
                 <p className={cx("font-bold font-mono text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.onSurface)}>{formatIDR(totalMonthlyCommitment)}</p>
               </div>
             </div>
@@ -310,10 +310,10 @@ export const Installments: React.FC = () => {
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">
                         <p className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>{i.name}</p>
-                        <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">{getCategoryLabel(i.category_key)}</p>
+                        <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] mt-0.5", tokens.text.muted)}>{getCategoryLabel(i.category_key)}</p>
                       </div>
                        {i.is_completed && (
-                        <span className={cx("inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold shrink-0", tokens.installments.badgeSuccessBg, tokens.text.success)}>
+                        <span className={cx("inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold shrink-0", tokens.installments.badgeSuccessBg, tokens.text.success)}>
                           <PartyPopper size={11} />{t("installments.status_completed")}
                         </span>
                       )}
@@ -321,7 +321,7 @@ export const Installments: React.FC = () => {
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-[clamp(0.6188rem,2.86vw,0.6875rem)]">
-                        <span className="text-slate-400 font-semibold">
+                        <span className={cx("font-semibold", tokens.text.muted)}>
                           {t("installments.progress_label", { paid: i.months_paid, total: i.total_months })}
                         </span>
                         <span className={cx("font-bold", i.is_completed ? tokens.text.success : tokens.text.accent)}>
@@ -341,18 +341,18 @@ export const Installments: React.FC = () => {
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between text-xs">
-                        <span className="text-slate-500">{t("installments.monthly_amount_label")}</span>
+                        <span className={cx(tokens.text.muted)}>{t("installments.monthly_amount_label")}</span>
                         <span className={cx("font-semibold font-mono tabular-nums", tokens.text.onSurface)}>{formatIDR(i.monthly_amount)}</span>
                       </div>
                       {i.principal_amount != null && (
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-slate-500">{t("installments.principal_label")}</span>
+                          <span className={cx(tokens.text.muted)}>{t("installments.principal_label")}</span>
                           <span className={cx("font-semibold font-mono tabular-nums", tokens.text.onSurface)}>{formatIDR(i.principal_amount)}</span>
                         </div>
                       )}
                       {!i.is_completed && (
                         <div className="flex items-center justify-between text-xs">
-                          <span className="text-slate-500">{t("installments.months_remaining_label")}</span>
+                          <span className={cx(tokens.text.muted)}>{t("installments.months_remaining_label")}</span>
                           <span className={cx(tokens.text.label)}>{t("installments.months_remaining_value", { count: i.monthsRemaining })}</span>
                         </div>
                       )}
@@ -363,7 +363,7 @@ export const Installments: React.FC = () => {
                        {!i.is_completed && (
                         <button onClick={() => requestMarkPaid(i)} disabled={busyId === i.id}
                           className={cx(
-                            "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50",
+                            "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-full text-xs font-bold transition-all active:scale-95 cursor-pointer disabled:opacity-50",
                             tokens.installments.actionBtnBg,
                             tokens.text.accent
                           )}>
@@ -373,12 +373,12 @@ export const Installments: React.FC = () => {
                       {i.months_paid > 0 && (
                         <button onClick={() => requestUndoPaid(i)} disabled={busyId === i.id}
                           title={t("installments.undo_last_payment")}
-                          className={cx("p-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 transition-colors cursor-pointer", tokens.text.warning)}>
+                          className={cx("p-2 rounded-full bg-amber-500/10 hover:bg-amber-500/20 transition-all active:scale-90 cursor-pointer", tokens.text.warning)}>
                           <RotateCcw size={13} />
                         </button>
                       )}
-                      <button onClick={() => { audioFeedback.playClick(); openEditForm(i); }} className={cx("p-2 rounded-xl transition-colors cursor-pointer", tokens.chip.editIconBtn)}><Edit2 size={13} /></button>
-                      <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(i); }} className={cx("p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer", tokens.text.danger)}><Trash2 size={13} /></button>
+                      <button onClick={() => { audioFeedback.playClick(); openEditForm(i); }} className={cx("p-2 rounded-full transition-all active:scale-90 cursor-pointer", tokens.chip.editIconBtn)}><Edit2 size={13} /></button>
+                      <button onClick={() => { audioFeedback.playClick(); setDeleteTarget(i); }} className={cx("p-2 rounded-full bg-red-500/10 hover:bg-red-500/20 transition-all active:scale-90 cursor-pointer", tokens.text.danger)}><Trash2 size={13} /></button>
                     </div>
                   </div>
                 </div>
@@ -397,7 +397,7 @@ export const Installments: React.FC = () => {
       >
         <div className="h-1 w-full bg-gradient-to-r from-indigo-500 to-violet-500" />
         <div className="p-6 space-y-4">
-          <h2 id="installments-form-title" className={cx("font-sans font-bold text-lg", tokens.text.heading)}>
+          <h2 id="installments-form-title" className={cx("font-sans font-extrabold text-lg tracking-tight", tokens.text.heading)}>
             {editTarget ? t("installments.edit_title") : t("installments.add_title")}
           </h2>
           <Input
@@ -408,7 +408,7 @@ export const Installments: React.FC = () => {
             placeholder={t("installments.form_name_placeholder")}
           />
           <div>
-            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("installments.form_category")}</label>
+            <label className={cx("block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mb-1.5", tokens.text.muted)}>{t("installments.form_category")}</label>
             <DropdownField
               value={form.category_key}
               onChange={(v) => setForm(f => ({ ...f, category_key: v }))}
@@ -443,7 +443,7 @@ export const Installments: React.FC = () => {
             onChange={e => setForm(f => ({ ...f, start_date: e.target.value }))}
           />
           <div>
-            <label className="block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-400 uppercase tracking-wider mb-1.5">{t("wallet.label_pos")}</label>
+            <label className={cx("block text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider mb-1.5", tokens.text.muted)}>{t("wallet.label_pos")}</label>
             <DropdownField
               value={form.wallet_id}
               onChange={(v) => setForm(f => ({ ...f, wallet_id: v }))}
@@ -462,8 +462,8 @@ export const Installments: React.FC = () => {
             placeholder={t("installments.form_notes_placeholder")}
           />
           <div className="flex gap-3 pt-1">
-            <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.cancel")}</Button>
-            <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-2xl font-semibold text-sm">{t("common.save")}</Button>
+            <Button variant="secondary" onClick={closeForm} className="flex-1 py-3 rounded-full font-bold text-sm">{t("common.cancel")}</Button>
+            <Button variant="success" onClick={handleSave} disabled={isSaving} isLoading={isSaving} className="flex-1 py-3 rounded-full font-bold text-sm">{t("common.save")}</Button>
           </div>
         </div>
       </ModalShell>

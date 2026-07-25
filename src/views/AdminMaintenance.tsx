@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { motion } from "motion/react";
 import { AdminBackBar } from "../components/AdminBackBar";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { supabase } from "../lib/supabase";
@@ -180,7 +181,9 @@ export const AdminMaintenance: React.FC = () => {
       </div>
 
       {/* ── Global Maintenance Toggle ── */}
-      <div className={cx("p-6 sm:p-7 lg:p-8 space-y-6 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+      <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+        <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
+        <div className="p-6 sm:p-7 lg:p-8 space-y-6">
         <div className={cx("border-b pb-5", tokens.border.default)}>
           <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
             {t("admin.maintenance_title")}
@@ -252,16 +255,17 @@ export const AdminMaintenance: React.FC = () => {
         <div className="flex justify-end gap-3">
           <button
             onClick={loadAll}
-            className={cx("px-6 py-3 text-sm font-semibold rounded-xl border cursor-pointer flex items-center gap-2", tokens.text.label, tokens.border.strong, tokens.hover.surface)}
+            className={cx("px-6 py-3 text-sm font-semibold rounded-xl border cursor-pointer flex items-center gap-2 transition-all duration-200 active:scale-[0.98]", tokens.text.label, tokens.border.strong, tokens.hover.surface)}
           >
             <RefreshCw size={16} /> {t("admin.refresh")}
           </button>
           <button
             onClick={handleSaveGlobal}
-            className="px-6 py-3 text-sm font-semibold rounded-xl bg-amber-600 text-white hover:bg-amber-700 cursor-pointer flex items-center gap-2"
+            className="px-6 py-3 text-sm font-semibold rounded-xl bg-amber-600 text-white hover:bg-amber-700 cursor-pointer flex items-center gap-2 transition-all duration-200 active:scale-[0.98]"
           >
             <Save size={16} /> {t("admin.maintenance_save_btn")}
           </button>
+        </div>
         </div>
       </div>
 

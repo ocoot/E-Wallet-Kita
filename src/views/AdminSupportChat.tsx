@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { motion } from "motion/react";
 import { AdminBackBar } from "../components/AdminBackBar";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -334,8 +335,10 @@ export const AdminSupportChat: React.FC = () => {
 
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
-      <div className={cx("p-6 sm:p-7 lg:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+        <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
+        <div className="p-6 sm:p-7 lg:p-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
               {t("admin_support_chat.title")}
@@ -350,18 +353,19 @@ export const AdminSupportChat: React.FC = () => {
               audioFeedback.playClick();
               loadSessions();
             }}
-            className={cx("shrink-0 flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl", tokens.adminSupportChat.filterBtnBorder, tokens.text.secondary)}
+            className={cx("shrink-0 flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200 active:scale-[0.98]", tokens.adminSupportChat.filterBtnBorder, tokens.text.secondary)}
           >
             <RefreshCw size={13} />
             {t("admin_support_chat.refresh")}
           </button>
+          </div>
         </div>
       </div>
 
       {/* List + Detail */}
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4 min-h-[520px]">
         {/* Session list */}
-        <div className="overflow-hidden flex flex-col">
+        <aside className={cx("rounded-2xl border shadow-sm overflow-hidden flex flex-col", tokens.surface.card, tokens.border.default)}>
           {listLoading ? (
             <div className="py-16 flex items-center justify-center">
               <Loader2 className={cx("animate-spin", tokens.adminSupportChat.spinnerText)} size={26} />
@@ -420,10 +424,10 @@ export const AdminSupportChat: React.FC = () => {
               })}
             </div>
           )}
-        </div>
+        </aside>
 
         {/* Detail / thread */}
-        <div className="overflow-hidden flex flex-col">
+        <div className={cx("rounded-2xl border shadow-sm overflow-hidden flex flex-col", tokens.surface.card, tokens.border.default)}>
           {!selectedSession ? (
             <div className="flex-1 flex items-center justify-center p-10">
               <p className={cx("text-xs text-center max-w-[220px]", tokens.text.faint)}>

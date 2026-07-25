@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { motion } from "motion/react";
 import { AdminBackBar } from "../components/AdminBackBar";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -189,7 +190,9 @@ export const AdminCategoryManager: React.FC = () => {
 
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
-      <div className={cx("p-6 sm:p-7 lg:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+      <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+        <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
+        <div className="p-6 sm:p-7 lg:p-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
@@ -202,7 +205,7 @@ export const AdminCategoryManager: React.FC = () => {
           <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={loadCategories}
-              className={cx("p-2 rounded-xl border cursor-pointer transition-colors", tokens.text.label, tokens.border.strong, tokens.hover.surface)}
+              className={cx("p-2 rounded-xl border cursor-pointer transition-all duration-200 active:scale-[0.98]", tokens.text.label, tokens.border.strong, tokens.hover.surface)}
             >
               <RefreshCw size={16} />
             </button>
@@ -216,6 +219,7 @@ export const AdminCategoryManager: React.FC = () => {
               {t("admin.add_category")}
             </Button>
           </div>
+        </div>
         </div>
       </div>
 
@@ -370,7 +374,7 @@ export const AdminCategoryManager: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <button onClick={() => startEdit(cat)}
-                            className={cx("p-2 rounded-xl border cursor-pointer transition-colors", tokens.text.muted, tokens.border.strong, tokens.hover.surface)}>
+                            className={cx("p-2 rounded-xl border cursor-pointer transition-all duration-200 active:scale-[0.98]", tokens.text.muted, tokens.border.strong, tokens.hover.surface)}>
                             <Pencil size={16} />
                           </button>
                         </td>

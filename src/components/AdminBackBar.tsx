@@ -29,7 +29,7 @@ export const AdminBackBar: React.FC = () => {
       type="button"
       onClick={handleBack}
       className={cx(
-        "flex items-center gap-2 px-4 py-2.5 rounded-xl border font-sans text-xs font-bold cursor-pointer transition-colors",
+        "flex items-center gap-2 px-4 py-2.5 rounded-xl border font-sans text-xs font-bold cursor-pointer transition-all duration-200 active:scale-[0.98]",
         tokens.adminBackBar.btnBg,
         tokens.text.secondary
       )}

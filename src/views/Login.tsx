@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -6,36 +6,48 @@ import { supabase } from "../lib/supabase";
 import { withErrorReporting, reportFrontendError } from "../lib/errorReporter";
 import { useToast } from "../contexts/ToastContext";
 import logoUrl from "../assets/images/user_logo_transparent.png";
-import { Mail, Lock, User, LogIn, Sparkles, AlertCircle, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, User, LogIn, Sparkles, AlertCircle, Eye, EyeOff, ShieldCheck, Cloud, Activity } from "lucide-react";
 import { motion, AnimatePresence, useAnimation } from "motion/react";
 import { Modal } from "../components/Modal";
 import { audioFeedback } from "../lib/audio";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { Input } from "../components/ui/Input";
-import { BADGE_SIZE_CLASSES } from "../components/ui/Badge";
 
 /* ─────────────────────────────────────────────────────────
-   Brand panel decoration — faint background arc rings only.
-   Kept absolute + very low-opacity so it never visually competes
-   with foreground text/buttons.
+   Brand panel decoration — animated gradient mesh for depth.
+   Replaces flat SVG arcs with layered radial gradients that
+   drift slowly, creating an organic "lava lamp" feel.
 ───────────────────────────────────────────────────────── */
-const BrandPanelArcs: React.FC = () => {
+const BrandPanelMesh: React.FC = () => {
   const { tokens } = useThemeTokens();
   return (
-    <svg
-      className="absolute inset-0 w-full h-full pointer-events-none select-none"
-      viewBox="0 0 400 600"
-      preserveAspectRatio="xMidYMid slice"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <circle cx="380" cy="30"  r="180" fill="none" strokeWidth="1" className={tokens.login.arc1}/>
-      <circle cx="380" cy="30"  r="130" fill="none" strokeWidth="1" className={tokens.login.arc2}/>
-      <circle cx="20"  cy="570" r="200" fill="none" strokeWidth="1" className={tokens.login.arc3}/>
-      <circle cx="20"  cy="570" r="130" fill="none" strokeWidth="1" className={tokens.login.arc4}/>
-      <line x1="0" y1="300" x2="400" y2="300" strokeWidth="0.5" className={tokens.login.line}/>
-      <line x1="200" y1="0" x2="200" y2="600" strokeWidth="0.5" className={tokens.login.line}/>
-    </svg>
+    <div className="absolute inset-0 overflow-hidden pointer-events-none select-none" aria-hidden="true">
+      {/* Primary mesh blob — slow drift top-right */}
+      <motion.div
+        animate={{ x: [0, 30, -10, 0], y: [0, -20, 10, 0] }}
+        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+        className={`absolute -top-20 -right-20 w-80 h-80 rounded-full blur-[80px] opacity-40 ${tokens.login.glow}`}
+      />
+      {/* Secondary mesh blob — slow drift bottom-left */}
+      <motion.div
+        animate={{ x: [0, -20, 15, 0], y: [0, 15, -10, 0] }}
+        transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute -bottom-16 -left-16 w-64 h-64 rounded-full blur-[70px] opacity-30 bg-emerald-500/20"
+      />
+      {/* Subtle grid lines for structure */}
+      <svg
+        className="absolute inset-0 w-full h-full opacity-[0.04]"
+        viewBox="0 0 400 600"
+        preserveAspectRatio="xMidYMid slice"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <line x1="0" y1="150" x2="400" y2="150" stroke="white" strokeWidth="0.5"/>
+        <line x1="0" y1="300" x2="400" y2="300" stroke="white" strokeWidth="0.5"/>
+        <line x1="0" y1="450" x2="400" y2="450" stroke="white" strokeWidth="0.5"/>
+        <line x1="130" y1="0" x2="130" y2="600" stroke="white" strokeWidth="0.5"/>
+        <line x1="270" y1="0" x2="270" y2="600" stroke="white" strokeWidth="0.5"/>
+      </svg>
+    </div>
   );
 };
 
@@ -74,23 +86,24 @@ const BrandLogoMark: React.FC<{ compact?: boolean }> = ({ compact }) => {
 };
 
 /* ─────────────────────────────────────────────────────────
-   Floating stat chip used inside brand panel
+   Floating stat chip used inside brand panel — glassmorphism
+   with subtle left accent bar for visual punch.
  * ───────────────────────────────────────────────────────── */
-const StatChip: React.FC<{ label: string; value: string; delay?: number }> = ({ label, value, delay = 0 }) => {
+const StatChip: React.FC<{ label: string; value: string; delay?: number; icon?: React.ReactNode }> = ({ label, value, delay = 0, icon }) => {
   const { tokens, cx } = useThemeTokens();
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.6, ease: "easeOut" }}
+      initial={{ opacity: 0, x: -12 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay, duration: 0.5, ease: "easeOut" }}
       className={cx(
-        "flex items-center gap-2 rounded-full backdrop-blur-sm",
-        BADGE_SIZE_CLASSES.sm,
+        "flex items-center gap-2.5 rounded-lg px-3 py-2 backdrop-blur-md border-l-2 border-l-indigo-400/60 light_sakura:border-l-rose-400/60",
         tokens.login.statChip
       )}
     >
-      <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold tabular-nums", tokens.login.statChipVal)}>{value}</span>
-      <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)]", tokens.login.statChipLbl)}>{label}</span>
+      {icon && <span className="text-indigo-300 light_sakura:text-rose-400 opacity-80">{icon}</span>}
+      {value && <span className={cx("text-[0.65rem] font-semibold tabular-nums", tokens.login.statChipVal)}>{value}</span>}
+      <span className={cx("text-[0.65rem] font-medium", tokens.login.statChipLbl)}>{label}</span>
     </motion.div>
   );
 };
@@ -150,6 +163,17 @@ export const Login: React.FC = () => {
   const { showToast } = useToast();
   const shakeControls = useAnimation();
   const { tokens, cx } = useThemeTokens();
+
+  // Spotlight border — tracks mouse position on card
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [spotlightPos, setSpotlightPos] = useState({ x: 0, y: 0 });
+  const [spotlightVisible, setSpotlightVisible] = useState(false);
+
+  const handleCardMouse = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setSpotlightPos({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+  }, []);
 
   const [isSignUp, setIsSignUp]               = useState(false);
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -314,16 +338,29 @@ export const Login: React.FC = () => {
       <div className={cx("absolute -left-32 top-0 w-96 h-96 rounded-full pointer-events-none", tokens.login.ambientGlow1)} />
       <div className={cx("absolute right-0 bottom-0 w-80 h-80 rounded-full pointer-events-none", tokens.login.ambientGlow2)} />
 
-      {/* ── Outer card wrapper ── */}
+      {/* ── Outer card wrapper with spotlight border ── */}
       <motion.div
+        ref={cardRef}
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55, ease: "easeOut" }}
+        onMouseMove={handleCardMouse}
+        onMouseEnter={() => setSpotlightVisible(true)}
+        onMouseLeave={() => setSpotlightVisible(false)}
         className={cx(
-          "w-full max-w-[880px] relative z-10 rounded-3xl overflow-hidden flex flex-col md:flex-row",
+          "w-full max-w-[880px] relative z-10 rounded-3xl overflow-hidden flex flex-col md:flex-row border border-white/[0.06] light_sakura:border-slate-200/60",
           tokens.login.cardShadow
         )}
       >
+        {/* Spotlight glow — follows cursor */}
+        {spotlightVisible && (
+          <div
+            className="absolute inset-0 pointer-events-none z-50 opacity-60 transition-opacity duration-300"
+            style={{
+              background: `radial-gradient(400px circle at ${spotlightPos.x}px ${spotlightPos.y}px, rgba(63, 190, 155, 0.06), transparent 60%)`,
+            }}
+          />
+        )}
 
         {/* ══════════════════════════════════════════════
             LEFT — Brand / Welcome panel
@@ -333,7 +370,7 @@ export const Login: React.FC = () => {
           tokens.login.brandPanelBg
         )}>
 
-          <BrandPanelArcs />
+          <BrandPanelMesh />
 
           {/* Brand header */}
           <div className="relative z-10">
@@ -348,7 +385,7 @@ export const Login: React.FC = () => {
                 alt="E-Wallet Kita"
                 className="w-9 h-9 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
               />
-              <span className="font-bold text-base tracking-tight text-white/90">
+              <span className="font-semibold text-sm tracking-[-0.01em] text-white/90">
                 E-Wallet Kita
               </span>
             </motion.div>
@@ -357,7 +394,7 @@ export const Login: React.FC = () => {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.55 }}
-              className="font-bold text-3xl leading-snug text-white mb-3"
+              className="font-bold text-[2rem] leading-[1.15] tracking-[-0.03em] text-white mb-3"
             >
               {t("auth.login_title")}
             </motion.h1>
@@ -365,7 +402,7 @@ export const Login: React.FC = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4, duration: 0.55 }}
-              className="text-sm text-white/60 leading-relaxed"
+              className="text-sm text-white/55 leading-relaxed max-w-[26ch]"
             >
               {t("auth.login_subtitle")}
             </motion.p>
@@ -382,9 +419,9 @@ export const Login: React.FC = () => {
           <div className="relative z-10 mt-auto flex flex-col gap-5">
             {/* Floating stat chips */}
             <div className="flex flex-col gap-2">
-              <StatChip value="" label="End-to-end encrypted" delay={0.55} />
-              <StatChip value="" label="Cloud sync across devices" delay={0.65} />
-              <StatChip value="" label="Real-time transaction tracking" delay={0.75} />
+              <StatChip icon={<ShieldCheck size={13} />} value="" label="End-to-end encrypted" delay={0.55} />
+              <StatChip icon={<Cloud size={13} />} value="" label="Cloud sync across devices" delay={0.65} />
+              <StatChip icon={<Activity size={13} />} value="" label="Real-time transaction tracking" delay={0.75} />
             </div>
 
             {/* Divider to visually separate chips from the tab switcher */}
@@ -433,7 +470,7 @@ export const Login: React.FC = () => {
             tokens.login.brandPanelBg
           )}>
 
-            <BrandPanelArcs />
+            <BrandPanelMesh />
 
             <div className="relative z-10">
               <motion.div
@@ -447,7 +484,7 @@ export const Login: React.FC = () => {
                   alt="E-Wallet Kita"
                   className="w-9 h-9 object-contain drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
                 />
-                <span className="font-bold text-base tracking-tight text-white/90">
+                <span className="font-semibold text-sm tracking-[-0.01em] text-white/90">
                   E-Wallet Kita
                 </span>
               </motion.div>
@@ -456,7 +493,7 @@ export const Login: React.FC = () => {
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3, duration: 0.55 }}
-                className="font-bold text-2xl leading-snug text-white mb-3"
+                className="font-bold text-2xl leading-[1.15] tracking-[-0.025em] text-white mb-3"
               >
                 {t("auth.login_title")}
               </motion.h1>
@@ -464,7 +501,7 @@ export const Login: React.FC = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.55 }}
-                className="text-sm text-white/60 leading-relaxed"
+                className="text-sm text-white/55 leading-relaxed"
               >
                 {t("auth.login_subtitle")}
               </motion.p>
@@ -552,7 +589,7 @@ export const Login: React.FC = () => {
                   <div className={cx("w-11 h-11 rounded-2xl flex items-center justify-center mb-4", tokens.login.iconBg)}>
                     <Lock size={20} className={cx(tokens.icon.accent)} />
                   </div>
-                  <h2 className={cx("font-bold text-xl mb-1", tokens.text.primary)}>
+                  <h2 className={cx("font-bold text-xl tracking-[-0.02em] mb-1", tokens.text.primary)}>
                     {t("auth.forgot_password_title")}
                   </h2>
                   <p className={cx("text-xs leading-relaxed", tokens.text.muted)}>
@@ -611,7 +648,7 @@ export const Login: React.FC = () => {
               >
                 {/* Section heading */}
                 <div className="mb-7">
-                  <h2 className={cx("font-bold text-xl mb-0.5", tokens.text.primary)}>
+                  <h2 className={cx("font-bold text-xl tracking-[-0.02em] mb-0.5", tokens.text.primary)}>
                     {isSignUp ? t("auth.btn_signup") : t("auth.btn_signin")}
                   </h2>
                   <p className={cx("text-xs", tokens.text.muted)}>

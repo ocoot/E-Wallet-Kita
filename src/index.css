@@ -1,16 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap') layer(fonts);
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap') layer(fonts);
 @import "tailwindcss";
 
 @theme {
   /*
-   * item 2.1 (P2): font-sans dipindah dari "Outfit" (Google Fonts CDN) ke
-   * font sistem native (-apple-system di iOS/macOS, Segoe UI di Windows,
-   * Roboto di Android). Menghilangkan jeda font-swap saat load & membuat
-   * teks langsung terasa seperti UI native platform, bukan "web/landing
-   * page". JetBrains Mono tetap di-load dari CDN karena masih dipakai
-   * khusus untuk nominal angka (lihat item 2.2 & --font-mono di bawah).
+   * item 2.1 (P2): font-sans switched to Geist — a modern geometric sans
+   * with strong character, designed for UI. Replaces generic system stack.
+   * JetBrains Mono still loaded for numeric displays.
    */
-  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
   /*

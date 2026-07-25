@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { motion } from "motion/react";
 import { AdminBackBar } from "../components/AdminBackBar";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -394,7 +395,9 @@ export const AdminBackup: React.FC = () => {
       <LoadingOverlay isOpen={triggering} message={t("admin.backup_triggering")} />
 
       {/* Card status terakhir */}
-      <div className={cx("p-6 sm:p-7 lg:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+      <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+        <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
+        <div className="p-6 sm:p-7 lg:p-8">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-start gap-3">
             <div>
@@ -476,10 +479,13 @@ export const AdminBackup: React.FC = () => {
             {latest.error_message}
           </div>
         )}
+        </div>
       </div>
 
       {/* Riwayat backup */}
-      <div className={cx("p-6 sm:p-7 lg:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+      <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+        <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
+        <div className="p-6 sm:p-7 lg:p-8">
         <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
           <h3 className={cx("font-black text-sm", tokens.adminBackup.heading)}>
             {t("admin.backup_history")}
@@ -487,7 +493,7 @@ export const AdminBackup: React.FC = () => {
           {selectedIds.size > 0 && (
             <button
               onClick={openDeleteModal}
-              className="px-3 py-2 text-xs font-black rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-colors cursor-pointer flex items-center gap-1.5"
+              className="px-3 py-2 text-xs font-black rounded-xl bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20 transition-all duration-200 cursor-pointer flex items-center gap-1.5 active:scale-[0.98]"
             >
               <Trash2 className="w-3.5 h-3.5" />
               {t("admin.backup_delete_selected", { count: selectedIds.size })}
@@ -634,10 +640,13 @@ export const AdminBackup: React.FC = () => {
             )}
           </div>
         )}
+        </div>
       </div>
 
       {/* Riwayat restore */}
-      <div className={cx("p-6 sm:p-7 lg:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+      <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+        <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
+        <div className="p-6 sm:p-7 lg:p-8">
         <h3 className={cx("font-black text-sm mb-4", tokens.adminBackup.heading)}>
           {t("admin.backup_restore_history")}
         </h3>
@@ -733,6 +742,7 @@ export const AdminBackup: React.FC = () => {
             )}
           </div>
         )}
+        </div>
       </div>
 
       {/* ── Modal: konfirmasi restore ───────────────────────── */}

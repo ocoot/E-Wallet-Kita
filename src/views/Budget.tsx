@@ -222,20 +222,20 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
   const statusBadge = (status: "safe" | "warning" | "danger") => {
     if (status === "danger") {
       return (
-        <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold", tokens.budget.statusDanger, tokens.text.danger)}>
+        <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold", tokens.budget.statusDanger, tokens.text.danger)}>
           <AlertTriangle size={12} /> {t("budget.status_danger")}
         </span>
       );
     }
     if (status === "warning") {
       return (
-        <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold", tokens.budget.statusWarning, tokens.text.warning)}>
+        <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold", tokens.budget.statusWarning, tokens.text.warning)}>
           <AlertTriangle size={12} /> {t("budget.status_warning")}
         </span>
       );
     }
     return (
-      <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold", tokens.budget.statusSafe, tokens.text.success)}>
+      <span className={cx("inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[clamp(0.6188rem,2.86vw,0.6875rem)] font-bold", tokens.budget.statusSafe, tokens.text.success)}>
         <CheckCircle2 size={12} /> {t("budget.status_safe")}
       </span>
     );
@@ -259,16 +259,14 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
       <div className="space-y-6">
 
       {/* Header */}
-      <div className={cx("flex items-start justify-between gap-3.5 flex-wrap rounded-2xl border shadow-sm px-5 py-4", tokens.surface.card, tokens.border.accent)}>
-        <div className="flex items-center gap-3.5">
-          <div>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
-              {t("budget.page_title")}
-            </h1>
-            <p className={cx("text-xs mt-0.5 max-w-xl leading-relaxed", tokens.text.muted)}>
-              {t("budget.page_subtitle")}
-            </p>
-          </div>
+      <div className={cx("flex items-start justify-between gap-3.5 flex-wrap rounded-2xl border px-5 py-5", tokens.surface.card, tokens.border.accent)}>
+        <div>
+          <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
+            {t("budget.page_title")}
+          </h1>
+          <p className={cx("text-xs mt-1 max-w-xl leading-relaxed", tokens.text.muted)}>
+            {t("budget.page_subtitle")}
+          </p>
         </div>
 
         {!loading && expenseCategories.length > 0 && (
@@ -276,7 +274,7 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
             onClick={openAddModal}
             disabled={availableCategories.length === 0}
             title={availableCategories.length === 0 ? t("budget.all_categories_budgeted") : undefined}
-            className={cx("flex items-center gap-2 px-4.5 py-2.5 rounded-xl text-xs font-bold text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0", tokens.budget.addBtn)}
+            className={cx("flex items-center gap-2 px-4.5 py-2.5 rounded-full text-xs font-bold text-white transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0", tokens.budget.addBtn)}
           >
             <Plus size={15} />
             {t("budget.add_budget_cta")}
@@ -304,7 +302,7 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
           <div className="flex justify-center">
             <button
               onClick={openAddModal}
-              className={cx("flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold text-white transition-colors cursor-pointer", tokens.budget.addBtn)}
+              className={cx("flex items-center gap-2 px-5 py-2.5 rounded-full text-xs font-bold text-white transition-all active:scale-95 cursor-pointer", tokens.budget.addBtn)}
             >
               <Plus size={15} />
               {t("budget.add_budget_cta")}
@@ -339,7 +337,7 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
                 <button
                   onClick={() => handleSave(catKey)}
                   disabled={savingKey === catKey}
-                  className={cx("w-full py-2 rounded-xl text-xs font-bold text-white transition-colors disabled:opacity-50 cursor-pointer", tokens.budget.addBtn)}
+                  className={cx("w-full py-2.5 rounded-full text-xs font-bold text-white transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer", tokens.budget.addBtn)}
                 >
                   {savingKey === catKey ? "…" : t("budget.edit_budget")}
                 </button>
@@ -375,7 +373,7 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
             <div className={cx("rounded-full p-2.5", tokens.budgetProgressCard.badgeBgSafe, tokens.text.accentStrong)}>
               <PiggyBank size={20} />
             </div>
-            <h3 id="budget-add-modal-title" className="font-sans text-lg font-semibold tracking-tight">
+            <h3 id="budget-add-modal-title" className="font-sans text-lg font-bold tracking-tight">
               {t("budget.add_modal_title")}
             </h3>
           </div>
@@ -424,14 +422,14 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
               onClick={closeAddModal}
-              className={cx("rounded-xl px-4 py-2 font-sans text-sm font-medium cursor-pointer", tokens.budget.cancelBtnTextLight, tokens.budget.closeBtnHover)}
+              className={cx("rounded-full px-4 py-2 font-sans text-sm font-medium cursor-pointer transition-all active:scale-95", tokens.budget.cancelBtnTextLight, tokens.budget.closeBtnHover)}
             >
               {t("common.cancel")}
             </button>
             <button
               onClick={handleAddSave}
               disabled={isAdding}
-              className={cx("rounded-xl px-4.5 py-2 font-sans text-sm font-semibold text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer", tokens.budget.addBtn)}
+              className={cx("rounded-full px-4.5 py-2 font-sans text-sm font-bold text-white shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all active:scale-95", tokens.budget.addBtn)}
             >
               {t("budget.save")}
             </button>

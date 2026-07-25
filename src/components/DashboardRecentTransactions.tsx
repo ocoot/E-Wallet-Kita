@@ -85,7 +85,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
       {latestTransactions.length === 0 ? (
         <EmptyState message={t("history.no_transactions")} />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-1">
           {latestTransactions.map((tx, index) => {
             const isExpense = tx.type === "expense";
             return (
@@ -94,7 +94,7 @@ export const DashboardRecentTransactions: React.FC<DashboardRecentTransactionsPr
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
-                className={tokens.dashboardRecentTransactions.rowCardBg}
+                className={cx(tokens.dashboardRecentTransactions.rowCardBg, "rounded-xl px-2 py-1 -mx-2 transition-colors hover:bg-white/[0.03] light_sakura:hover:bg-slate-900/[0.03] cursor-default")}
               >
                 <div className="flex items-center gap-3">
                   {getSourceIcon(tx.source)}

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion } from "motion/react";
 import { AdminBackBar } from "../components/AdminBackBar";
 import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
@@ -309,7 +310,7 @@ export const AdminVoucherManager: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {[
           {t: t("voucher.total"), v: stats.total, color: "text-indigo-500"},
           {t: t("voucher.active_vouchers"), v: stats.active, color: "text-emerald-500"},

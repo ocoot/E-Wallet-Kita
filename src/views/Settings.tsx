@@ -522,11 +522,8 @@ export const Settings: React.FC<SettingsProps> = ({
     return "Rp\u00A0" + Math.round(num).toLocaleString("id-ID");
   };
 
-  // Container width: "tier manajemen" (max-w-4xl) -- disamakan dengan
-  // Wallets.tsx, bukan lagi max-w-3xl sendiri. Lihat catatan tier
-  // container di App.tsx untuk aturan lengkapnya.
   return (
-    <div className="max-w-4xl mx-auto space-y-5 pb-24">
+    <div className="space-y-5 pb-24">
 
 
       {/* ── Mobile/tablet-only redesign: menu list ala "Profile/Akun" ───
@@ -576,10 +573,10 @@ export const Settings: React.FC<SettingsProps> = ({
         
         {/* View Header */}
         <div className={cx("flex flex-col border-b pb-6", tokens.settings.sectionBorder)}>
-          <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.primary)}>
+          <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.primary)}>
             {t("settings.title")}
           </h1>
-          <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.heroSubtitle)}>
+          <p className={cx("font-sans text-xs mt-1 font-medium", tokens.text.heroSubtitle)}>
             {t("settings.desc")}
           </p>
         </div>
@@ -619,18 +616,18 @@ export const Settings: React.FC<SettingsProps> = ({
           )}
           <div className="min-w-0 flex-1">
             <p className={cx("font-sans font-bold text-sm truncate", tokens.text.heading)}>{displayName || t("admin.guest_user")}</p>
-            <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-0.5">
+            <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] mt-0.5", tokens.text.muted)}>
               {isGuest ? t("admin.guest_user") : isUploadingAvatar ? t("settings.avatar_uploading") : t("settings.avatar_change_hint")}
             </p>
           </div>
           {!isGuest && (
             isPremium ? (
-              <span className={cx("shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold", tokens.settings.premiumBadge)}>
+              <span className={cx("shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold", tokens.settings.premiumBadge)}>
                 <Sparkles size={11} /> {t("premium.badge_active")}
               </span>
             ) : (
               <button onClick={() => { audioFeedback.playClick(); setIsPremiumOpen(true); }}
-                className={cx("shrink-0 cursor-pointer px-2.5 py-1 rounded-lg text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold transition-colors", tokens.settings.langToggleBtnBg, tokens.text.muted)}>
+                className={cx("shrink-0 cursor-pointer px-2.5 py-1 rounded-full text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold transition-colors", tokens.settings.langToggleBtnBg, tokens.text.muted)}>
                 {t("premium.menu_label")}
               </button>
             )
@@ -645,7 +642,7 @@ export const Settings: React.FC<SettingsProps> = ({
           <div className="space-y-6">
             
             {/* Section 1: Profiles Name edit */}
-            <div className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}>
+            <div className={cx("p-5 rounded-2xl transition-colors duration-300 space-y-4", tokens.settings.profileCardBgBorder)}>
             <h3 className={cx("font-sans font-bold text-sm", tokens.settings.sectionHeadingBorder)}>
               {t("settings.profile_section")}
             </h3>
@@ -668,7 +665,7 @@ export const Settings: React.FC<SettingsProps> = ({
               variant="primary"
               onClick={handleUpdateProfileName}
               fullWidth
-              className="py-2.5 rounded-xl text-xs"
+              className="py-2.5 rounded-full text-xs"
             >
               {t("settings.btn_update_profile")}
             </Button>
@@ -678,7 +675,7 @@ export const Settings: React.FC<SettingsProps> = ({
           {canChangePassword && (
             <form
               onSubmit={handleChangePassword}
-              className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}
+              className={cx("p-5 rounded-2xl transition-colors duration-300 space-y-4", tokens.settings.profileCardBgBorder)}
             >
               <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.settings.sectionHeadingBorder)}>
                 <ShieldCheck size={14} className={cx(tokens.icon.accent)} />
@@ -768,7 +765,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 disabled={isChangingPassword}
                 isLoading={isChangingPassword}
                 icon={<ShieldCheck size={14} />}
-                className="rounded-xl py-2.5"
+                className="rounded-full py-2.5"
               >
                 {t("settings.btn_change_password")}
               </Button>
@@ -776,7 +773,7 @@ export const Settings: React.FC<SettingsProps> = ({
           )}
 
           {/* Section 2: Quick instant Switcher controls */}
-          <div className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-5", tokens.settings.profileCardBgBorder)}>
+          <div className={cx("p-5 rounded-2xl transition-colors duration-300 space-y-5", tokens.settings.profileCardBgBorder)}>
             <h3 className={cx("font-sans font-bold text-sm", tokens.settings.sectionHeadingBorder)}>
               {t("settings.preferences")}
             </h3>
@@ -796,7 +793,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     audioFeedback.playClick();
                     setLocale("id");
                   }}
-                  className={`py-3 rounded-xl font-sans text-xs font-bold border transition-all cursor-pointer
+                  className={`py-3 rounded-full font-sans text-xs font-bold border transition-all cursor-pointer
                     ${locale === "id" 
                       ? tokens.settings.telegramLinkedBadge 
                       : cx("hover:bg-slate-900 light_sakura:hover:bg-slate-50", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
@@ -811,7 +808,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     audioFeedback.playClick();
                     setLocale("en");
                   }}
-                  className={`py-3 rounded-xl font-sans text-xs font-bold border transition-all cursor-pointer
+                  className={`py-3 rounded-full font-sans text-xs font-bold border transition-all cursor-pointer
                     ${locale === "en" 
                       ? tokens.settings.telegramLinkedBadge 
                       : cx("hover:bg-slate-900 light_sakura:hover:bg-slate-50", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
@@ -837,7 +834,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     audioFeedback.playChime();
                     setTheme("dark_obsidian");
                   }}
-                  className={`py-3 rounded-xl font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-bold border transition-all cursor-pointer
+                  className={`py-3 rounded-full font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-bold border transition-all cursor-pointer
                     ${theme === "dark_obsidian" 
                       ? "bg-indigo-600/10 border-indigo-500 text-indigo-400" 
                       : cx("hover:bg-slate-900 light_sakura:hover:bg-slate-50", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
@@ -852,7 +849,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     audioFeedback.playChime();
                     setTheme("light_sakura");
                   }}
-                  className={`py-3 rounded-xl font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-bold border transition-all cursor-pointer
+                  className={`py-3 rounded-full font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] sm:text-xs font-bold border transition-all cursor-pointer
                     ${theme === "light_sakura" 
                       ? "bg-rose-500/10 border-rose-500 text-rose-600" 
                       : cx("hover:bg-slate-900 light_sakura:hover:bg-slate-50", tokens.text.muted, tokens.surface.canvas, tokens.border.accent)
@@ -866,7 +863,7 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
 
           {/* Section 3: PWA Installation Block */}
-          <div className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}>
+          <div className={cx("p-5 rounded-2xl transition-colors duration-300 space-y-4", tokens.settings.profileCardBgBorder)}>
             <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.settings.sectionHeadingBorder)}>
               <Smartphone size={14} className={cx(tokens.icon.accent)} />
               <span>{t("settings.pwa_section")}</span>
@@ -879,7 +876,7 @@ export const Settings: React.FC<SettingsProps> = ({
             {isStandalone ? (
               <div className={cx("flex items-center gap-2 bg-emerald-500/10 p-3 rounded-xl border border-emerald-500/20", tokens.text.success)}>
                 <CheckCircle size={16} />
-                <span className="font-sans text-xs font-semibold">{t("settings.pwa_installed")}</span>
+                <span className="font-sans text-xs font-bold">{t("settings.pwa_installed")}</span>
               </div>
             ) : canInstall ? (
               <Button
@@ -888,7 +885,7 @@ export const Settings: React.FC<SettingsProps> = ({
                 onClick={handleInstallClick}
                 icon={<Smartphone size={14} />}
                 fullWidth
-                className="py-3 rounded-xl text-xs font-bold"
+                className="py-3 rounded-full text-xs font-bold"
               >
                 {t("settings.pwa_btn_install")}
               </Button>
@@ -902,7 +899,7 @@ export const Settings: React.FC<SettingsProps> = ({
           </div>
 
             {/* Section 4: Privacy & Data controls (self-service export & account deletion) */}
-            <div className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}>
+            <div className={cx("p-5 rounded-2xl transition-colors duration-300 space-y-4", tokens.settings.profileCardBgBorder)}>
               <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.settings.sectionHeadingBorder)}>
                 <ShieldQuestion size={14} className={cx(tokens.icon.accent)} />
                 <span>{t("settings.privacy_section")}</span>
@@ -920,7 +917,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     <p className={cx("font-sans text-xs font-semibold", tokens.settings.sectionHeadingText)}>
                       {t("settings.privacy_export_title")}
                     </p>
-                    <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 leading-relaxed mt-0.5">
+                    <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed mt-0.5", tokens.text.muted)}>
                       {t("settings.privacy_export_desc")}
                     </p>
                   </div>
@@ -931,7 +928,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   type="button"
                   onClick={handleExportMyData}
                   disabled={isExportingData}
-                  className={cx("w-full cursor-pointer py-2.5 rounded-xl font-sans text-xs font-semibold tracking-tight transition-all disabled:opacity-50 flex items-center justify-center gap-2", tokens.settings.unlinkBtnBorder, tokens.telegramCard.linkedLabelText, tokens.surface.card)}
+                  className={cx("w-full cursor-pointer py-2.5 rounded-full font-sans text-xs font-bold tracking-tight transition-all disabled:opacity-50 flex items-center justify-center gap-2", tokens.settings.unlinkBtnBorder, tokens.telegramCard.linkedLabelText, tokens.surface.card)}
                 >
                   <Download size={13} />
                   <span>{isExportingData ? t("common.loading") : t("settings.privacy_export_button")}</span>
@@ -946,7 +943,7 @@ export const Settings: React.FC<SettingsProps> = ({
                     <p className={cx("font-sans text-xs font-semibold", tokens.text.dangerSoft)}>
                       {t("settings.privacy_delete_title")}
                     </p>
-                    <p className="font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 leading-relaxed mt-0.5">
+                    <p className={cx("font-sans text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed mt-0.5", tokens.text.muted)}>
                       {t("settings.privacy_delete_section_desc")}
                     </p>
                   </div>
@@ -956,7 +953,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   whileTap={{ scale: 0.99 }}
                   type="button"
                   onClick={() => { audioFeedback.playClick(); setIsDeleteAccountModalOpen(true); }}
-                  className="w-full cursor-pointer border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 py-2.5 rounded-xl font-sans text-xs font-semibold text-red-400 tracking-tight transition-all flex items-center justify-center gap-2"
+                  className="w-full cursor-pointer border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 py-2.5 rounded-full font-sans text-xs font-bold text-red-400 tracking-tight transition-all flex items-center justify-center gap-2"
                 >
                   <Trash2 size={13} />
                   <span>{t("settings.privacy_delete_button")}</span>
@@ -971,7 +968,7 @@ export const Settings: React.FC<SettingsProps> = ({
         <div className="space-y-6">
           
           {/* Section 3: Telegram Bot Integration block */}
-          <div className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-5", tokens.settings.profileCardBgBorder)}>
+          <div className={cx("p-5 rounded-2xl transition-colors duration-300 space-y-5", tokens.settings.profileCardBgBorder)}>
             <div className={cx("flex items-center justify-between", tokens.settings.sectionDivider)}>
               <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.settings.sectionHeadingText)}>
                 <Send size={14} className="text-indigo-400" />
@@ -1012,7 +1009,7 @@ export const Settings: React.FC<SettingsProps> = ({
                       audioFeedback.playClick();
                       setIsPremiumOpen(true);
                     }}
-                    className={cx("cursor-pointer px-4 py-2 text-xs font-bold rounded-xl shadow-lg flex items-center gap-1.5 transition-colors", tokens.telegramCard.upsellCtaBtn)}
+                    className={cx("cursor-pointer px-4 py-2 text-xs font-bold rounded-full shadow-lg flex items-center gap-1.5 transition-colors", tokens.telegramCard.upsellCtaBtn)}
                   >
                     <Sparkles size={13} />
                     <span>{t("premium.menu_label")}</span>
@@ -1066,7 +1063,7 @@ export const Settings: React.FC<SettingsProps> = ({
                   whileTap={{ scale: 0.99 }}
                   type="button"
                   onClick={handleUnlinkTelegramClick}
-                  className="w-full cursor-pointer py-3 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl font-sans text-xs font-semibold transition-colors"
+                  className="w-full cursor-pointer py-3 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-full font-sans text-xs font-bold transition-colors"
                 >
                   {t("settings.btn_unlink")}
                 </motion.button>
@@ -1102,14 +1099,14 @@ export const Settings: React.FC<SettingsProps> = ({
                     whileTap={{ scale: 0.98 }}
                     type="button"
                     onClick={handleGenerateLinkingCode}
-                    className={cx("w-full cursor-pointer py-3.5 text-white rounded-xl font-sans text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all", tokens.budget.addBtn)}
+                    className={cx("w-full cursor-pointer py-3.5 text-white rounded-full font-sans text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all", tokens.budget.addBtn)}
                   >
                     {t("settings.btn_generate_code")}
                   </motion.button>
                 ) : (
                   <div className={cx("p-5 rounded-2xl border-2 border-dashed space-y-4 flex flex-col items-center w-full", tokens.telegramCard.qrBoxBorderBg)}>
                     <div className="text-center space-y-1">
-                      <span className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-widest">
+                      <span className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                         {t("settings.btn_copy_link")}
                       </span>
                       <div className={cx("px-8 py-4 rounded-2xl shadow-xl font-mono font-bold text-3xl tracking-[0.2em] border flex items-center justify-center gap-4", tokens.telegramCard.qrCodeBoxBg, tokens.text.accent)}>
@@ -1119,7 +1116,7 @@ export const Settings: React.FC<SettingsProps> = ({
                           whileTap={{ scale: 0.9 }}
                           onClick={handleCopyLinkCommand}
                           aria-label={copied ? t("common.copied") : t("common.copy")}
-                          className={cx("p-2.5 rounded-xl text-slate-400 transition-colors", tokens.surface.sunken, tokens.border.default, tokens.hover.textInverse)}
+                          className={cx("p-2.5 rounded-full text-slate-400 transition-colors", tokens.surface.sunken, tokens.border.default, tokens.hover.textInverse)}
                         >
                           {copied ? <CheckCircle size={18} className="text-emerald-500" /> : <Copy size={18} />}
                         </motion.button>
@@ -1146,7 +1143,7 @@ export const Settings: React.FC<SettingsProps> = ({
           {/* Section: Notification Preferences (push & Telegram, per kategori).
               SENGAJA tidak ada toggle untuk "Balasan Admin Support Chat" --
               channel itu dikecualikan dan tetap selalu ON. */}
-          <div className={cx("p-5 rounded-2xl transition-colors duration-300 shadow-sm space-y-4", tokens.settings.profileCardBgBorder)}>
+          <div className={cx("p-5 rounded-2xl transition-colors duration-300 space-y-4", tokens.settings.profileCardBgBorder)}>
             <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2", tokens.settings.sectionHeadingBorder)}>
               <Bell size={14} className={cx(tokens.icon.accent)} />
               <span>{t("settings.notif_section")}</span>
@@ -1164,7 +1161,7 @@ export const Settings: React.FC<SettingsProps> = ({
               <>
                 {/* Push (FCM) */}
                 <div className="space-y-1">
-                  <span className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-wider">
+                  <span className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider", tokens.text.muted)}>
                     {t("settings.notif_group_push")}
                   </span>
                   <div className={cx("rounded-xl px-3.5 divide-y", tokens.settings.divideSubtle, tokens.settings.innerCardBgBorder)}>
@@ -1194,7 +1191,7 @@ export const Settings: React.FC<SettingsProps> = ({
 
                 {/* Telegram */}
                 <div className="space-y-1">
-                  <span className="font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold text-slate-500 uppercase tracking-wider">
+                  <span className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider", tokens.text.muted)}>
                     {t("settings.notif_group_telegram")}
                   </span>
                   {isTelegramLocked || !isTelegramLinked ? (

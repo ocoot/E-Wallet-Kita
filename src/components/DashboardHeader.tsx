@@ -190,7 +190,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             untuk nama panjang, sekarang putih di atas gradient (bukan lagi
             `tokens.text.primary`, karena background bukan canvas polos
             lagi). */}
-        <h1 className="mt-4 font-sans font-extrabold text-[26px] leading-[1.15] tracking-tight line-clamp-2 text-white max-w-[75%]">
+        <h1 className="mt-4 font-sans font-extrabold text-[26px] leading-[1.1] tracking-[-0.025em] line-clamp-2 text-white max-w-[75%]">
           {t(getGreetingKey(), { name: currentUser.display_name })}
         </h1>
 
@@ -207,13 +207,26 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           </span>
         )}
 
-        {/* Lengkung ganda (Double Wave / Ribbon) -- path disalin persis
-            dari mockup `wave-mockups-themed.html` varian 03. Fill-nya
+        {/* Lengkung ganda (Double Wave / Ribbon) -- path DISAMAKAN dengan
+            versi terpusat yang sudah dipakai `PageRibbonBackground.tsx` di
+            semua halaman lain (lihat `WAVE_PATH_D` di sana). Path lama di
+            sini punya endpoint kiri/kanan y=28 dan y=20 (tidak simetris),
+            menyebabkan lengkung terlihat "tidak terpusat" -- gradient di
+            atas wave terpotong tidak rata di kedua tepi layar. Endpoint
+            sekarang disamakan jadi y=0 di kiri & kanan (menyentuh sudut
+            atas SVG persis di kedua tepi) supaya lengkung simetris/terpusat
+            dan konsisten dengan ribbon halaman lain. Fill-nya tetap
             mengikuti warna canvas halaman via `currentColor` supaya
-            lengkung menyatu mulus ke konten di bawah header. */}
+            lengkung menyatu mulus ke konten di bawah header.
+            `lg:hidden` -- lengkung ini disembunyikan khusus di breakpoint
+            desktop (>=1024px, sama seperti breakpoint Sidebar/
+            MobileBottomNav di App.tsx/Sidebar.tsx). Di layar desktop tepi
+            bawah hero jadi lurus/flat (tanpa lengkung dekoratif ala
+            mobile-app), sementara di mobile & tablet (<1024px) lengkung
+            tetap tampil seperti sebelumnya. */}
         <svg
           className={cx(
-            "absolute bottom-0 left-0 w-full h-9 sm:h-11 block",
+            "absolute bottom-0 left-0 w-full h-9 sm:h-11 block lg:hidden",
             tokens.dashboardHeader.waveFill
           )}
           viewBox="0 0 264 66"
@@ -221,7 +234,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           aria-hidden="true"
         >
           <path
-            d="M0,28 C48,58 86,10 132,24 C178,38 216,58 264,20 L264,66 L0,66 Z"
+            d="M0,0 C48,58 86,10 132,24 C178,38 216,58 264,0 L264,66 L0,66 Z"
             fill="currentColor"
           />
         </svg>
