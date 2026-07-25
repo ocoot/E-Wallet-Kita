@@ -19,6 +19,7 @@ import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
+import { CurrencyInput } from "../components/ui/CurrencyInput";
 import { Button } from "../components/ui/Button";
 import {
   Landmark, Plus, Trash2, CheckCircle2, Edit2, RotateCcw, PartyPopper
@@ -415,13 +416,11 @@ export const Installments: React.FC = () => {
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Input
-              type="number"
+            <CurrencyInput
               label={t("installments.form_monthly_amount")}
               value={form.monthly_amount}
-              onChange={e => setForm(f => ({ ...f, monthly_amount: e.target.value }))}
+              onValueChange={digits => setForm(f => ({ ...f, monthly_amount: digits }))}
               placeholder={t("installments.form_monthly_amount_placeholder")}
-              min={0}
             />
             <Input
               type="number"
@@ -431,13 +430,11 @@ export const Installments: React.FC = () => {
               min={1}
             />
           </div>
-          <Input
-            type="number"
+          <CurrencyInput
             label={t("installments.form_principal")}
             value={form.principal_amount}
-            onChange={e => setForm(f => ({ ...f, principal_amount: e.target.value }))}
+            onValueChange={digits => setForm(f => ({ ...f, principal_amount: digits }))}
             placeholder={t("installments.form_principal_placeholder")}
-            min={0}
           />
           <Input
             type="date"

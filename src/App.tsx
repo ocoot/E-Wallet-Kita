@@ -517,7 +517,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                   <Route path="/transactions/new" element={<FeatureLockGate featureKey="new_transaction"><NewTransaction onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
                   <Route path="/transactions" element={<FeatureLockGate featureKey="history"><History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
                   <Route path="/wallets" element={<FeatureLockGate featureKey="wallets"><Wallets /></FeatureLockGate>} />
-                  <Route path="/budget" element={<FeatureLockGate featureKey="budget"><Budget /></FeatureLockGate>} />
+                  <Route path="/budget" element={<FeatureLockGate featureKey="budget"><Budget transactionsUpdatedTrigger={transactionsUpdatedTrigger} /></FeatureLockGate>} />
                   <Route path="/bill-reminders" element={<FeatureLockGate featureKey="bill_reminders"><BillReminders /></FeatureLockGate>} />
                   <Route path="/installments" element={<FeatureLockGate featureKey="installments"><Installments /></FeatureLockGate>} />
                   <Route path="/savings" element={<FeatureLockGate featureKey="savings"><Savings /></FeatureLockGate>} />

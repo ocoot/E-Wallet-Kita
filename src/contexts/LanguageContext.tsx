@@ -72,6 +72,41 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }
   }, [user]);
 
+  // Sinkronkan <html lang="..."> dan href PWA manifest dengan bahasa yang
+  // sedang aktif dipakai (bukan cuma teks UI lewat `t()`).
+  //
+  // Root cause / why: sebelumnya index.html hardcode `<html lang="en">`
+  // sementara SEMUA konten default app (termasuk manifest.json yang
+  // di-generate vite-plugin-pwa) berbahasa Indonesia -- attribute lang jadi
+  // salah bahkan untuk user default sekalipun, bukan cuma saat ganti ke
+  // Inggris. `<html lang>` dipakai screen reader untuk memilih
+  // pengucapan/pelafalan yang benar, jadi ketidakcocokan ini nyata
+  // berdampak ke aksesibilitas, bukan cuma kosmetik.
+  //
+  // manifest.json sendiri adalah file statis (di-generate sekali saat
+  // build oleh vite-plugin-pwa, lihat vite.config.ts) sehingga TIDAK bisa
+  // berisi 2 bahasa sekaligus atau ikut re-render seperti komponen React.
+  // Solusinya: siapkan varian terjemahan Inggris sebagai file statis
+  // terpisah (public/manifest-en.json, isi sama persis strukturnya --
+  // name/shortcuts/screenshots -- cuma teksnya diterjemahkan & lang:'en'),
+  // lalu tukar href <link rel="manifest"> di sini setiap locale berubah.
+  // Browser membaca manifest saat prompt "Tambah ke Layar Utama" muncul,
+  // jadi swap ini efektif selama dilakukan SEBELUM user menekan install --
+  // bukan solusi sempurna untuk kasus user ganti bahasa SETELAH app
+  // ter-install (manifest PWA yang sudah terpasang tidak otomatis
+  // refresh), tapi menutup celah utama: user yang memang berbahasa
+  // Inggris sejak awal (baik dari preferensi tersimpan atau device locale)
+  // akan melihat listing/label PWA berbahasa Inggris, bukan Indonesia yang
+  // di-hardcode.
+  useEffect(() => {
+    document.documentElement.lang = locale;
+
+    const manifestLink = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (manifestLink) {
+      manifestLink.setAttribute('href', locale === 'en' ? '/manifest-en.json' : '/manifest.json');
+    }
+  }, [locale]);
+
   /**
    * Safe translate function with nested key traversal and interpolation replacements.
    *

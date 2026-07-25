@@ -29,6 +29,7 @@ import {
 import { audioFeedback } from "../lib/audio";
 import { DropdownField } from "../components/DropdownField";
 import { Input } from "../components/ui/Input";
+import { CurrencyInput } from "../components/ui/CurrencyInput";
 import { Button } from "../components/ui/Button";
 
 export const Onboarding: React.FC = () => {
@@ -234,21 +235,15 @@ export const Onboarding: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {/* Amount */}
                       <div>
-                        <label className={cx("block text-xs font-medium mb-1", tokens.text.mutedAlt)}>
-                          {t("onboarding.catat_practice_amount")} <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-semibold">Rp</span>
-                          <input
-                            type="number"
-                            required
-                            placeholder="e.g. 50000"
-                            value={practiceAmount}
-                            onChange={(e) => setPracticeAmount(e.target.value)}
-                            disabled={hasPracticedCatat}
-                            className={cx("w-full pl-9 pr-3 py-2 text-sm rounded-xl border focus:outline-none disabled:opacity-50", tokens.onboarding.inputFocus, tokens.border.strong, tokens.text.onSurface, tokens.surface.card)}
-                          />
-                        </div>
+                        <CurrencyInput
+                          size="compact"
+                          label={<>{t("onboarding.catat_practice_amount")} <span className="text-red-500">*</span></>}
+                          required
+                          placeholder="e.g. 50.000"
+                          value={practiceAmount}
+                          onValueChange={setPracticeAmount}
+                          disabled={hasPracticedCatat}
+                        />
                       </div>
 
                       {/* Category selection */}

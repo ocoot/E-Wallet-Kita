@@ -7,6 +7,7 @@ import { useWallets } from "../hooks/useWallets";
 import { DropdownField } from "./DropdownField";
 import { Button } from "./ui/Button";
 import { Input } from "./ui/Input";
+import { CurrencyInput } from "./ui/CurrencyInput";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "./ui/ModalShell";
 import { audioFeedback } from "../lib/audio";
@@ -135,12 +136,10 @@ export const HistoryEditModal: React.FC<HistoryEditModalProps> = ({
               <label className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase block mb-1.5", tokens.text.muted)}>
                 {t("transaction.label_amount")}
               </label>
-              <Input
+              <CurrencyInput
                 size="compact"
-                type="number"
-                min={1}
-                value={amount}
-                onChange={e => setAmount(e.target.value === "" ? "" : Number(e.target.value))}
+                value={amount === "" ? "" : String(amount)}
+                onValueChange={(digits) => setAmount(digits === "" ? "" : Number(digits))}
                 className="py-2.5"
               />
             </div>

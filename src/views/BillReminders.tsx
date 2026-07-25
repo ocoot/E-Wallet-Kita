@@ -19,6 +19,7 @@ import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
+import { CurrencyInput } from "../components/ui/CurrencyInput";
 import { Button } from "../components/ui/Button";
 import {
   Bell, Plus, Trash2, CheckCircle2, Circle, AlertCircle, Clock,
@@ -402,13 +403,11 @@ export const BillReminders: React.FC = () => {
             />
           </div>
           {/* Amount */}
-          <Input
-            type="number"
+          <CurrencyInput
             label={t("bill_reminders.form_amount")}
             value={form.amount}
-            onChange={e => setForm(f => ({ ...f, amount: e.target.value }))}
+            onValueChange={digits => setForm(f => ({ ...f, amount: digits }))}
             placeholder={t("bill_reminders.form_amount_placeholder")}
-            min={0}
           />
           {/* Recurrence */}
           <div>

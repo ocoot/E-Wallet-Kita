@@ -13,7 +13,13 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'prompt',
         manifestFilename: 'manifest.json',
-        includeAssets: ['logo.png', 'icon-192.png', 'icon-512.png'],
+        // `manifest-en.json` (public/manifest-en.json) adalah varian bahasa
+        // Inggris dari manifest di bawah, ditulis manual sebagai file
+        // statis -- vite-plugin-pwa cuma bisa generate 1 manifest per
+        // build. LanguageContext.tsx menukar href <link rel="manifest">
+        // antara file ini dan varian Inggrisnya sesuai locale aktif; lihat
+        // komentar di sana untuk detail & keterbatasannya.
+        includeAssets: ['logo.png', 'icon-192.png', 'icon-512.png', 'manifest-en.json'],
         strategies: 'generateSW',
         workbox: {
           globPatterns: ['**/*.{js,css,png,svg,ico,json,html}'],
@@ -38,6 +44,10 @@ export default defineConfig(({ mode }) => {
           short_name: 'EWK',
           description:
             'Kelola keuangan pribadi Anda: catat transaksi, atur anggaran, pantau tagihan & cicilan, dan simpan tabungan — semua dalam satu aplikasi.',
+          // Bahasa default/build-time manifest ini. Untuk user berbahasa
+          // Inggris, LanguageContext.tsx menukar <link rel="manifest">
+          // ke public/manifest-en.json (lang: 'en') secara dinamis --
+          // lihat komentar di sana.
           lang: 'id',
           dir: 'ltr',
           start_url: '/dashboard',

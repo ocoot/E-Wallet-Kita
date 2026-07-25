@@ -128,7 +128,23 @@ export const dbService = {
     note: string | null,
     source: "manual" | "ai_web" | "telegram",
     transactionDate: string,
-    walletId?: string | null
+    walletId?: string | null,
+    // Root cause / why: dipanggil langsung dari client (insert RLS, bukan
+    // lewat endpoint server) dari layar konfirmasi NewTransaction.tsx. Di
+    // jaringan mobile lemah, request insert bisa ke-retry oleh browser/fetch
+    // layer TANPA sepengetahuan kode kita, atau pengguna sempat
+    // double-tap tombol "Simpan" sebelum state `isLoading` sempat
+    // me-render ulang & men-disable tombol -- disable-while-loading saja
+    // tidak menutup celah ini karena keduanya bisa sama-sama lolos
+    // memanggil fungsi ini dengan payload identik. idempotencyKey adalah
+    // 1 UUID yang dibuat SEKALI oleh caller per percobaan "konfirmasi &
+    // simpan" (lihat NewTransaction.tsx) dan dikirim di setiap
+    // percobaan/retry-nya. Unique index (user_id, idempotency_key) di DB
+    // membuat insert kedua dengan key yang sama gagal secara atomik --
+    // di bawah ini kegagalan itu ditangkap dan diperlakukan sebagai
+    // "sudah tersimpan", bukan error, sehingga retry bersifat no-op alih-
+    // alih menghasilkan transaksi duplikat.
+    idempotencyKey?: string | null
   ): Promise<Transaction> {
     // Kalau tidak ada wallet dipilih, tetap arahkan ke pos "Saldo Total"
     // supaya setiap transaksi selalu punya rumah -- konsisten dengan
@@ -145,12 +161,31 @@ export const dbService = {
         note: note ? note.trim() : null,
         source,
         transaction_date: transactionDate,
-        wallet_id: resolvedWalletId
+        wallet_id: resolvedWalletId,
+        idempotency_key: idempotencyKey ?? null
       })
       .select()
       .single();
 
     if (error) {
+      // Postgres unique_violation pada idx_transactions_user_idempotency_key
+      // -- berarti ini retry (network atau double-tap) dari percobaan simpan
+      // yang SUDAH berhasil sebelumnya. Ambil & kembalikan baris yang sudah
+      // ada supaya pemanggil (UI) melihatnya sebagai sukses, bukan gagal
+      // atau (lebih parah) mencoba insert ulang.
+      if (error.code === '23505' && idempotencyKey) {
+        const { data: existing, error: fetchError } = await supabase
+          .from('transactions')
+          .select()
+          .eq('user_id', userId)
+          .eq('idempotency_key', idempotencyKey)
+          .single();
+
+        if (!fetchError && existing) {
+          return existing as Transaction;
+        }
+      }
+
       console.error('Error saving transaction:', error);
       throw error;
     }

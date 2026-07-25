@@ -26,8 +26,15 @@ function computeStatus(percent: number, alertThresholdPercent: number): BudgetSt
  * Mengambil semua budget milik user beserta progres pengeluaran bulan ini
  * per kategori, untuk dipakai di halaman Budget maupun pengecekan peringatan
  * saat menyimpan transaksi baru.
+ *
+ * `refreshSignal` opsional: sertakan `transactionsUpdatedTrigger` dari
+ * App.tsx di sini kalau pemanggil perlu progress bar-nya ikut update
+ * begitu ada transaksi baru/berubah di layar lain -- tanpa itu, hook ini
+ * cuma re-fetch saat `userId` berubah (mount pertama/login), sehingga
+ * transaksi baru baru kelihatan di Budget setelah user keluar-masuk
+ * halaman itu lagi. Lihat Budget.tsx untuk pemakaiannya.
  */
-export function useBudgets(userId: string | undefined) {
+export function useBudgets(userId: string | undefined, refreshSignal?: number | string) {
   const [budgets, setBudgets] = useState<BudgetWithProgress[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<unknown>(null);
@@ -73,7 +80,8 @@ export function useBudgets(userId: string | undefined) {
 
   useEffect(() => {
     load();
-  }, [load]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [load, refreshSignal]);
 
   return { budgets, loading, error, refresh: load };
 }

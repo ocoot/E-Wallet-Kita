@@ -18,6 +18,7 @@ import { ModalShell } from "../components/ui/ModalShell";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
+import { CurrencyInput } from "../components/ui/CurrencyInput";
 import { Button } from "../components/ui/Button";
 import {
   PiggyBank, Plus, Trash2, Edit2, ArrowDownCircle, ArrowUpCircle,
@@ -408,13 +409,11 @@ export const Savings: React.FC = () => {
             <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5 leading-relaxed">{t(`savings.pocket_type_${form.pocket_type}_desc`)}</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <Input
-              type="number"
+            <CurrencyInput
               label={t("savings.form_target_amount")}
               value={form.target_amount}
-              onChange={e => setForm(f => ({ ...f, target_amount: e.target.value }))}
+              onValueChange={digits => setForm(f => ({ ...f, target_amount: digits }))}
               placeholder={t("savings.form_target_amount_placeholder")}
-              min={0}
             />
             <Input
               type="date"
@@ -470,13 +469,11 @@ export const Savings: React.FC = () => {
                 </p>
               </div>
               <div>
-                <Input
-                  type="number"
+                <CurrencyInput
                   label={t("savings.form_amount")}
                   value={moveAmount}
-                  onChange={e => setMoveAmount(e.target.value)}
+                  onValueChange={setMoveAmount}
                   placeholder={t("savings.form_amount_placeholder")}
-                  min={0}
                   autoFocus
                 />
                 {moveTarget.direction === "deposit" && availableBalance != null && (

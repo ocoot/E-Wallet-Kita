@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { dbService } from "../lib/db";
 import { supabase } from "../lib/supabase";
@@ -137,6 +137,20 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   const [receiptDraft, setReceiptDraft] = useState<any>(null);
   const [confirmDraft, setConfirmDraft] = useState<ConfirmTransactionDraft | null>(null);
   const [confirmSource, setConfirmSource] = useState<"manual" | "receipt" | "voice">("manual");
+  // Idempotency key untuk 1 percobaan "konfirmasi & simpan" -- dibuat SEKALI
+  // saat draft konfirmasi pertama kali dibuka (bukan di dalam
+  // handleExecuteSave), supaya kalau handleExecuteSave sempat terpanggil
+  // 2x untuk draft yang sama (double-tap tombol Simpan sebelum re-render,
+  // atau retry level jaringan pada request yang sama), keduanya mengirim
+  // key yang identik dan hanya salah satu yang berhasil insert -- lihat
+  // saveTransaction() di src/lib/db.ts. Disimpan di ref (bukan state)
+  // karena tidak perlu memicu render dan harus terbaca sinkron oleh
+  // kedua pemanggilan yang berpotensi race.
+  const pendingIdempotencyKeyRef = useRef<string | null>(null);
+  const newIdempotencyKey = () =>
+    (typeof crypto !== "undefined" && "randomUUID" in crypto)
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
   // Insiden 15/7/2026: state untuk peringatan transaksi duplikat -- lihat
   // dbService.findPossibleDuplicateTransaction untuk detail kasusnya.
   const [duplicateChecking, setDuplicateChecking] = useState(false);
@@ -216,6 +230,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   const handleReceiptApprove = (finalData: {
     amount: number; merchant_name: string; category: string; date: string; note: string;
   }) => {
+    pendingIdempotencyKeyRef.current = newIdempotencyKey();
     setConfirmSource("receipt");
     setConfirmDraft({
       type: "expense",
@@ -230,6 +245,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   const handleVoiceApprove = (finalData: {
     type: "income" | "expense"; category_key: string; amount: number; note: string;
   }) => {
+    pendingIdempotencyKeyRef.current = newIdempotencyKey();
     setConfirmSource("voice");
     setConfirmDraft({
       type: finalData.type,
@@ -258,6 +274,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
       showToast(t("toast.invalid_date"), "error");
       return;
     }
+    pendingIdempotencyKeyRef.current = newIdempotencyKey();
     setConfirmSource("manual");
     setConfirmDraft({
       type,
@@ -299,6 +316,12 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   const handleExecuteSave = async () => {
     if (!confirmDraft) return;
     const draft = confirmDraft;
+    // Baca sekali di sini: kalau handleExecuteSave ini adalah panggilan
+    // kedua yang race (mis. double-tap) untuk draft yang sama, ref masih
+    // menunjuk ke key yang sama persis -- itulah yang membuat keduanya
+    // dianggap 1 percobaan yang sama oleh saveTransaction/DB, bukan 2
+    // transaksi terpisah.
+    const idempotencyKey = pendingIdempotencyKeyRef.current;
     setConfirmDraft(null);
     setIsLoading(true);
     try {
@@ -308,7 +331,8 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
           const source = confirmSource === "manual" ? "manual" : "ai_web";
           const savedTx = await dbService.saveTransaction(
             currentUser.id, draft.type, draft.category,
-            Number(draft.amount), draft.note.trim() || null, source, draft.date, draft.walletId
+            Number(draft.amount), draft.note.trim() || null, source, draft.date, draft.walletId,
+            idempotencyKey
           );
           if (savedTx?.id) (window as any).lastSavedTransactionId = savedTx.id;
           if (confirmSource === "receipt" && receiptDraft?.id) {
@@ -329,6 +353,12 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     } catch {
       showToast(t("toast.error_general"), "error");
     } finally {
+      // Hanya bersihkan kalau masih key milik percobaan ini -- kalau sudah
+      // beda (draft baru sempat dibuka di antaranya), jangan timpa key
+      // punya draft yang lebih baru itu.
+      if (pendingIdempotencyKeyRef.current === idempotencyKey) {
+        pendingIdempotencyKeyRef.current = null;
+      }
       setIsLoading(false);
       setDuplicateWarning(null);
       setDuplicateAcknowledged(false);

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import { isAppLockEnabled, APP_LOCK_TIMEOUT_MS } from "../lib/appLock";
+import { AppLockPrivacyCover } from "../components/AppLockPrivacyCover";
 
 interface AppLockContextType {
   /** Apakah App Lock sedang aktif (fitur di-ON-kan) untuk user ini. */
@@ -31,7 +32,7 @@ export const useAppLock = () => useContext(AppLockContext);
  * konten utama dengan <AppLockScreen/> sebelum apa pun yang sensitif
  * (saldo, riwayat transaksi) sempat dirender.
  *
- * Trigger re-lock:
+ * Trigger re-lock (PIN penuh, <AppLockScreen/>):
  * 1. Saat pertama kali user diketahui login DAN fitur App Lock aktif
  *    (termasuk refresh halaman / buka app dari tertutup penuh).
  * 2. Saat tab/app kembali terlihat (`visibilitychange` -> "visible")
@@ -39,6 +40,14 @@ export const useAppLock = () => useContext(AppLockContext);
  *    pola app finansial native yang tidak minta PIN untuk sekadar
  *    pindah-pindah app sebentar (mis. buka kamera lalu balik lagi),
  *    tapi tetap minta kalau app benar-benar ditinggal lama.
+ *
+ * Trigger cover instan (<AppLockPrivacyCover/>, BUKAN layar PIN):
+ * Begitu `visibilitychange` -> "hidden" terdeteksi (app masuk ke
+ * app-switcher OS / berpindah tab), SEBELUM tahu apakah nanti perlu PIN
+ * atau tidak. Ini mencegah OS sempat meng-capture thumbnail berisi
+ * saldo/nominal untuk app-switcher-nya -- provider ini memasangnya lewat
+ * manipulasi DOM langsung (`ref.style`, bukan `setState`) supaya berubah
+ * di frame yang sama dengan event, bukan menunggu React re-render.
  */
 export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
@@ -48,6 +57,28 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isLocked, setIsLocked] = useState(false);
   const hiddenAtRef = useRef<number | null>(null);
   const hasMountedLockRef = useRef(false);
+
+  // Elemen cover instan (lihat AppLockPrivacyCover.tsx) -- disentuh lewat
+  // `ref.style` langsung, BUKAN lewat state React, supaya tampil/hilang di
+  // frame yang sama dengan event `visibilitychange`, bukan menunggu commit
+  // React berikutnya (yang di frame app-switcher OS sudah kalah cepat).
+  const coverRef = useRef<HTMLDivElement>(null);
+
+  const showCoverInstantly = useCallback(() => {
+    const el = coverRef.current;
+    if (!el) return;
+    el.style.transition = "none";
+    el.style.opacity = "1";
+    el.style.pointerEvents = "auto";
+  }, []);
+
+  const hideCover = useCallback(() => {
+    const el = coverRef.current;
+    if (!el) return;
+    el.style.transition = "opacity 150ms ease-out";
+    el.style.opacity = "0";
+    el.style.pointerEvents = "none";
+  }, []);
 
   const refreshLockFeatureState = useCallback(() => {
     setLockFeatureEnabled(isAppLockEnabled(userId));
@@ -73,6 +104,10 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
       if (document.visibilityState === "hidden") {
         hiddenAtRef.current = Date.now();
+        // Pasang cover SEKARANG JUGA (manipulasi DOM langsung), bukan lewat
+        // setState -- lihat komentar di AppLockPrivacyCover.tsx kenapa ini
+        // harus instan dan tidak boleh menunggu re-render React.
+        showCoverInstantly();
         return;
       }
 
@@ -80,16 +115,38 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const hiddenAt = hiddenAtRef.current;
         hiddenAtRef.current = null;
         if (hiddenAt && Date.now() - hiddenAt >= APP_LOCK_TIMEOUT_MS) {
+          // Cukup lama di background -> minta PIN lagi. Cover instan tetap
+          // menutupi layar (opacity masih 1) sampai <AppLockScreen/>
+          // (z-index lebih tinggi) selesai ter-render di atasnya, jadi
+          // tidak ada celah frame yang menampilkan konten sensitif.
           setIsLocked(true);
+        } else {
+          // Cuma sebentar (mis. buka kamera lalu balik) -- tidak perlu PIN,
+          // cukup buka lagi cover-nya.
+          hideCover();
         }
       }
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [lockFeatureEnabled, userId]);
+  }, [lockFeatureEnabled, userId, showCoverInstantly, hideCover]);
 
-  const unlock = useCallback(() => setIsLocked(false), []);
+  // Kalau fitur App Lock dimatikan atau user logout saat cover sedang
+  // terpasang (mis. dimatikan dari Settings tepat setelah kembali dari
+  // background), pastikan cover ikut terbuka -- jangan sampai app
+  // "kejebak" tertutup tanpa jalan keluar.
+  useEffect(() => {
+    if (!lockFeatureEnabled || !userId) {
+      hiddenAtRef.current = null;
+      hideCover();
+    }
+  }, [lockFeatureEnabled, userId, hideCover]);
+
+  const unlock = useCallback(() => {
+    setIsLocked(false);
+    hideCover();
+  }, [hideCover]);
   const lockNow = useCallback(() => {
     if (lockFeatureEnabled) setIsLocked(true);
   }, [lockFeatureEnabled]);
@@ -99,6 +156,10 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
       value={{ lockFeatureEnabled, isLocked, unlock, refreshLockFeatureState, lockNow }}
     >
       {children}
+      {/* Selalu ter-mount (bukan conditional) supaya toggle opacity lewat
+          ref.style di atas langsung berefek tanpa delay mount/unmount --
+          lihat komentar di AppLockPrivacyCover.tsx. */}
+      <AppLockPrivacyCover ref={coverRef} />
     </AppLockContext.Provider>
   );
 };

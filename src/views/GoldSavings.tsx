@@ -19,6 +19,7 @@ import { DropdownField } from "../components/DropdownField";
 import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
+import { CurrencyInput } from "../components/ui/CurrencyInput";
 import { Button } from "../components/ui/Button";
 import { BADGE_SIZE_CLASSES } from "../components/ui/Badge";
 import {
@@ -686,17 +687,28 @@ export const GoldSavings: React.FC = () => {
                 </div>
               )}
               <div>
-                <Input
-                  type="number"
-                  label={isGramInput ? t("gold.form_grams") : t("gold.form_idr_amount")}
-                  value={moveValue}
-                  onChange={e => setMoveValue(e.target.value)}
-                  placeholder={isGramInput ? t("gold.form_grams_placeholder") : t("gold.form_idr_amount_placeholder")}
-                  min={0}
-                  step={isGramInput ? "0.0001" : "1000"}
-                  autoFocus
-                  accent="amber"
-                />
+                {isGramInput ? (
+                  <Input
+                    type="number"
+                    label={t("gold.form_grams")}
+                    value={moveValue}
+                    onChange={e => setMoveValue(e.target.value)}
+                    placeholder={t("gold.form_grams_placeholder")}
+                    min={0}
+                    step="0.0001"
+                    autoFocus
+                    accent="amber"
+                  />
+                ) : (
+                  <CurrencyInput
+                    label={t("gold.form_idr_amount")}
+                    value={moveValue}
+                    onValueChange={setMoveValue}
+                    placeholder={t("gold.form_idr_amount_placeholder")}
+                    autoFocus
+                    accent="amber"
+                  />
+                )}
                 {(moveTarget.direction === "sell" || moveTarget.direction === "manual_remove") && (
                   <p className="text-[clamp(0.6188rem,2.86vw,0.6875rem)] text-slate-500 mt-1.5">{t("gold.owned_grams_hint", { amount: formatGrams(moveTarget.pocket.grams_owned) })}</p>
                 )}

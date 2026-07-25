@@ -16,6 +16,19 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
+// Dipakai baik oleh pengecekan saat SIGNED_IN/INITIAL_SESSION (di bawah)
+// maupun oleh listener realtime is_banned (lihat useEffect kedua) --
+// keduanya perlu perilaku identik: paksa signOut + tampilkan pesan yang
+// sama, cuma dipicu dari titik yang berbeda.
+async function signOutForBan() {
+  await supabase.auth.signOut();
+  const savedLocale = localStorage.getItem("ewallet_language") || "id";
+  const banMsg = savedLocale === "id"
+    ? "Akun Anda telah ditangguhkan / dilarang. Silakan hubungi admin."
+    : "Your account has been suspended / banned. Please contact admin.";
+  alert(banMsg);
+}
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -89,12 +102,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             .single();
 
           if (profile?.is_banned) {
-            await supabase.auth.signOut();
-            const savedLocale = localStorage.getItem("ewallet_language") || "id";
-            const banMsg = savedLocale === "id" 
-              ? "Akun Anda telah ditangguhkan / dilarang. Silakan hubungi admin." 
-              : "Your account has been suspended / banned. Please contact admin.";
-            alert(banMsg);
+            await signOutForBan();
             return;
           }
         } catch (err) {
@@ -112,6 +120,47 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Root cause / why: pengecekan is_banned di atas HANYA jalan saat
+  // SIGNED_IN/INITIAL_SESSION (lihat komentar `shouldSyncUser`) -- artinya
+  // kalau admin men-suspend akun ini (AdminUserManager -> admin_set_ban)
+  // SEMENTARA sesi ini sudah aktif & terbuka di device tersebut, device
+  // itu TIDAK PERNAH tahu sampai user keluar-masuk app lagi (INITIAL_SESSION
+  // baru). Dan karena is_banned TIDAK ditegakkan lewat RLS di tabel data
+  // manapun (transactions/wallets/dll -- cuma dipakai untuk filter target
+  // push notification & tampilan admin panel), sesi yang sudah aktif itu
+  // juga TIDAK otomatis kena 403 di request berikutnya seperti yang
+  // mungkin diasumsikan -- tanpa listener ini, akun yang di-ban tetap bisa
+  // dipakai penuh di device itu tanpa batas waktu.
+  //
+  // Fix: subscribe realtime ke baris `users` milik SESI INI SENDIRI
+  // (filter `id=eq.<uid>`, dan RLS "Users can select their own profile"
+  // memberi lapisan kedua yang memastikan channel ini memang cuma bisa
+  // menerima perubahan baris milik user yang sedang login, bukan baris
+  // user lain). Begitu admin toggle is_banned -> true, event UPDATE masuk
+  // di sini secara realtime dan device langsung signOut -- tanpa menunggu
+  // request berikutnya atau user membuka ulang app.
+  useEffect(() => {
+    if (!user?.id) return;
+
+    const channel = supabase
+      .channel(`realtime-own-ban-status-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "users", filter: `id=eq.${user.id}` },
+        (payload) => {
+          const updated = payload.new as { is_banned?: boolean } | undefined;
+          if (updated?.is_banned) {
+            void signOutForBan();
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
 
   const signInWithGoogle = async () => {
     await supabase.auth.signInWithOAuth({ 

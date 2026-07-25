@@ -16,15 +16,29 @@ import { DropdownField } from "../components/DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
 import { Input } from "../components/ui/Input";
+import { CurrencyInput } from "../components/ui/CurrencyInput";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "../components/ui/ModalShell";
 
-export const Budget: React.FC = () => {
+interface BudgetProps {
+  // Root cause / why: sebelumnya Budget.tsx tidak menerima prop ini sama
+  // sekali, padahal App.tsx SUDAH punya `transactionsUpdatedTrigger`
+  // global yang naik setiap kali transaksi disimpan/dihapus/diubah di
+  // MANA PUN di app (lihat handleTransactionChange di App.tsx, dan
+  // pemakaiannya di Dashboard.tsx/History.tsx). Efeknya: user mencatat
+  // transaksi baru dari NewTransaction, progress bar di halaman Budget
+  // tetap menampilkan angka lama sampai user keluar-masuk halaman itu
+  // lagi (remount memaksa useBudgets fetch ulang). Optional (`?`) supaya
+  // Budget tetap bisa dipakai/di-render berdiri sendiri tanpa trigger ini.
+  transactionsUpdatedTrigger?: number;
+}
+
+export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) => {
   const { t, locale } = useLanguage();
   const { user } = useAuth();
   const { showToast } = useToast();
   const { categories, loading: loadingCategories } = useCategories();
-  const { budgets, loading: loadingBudgets, error: budgetsError, refresh } = useBudgets(user?.id);
+  const { budgets, loading: loadingBudgets, error: budgetsError, refresh } = useBudgets(user?.id, transactionsUpdatedTrigger);
   const { tokens, cx } = useThemeTokens();
 
   // Hanya kategori expense/both yang relevan untuk budget pengeluaran
@@ -306,13 +320,11 @@ export const Budget: React.FC = () => {
             const editSlot = (
               <div className="space-y-2">
                 <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    type="number"
-                    min={1}
+                  <CurrencyInput
                     label={t("budget.monthly_limit_label")}
                     value={draft.limit}
-                    onChange={(e) => updateDraft(catKey, "limit", e.target.value)}
-                    placeholder="500000"
+                    onValueChange={(digits) => updateDraft(catKey, "limit", digits)}
+                    placeholder="500.000"
                   />
                   <Input
                     type="number"
@@ -392,13 +404,11 @@ export const Budget: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 gap-2.5">
-            <Input
-              type="number"
-              min={1}
+            <CurrencyInput
               label={t("budget.monthly_limit_label")}
               value={addLimit}
-              onChange={(e) => setAddLimit(e.target.value)}
-              placeholder="500000"
+              onValueChange={setAddLimit}
+              placeholder="500.000"
             />
             <Input
               type="number"

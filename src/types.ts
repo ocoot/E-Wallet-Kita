@@ -29,6 +29,13 @@ export interface Transaction {
   transaction_date: string;
   created_at: string;
   wallet_id: string | null;
+  /**
+   * Client-generated key identifying one logical "save" attempt from the
+   * transaction form, used to make retried/duplicate inserts idempotent
+   * (double-tap, network retry). Null for rows created before this field
+   * existed, or via save paths that don't pass one (topup/transfer/etc).
+   */
+  idempotency_key?: string | null;
 }
 
 /**
