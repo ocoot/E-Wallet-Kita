@@ -109,31 +109,21 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [userId]);
 
   useEffect(() => {
-    // Kenapa 3 event, bukan cuma `visibilitychange`:
-    // Di banyak perangkat Android (terutama gesture navigation), OS mulai
-    // meng-capture snapshot task recent-apps SANGAT cepat -- kadang lebih
-    // cepat daripada waktu yang dibutuhkan browser memproses
-    // `visibilitychange` lalu repaint. Native app menghindari ini total
-    // lewat window flag `FLAG_SECURE` (thumbnail langsung kosong), tapi
-    // flag itu tidak bisa diakses dari web/PWA murni -- jadi yang bisa kita
-    // lakukan cuma memperbesar peluang menang race dengan bereaksi
-    // seawal mungkin dari SEMUA sinyal "user mulai meninggalkan app" yang
-    // tersedia, bukan cuma menunggu satu event:
-    // - `blur` (window kehilangan fokus) -- pada banyak kasus terpicu LEBIH
-    //   DULU daripada `visibilitychange`, sebelum animasi transisi
-    //   app-switcher mulai.
-    // - `pagehide` -- terutama relevan di iOS Safari/PWA yang kadang tidak
-    //   selalu memicu `visibilitychange` secepat Android.
-    // - `visibilitychange` -- sinyal utama yang sudah ada, juga sumber
-    //   kebenaran untuk kapan harus membuka cover lagi (`visible`).
-    // Ketiganya idempotent kalau dipanggil berkali-kali (cover yang sudah
-    // terpasang cukup di-set opacity 1 lagi, tidak masalah).
-    const handleHideSignal = () => {
-      if (!userId) return;
-      hiddenAtRef.current = Date.now();
-      showCoverInstantly();
-    };
-
+    // CATATAN (pernah dicoba, lalu di-revert): sempat ditambahkan listener
+    // `window blur`/`pagehide` di sini untuk memperbesar peluang menang
+    // race melawan capture thumbnail recent-apps Android (lihat riwayat
+    // perubahan). Ternyata itu menimbulkan bug baru yang lebih mengganggu:
+    // `blur` juga ikut terpicu saat sistem menampilkan overlay/activity
+    // LAIN di atas app tanpa app benar-benar di-background -- file/photo
+    // picker saat unggah struk, aplikasi kamera, dialog konfirmasi saat
+    // update -- dan `blur` tidak punya pasangan `focus` yang membersihkan
+    // `hiddenAtRef`. Akibatnya timestamp "mulai background" tersimpan tapi
+    // tidak pernah direset, sehingga `visibilitychange` berikutnya
+    // menghitung durasi dari timestamp basi itu dan salah memaksa layar
+    // PIN walau user cuma sebentar ambil foto/pilih file. Makanya sengaja
+    // HANYA memakai `visibilitychange` di sini -- sinyal yang benar-benar
+    // merepresentasikan app pindah ke background sungguhan, dengan
+    // pasangan "hidden"/"visible" yang konsisten.
     const handleVisibilityChange = () => {
       // Cover privasi berlaku untuk SEMUA user yang login, bukan cuma yang
       // mengaktifkan App Lock -- lihat catatan "PENTING" di komentar block
@@ -141,10 +131,11 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (!userId) return;
 
       if (document.visibilityState === "hidden") {
+        hiddenAtRef.current = Date.now();
         // Pasang cover SEKARANG JUGA (manipulasi DOM langsung), bukan lewat
         // setState -- lihat komentar di AppLockPrivacyCover.tsx kenapa ini
         // harus instan dan tidak boleh menunggu re-render React.
-        handleHideSignal();
+        showCoverInstantly();
         return;
       }
 
@@ -166,21 +157,8 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
     };
 
-    // `blur`/`pagehide` HANYA memasang cover lebih awal (early signal) --
-    // sengaja TIDAK menyentuh `hiddenAtRef`/isLocked di luar itu, dan
-    // TIDAK membuka cover di `focus`. Sumber kebenaran untuk membuka cover
-    // (atau memicu layar PIN) tetap SATU: cabang "visible" di
-    // `handleVisibilityChange` di atas -- supaya tidak ada 2 tempat
-    // berbeda yang bisa saling balapan menentukan kapan cover boleh
-    // hilang.
-    window.addEventListener("blur", handleHideSignal);
-    window.addEventListener("pagehide", handleHideSignal);
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      window.removeEventListener("blur", handleHideSignal);
-      window.removeEventListener("pagehide", handleHideSignal);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [lockFeatureEnabled, userId, showCoverInstantly, hideCover]);
 
   // Kalau user logout saat cover sedang terpasang (mis. sesi berakhir
