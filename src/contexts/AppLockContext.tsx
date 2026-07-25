@@ -109,21 +109,28 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [userId]);
 
   useEffect(() => {
-    // CATATAN (pernah dicoba, lalu di-revert): sempat ditambahkan listener
-    // `window blur`/`pagehide` di sini untuk memperbesar peluang menang
-    // race melawan capture thumbnail recent-apps Android (lihat riwayat
-    // perubahan). Ternyata itu menimbulkan bug baru yang lebih mengganggu:
-    // `blur` juga ikut terpicu saat sistem menampilkan overlay/activity
-    // LAIN di atas app tanpa app benar-benar di-background -- file/photo
-    // picker saat unggah struk, aplikasi kamera, dialog konfirmasi saat
-    // update -- dan `blur` tidak punya pasangan `focus` yang membersihkan
-    // `hiddenAtRef`. Akibatnya timestamp "mulai background" tersimpan tapi
-    // tidak pernah direset, sehingga `visibilitychange` berikutnya
-    // menghitung durasi dari timestamp basi itu dan salah memaksa layar
-    // PIN walau user cuma sebentar ambil foto/pilih file. Makanya sengaja
-    // HANYA memakai `visibilitychange` di sini -- sinyal yang benar-benar
-    // merepresentasikan app pindah ke background sungguhan, dengan
-    // pasangan "hidden"/"visible" yang konsisten.
+    // CATATAN riwayat: sempat dicoba menambah `window blur`/`pagehide`
+    // sebagai trigger cover instan (untuk memenangkan race melawan
+    // capture thumbnail recent-apps Android), lalu di-revert karena
+    // `blur` ikut mengubah `hiddenAtRef` tanpa event pasangan yang
+    // membersihkannya -- overlay dalam-app yang bukan backgrounding
+    // sungguhan (file/photo picker, kamera, dialog update) memicu
+    // `blur` tanpa `visibilitychange`, jadi timestamp-nya "nyangkut" dan
+    // salah memicu PIN di siklus berikutnya. Setelah revert total, cover
+    // jadi kalah race lagi saat pindah app sungguhan.
+    //
+    // Solusinya: PISAHKAN dua tanggung jawab yang sebelumnya tercampur.
+    // - `visibilitychange` (di bawah) SEPENUHNYA yang memegang
+    //   `hiddenAtRef`/`isLocked` -- satu-satunya sumber kebenaran untuk
+    //   "apakah PIN perlu diminta lagi". Tidak berubah dari sebelumnya.
+    // - `blur`/`focus` (window, bukan document) HANYA mengontrol visual
+    //   cover -- showCoverInstantly()/hideCover() semata, TIDAK PERNAH
+    //   menyentuh `hiddenAtRef` atau `isLocked`. Ini aman dipakai untuk
+    //   menang race lebih awal karena kalaupun overlay sesaat (file
+    //   picker/kamera) memicu `blur` tanpa `visibilitychange` yang
+    //   menyertai, `focus` yang mengembalikan fokus akan membuka cover
+    //   itu lagi TANPA pernah mengira-ngira durasi background -- jadi
+    //   tidak mungkin salah memicu PIN.
     const handleVisibilityChange = () => {
       // Cover privasi berlaku untuk SEMUA user yang login, bukan cuma yang
       // mengaktifkan App Lock -- lihat catatan "PENTING" di komentar block
@@ -157,8 +164,34 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
     };
 
+    const handleWindowBlur = () => {
+      // HANYA visual, sengaja TIDAK menyentuh hiddenAtRef -- lihat catatan
+      // di atas. Kalau ternyata ini memang backgrounding sungguhan,
+      // `visibilitychange` di atas akan menyusul dan mengambil alih
+      // bookkeeping timeout PIN seperti biasa.
+      if (!userId) return;
+      showCoverInstantly();
+    };
+
+    const handleWindowFocus = () => {
+      // Pasangan `handleWindowBlur` -- membuka lagi cover yang mungkin
+      // terpasang gara-gara overlay sesaat (file/photo picker, kamera)
+      // yang TIDAK memicu siklus `visibilitychange` (app tidak pernah
+      // benar-benar "hidden"). Aman dipanggil kapan pun: kalau saat ini
+      // <AppLockScreen/> sedang tampil (isLocked true, z-index lebih
+      // tinggi dari cover ini), membuka cover di baliknya tidak
+      // membocorkan apa pun.
+      hideCover();
+    };
+
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("blur", handleWindowBlur);
+    window.addEventListener("focus", handleWindowFocus);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("blur", handleWindowBlur);
+      window.removeEventListener("focus", handleWindowFocus);
+    };
   }, [lockFeatureEnabled, userId, showCoverInstantly, hideCover]);
 
   // Kalau user logout saat cover sedang terpasang (mis. sesi berakhir
