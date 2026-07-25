@@ -474,7 +474,7 @@ export const AdminUserManager: React.FC = () => {
           dengan pola header di halaman Admin* lainnya (mis. AdminPremiumMonitor). */}
       <div className={cx("overflow-hidden rounded-3xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
-        <div className="p-6 md:p-8 space-y-6">
+        <div className="p-6 sm:p-7 lg:p-8 space-y-6">
           <div className={cx("flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6", tokens.border.default)}>
             <div>
               <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.heading)}>
@@ -504,8 +504,8 @@ export const AdminUserManager: React.FC = () => {
             </div>
           </div>
 
-          {/* Metrics Cards Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Metrics Cards Grid -- pola resmi grid statistik 4-angka: grid-cols-2 sm:grid-cols-4 gap-3 */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className={cx("rounded-2xl border p-4 shadow-sm space-y-2", tokens.surface.sunken, tokens.border.default)}>
               <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
                 {t("admin.metrics.total")}

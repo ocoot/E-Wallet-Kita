@@ -394,7 +394,7 @@ export const AdminBackup: React.FC = () => {
       <LoadingOverlay isOpen={triggering} message={t("admin.backup_triggering")} />
 
       {/* Card status terakhir */}
-      <div className={cx("p-6 md:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+      <div className={cx("p-6 sm:p-7 lg:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div className="flex items-start gap-3">
             <div>
@@ -430,7 +430,7 @@ export const AdminBackup: React.FC = () => {
         </div>
 
         {latest ? (
-          <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className={tokens.adminBackup.cardBgBorder}>
               <p className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase font-black tracking-wider", tokens.text.mutedAlt)}>
                 {t("admin.backup_last_status")}
@@ -479,7 +479,7 @@ export const AdminBackup: React.FC = () => {
       </div>
 
       {/* Riwayat backup */}
-      <div className={cx("p-6 md:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+      <div className={cx("p-6 sm:p-7 lg:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
           <h3 className={cx("font-black text-sm", tokens.adminBackup.heading)}>
             {t("admin.backup_history")}
@@ -637,7 +637,7 @@ export const AdminBackup: React.FC = () => {
       </div>
 
       {/* Riwayat restore */}
-      <div className={cx("p-6 md:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+      <div className={cx("p-6 sm:p-7 lg:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <h3 className={cx("font-black text-sm mb-4", tokens.adminBackup.heading)}>
           {t("admin.backup_restore_history")}
         </h3>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { AdminBackBar } from "../components/AdminBackBar";
 import { Card } from "../components/ui/Card";
+import { BADGE_SIZE_CLASSES } from "../components/ui/Badge";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
@@ -213,7 +214,7 @@ export const AdminPremiumMonitor: React.FC = () => {
 
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
-      <div className={cx("p-6 md:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+      <div className={cx("p-6 sm:p-7 lg:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
@@ -257,7 +258,7 @@ export const AdminPremiumMonitor: React.FC = () => {
       )}
 
       {/* Dummy QRIS toggle card */}
-      <div className="p-6 md:p-8">
+      <div className="p-6 sm:p-7 lg:p-8">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className={`p-3 rounded-2xl border ${dummyQrisEnabled ? cx(tokens.adminPremium.sandboxIconBorderActive, tokens.adminPremium.sandboxBadgeBg, tokens.adminPremium.sandboxText) : tokens.toggle.inactiveIconBox}`}>
@@ -309,7 +310,7 @@ export const AdminPremiumMonitor: React.FC = () => {
       </div>
 
       {metrics && (
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
           {[
             { label: t("admin.total_revenue"), val: formatIDR(metrics.totalRevenue), color: tokens.adminPremium.metricAmber },
             { label: t("admin.status_success"), val: metrics.successCount, color: tokens.adminPremium.metricEmerald },
@@ -390,13 +391,13 @@ export const AdminPremiumMonitor: React.FC = () => {
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <span className={cx("inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold", tx.status === "SUCCESS" ? tokens.adminPremium.statusBadgeSuccess : tx.status === "PENDING" ? tokens.adminPremium.statusBadgePending : tx.status === "EXPIRED" ? tokens.adminPremium.statusBadgeExpired : tokens.adminPremium.statusBadgeFailed)}>
+                        <span className={cx("inline-flex items-center gap-1.5 rounded-full text-xs font-semibold", BADGE_SIZE_CLASSES.sm, tx.status === "SUCCESS" ? tokens.adminPremium.statusBadgeSuccess : tx.status === "PENDING" ? tokens.adminPremium.statusBadgePending : tx.status === "EXPIRED" ? tokens.adminPremium.statusBadgeExpired : tokens.adminPremium.statusBadgeFailed)}>
                           <StatusIcon size={14} />
                           {cfg.label}
                         </span>
                       </td>
                       <td className="px-6 py-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${tx.is_sandbox ? cx(tokens.adminPremium.sandboxBadgeText, tokens.adminPremium.sandboxBadgeBg) : tokens.adminPremium.normalBadge}`}>
+                        <span className={`${BADGE_SIZE_CLASSES.sm} rounded-full text-xs font-semibold ${tx.is_sandbox ? cx(tokens.adminPremium.sandboxBadgeText, tokens.adminPremium.sandboxBadgeBg) : tokens.adminPremium.normalBadge}`}>
                           {tx.is_sandbox ? t("admin.sandbox_badge") : t("admin.live_badge")}
                         </span>
                       </td>

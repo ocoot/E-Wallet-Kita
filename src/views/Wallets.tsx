@@ -434,6 +434,8 @@ export const Wallets: React.FC = () => {
     handleSaveBalance,
   };
 
+  // Container width: "tier manajemen" (max-w-4xl) -- disamakan dengan
+  // Settings.tsx. Lihat catatan tier container di App.tsx.
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <div className="space-y-6">

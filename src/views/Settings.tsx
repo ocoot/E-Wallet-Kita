@@ -522,24 +522,29 @@ export const Settings: React.FC<SettingsProps> = ({
     return "Rp\u00A0" + Math.round(num).toLocaleString("id-ID");
   };
 
+  // Container width: "tier manajemen" (max-w-4xl) -- disamakan dengan
+  // Wallets.tsx, bukan lagi max-w-3xl sendiri. Lihat catatan tier
+  // container di App.tsx untuk aturan lengkapnya.
   return (
-    <div className="max-w-3xl mx-auto space-y-5 pb-24">
+    <div className="max-w-4xl mx-auto space-y-5 pb-24">
 
-      {/* ── Mobile-only redesign: menu list ala "Profile/Akun" ──────────
+
+      {/* ── Mobile/tablet-only redesign: menu list ala "Profile/Akun" ───
           Menggantikan grid form raksasa di atas KHUSUS untuk breakpoint
-          mobile (md:hidden). Setiap baris menu di sini membuka route
-          barunya sendiri (lihat App.tsx: /settings/profile,
-          /settings/security, dst) alih-alih menampilkan semuanya
-          sekaligus dalam satu layar panjang seperti versi desktop.
-          Layar desktop (di bawah, dibungkus hidden md:block) TIDAK
-          diubah sama sekali. */}
-      {/* Ribbon dekoratif (md:hidden, sama pola dengan halaman lain) --
+          mobile & tablet (lg:hidden -- diselaraskan dengan breakpoint
+          Sidebar/MobileBottomNav & useIsDesktopViewport, sebelumnya
+          md:hidden). Setiap baris menu di sini membuka route barunya
+          sendiri (lihat App.tsx: /settings/profile, /settings/security,
+          dst) alih-alih menampilkan semuanya sekaligus dalam satu layar
+          panjang seperti versi desktop. Layar desktop (di bawah, dibungkus
+          hidden lg:block) TIDAK diubah sama sekali. */}
+      {/* Ribbon dekoratif (lg:hidden, sama pola dengan halaman lain) --
           ditaruh di belakang kartu profil teratas SettingsMobileMenu. Judul
           halaman terpisah di atas ribbon SUDAH DICABUT (sempat bentrok
           visual dengan chip <Breadcrumbs/> yang sekarang mengambang
           `absolute` di dekat tepi atas ribbon -- lihat App.tsx); label
           halaman sekarang cukup diwakili oleh item terakhir breadcrumb. */}
-      <div className="relative md:hidden">
+      <div className="relative lg:hidden">
         <div>
           <SettingsMobileMenu
             displayName={displayName}
@@ -559,15 +564,15 @@ export const Settings: React.FC<SettingsProps> = ({
       </div>
 
       {/* Main Card -- tampilan desktop lama, tidak diubah, hanya
-          disembunyikan di breakpoint mobile. */}
-      <div className="hidden md:block">
+          disembunyikan di breakpoint mobile & tablet (< lg). */}
+      <div className="hidden lg:block">
       {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
           div manual ke <Card elevation="lg" padding="none"> supaya shadow
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="relative">
         <Card elevation="lg" padding="none" className="overflow-hidden">
         <div className="h-1.5 w-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-indigo-400" />
-        <div className="p-6 md:p-8 space-y-6">
+        <div className="p-6 sm:p-7 lg:p-8 space-y-6">
         
         {/* View Header */}
         <div className={cx("flex flex-col border-b pb-6", tokens.settings.sectionBorder)}>
@@ -1276,7 +1281,7 @@ export const Settings: React.FC<SettingsProps> = ({
         </div>{/* card-body */}
         </Card>{/* card */}
       </div>{/* ribbon+card wrapper */}
-      </div>{/* hidden md:block desktop wrapper */}
+      </div>{/* hidden lg:block desktop wrapper */}
     </div>
   );
 };

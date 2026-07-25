@@ -91,10 +91,11 @@ export const ModalShell: React.FC<ModalShellProps> = ({
   const { tokens, cx } = useThemeTokens();
   const panelRef = useRef<HTMLDivElement>(null);
   const fallbackId = useId();
-  // P4 4.3: di layar mobile, seluruh modal yang lewat shell ini muncul
-  // sebagai bottom sheet (slide dari bawah, nempel di tepi bawah, sudut
-  // rounded cuma di atas) -- bukan kotak dialog di tengah ala web lagi.
-  // Desktop (>=768px) tetap perilaku lama (kotak tengah + scale/fade).
+  // P4 4.3: di layar mobile & tablet, seluruh modal yang lewat shell ini
+  // muncul sebagai bottom sheet (slide dari bawah, nempel di tepi bawah,
+  // sudut rounded cuma di atas) -- bukan kotak dialog di tengah ala web
+  // lagi. Desktop (>=1024px, lihat useIsDesktopViewport.ts) tetap
+  // perilaku lama (kotak tengah + scale/fade).
   const isDesktop = useIsDesktopViewport();
 
   useLockBodyScroll(isOpen);
@@ -107,7 +108,7 @@ export const ModalShell: React.FC<ModalShellProps> = ({
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className={cx("fixed inset-0 flex items-end md:items-center justify-center p-0 md:p-4 overflow-y-auto", zLayer)}>
+        <div className={cx("fixed inset-0 flex items-end lg:items-center justify-center p-0 lg:p-4 overflow-y-auto", zLayer)}>
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -131,16 +132,16 @@ export const ModalShell: React.FC<ModalShellProps> = ({
             animate="visible"
             exit="exit"
             className={cx(
-              "relative z-10 w-full mt-auto md:my-auto max-h-[90vh] overflow-y-auto overflow-x-hidden border shadow-2xl outline-none transition-colors duration-300",
-              "rounded-t-3xl md:rounded-2xl",
+              "relative z-10 w-full mt-auto lg:my-auto max-h-[90vh] overflow-y-auto overflow-x-hidden border shadow-2xl outline-none transition-colors duration-300",
+              "rounded-t-3xl lg:rounded-2xl",
               maxWidth,
               panelTone ?? cx(tokens.surface.card, tokens.border.default),
               tokens.text.onSurface,
               className
             )}
           >
-            {/* Grip handle -- cuma tampil sebagai afordance bottom sheet di mobile */}
-            <div className="flex md:hidden justify-center pt-3 pb-1">
+            {/* Grip handle -- cuma tampil sebagai afordance bottom sheet di mobile/tablet */}
+            <div className="flex lg:hidden justify-center pt-3 pb-1">
               <div className={cx("w-10 h-1.5 rounded-full", tokens.mobileBottomNav.sheetGrip)} />
             </div>
             {children}

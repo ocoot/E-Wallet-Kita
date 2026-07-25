@@ -133,7 +133,7 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
       initial={{ opacity: 0, scale: 0.98 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.98 }}
-      className={cx("p-6 md:p-8 rounded-3xl border shadow-xl space-y-6 max-w-xl mx-auto", tokens.surface.card, tokens.border.accent)}
+      className={cx("p-6 sm:p-7 lg:p-8 rounded-3xl border shadow-xl space-y-6 max-w-xl mx-auto", tokens.surface.card, tokens.border.accent)}
     >
       {/* Receipt Header Badge */}
       <div className={cx("flex items-center justify-between border-b pb-4", tokens.border.accent)}>

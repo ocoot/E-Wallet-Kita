@@ -41,7 +41,11 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       none: "",
       sm: "p-4",
       md: "p-6",
-      lg: "p-6 md:p-8",
+      // `lg` sengaja 3 step (bukan lompat langsung p-6 -> p-8 di md/768px) supaya
+      // padding besar tidak aktif penuh sejak lebar tablet kecil -- lihat
+      // audit-konsistensi §5. Titik lompat ke p-8 di `lg` (1024px) juga
+      // diselaraskan dengan breakpoint "mode desktop" di Sidebar/ModalShell.
+      lg: "p-6 sm:p-7 lg:p-8",
     };
 
     const elevationClasses: Record<CardElevation, string> = {

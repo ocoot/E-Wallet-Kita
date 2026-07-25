@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { reportFrontendError } from "../lib/errorReporter";
 import { AdminBackBar } from "../components/AdminBackBar";
 import { Card } from "../components/ui/Card";
+import { BADGE_SIZE_CLASSES } from "../components/ui/Badge";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAdmin } from "../hooks/useAdmin";
@@ -150,7 +151,7 @@ export const AdminAiMonitor: React.FC = () => {
 
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
-      <div className={cx("p-6 md:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+      <div className={cx("p-6 sm:p-7 lg:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
@@ -215,7 +216,7 @@ export const AdminAiMonitor: React.FC = () => {
                 return (
                   <Card key={p.provider} padding="md" border="neutral" elevation="sm" className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className={cx("px-3 py-1 rounded-full text-xs font-semibold uppercase", tokens.surface.sunken, tokens.text.accent)}>
+                      <span className={cx("rounded-full text-xs font-semibold uppercase", BADGE_SIZE_CLASSES.sm, tokens.surface.sunken, tokens.text.accent)}>
                         {p.provider}
                       </span>
                       <span className={cx("text-xs", tokens.text.muted)}>{sharePercent}% {t("ai_monitor.share_of_total")}</span>

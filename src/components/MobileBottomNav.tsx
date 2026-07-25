@@ -40,8 +40,10 @@ interface MobileBottomNavProps {
  * dan tombol keluar.
  *
  * Sidebar desktop (`Sidebar.tsx`) tidak diubah -- komponen ini hanya
- * tampil di breakpoint mobile (`md:hidden`), sedangkan sidebar lama kini
- * hanya tampil di breakpoint desktop (`hidden md:flex`).
+ * tampil di breakpoint mobile & tablet (`lg:hidden`), sedangkan sidebar
+ * lama kini hanya tampil di breakpoint desktop (`hidden lg:flex`).
+ * Breakpoint switch: `lg` (1024px), bukan `md` (768px) -- supaya tablet
+ * portrait tetap dapat navbar bawah, bukan sidebar desktop yang sempit.
  */
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   onLogoutClick,
@@ -109,7 +111,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
              sebelumnya. */}
       <nav
         className={cx(
-          "md:hidden fixed inset-x-4 z-40 flex items-stretch justify-around max-w-md mx-auto px-2",
+          "lg:hidden fixed inset-x-4 z-40 flex items-stretch justify-around max-w-md mx-auto px-2",
           tokens.mobileBottomNav.navContainer,
           tokens.text.onSurface
         )}
@@ -257,7 +259,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
       {/* Bottom-sheet "Lainnya" */}
       <AnimatePresence>
         {isMoreOpen && (
-          <div className="fixed inset-0 z-50 flex md:hidden">
+          <div className="fixed inset-0 z-50 flex lg:hidden">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

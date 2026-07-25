@@ -343,6 +343,8 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   const isExpense = type === "expense";
 
   // ── Render ────────────────────────────────────────────────────────────
+  // Container width: "tier form single-column" (max-w-2xl). Lihat catatan
+  // tier container di App.tsx untuk aturan lengkapnya.
   return (
     <div className="max-w-2xl mx-auto space-y-4">
       {receiptDraft ? (

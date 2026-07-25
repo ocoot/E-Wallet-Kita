@@ -67,7 +67,7 @@ export const EmojiPicker: React.FC<EmojiPickerProps> = ({ isOpen, onClose, onEmo
                           onEmojiSelect(emoji);
                           onClose();
                         }}
-                        className={cx("w-9 h-9 flex items-center justify-center text-lg rounded-lg transition-colors duration-150 cursor-pointer", tokens.hover.hoverSubtle)}
+                        className={cx("w-10 h-10 flex items-center justify-center text-lg rounded-lg transition-colors duration-150 cursor-pointer", tokens.hover.hoverSubtle)}
                       >
                         {emoji}
                       </button>

@@ -107,7 +107,7 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden">
+        <div className="fixed inset-0 z-50 flex lg:hidden">
           <BlurOverlay onClick={handleClose} />
 
           <motion.div

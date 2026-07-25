@@ -420,7 +420,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
       {/* Banner status koneksi -- muncul di atas seluruh layout, termasuk saat modal terbuka */}
       <OfflineBanner />
 
-      {/* Sidebar desktop (persisten, dapat dilipat) -- hanya tampil di layar >= md */}
+      {/* Sidebar desktop (persisten, dapat dilipat) -- hanya tampil di layar >= lg
+          (1024px). Tablet portrait/landscape kecil (768-1023px) tetap
+          memakai navbar bawah -- lihat catatan breakpoint di Sidebar.tsx. */}
       <Sidebar
         onLogoutClick={handleLogoutClick}
         isCollapsed={isSidebarCollapsed}
@@ -429,7 +431,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
         userAvatarUrl={userProfile?.avatar_url}
       />
 
-      {/* Navbar bawah -- menggantikan sidebar di layar handphone (< md) */}
+      {/* Navbar bawah -- menggantikan sidebar di layar handphone & tablet (< lg) */}
       <MobileBottomNav
         onLogoutClick={handleLogoutClick}
         userDisplayName={userProfile?.display_name}
@@ -439,7 +441,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
       {/* Main active subview frame */}
       <main
         ref={mainScrollRef as React.RefObject<HTMLElement>}
-        className={`flex-1 min-h-dvh overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}
+        className={`flex-1 min-h-dvh overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
       <MainScrollProvider scrollRef={mainScrollRef}>
@@ -447,8 +449,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
         <MaintenanceBanner />
 
         {/* pb-24: ruang aman di bawah supaya konten tidak tertutup navbar
-            bawah mobile; md:pb-40 mengembalikan spasi asli di layar desktop
-            (yang tidak punya navbar bawah).
+            bawah mobile/tablet; lg:pb-40 mengembalikan spasi asli di layar
+            desktop (yang tidak punya navbar bawah) -- breakpoint ini
+            diselaraskan ke `lg` supaya sinkron dengan kapan navbar bawah
+            benar-benar hilang (lihat MobileBottomNav.tsx/Sidebar.tsx).
             REVISI (fix ribbon-"terkurung"/tidak full-bleed): style ribbon
             (usePageRibbonBackground) SEKARANG ditempel di DIV INI, bukan
             lagi di div anaknya (yang punya "mx-auto max-w-7xl"). Alasannya:
@@ -469,12 +473,22 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
             `p-4/p-6/p-8`) tanpa trik margin sama sekali. */}
         <div
           className={cx(
-            "p-4 sm:p-6 lg:p-8 pb-24 md:pb-40",
+            "p-4 sm:p-6 lg:p-8 pb-24 lg:pb-40",
             location.pathname !== "/dashboard" && pageRibbon.className
           )}
           style={location.pathname !== "/dashboard" ? pageRibbon.style : undefined}
         >
           <div className="relative flow-root max-w-7xl mx-auto w-full">
+            {/* Konvensi TIER LEBAR CONTAINER per halaman (Audit Responsif
+                Prioritas 2) -- kalau view butuh container tambahan yang
+                lebih sempit dari max-w-7xl bawaan ini, pakai salah satu
+                dari 2 tier resmi berikut, JANGAN menebak angka sendiri:
+                  - max-w-2xl  : form single-column (mis. NewTransaction)
+                  - max-w-4xl  : halaman list/manajemen (mis. Settings,
+                                 Wallets, dan sub-halaman detailnya seperti
+                                 MobileSettingsDetailPage)
+                Halaman dashboard/grid multi-kolom lebar (Dashboard, Admin*)
+                sengaja TIDAK override -- biarkan pakai max-w-7xl penuh. */}
             {/* Ribbon (background-image, lihat komponen usePageRibbonBackground
                 di components/PageRibbonBackground.tsx) ditempel di div
                 PEMBUNGKUS di atas, bukan di sini -- lihat catatan di atas.

@@ -14,7 +14,7 @@ import { useLanguage } from '../contexts/LanguageContext';
  * Setelah redirect balik dari OAuth Google (browser/WebView eksternal ->
  * kembali ke PWA), pada sebagian device layout viewport yang dipakai
  * browser untuk pertama kali masih memakai ukuran lama (kadang lebih
- * lebar, membuat breakpoint `md:` di seluruh app -- lihat
+ * lebar, membuat breakpoint `lg:` di seluruh app -- lihat
  * useIsDesktopViewport.ts, Sidebar.tsx, MobileBottomNav.tsx -- salah
  * kebaca sebagai desktop) sampai ada reload penuh yang memaksa browser
  * menghitung ulang viewport dari awal. Soft navigate TIDAK memicu

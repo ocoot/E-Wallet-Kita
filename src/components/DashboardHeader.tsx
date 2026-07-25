@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
 import { UserSession } from "../types";
 import { Send, Info, MapPin } from "lucide-react";
+import { BADGE_SIZE_CLASSES } from "./ui/Badge";
 import { useWeather } from "../hooks/useWeather";
 import { getWeatherTheme } from "../lib/weatherTheme";
 import { WeatherDebugToggle, WeatherDebugOverride } from "./WeatherDebugToggle";
@@ -143,7 +144,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         >
           <div
             className={cx(
-              "w-9 h-9 rounded-full flex items-center justify-center overflow-hidden text-xs font-bold",
+              "w-10 h-10 rounded-full flex items-center justify-center overflow-hidden text-xs font-bold",
               tokens.dashboardHeader.avatarRing,
               !currentUser.avatar_url && tokens.dashboardHeader.avatarFallback
             )}
@@ -196,7 +197,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         {currentUser.is_guest && (
           <span
             className={cx(
-              "mt-2 px-2 py-0.5 rounded-full text-[10px] font-semibold",
+              "mt-2 rounded-full text-[10px] font-semibold",
+              BADGE_SIZE_CLASSES.xs,
               tokens.dashboardHeader.guestBadge
             )}
           >

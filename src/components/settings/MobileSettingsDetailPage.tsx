@@ -18,11 +18,11 @@ interface MobileSettingsDetailPageProps {
  * `/settings` (mobile) membuka route barunya sendiri yang dibungkus shell
  * ini -- header dengan tombol kembali + judul, konsisten di semua halaman.
  *
- * Ini murni redesign MOBILE: di breakpoint desktop, layar grid lama
- * `/settings` sudah menampilkan semua kontrol sekaligus, jadi kalau shell
- * ini somehow diakses dari layar desktop (mis. buka link langsung), kita
- * arahkan balik ke `/settings` alih-alih menampilkan halaman detail yang
- * tidak didesain untuk layar lebar.
+ * Ini murni redesign MOBILE/TABLET (< lg, 1024px): di breakpoint desktop,
+ * layar grid lama `/settings` sudah menampilkan semua kontrol sekaligus,
+ * jadi kalau shell ini somehow diakses dari layar desktop (mis. buka link
+ * langsung), kita arahkan balik ke `/settings` alih-alih menampilkan
+ * halaman detail yang tidak didesain untuk layar lebar.
  */
 export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> = ({
   title,
@@ -52,7 +52,7 @@ export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> =
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -12 }}
       transition={{ duration: 0.18 }}
-      className="max-w-3xl mx-auto space-y-5 pb-24 md:hidden"
+      className="max-w-4xl mx-auto space-y-5 pb-24 lg:hidden"
     >
       <div className="space-y-5">
           {/* Header: back button + title, dibungkus card solid (bukan lagi
@@ -64,7 +64,7 @@ export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> =
               type="button"
               onClick={handleBack}
               aria-label="back"
-              className={cx("shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-colors cursor-pointer", tokens.mobileSettingsDetailPage.backBtn)}
+              className={cx("shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer", tokens.mobileSettingsDetailPage.backBtn)}
             >
               <ChevronLeft size={18} />
             </button>

@@ -13,6 +13,7 @@ import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { audioFeedback } from "../lib/audio";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { uploadChatAttachment, AttachmentValidationError } from "../lib/chatAttachment";
+import { BADGE_SIZE_PY } from "./ui/Badge";
 
 type WidgetTab = "faq" | "admin";
 
@@ -591,7 +592,8 @@ export const SupportChatWidget: React.FC = () => {
                             type="button"
                             onClick={() => handleFaqTopicClick(topic.key)}
                             className={cx(
-                              "shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold border transition-colors duration-200",
+                              "shrink-0 whitespace-nowrap flex items-center gap-1.5 px-3.5 rounded-full text-xs font-semibold border transition-colors duration-200",
+                              BADGE_SIZE_PY.sm,
                               tokens.surface.subtle,
                               tokens.border.strong,
                               tokens.text.secondary,
@@ -879,7 +881,7 @@ export const SupportChatWidget: React.FC = () => {
                   type="button"
                   onClick={handleFaqAsk}
                   className={cx(
-                    "w-9 h-9 flex items-center justify-center rounded-full text-white transition-colors duration-200",
+                    "w-10 h-10 flex items-center justify-center rounded-full text-white transition-colors duration-200",
                     tokens.budget.addBtn
                   )}
                 >

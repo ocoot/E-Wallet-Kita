@@ -76,7 +76,9 @@ const MenuRow: React.FC<MenuRowDef> = ({ to, icon, label, desc, rightText, right
 };
 
 /**
- * Menu list "Profile/Akun" untuk tampilan mobile (md:hidden). Meniru pola
+ * Menu list "Profile/Akun" untuk tampilan mobile & tablet (lg:hidden,
+ * diselaraskan dengan breakpoint Sidebar/MobileBottomNav, sebelumnya
+ * md:hidden). Meniru pola
  * referensi desain: kartu profil ringkas di atas, lalu daftar menu
  * dikelompokkan (Akun / Preferensi / Privasi & Dukungan), setiap baris
  * membuka halaman detailnya sendiri (lihat `MobileSettingsDetailPage` &
@@ -100,7 +102,7 @@ export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
   const { tokens, cx } = useThemeTokens();
 
   return (
-    <div className="md:hidden space-y-5">
+    <div className="lg:hidden space-y-5">
       {/* Kartu judul statis sengaja tidak ditaruh di sini -- judul halaman
           "Pengaturan" dirender di Settings.tsx (lihat <h1> di atas
           <SettingsMobileMenu>), supaya tidak duplikat. */}

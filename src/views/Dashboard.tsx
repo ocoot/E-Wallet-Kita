@@ -430,11 +430,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
       )}
 
       {/* 5. Modern quick add transaction floating action button.
-          Hanya tampil di tablet/desktop (>= md) -- di layar handphone (< md)
-          FAB ini disembunyikan karena sudah terwakili oleh ikon "Catat
-          Manual" di navbar bawah (MobileBottomNav.tsx), supaya tidak
-          duplikat/menutupi konten. */}
-      <div className="fixed bottom-6 right-6 z-40 hidden md:block">
+          Hanya tampil di desktop (>= lg) -- di layar handphone & tablet
+          (< lg, masih pakai navbar bawah) FAB ini disembunyikan karena
+          sudah terwakili oleh ikon "Catat Manual" di navbar bawah
+          (MobileBottomNav.tsx), supaya tidak duplikat/menutupi konten.
+          Diselaraskan dari md -> lg mengikuti breakpoint navbar bawah. */}
+      <div className="fixed bottom-6 right-6 z-40 hidden lg:block">
         <motion.button
           id="btn-quick-add-transaction-fab"
           onClick={() => {

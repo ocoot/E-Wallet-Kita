@@ -188,7 +188,7 @@ export const AdminErrorMonitor: React.FC = () => {
 
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
-      <div className={cx("p-6 md:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
+      <div className={cx("p-6 sm:p-7 lg:p-8 rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
@@ -233,8 +233,8 @@ export const AdminErrorMonitor: React.FC = () => {
         </div>
       ) : (
         <>
-          {/* Stat cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Stat cards -- pola resmi grid statistik 4-angka: grid-cols-2 sm:grid-cols-4 gap-3 (lihat GoldSavings.tsx summary grid) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { label: t("error_monitor.total"), val: stats?.total ?? 0, color: tokens.errorMonitor.statLabelTotal },
               { label: t("error_monitor.errors"), val: stats?.errors ?? 0, color: tokens.errorMonitor.levelErrorColor },

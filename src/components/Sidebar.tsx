@@ -100,11 +100,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
-      {/* Desktop Persistent and Collapsible Sidebar (tampilan handphone kini
-          memakai navbar bawah -- lihat MobileBottomNav.tsx) */}
+      {/* Desktop Persistent and Collapsible Sidebar (tampilan handphone &
+          tablet kini memakai navbar bawah -- lihat MobileBottomNav.tsx).
+          Breakpoint switch: `lg` (1024px), BUKAN `md` (768px) lagi --
+          di lebar tablet portrait (768-1023px) sidebar penuh ini terlalu
+          sempit & memotong konten, jadi navbar bawah dipertahankan sampai
+          `lg`. Selaraskan dengan MobileBottomNav.tsx, App.tsx (offset
+          konten), ModalShell.tsx, dan useIsDesktopViewport.ts kalau
+          breakpoint ini diubah lagi. */}
           <aside 
         className={cx(
-          "hidden md:flex flex-col h-screen fixed top-0 left-0 border-r transition-all duration-300 z-30",
+          "hidden lg:flex flex-col h-screen fixed top-0 left-0 border-r transition-all duration-300 z-30",
           tokens.sidebar.outerShadow,
           tokens.sidebar.brandBg,
           tokens.text.onSurface,

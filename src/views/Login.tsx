@@ -12,6 +12,7 @@ import { Modal } from "../components/Modal";
 import { audioFeedback } from "../lib/audio";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { Input } from "../components/ui/Input";
+import { BADGE_SIZE_CLASSES } from "../components/ui/Badge";
 
 /* ─────────────────────────────────────────────────────────
    Brand panel decoration — faint background arc rings only.
@@ -83,7 +84,8 @@ const StatChip: React.FC<{ label: string; value: string; delay?: number }> = ({ 
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.6, ease: "easeOut" }}
       className={cx(
-        "flex items-center gap-2 px-3 py-1.5 rounded-full backdrop-blur-sm",
+        "flex items-center gap-2 rounded-full backdrop-blur-sm",
+        BADGE_SIZE_CLASSES.sm,
         tokens.login.statChip
       )}
     >

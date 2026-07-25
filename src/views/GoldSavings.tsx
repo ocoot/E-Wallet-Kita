@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
 import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
+import { BADGE_SIZE_CLASSES } from "../components/ui/Badge";
 import {
   Coins, Plus, Trash2, Edit2, ArrowDownCircle, ArrowUpCircle,
   Archive, ArchiveRestore, Info, AlertTriangle, PackagePlus, PackageMinus
@@ -366,7 +367,7 @@ export const GoldSavings: React.FC = () => {
                   <p className="text-[clamp(0.45rem,2.08vw,0.5rem)] text-amber-900/60 leading-snug">{t("gold.no_cost_basis_note")}</p>
                 )}
                 {gainLoss != null && p.grams_owned > 0 && p.cash_locked_amount > 0 && (
-                  <span className={`relative self-start inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[clamp(0.5344rem,2.47vw,0.5938rem)] font-bold font-mono tabular-nums ${gainLoss >= 0 ? "bg-black/15 text-emerald-950" : "bg-black/25 text-red-950"}`}>
+                  <span className={`relative self-start inline-flex items-center gap-0.5 ${BADGE_SIZE_CLASSES.xs} rounded-full text-[clamp(0.5344rem,2.47vw,0.5938rem)] font-bold font-mono tabular-nums ${gainLoss >= 0 ? "bg-black/15 text-emerald-950" : "bg-black/25 text-red-950"}`}>
                     {gainLoss >= 0 ? "▲" : "▼"} {formatIDR(Math.abs(gainLoss))}
                     <span onClick={(e) => e.stopPropagation()} className="text-black/50">
                       <InfoTooltip text={t("gold.unrealized_tooltip")} align="left" />
@@ -481,6 +482,7 @@ export const GoldSavings: React.FC = () => {
             </button>
           </div>
 
+          {/* Pola resmi grid statistik 4-angka: grid-cols-2 sm:grid-cols-4 gap-3 (acuan yang dipakai juga di AdminErrorMonitor, AdminBackup, AdminUserManager) */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className={cx("rounded-2xl px-3 py-3", tokens.gold.statGramsBgBorder)}>
               <span className="text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider text-slate-500 block mb-1">{t("gold.stat_total_grams")}</span>
