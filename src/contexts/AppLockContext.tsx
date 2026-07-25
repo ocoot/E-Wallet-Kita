@@ -48,6 +48,16 @@ export const useAppLock = () => useContext(AppLockContext);
  * saldo/nominal untuk app-switcher-nya -- provider ini memasangnya lewat
  * manipulasi DOM langsung (`ref.style`, bukan `setState`) supaya berubah
  * di frame yang sama dengan event, bukan menunggu React re-render.
+ *
+ * PENTING: cover ini SENGAJA TIDAK digantungkan ke `lockFeatureEnabled`
+ * (App Lock/PIN). Menyembunyikan saldo dari thumbnail recent-apps adalah
+ * proteksi privasi dasar yang harus berlaku untuk SEMUA user yang sedang
+ * login, terlepas dari apakah mereka mengaktifkan PIN/biometric atau
+ * tidak -- persis seperti Gopay/OVO/Dana yang tetap mem-blur konten di
+ * app-switcher walau App Lock mereka mati. `lockFeatureEnabled` hanya
+ * relevan untuk menentukan apakah PERLU minta PIN lagi (re-lock) setelah
+ * cukup lama di background -- BUKAN untuk menentukan apakah cover-nya
+ * boleh muncul sama sekali.
  */
 export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
@@ -100,7 +110,10 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (!lockFeatureEnabled || !userId) return;
+      // Cover privasi berlaku untuk SEMUA user yang login, bukan cuma yang
+      // mengaktifkan App Lock -- lihat catatan "PENTING" di komentar block
+      // provider ini. Hanya butuh `userId` (ada sesi login).
+      if (!userId) return;
 
       if (document.visibilityState === "hidden") {
         hiddenAtRef.current = Date.now();
@@ -114,15 +127,16 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (document.visibilityState === "visible") {
         const hiddenAt = hiddenAtRef.current;
         hiddenAtRef.current = null;
-        if (hiddenAt && Date.now() - hiddenAt >= APP_LOCK_TIMEOUT_MS) {
-          // Cukup lama di background -> minta PIN lagi. Cover instan tetap
-          // menutupi layar (opacity masih 1) sampai <AppLockScreen/>
-          // (z-index lebih tinggi) selesai ter-render di atasnya, jadi
-          // tidak ada celah frame yang menampilkan konten sensitif.
+        if (lockFeatureEnabled && hiddenAt && Date.now() - hiddenAt >= APP_LOCK_TIMEOUT_MS) {
+          // Cukup lama di background DAN App Lock aktif -> minta PIN lagi.
+          // Cover instan tetap menutupi layar (opacity masih 1) sampai
+          // <AppLockScreen/> (z-index lebih tinggi) selesai ter-render di
+          // atasnya, jadi tidak ada celah frame yang menampilkan konten
+          // sensitif.
           setIsLocked(true);
         } else {
-          // Cuma sebentar (mis. buka kamera lalu balik) -- tidak perlu PIN,
-          // cukup buka lagi cover-nya.
+          // App Lock nonaktif, atau cuma sebentar di background (mis. buka
+          // kamera lalu balik) -- tidak perlu PIN, cukup buka lagi cover-nya.
           hideCover();
         }
       }
@@ -132,16 +146,19 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [lockFeatureEnabled, userId, showCoverInstantly, hideCover]);
 
-  // Kalau fitur App Lock dimatikan atau user logout saat cover sedang
-  // terpasang (mis. dimatikan dari Settings tepat setelah kembali dari
-  // background), pastikan cover ikut terbuka -- jangan sampai app
-  // "kejebak" tertutup tanpa jalan keluar.
+  // Kalau user logout saat cover sedang terpasang (mis. sesi berakhir
+  // tepat setelah kembali dari background), pastikan cover ikut terbuka --
+  // jangan sampai app "kejebak" tertutup tanpa jalan keluar. Sengaja TIDAK
+  // dipicu oleh `lockFeatureEnabled` saja (App Lock off) -- cover privasi
+  // harus tetap bisa terpasang untuk user yang login walau App Lock-nya
+  // nonaktif; kalau digantungkan ke situ, mematikan App Lock akan diam-diam
+  // ikut mematikan blur privasi juga.
   useEffect(() => {
-    if (!lockFeatureEnabled || !userId) {
+    if (!userId) {
       hiddenAtRef.current = null;
       hideCover();
     }
-  }, [lockFeatureEnabled, userId, hideCover]);
+  }, [userId, hideCover]);
 
   const unlock = useCallback(() => {
     setIsLocked(false);
