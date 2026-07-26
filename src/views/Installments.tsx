@@ -245,15 +245,15 @@ export const Installments: React.FC = () => {
           {/* Summary */}
           {installments.length > 0 && (
             <div className="grid grid-cols-3 gap-2">
-              <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
+              <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.card, tokens.border.default)}>
                 <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("installments.stat_active")}</span>
                 <p className={cx("font-bold text-2xl", tokens.text.accentStrong)}>{activeCount}</p>
               </div>
-              <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
+              <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.card, tokens.border.default)}>
                 <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("installments.stat_completed")}</span>
                 <p className={cx("font-bold text-2xl", tokens.text.success)}>{completedCount}</p>
               </div>
-              <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
+              <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.card, tokens.border.default)}>
                 <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("installments.stat_monthly_commitment")}</span>
                 <p className={cx("font-bold font-mono text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.onSurface)}>{formatIDR(totalMonthlyCommitment)}</p>
               </div>
@@ -305,7 +305,7 @@ export const Installments: React.FC = () => {
               </AnimatePresence>
               {/* ── Panel detail kartu terpilih ───────────────────────────── */}
               {activeInstallment && (() => { const i = activeInstallment; return (
-                <div className={cx("rounded-2xl border overflow-hidden", tokens.surface.sunken, tokens.border.default)}>
+                <div className={cx("rounded-2xl border overflow-hidden", tokens.surface.card, tokens.border.default)}>
                   <div className="p-4 space-y-3">
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0">

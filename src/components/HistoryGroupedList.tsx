@@ -222,7 +222,7 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
 
   if (paginatedTransactions.length === 0) {
     return (
-      <div className={cx("border rounded-2xl", tokens.border.accent, tokens.surface.sunken)}>
+      <div className={cx("border rounded-2xl", tokens.border.accent, tokens.surface.card)}>
         <EmptyState message={t("history.no_transactions")} />
       </div>
     );
@@ -235,7 +235,7 @@ export const HistoryGroupedList: React.FC<HistoryGroupedListProps> = ({
           <div className={cx("text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-bold uppercase tracking-widest mb-2 px-1", tokens.text.muted)}>
             {formatDateLabel(date)}
           </div>
-          <div className={cx("rounded-2xl border overflow-hidden divide-y", tokens.border.accent, tokens.surface.sunken, tokens.historyGroupedList.divideSubtle)}>
+          <div className={cx("rounded-2xl border overflow-hidden divide-y", tokens.border.accent, tokens.surface.card, tokens.historyGroupedList.divideSubtle)}>
             <AnimatePresence mode="popLayout">
               {txs.map(tx => (
                 <HistoryTransactionRow

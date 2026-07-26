@@ -142,7 +142,7 @@ export const AdminPanel: React.FC = () => {
                 <span className="px-1 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-semibold tracking-wide text-slate-500">
                   {t(group.captionKey)}
                 </span>
-                <div className={cx("rounded-2xl border divide-y overflow-hidden", tokens.surface.sunken, tokens.border.subtleRose, tokens.divide.subtleRose)}>
+                <div className={cx("rounded-2xl border divide-y overflow-hidden", tokens.surface.card, tokens.border.subtleRose, tokens.divide.subtleRose)}>
                   {group.tabs.map(tab => (
                     <button
                       key={tab.key}

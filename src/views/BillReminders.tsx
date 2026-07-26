@@ -266,7 +266,7 @@ export const BillReminders: React.FC = () => {
 
           {/* Telegram reminder hour */}
           {isTelegramLinked ? (
-            <div className={cx("p-4 rounded-2xl border space-y-3", tokens.surface.sunken, tokens.border.default)}>
+            <div className={cx("p-4 rounded-2xl border space-y-3", tokens.surface.card, tokens.border.default)}>
               <h4 className="font-sans font-bold text-[clamp(0.5625rem,2.6vw,0.625rem)] text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
                 <Send size={12} className="text-indigo-400 -translate-x-0.5 rotate-45" />
                 {t("settings.reminder_hour_title")}
@@ -288,7 +288,7 @@ export const BillReminders: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className={cx("flex items-start gap-2.5 p-4 rounded-2xl border", tokens.surface.sunken, tokens.border.default)}>
+            <div className={cx("flex items-start gap-2.5 p-4 rounded-2xl border", tokens.surface.card, tokens.border.default)}>
               <Info size={14} className="text-indigo-400 shrink-0 mt-0.5" />
               <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)]", tokens.text.mutedAlt)}>{t("bill_reminders.connect_telegram_hint")}</p>
             </div>
@@ -327,7 +327,7 @@ export const BillReminders: React.FC = () => {
                           className="relative mb-3">
                           {/* Timeline dot */}
                           <span className={cx("absolute -left-5 top-4 w-2.5 h-2.5 rounded-full ring-4", tokens.billReminders.timelineRing, cfg.stripe)} />
-                          <div className={cx("rounded-2xl border overflow-hidden transition-shadow duration-200 hover:shadow-lg hover:shadow-black/5 light_sakura:hover:shadow-slate-200/60", tokens.surface.sunken, tokens.border.default)}>
+                          <div className={cx("rounded-2xl border overflow-hidden transition-shadow duration-200 hover:shadow-lg hover:shadow-black/5 light_sakura:hover:shadow-slate-200/60", tokens.surface.card, tokens.border.default)}>
                             <div className="p-4 space-y-3">
                               {/* Top row */}
                               <div className="flex items-start justify-between gap-2">

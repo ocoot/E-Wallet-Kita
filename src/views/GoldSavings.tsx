@@ -541,7 +541,7 @@ export const GoldSavings: React.FC = () => {
                   date: formatPriceDateLong(latestPriceDate as string, locale),
                 })}
               </p>
-              <div className={cx("gold-marquee-viewport overflow-hidden rounded-xl border py-2", tokens.surface.sunken, tokens.border.default)}>
+              <div className={cx("gold-marquee-viewport overflow-hidden rounded-xl border py-2", tokens.surface.card, tokens.border.default)}>
                 <div className="gold-marquee-track">
                   {[...prices, ...prices].map((pr, idx) => {
                     const isStaleVsOthers = priceDatesMismatch && pr.price_date !== latestPriceDate;

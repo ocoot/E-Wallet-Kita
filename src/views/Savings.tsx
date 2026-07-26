@@ -248,7 +248,7 @@ export const Savings: React.FC = () => {
           "rounded-2xl border overflow-hidden",
           p.is_archived
             ? "border-slate-800/50 bg-slate-950/20 opacity-60"
-            : cx(tokens.surface.sunken, tokens.border.default)
+            : cx(tokens.surface.card, tokens.border.default)
         )}>
         <div className="p-4 space-y-3 text-center">
           {/* Ring progres bundar */}
@@ -342,21 +342,21 @@ export const Savings: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-3 gap-2">
-            <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
+            <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.card, tokens.border.default)}>
               <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("savings.stat_total_saved")}</span>
               <p className={cx("font-bold font-mono text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.success)}>{formatIDR(summary.total_saved)}</p>
             </div>
-            <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
+            <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.card, tokens.border.default)}>
               <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("savings.stat_available_balance")}</span>
               <p className={cx("font-bold font-mono text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-tight whitespace-nowrap tabular-nums tracking-tight", tokens.text.accentStrong)}>{availableBalance != null ? formatIDR(availableBalance) : "-"}</p>
             </div>
-            <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.sunken, tokens.border.default)}>
+            <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.card, tokens.border.default)}>
               <span className={cx("text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-wider block mb-1", tokens.text.muted)}>{t("savings.stat_pocket_count")}</span>
               <p className={cx("font-bold text-2xl", tokens.text.onSurface)}>{summary.pocket_count}</p>
             </div>
           </div>
 
-          <div className={cx("flex items-start gap-2.5 rounded-2xl border px-4 py-3", tokens.surface.sunken, tokens.border.default)}>
+          <div className={cx("flex items-start gap-2.5 rounded-2xl border px-4 py-3", tokens.surface.card, tokens.border.default)}>
             <Info size={14} className={cx("shrink-0 mt-0.5", tokens.text.accent)} />
             <p className={cx("text-[clamp(0.6188rem,2.86vw,0.6875rem)] leading-relaxed", tokens.text.mutedAlt)}>{t("savings.info_banner_text")}</p>
           </div>
