@@ -146,6 +146,7 @@
   "transaction": {
     "add_title": "Catat Transaksi Manual",
     "add_subtitle": "Catat pemasukan atau pengeluaran lewat struk, rekaman suara, atau input manual.",
+    "today_label": "hari ini",
     "review_title": "Verifikasi Struk Digital",
     "review_subtitle": "Sesuaikan rincian transaksi hasil analisis E-Wallet Kita-AI",
     "merchant_label": "Nama Toko / Merchant",

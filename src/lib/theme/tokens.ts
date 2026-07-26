@@ -555,8 +555,8 @@ export const themeTokens = {
   newTransaction: {
     headerStripeExpense: "bg-red-500 light_sakura:bg-rose-400",
     headerStripeIncome: "bg-emerald-500",
-    typeToggleActiveExpense: "bg-red-500/15 border border-red-500/60 text-red-400 light_sakura:bg-red-100 light_sakura:border-red-400 light_sakura:text-red-600",
-    typeToggleActiveIncome: "bg-emerald-500/15 border border-emerald-500/60 text-emerald-400 light_sakura:bg-emerald-100 light_sakura:border-emerald-400 light_sakura:text-emerald-600",
+    typeToggleActiveExpense: "bg-red-500/15 border border-red-500/60 text-red-400 light_sakura:bg-red-500 light_sakura:border-red-600",
+    typeToggleActiveIncome: "bg-emerald-500/15 border border-emerald-500/60 text-emerald-400 light_sakura:bg-emerald-500 light_sakura:border-emerald-600",
     amountInputExpense: "bg-red-500/5 border-red-500/20 light_sakura:bg-red-100 light_sakura:border-red-300",
     amountInputIncome: "bg-emerald-500/5 border-emerald-500/20 light_sakura:bg-emerald-100 light_sakura:border-emerald-300",
     amountDisplayExpense: "text-red-400 light_sakura:text-red-500",

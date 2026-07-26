@@ -146,6 +146,7 @@
   "transaction": {
     "add_title": "Log Manual Transaction",
     "add_subtitle": "Log income or expenses via receipt scan, voice recording, or manual entry.",
+    "today_label": "today",
     "review_title": "Review Digital Receipt",
     "review_subtitle": "Verify transaction specs mapped by E-Wallet Kita-AI",
     "merchant_label": "Merchant / Store",
