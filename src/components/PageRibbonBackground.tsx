@@ -1,11 +1,37 @@
 import { useMemo } from "react";
+import type React from "react";
 import { useTheme } from "../contexts/ThemeContext";
 import type { CSSProperties } from "react";
 
+type RibbonTheme = "dark_obsidian" | "light_sakura";
+
 /**
  * Ribbon gradient + lengkung (wave) dekoratif di belakang breadcrumb, untuk
- * SEMUA halaman kecuali Dashboard (yang punya hero sendiri, lihat
- * DashboardHeader.tsx).
+ * SEMUA halaman TERMASUK Dashboard.
+ *
+ * REVISI (unifikasi Dashboard): sebelumnya Dashboard (lihat DashboardHeader.tsx)
+ * punya implementasi gradient+wave TERPISAH & duplikat manual dari file ini
+ * (2 sumber kebenaran untuk visual yang sama persis -- lihat riwayat komentar
+ * `tokens.dashboardHeader.heroGradient`/`waveFill` di tokens.ts, sudah
+ * dihapus). Sekarang Dashboard reuse langsung constants (`RIBBON_GRADIENT_CSS`,
+ * `RIBBON_GRADIENT_CLASS`, `RIBBON_WAVE_PATH_D`) & komponen (`RibbonWaveEdge`)
+ * yang diekspor dari file ini -- SATU sumber kebenaran, bukan lagi 2 file yang
+ * harus disinkronkan manual tiap kali palet ribbon berubah.
+ *
+ * Dashboard TETAP tidak memakai hook `usePageRibbonBackground()` di bawah ini
+ * apa adanya, karena model konten beda:
+ *   - `usePageRibbonBackground()` : ribbon murni `background-image` (tanpa
+ *     konten di dalamnya) yang ditempel App.tsx ke div pembungkus SEMUA
+ *     halaman selain Dashboard, tinggi FIX (`heightPx`, default
+ *     `RIBBON_HEIGHT`).
+ *   - Dashboard : hero yang MEMBUNGKUS konten (avatar, sapaan, chip cuaca) di
+ *     dalamnya, tinggi DINAMIS mengikuti padding+konten, dan wave-nya perlu
+ *     disembunyikan khusus di desktop (`lg:hidden`, className Tailwind --
+ *     tidak bisa dicapai lewat pendekatan `background-image` gabungan gradient
+ *     + wave dalam 1 property seperti hook di bawah). Karena itu Dashboard
+ *     pakai `RIBBON_GRADIENT_CLASS` (className, bukan style) untuk gradient +
+ *     `<RibbonWaveEdge>` (elemen SVG DOM asli, bisa diberi className
+ *     responsif) untuk wave -- built dari constants yang SAMA dengan hook ini.
  *
  * ARSITEKTUR (revisi KETIGA -- baca ini sebelum mengubah ukuran ribbon):
  * Dua percobaan sebelumnya me-render ribbon sebagai ELEMEN DOM (baik
@@ -39,25 +65,37 @@ import type { CSSProperties } from "react";
  * index.css kalau suatu saat palet reskin berubah.
  */
 
-const RIBBON_HEIGHT = 220; // px -- satu-satunya angka yang perlu diubah untuk resize ribbon
+export const RIBBON_HEIGHT = 220; // px -- default height untuk ribbon halaman non-Dashboard
 const WAVE_HEIGHT = 44; // px -- tinggi area lengkung svg di tepi bawah ribbon
 
 // Harus sinkron dengan index.css: --color-slate-950 (dark) / --color-slate-50 (light).
 // Ini SENGAJA sama dengan warna `tokens.surface.canvas` per tema, supaya
-// lengkung menyatu mulus ke canvas di baliknya (persis niat `waveFill` versi lama).
-const WAVE_HEX: Record<"dark_obsidian" | "light_sakura", string> = {
+// lengkung menyatu mulus ke canvas di baliknya. Dipakai KHUSUS oleh hook
+// `usePageRibbonBackground` di bawah (pendekatan background-image data-URI,
+// lihat batasan currentColor di komentar file). `RibbonWaveEdge` (elemen DOM
+// asli, dipakai Dashboard) TIDAK butuh hex ini -- ia pakai `currentColor` +
+// className Tailwind warna canvas biasa, jadi otomatis ikut CSS var halaman
+// tanpa perlu hardcode/sinkron manual sama sekali.
+export const RIBBON_WAVE_HEX: Record<RibbonTheme, string> = {
   dark_obsidian: "#0A1512",
   light_sakura: "#F5FAF8",
 };
 
-// Harus sinkron dengan tokens.dashboardHeader.heroGradient di tokens.ts.
-// Boleh tetap pakai var(--color-...) di sini (beda dari WAVE_HEX) karena
-// ini dipasang lewat inline style ke elemen HALAMAN BIASA (bukan data-URI
-// svg terpisah), yang SEPENUHNYA mewarisi CSS custom property halaman.
-const GRADIENT_CSS: Record<"dark_obsidian" | "light_sakura", string> = {
+// Nilai CSS mentah (dipakai inline style oleh hook di bawah, untuk halaman
+// non-Dashboard) & versi className Tailwind arbitrary-value (dipakai
+// DashboardHeader.tsx) -- KEDUANYA HARUS merepresentasikan gradient yang
+// SAMA PERSIS. Dua representasi ini tidak terhindarkan (satu butuh string
+// CSS mentah untuk `style.backgroundImage`, satu butuh syntax className
+// Tailwind), tapi sekarang cuma disimpan di SATU file ini -- bukan lagi
+// tersebar di tokens.ts (dashboardHeader.heroGradient, sudah dihapus).
+export const RIBBON_GRADIENT_CSS: Record<RibbonTheme, string> = {
   dark_obsidian: "linear-gradient(160deg, var(--color-indigo-500), var(--color-emerald-500) 140%)",
   light_sakura: "linear-gradient(160deg, var(--color-rose-400), var(--color-rose-600) 140%)",
 };
+
+/** Versi className Tailwind dari `RIBBON_GRADIENT_CSS` di atas -- untuk konsumen yang butuh gradient sebagai class (mis. DashboardHeader.tsx), bukan inline style. */
+export const RIBBON_GRADIENT_CLASS =
+  "bg-[linear-gradient(160deg,var(--color-indigo-500),var(--color-emerald-500)_140%)] light_sakura:bg-[linear-gradient(160deg,var(--color-rose-400),var(--color-rose-600)_140%)]";
 
 // REVISI: endpoint kiri & kanan diubah dari y=28/y=20 menjadi y=0 supaya
 // fill wave menyentuh SUDUT ATAS SVG di kedua tepi — menghilangkan artefak
@@ -66,29 +104,37 @@ const GRADIENT_CSS: Record<"dark_obsidian" | "light_sakura", string> = {
 // puncak viewBox di sana (gradient masih terlihat di atas wave, dibatasi
 // garis vertikal lurus oleh sisi fill). Bentuk lengkung di bagian tengah
 // tidak berubah signifikan (control point sama, hanya anchor bergeser).
-const WAVE_PATH_D = "M0,0 C48,58 86,10 132,24 C178,38 216,58 264,0 L264,66 L0,66 Z";
+export const RIBBON_WAVE_PATH_D = "M0,0 C48,58 86,10 132,24 C178,38 216,58 264,0 L264,66 L0,66 Z";
 
-export function usePageRibbonBackground(): { style: CSSProperties; className: string } {
+/**
+ * `heightPx`: opsional, default `RIBBON_HEIGHT` (220px) -- dipakai App.tsx
+ * untuk semua halaman non-Dashboard. Diparameterisasi supaya hook ini generic
+ * untuk pemanggil lain yang butuh ribbon background-image dengan tinggi
+ * berbeda (Dashboard TIDAK memakai parameter ini -- lihat komentar file di
+ * atas kenapa Dashboard pakai `RIBBON_GRADIENT_CLASS`+`RibbonWaveEdge`,
+ * bukan hook ini).
+ */
+export function usePageRibbonBackground(heightPx: number = RIBBON_HEIGHT): { style: CSSProperties; className: string } {
   const { theme } = useTheme();
 
   const style = useMemo<CSSProperties>(() => {
-    const waveHex = WAVE_HEX[theme];
+    const waveHex = RIBBON_WAVE_HEX[theme];
     const waveSvgDataUri =
       `data:image/svg+xml,${encodeURIComponent(
         `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 264 66" preserveAspectRatio="none">` +
-        `<path d="${WAVE_PATH_D}" fill="${waveHex}"/></svg>`
+        `<path d="${RIBBON_WAVE_PATH_D}" fill="${waveHex}"/></svg>`
       )}`;
 
     return {
       // Layer pertama (terdaftar duluan) tampil PALING ATAS -- svg lengkung
       // di atas, gradient di bawah, persis urutan visual yang diinginkan.
-      backgroundImage: `url("${waveSvgDataUri}"), ${GRADIENT_CSS[theme]}`,
+      backgroundImage: `url("${waveSvgDataUri}"), ${RIBBON_GRADIENT_CSS[theme]}`,
       backgroundRepeat: "no-repeat, no-repeat",
       // Lengkung diposisikan tepat di tepi bawah area gradient.
-      backgroundPosition: `left ${RIBBON_HEIGHT - WAVE_HEIGHT}px, top`,
-      backgroundSize: `100% ${WAVE_HEIGHT}px, 100% ${RIBBON_HEIGHT}px`,
+      backgroundPosition: `left ${heightPx - WAVE_HEIGHT}px, top`,
+      backgroundSize: `100% ${WAVE_HEIGHT}px, 100% ${heightPx}px`,
     };
-  }, [theme]);
+  }, [theme, heightPx]);
 
   return {
     style,
@@ -103,3 +149,27 @@ export function usePageRibbonBackground(): { style: CSSProperties; className: st
     className: "",
   };
 }
+
+/**
+ * Versi elemen DOM asli dari lengkung ribbon -- dipakai konsumen yang butuh
+ * wave sebagai node SVG sungguhan (bukan layer background-image), supaya
+ * bisa diberi className responsif Tailwind (mis. `lg:hidden`). Saat ini
+ * satu-satunya konsumen adalah DashboardHeader.tsx (hero Dashboard, yang
+ * wave-nya perlu hilang di breakpoint desktop -- lihat komentar file di
+ * atas). Fill pakai `currentColor` + className warna canvas default (bisa
+ * di-override lewat prop `className`), sehingga TIDAK perlu hex hardcode
+ * seperti `RIBBON_WAVE_HEX` (beda dari batasan hook di atas, karena ini
+ * elemen DOM biasa yang mewarisi CSS var halaman, bukan data-URI terpisah).
+ */
+export const RibbonWaveEdge: React.FC<{ className?: string }> = ({ className = "" }) => {
+  return (
+    <svg
+      className={`text-slate-950 light_sakura:text-slate-50 ${className}`.trim()}
+      viewBox="0 0 264 66"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      <path d={RIBBON_WAVE_PATH_D} fill="currentColor" />
+    </svg>
+  );
+};

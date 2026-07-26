@@ -8,6 +8,7 @@ import { useWeather } from "../hooks/useWeather";
 import { getWeatherTheme } from "../lib/weatherTheme";
 import { WeatherDebugToggle, WeatherDebugOverride } from "./WeatherDebugToggle";
 import { useThemeTokens } from "../hooks/useThemeTokens";
+import { RIBBON_GRADIENT_CLASS, RibbonWaveEdge } from "./PageRibbonBackground";
 
 interface DashboardHeaderProps {
   currentUser: UserSession;
@@ -19,15 +20,25 @@ interface DashboardHeaderProps {
  * `wave-mockups-themed.html`, varian 03), menggantikan "Varian A -- Minimal
  * Utility Topbar" flat dari sesi 54.
  *
+ * REVISI (unifikasi sumber ribbon): gradient & wave sebelumnya duplikat
+ * manual dari `PageRibbonBackground.tsx` (token `tokens.dashboardHeader.
+ * heroGradient`/`waveFill`, sudah dihapus dari tokens.ts). Sekarang keduanya
+ * diimpor langsung dari sana (`RIBBON_GRADIENT_CLASS`, `<RibbonWaveEdge>`) --
+ * SATU sumber kebenaran untuk seluruh app. Dashboard tetap TIDAK memakai
+ * hook `usePageRibbonBackground()` (pendekatan background-image tanpa
+ * konten) karena hero ini perlu membungkus konten (avatar/sapaan/chip) &
+ * tinggi dinamis -- lihat komentar arsitektur lengkap di
+ * `PageRibbonBackground.tsx`.
+ *
  * Sebelumnya komponen ini adalah topbar flat 2 baris dipisah hairline
  * 1px, tanpa warna/gradient sama sekali. Sekarang jadi hero penuh warna:
- *  - Background gradient (`tokens.dashboardHeader.heroGradient`, mint-teal
- *    di dark_obsidian / jade di light_sakura), bleed penuh sampai tepi
- *    layar (negative margin melawan padding `<main>` di App.tsx) supaya
- *    terasa seperti header native, bukan kartu di dalam halaman.
- *  - Lengkung ganda (svg path, disalin persis dari mockup) di tepi bawah,
- *    fill-nya = warna canvas halaman (`tokens.dashboardHeader.waveFill`)
- *    supaya menyatu mulus ke konten di bawahnya.
+ *  - Background gradient (`RIBBON_GRADIENT_CLASS`, mint-teal di
+ *    dark_obsidian / jade di light_sakura), bleed penuh sampai tepi layar
+ *    (negative margin melawan padding `<main>` di App.tsx) supaya terasa
+ *    seperti header native, bukan kartu di dalam halaman.
+ *  - Lengkung ganda (`<RibbonWaveEdge>`, path sama persis dengan ribbon
+ *    halaman lain) di tepi bawah, fill-nya = warna canvas halaman supaya
+ *    menyatu mulus ke konten di bawahnya.
  *  - Semua elemen di dalam hero (chip cuaca/lokasi, tombol debug, avatar)
  *    dipindah ke gaya "frosted white" seragam di kedua tema -- karena
  *    background sekarang SELALU gradient warna, bukan lagi canvas polos
@@ -89,7 +100,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
       <div
         className={cx(
           "relative pt-5 sm:pt-6 px-4 sm:px-6 lg:px-8 pb-20 sm:pb-24",
-          tokens.dashboardHeader.heroGradient
+          RIBBON_GRADIENT_CLASS
         )}
       >
         {/* Baris atas: status cluster. Kiri = chip cuaca + chip lokasi kota
@@ -207,37 +218,19 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           </span>
         )}
 
-        {/* Lengkung ganda (Double Wave / Ribbon) -- path DISAMAKAN dengan
-            versi terpusat yang sudah dipakai `PageRibbonBackground.tsx` di
-            semua halaman lain (lihat `WAVE_PATH_D` di sana). Path lama di
-            sini punya endpoint kiri/kanan y=28 dan y=20 (tidak simetris),
-            menyebabkan lengkung terlihat "tidak terpusat" -- gradient di
-            atas wave terpotong tidak rata di kedua tepi layar. Endpoint
-            sekarang disamakan jadi y=0 di kiri & kanan (menyentuh sudut
-            atas SVG persis di kedua tepi) supaya lengkung simetris/terpusat
-            dan konsisten dengan ribbon halaman lain. Fill-nya tetap
-            mengikuti warna canvas halaman via `currentColor` supaya
-            lengkung menyatu mulus ke konten di bawah header.
+        {/* Lengkung ganda (Double Wave / Ribbon) -- sekarang komponen SHARED
+            `<RibbonWaveEdge>` dari `PageRibbonBackground.tsx`, path sama
+            persis dengan ribbon di semua halaman lain (satu sumber
+            kebenaran, bukan lagi duplikat manual di file ini). Fill tetap
+            mengikuti warna canvas halaman via `currentColor` supaya lengkung
+            menyatu mulus ke konten di bawah header.
             `lg:hidden` -- lengkung ini disembunyikan khusus di breakpoint
             desktop (>=1024px, sama seperti breakpoint Sidebar/
             MobileBottomNav di App.tsx/Sidebar.tsx). Di layar desktop tepi
             bawah hero jadi lurus/flat (tanpa lengkung dekoratif ala
             mobile-app), sementara di mobile & tablet (<1024px) lengkung
             tetap tampil seperti sebelumnya. */}
-        <svg
-          className={cx(
-            "absolute bottom-0 left-0 w-full h-9 sm:h-11 block lg:hidden",
-            tokens.dashboardHeader.waveFill
-          )}
-          viewBox="0 0 264 66"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M0,0 C48,58 86,10 132,24 C178,38 216,58 264,0 L264,66 L0,66 Z"
-            fill="currentColor"
-          />
-        </svg>
+        <RibbonWaveEdge className="absolute bottom-0 left-0 w-full h-9 sm:h-11 block lg:hidden" />
       </div>
     </div>
   );

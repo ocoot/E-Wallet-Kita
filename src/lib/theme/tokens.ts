@@ -984,25 +984,17 @@ export const themeTokens = {
    * (`DashboardHeader.tsx` & `WeatherDebugToggle.tsx`) -- tidak ada
    * konsumen lain yang butuh nilai lama, jadi diganti langsung di tempat
    * supaya tetap single source of truth.
+   *
+   * REVISI (unifikasi ribbon): `heroGradient` & `waveFill` DIHAPUS dari
+   * sini -- keduanya sekarang diekspor langsung dari
+   * `components/PageRibbonBackground.tsx` (`RIBBON_GRADIENT_CLASS` &
+   * komponen `<RibbonWaveEdge>`), constants yang SAMA dipakai ribbon
+   * seluruh halaman lain. Sebelumnya nilai di sini harus disinkronkan
+   * manual dengan `GRADIENT_CSS`/`WAVE_HEX` di `PageRibbonBackground.tsx`
+   * (2 sumber kebenaran) -- sekarang cuma 1 file yang perlu diubah kalau
+   * palet ribbon berganti.
    */
   dashboardHeader: {
-    /**
-     * Gradient hero utama. Dark: indigo-500 -> emerald-500 (mint ke giok
-     * tua), Light: rose-400 -> rose-600 (jade muda ke jade tua) -- warna &
-     * sudut (160deg, stop di 140%) disalin persis dari mockup varian 03
-     * "Double Wave (Ribbon)".
-     */
-    heroGradient: "bg-[linear-gradient(160deg,var(--color-indigo-500),var(--color-emerald-500)_140%)] light_sakura:bg-[linear-gradient(160deg,var(--color-rose-400),var(--color-rose-600)_140%)]",
-    /**
-     * Warna fill svg lengkung ganda di tepi bawah hero, dipasang via
-     * `fill="currentColor"` supaya ikut token (SVG fill tidak bisa baca
-     * CSS var Tailwind langsung tanpa util `text-*`). Nilainya SENGAJA
-     * sama dengan `surface.canvas`/background body per tema (slate-950
-     * dark, slate-50 light == persis `--d-canvas`/`--l-canvas` di mockup)
-     * supaya lengkungnya menyatu mulus dengan canvas di baliknya, bukan
-     * warna acak.
-     */
-    waveFill: "text-slate-950 light_sakura:text-slate-50",
     weatherBadge: "flex items-center gap-1.5 px-2.5 py-1 bg-white/15 backdrop-blur-sm border border-white/20 rounded-full text-xs font-medium shrink-0 whitespace-nowrap text-white transition-colors duration-300 light_sakura:bg-white/20",
     /**
      * Badge tamu (guest) -- dulu solid amber (cocok di atas card polos),
