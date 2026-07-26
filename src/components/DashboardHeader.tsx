@@ -8,7 +8,7 @@ import { useWeather } from "../hooks/useWeather";
 import { getWeatherTheme } from "../lib/weatherTheme";
 import { WeatherDebugToggle, WeatherDebugOverride } from "./WeatherDebugToggle";
 import { useThemeTokens } from "../hooks/useThemeTokens";
-import { RIBBON_GRADIENT_CLASS, RibbonWaveEdge } from "./PageRibbonBackground";
+import { RIBBON_GRADIENT_CLASS, RIBBON_HEIGHT, RibbonWaveEdge } from "./PageRibbonBackground";
 
 interface DashboardHeaderProps {
   currentUser: UserSession;
@@ -102,6 +102,15 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           "relative pt-5 sm:pt-6 px-4 sm:px-6 lg:px-8 pb-20 sm:pb-24",
           RIBBON_GRADIENT_CLASS
         )}
+        // Dipin ke `RIBBON_HEIGHT` (220px, sama dengan tinggi ribbon
+        // background-image di semua halaman lain -- lihat
+        // `usePageRibbonBackground` di PageRibbonBackground.tsx) supaya
+        // area gradient Dashboard TIDAK PERNAH lebih pendek dari standar,
+        // meskipun kontennya sedikit (nama pendek, bukan guest). `min-height`
+        // (bukan `height` fix) sengaja dipakai supaya kalau kontennya lebih
+        // tinggi dari 220px (mis. nama 2 baris + badge guest sekaligus),
+        // hero tetap boleh melar mengikuti konten alih-alih memotongnya.
+        style={{ minHeight: RIBBON_HEIGHT }}
       >
         {/* Baris atas: status cluster. Kiri = chip cuaca + chip lokasi kota
             (flex-1 min-w-0 + overflow-hidden supaya nama kota panjang
