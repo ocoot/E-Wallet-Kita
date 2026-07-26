@@ -248,3 +248,44 @@ export function disableBiometric(userId: string): void {
 }
 
 export const APP_LOCK_TIMEOUT_MS = LOCK_TIMEOUT_MS;
+
+// ── Blur privasi (cover app-switcher) ───────────────────────────────────
+//
+// Disimpan lewat key localStorage TERPISAH dari AppLockState di atas --
+// ini disengaja. Blur privasi (menyembunyikan saldo/nominal dari thumbnail
+// app-switcher OS) adalah proteksi dasar yang independen dari PIN/biometric
+// App Lock (lihat catatan "PENTING" di AppLockContext.tsx): harus tetap
+// bisa diatur ON/OFF sendiri oleh user, TIDAK ikut mati saat App Lock
+// dinonaktifkan, dan TIDAK ikut terhapus saat resetAppLock() dipanggil
+// (reset PIN semestinya tidak diam-diam menyalakan lagi/mematikan
+// preferensi blur privasi user).
+const PRIVACY_BLUR_STORAGE_PREFIX = "ewk_privacyblur:";
+
+function privacyBlurStorageKey(userId: string): string {
+  return `${PRIVACY_BLUR_STORAGE_PREFIX}${userId}`;
+}
+
+/**
+ * Default `true` untuk user yang belum pernah mengatur toggle ini --
+ * mempertahankan perilaku lama (cover selalu aktif untuk semua user login)
+ * sebagai default, sambil tetap memberi user pilihan untuk mematikannya.
+ */
+export function isPrivacyBlurEnabled(userId: string | null | undefined): boolean {
+  if (!userId || typeof window === "undefined") return true;
+  try {
+    const raw = window.localStorage.getItem(privacyBlurStorageKey(userId));
+    if (raw === null) return true;
+    return raw === "1";
+  } catch {
+    return true;
+  }
+}
+
+export function setPrivacyBlurEnabled(userId: string, enabled: boolean): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(privacyBlurStorageKey(userId), enabled ? "1" : "0");
+  } catch {
+    // localStorage penuh/diblokir -- gagal diam, sama seperti saveAppLockState().
+  }
+}

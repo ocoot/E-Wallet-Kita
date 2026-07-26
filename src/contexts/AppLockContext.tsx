@@ -1,26 +1,37 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 import { useAuth } from "./AuthContext";
-import { isAppLockEnabled, APP_LOCK_TIMEOUT_MS } from "../lib/appLock";
+import { isAppLockEnabled, isPrivacyBlurEnabled, APP_LOCK_TIMEOUT_MS } from "../lib/appLock";
 import { AppLockPrivacyCover } from "../components/AppLockPrivacyCover";
 
 interface AppLockContextType {
   /** Apakah App Lock sedang aktif (fitur di-ON-kan) untuk user ini. */
   lockFeatureEnabled: boolean;
+  /**
+   * Apakah toggle "Blur Privasi" aktif untuk user ini -- INDEPENDEN dari
+   * `lockFeatureEnabled` (lihat catatan "PENTING" di bawah). Dipakai
+   * murni untuk menentukan apakah <AppLockPrivacyCover/> boleh tampil,
+   * bukan untuk PIN/biometric.
+   */
+  privacyBlurEnabled: boolean;
   /** Apakah layar kunci SEDANG ditampilkan (menutupi seluruh app). */
   isLocked: boolean;
   /** Dipanggil AppLockScreen setelah PIN/biometric terverifikasi. */
   unlock: () => void;
   /** Panggil setelah user mengaktifkan/menonaktifkan App Lock di Settings. */
   refreshLockFeatureState: () => void;
+  /** Panggil setelah user mengaktifkan/menonaktifkan toggle Blur Privasi di Settings. */
+  refreshPrivacyBlurState: () => void;
   /** Kunci ulang secara manual (mis. tombol "Kunci Sekarang"). */
   lockNow: () => void;
 }
 
 const AppLockContext = createContext<AppLockContextType>({
   lockFeatureEnabled: false,
+  privacyBlurEnabled: true,
   isLocked: false,
   unlock: () => {},
   refreshLockFeatureState: () => {},
+  refreshPrivacyBlurState: () => {},
   lockNow: () => {},
 });
 
@@ -50,23 +61,35 @@ export const useAppLock = () => useContext(AppLockContext);
  * di frame yang sama dengan event, bukan menunggu React re-render.
  *
  * PENTING: cover ini SENGAJA TIDAK digantungkan ke `lockFeatureEnabled`
- * (App Lock/PIN). Menyembunyikan saldo dari thumbnail recent-apps adalah
- * proteksi privasi dasar yang harus berlaku untuk SEMUA user yang sedang
- * login, terlepas dari apakah mereka mengaktifkan PIN/biometric atau
- * tidak -- persis seperti Gopay/OVO/Dana yang tetap mem-blur konten di
- * app-switcher walau App Lock mereka mati. `lockFeatureEnabled` hanya
- * relevan untuk menentukan apakah PERLU minta PIN lagi (re-lock) setelah
- * cukup lama di background -- BUKAN untuk menentukan apakah cover-nya
- * boleh muncul sama sekali.
+ * (App Lock/PIN) -- ditentukan oleh toggle TERPISAH `privacyBlurEnabled`
+ * (Settings > Kunci Aplikasi > "Blur Privasi", state disimpan lewat
+ * `isPrivacyBlurEnabled`/`setPrivacyBlurEnabled` di lib/appLock.ts, key
+ * localStorage berbeda dari AppLockState). Menyembunyikan saldo dari
+ * thumbnail recent-apps adalah proteksi privasi dasar yang defaultnya ON
+ * untuk SEMUA user yang sedang login, terlepas dari apakah mereka
+ * mengaktifkan PIN/biometric atau tidak -- persis seperti Gopay/OVO/Dana
+ * yang tetap mem-blur konten di app-switcher walau App Lock mereka mati.
+ * `lockFeatureEnabled` hanya relevan untuk menentukan apakah PERLU minta
+ * PIN lagi (re-lock) setelah cukup lama di background -- BUKAN untuk
+ * menentukan apakah cover-nya boleh muncul sama sekali. User tetap boleh
+ * mematikan blur privasi ini sendiri lewat toggle-nya, terlepas dari
+ * status App Lock -- keduanya sengaja tidak saling mengunci satu sama
+ * lain.
  */
 export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const userId = user?.id ?? null;
 
   const [lockFeatureEnabled, setLockFeatureEnabled] = useState(false);
+  const [privacyBlurEnabled, setPrivacyBlurEnabledState] = useState(true);
   const [isLocked, setIsLocked] = useState(false);
   const hiddenAtRef = useRef<number | null>(null);
   const hasMountedLockRef = useRef(false);
+  // Dibaca SINKRON di dalam event handler DOM (`handleVisibilityChange`/
+  // `handleWindowBlur`) yang harus tampil instan -- state React biasa bisa
+  // "telat" satu render dibanding ref ini, jadi selalu disinkronkan lewat
+  // effect di bawah setiap kali `privacyBlurEnabled` berubah.
+  const privacyBlurEnabledRef = useRef(true);
 
   // Elemen cover instan (lihat AppLockPrivacyCover.tsx) -- disentuh lewat
   // `ref.style` langsung, BUKAN lewat state React, supaya tampil/hilang di
@@ -75,6 +98,9 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const coverRef = useRef<HTMLDivElement>(null);
 
   const showCoverInstantly = useCallback(() => {
+    // Hormati toggle "Blur Privasi" user -- kalau dimatikan, cover tidak
+    // pernah dipasang sama sekali (bukan cuma di-skip di beberapa jalur).
+    if (!privacyBlurEnabledRef.current) return;
     const el = coverRef.current;
     if (!el) return;
     el.style.transition = "none";
@@ -94,17 +120,32 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setLockFeatureEnabled(isAppLockEnabled(userId));
   }, [userId]);
 
+  const refreshPrivacyBlurState = useCallback(() => {
+    setPrivacyBlurEnabledState(isPrivacyBlurEnabled(userId));
+  }, [userId]);
+
+  useEffect(() => {
+    privacyBlurEnabledRef.current = privacyBlurEnabled;
+    // Kalau user mematikan blur privasi SAAT cover sedang terpasang (mis.
+    // toggle dimatikan lalu langsung pindah app), pastikan cover ikut
+    // terbuka -- jangan sampai layar "kejebak" tertutup tanpa penyebab
+    // yang jelas ke user.
+    if (!privacyBlurEnabled) hideCover();
+  }, [privacyBlurEnabled, hideCover]);
+
   // Saat user berganti (login/logout/switch akun), evaluasi ulang dari awal.
   useEffect(() => {
     hasMountedLockRef.current = false;
     if (!userId) {
       setLockFeatureEnabled(false);
       setIsLocked(false);
+      setPrivacyBlurEnabledState(true);
       return;
     }
     const enabled = isAppLockEnabled(userId);
     setLockFeatureEnabled(enabled);
     setIsLocked(enabled);
+    setPrivacyBlurEnabledState(isPrivacyBlurEnabled(userId));
     hasMountedLockRef.current = true;
   }, [userId]);
 
@@ -218,7 +259,7 @@ export const AppLockProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   return (
     <AppLockContext.Provider
-      value={{ lockFeatureEnabled, isLocked, unlock, refreshLockFeatureState, lockNow }}
+      value={{ lockFeatureEnabled, privacyBlurEnabled, isLocked, unlock, refreshLockFeatureState, refreshPrivacyBlurState, lockNow }}
     >
       {children}
       {/* Selalu ter-mount (bukan conditional) supaya toggle opacity lewat

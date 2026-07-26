@@ -395,7 +395,13 @@
     "forgot_pin": "Lupa PIN?",
     "reset_confirm_title": "Reset & Keluar Akun?",
     "reset_confirm_desc": "Anda akan keluar dari akun. Masuk kembali dengan kata sandi/akun Anda untuk membuka data, lalu atur PIN baru lewat menu Pengaturan.",
-    "reset_confirm_button": "Ya, Reset & Keluar"
+    "reset_confirm_button": "Ya, Reset & Keluar",
+    "privacy_blur_section_title": "Blur Privasi",
+    "privacy_blur_section_desc": "Menyembunyikan saldo & nominal dari pratinjau aplikasi (app-switcher) saat Anda berpindah ke aplikasi lain. Berlaku untuk semua akun yang login dan TIDAK bergantung pada status Kunci Aplikasi di atas -- Anda tetap bisa mengaktifkan atau menonaktifkannya sendiri.",
+    "toggle_privacy_blur_label": "Aktifkan Blur Privasi",
+    "toggle_privacy_blur_desc": "Sembunyikan konten sensitif dari app-switcher saat aplikasi di latar belakang",
+    "toast_privacy_blur_enabled": "Blur privasi diaktifkan.",
+    "toast_privacy_blur_disabled": "Blur privasi dinonaktifkan."
   },
   "soundhaptics": {
     "toggle_sound_label": "Efek Suara",

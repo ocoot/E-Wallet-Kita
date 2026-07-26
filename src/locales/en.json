@@ -395,7 +395,13 @@
     "forgot_pin": "Forgot PIN?",
     "reset_confirm_title": "Reset & Sign Out?",
     "reset_confirm_desc": "You'll be signed out. Sign back in with your account to unlock your data, then set a new PIN from the Settings menu.",
-    "reset_confirm_button": "Yes, Reset & Sign Out"
+    "reset_confirm_button": "Yes, Reset & Sign Out",
+    "privacy_blur_section_title": "Privacy Blur",
+    "privacy_blur_section_desc": "Hides your balance and amounts from the app-switcher preview when you switch to another app. Applies to every signed-in account and does NOT depend on the App Lock status above -- you can turn it on or off independently.",
+    "toggle_privacy_blur_label": "Enable Privacy Blur",
+    "toggle_privacy_blur_desc": "Hide sensitive content from the app-switcher while the app is in the background",
+    "toast_privacy_blur_enabled": "Privacy blur enabled.",
+    "toast_privacy_blur_disabled": "Privacy blur disabled."
   },
   "soundhaptics": {
     "toggle_sound_label": "Sound Effects",

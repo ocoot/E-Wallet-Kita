@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Lock, Fingerprint, ShieldAlert, KeyRound, Delete } from "lucide-react";
+import { Lock, Fingerprint, ShieldAlert, ShieldEllipsis, KeyRound, Delete } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useToast } from "../../contexts/ToastContext";
@@ -19,6 +19,8 @@ import {
   registerBiometric,
   disableBiometric,
   resetAppLock,
+  isPrivacyBlurEnabled,
+  setPrivacyBlurEnabled,
 } from "../../lib/appLock";
 
 const PIN_LENGTH = 6;
@@ -93,15 +95,23 @@ export const AppLockSettings: React.FC = () => {
   const { t } = useLanguage();
   const { showToast } = useToast();
   const { tokens, cx } = useThemeTokens();
-  const { refreshLockFeatureState } = useAppLock();
+  const { refreshLockFeatureState, refreshPrivacyBlurState } = useAppLock();
 
   const userId = user?.id ?? null;
   const displayName = user?.user_metadata?.full_name || user?.email || "user";
 
   const [state, setState] = useState(() => getAppLockState(userId));
   const [biometricSupported, setBiometricSupported] = useState(false);
+  // Blur privasi (cover app-switcher) SENGAJA disimpan & di-refresh
+  // terpisah dari `state` (AppLockState) di atas -- lihat lib/appLock.ts
+  // & AppLockContext.tsx: preferensi ini independen dari App Lock
+  // (PIN/biometric), jadi tidak boleh ikut kena reset lewat resetAppLock().
+  const [privacyBlurOn, setPrivacyBlurOn] = useState(() => isPrivacyBlurEnabled(userId));
 
-  const refresh = () => setState(getAppLockState(userId));
+  const refresh = () => {
+    setState(getAppLockState(userId));
+    setPrivacyBlurOn(isPrivacyBlurEnabled(userId));
+  };
 
   useEffect(() => {
     refresh();
@@ -261,6 +271,16 @@ export const AppLockSettings: React.FC = () => {
     refresh();
   };
 
+  // ── Blur Privasi (cover app-switcher) -- independen dari App Lock ──
+  const handleTogglePrivacyBlur = (next: boolean) => {
+    if (!userId) return;
+    setPrivacyBlurEnabled(userId, next);
+    refreshPrivacyBlurState();
+    refresh();
+    audioFeedback.playClick();
+    showToast(next ? t("applock.toast_privacy_blur_enabled") : t("applock.toast_privacy_blur_disabled"), next ? "success" : "info");
+  };
+
   return (
     <MobileSettingsDetailPage title={t("applock.menu_label")} description={t("applock.menu_desc")}>
       <div className={cx("p-5 rounded-2xl shadow-sm space-y-1", tokens.settings.profileCardBgBorder)}>
@@ -311,6 +331,23 @@ export const AppLockSettings: React.FC = () => {
             />
           </>
         )}
+      </div>
+
+      <div className={cx("p-5 rounded-2xl shadow-sm space-y-1 mt-5", tokens.settings.profileCardBgBorder)}>
+        <h3 className={cx("font-sans font-bold text-sm flex items-center gap-2 mb-3", tokens.settings.sectionHeadingBorder)}>
+          <ShieldEllipsis size={14} className={cx(tokens.icon.accent)} />
+          <span>{t("applock.privacy_blur_section_title")}</span>
+        </h3>
+        <p className={cx("font-sans text-xs leading-relaxed mb-3", tokens.text.muted)}>
+          {t("applock.privacy_blur_section_desc")}
+        </p>
+
+        <ToggleSwitch
+          label={t("applock.toggle_privacy_blur_label")}
+          description={t("applock.toggle_privacy_blur_desc")}
+          checked={privacyBlurOn}
+          onChange={handleTogglePrivacyBlur}
+        />
       </div>
 
       {state.pinHash && (
