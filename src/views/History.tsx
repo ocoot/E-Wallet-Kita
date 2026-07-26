@@ -400,7 +400,7 @@ export const History: React.FC<HistoryProps> = ({
           <div className="sm:hidden">
             <button
               onClick={() => setIsFilterSheetOpen(true)}
-              className={cx("w-full flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold cursor-pointer transition-colors", tokens.surface.sunken, tokens.border.accent, tokens.text.onSurface)}
+              className={cx("w-full flex items-center justify-center gap-2 py-3 rounded-xl border text-sm font-semibold cursor-pointer transition-colors", tokens.surface.card, tokens.border.accent, tokens.text.onSurface)}
             >
               <Filter size={16} />
               <span>{t("history.filter_title") ?? "Filter"}</span>

@@ -557,8 +557,8 @@ export const themeTokens = {
     headerStripeIncome: "bg-emerald-500",
     typeToggleActiveExpense: "bg-red-500/15 border border-red-500/60 text-red-400 light_sakura:bg-red-50 light_sakura:border-red-300 light_sakura:text-red-600",
     typeToggleActiveIncome: "bg-emerald-500/15 border border-emerald-500/60 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:border-emerald-300 light_sakura:text-emerald-600",
-    amountInputExpense: "bg-red-500/5 border-red-500/20 light_sakura:bg-red-50/40 light_sakura:border-red-200",
-    amountInputIncome: "bg-emerald-500/5 border-emerald-500/20 light_sakura:bg-emerald-50/40 light_sakura:border-emerald-200",
+    amountInputExpense: "bg-red-500/5 border-red-500/20 light_sakura:bg-red-50 light_sakura:border-red-200",
+    amountInputIncome: "bg-emerald-500/5 border-emerald-500/20 light_sakura:bg-emerald-50 light_sakura:border-emerald-200",
     amountDisplayExpense: "text-red-400 light_sakura:text-red-500",
     amountDisplayIncome: "text-emerald-400 light_sakura:text-emerald-600",
     /** Struktur dasar pill kategori (padding, rounded, lebar border, flex icon+label) --
@@ -572,7 +572,7 @@ export const themeTokens = {
     categoryPillSelectedExpense: "bg-red-500/15 border-red-500/50 text-red-300 light_sakura:bg-rose-100 light_sakura:border-rose-400 light_sakura:text-rose-700",
     categoryPillSelectedIncome: "bg-emerald-500/15 border-emerald-500/50 text-emerald-300 light_sakura:bg-emerald-100 light_sakura:border-emerald-400 light_sakura:text-emerald-700",
     /** Background segmented control (toggle jenis transaksi & wallet picker) -- dipakai 2x. */
-    segmentedControlBg: "bg-slate-950/60 border border-slate-800/50 light_sakura:bg-rose-50/30 light_sakura:border-rose-100",
+    segmentedControlBg: "bg-slate-950/60 border border-slate-800/50 light_sakura:bg-rose-50 light_sakura:border-rose-100",
     /** Hover text tombol/pill tidak aktif -- dipakai 4x. */
     inactiveHoverText: "hover:text-slate-300 light_sakura:hover:text-slate-600",
     /**
@@ -648,10 +648,10 @@ export const themeTokens = {
     cancelBtnTextLight: "light_sakura:text-slate-600",
   },
   history: {
-    statExpense: "bg-red-500/8 border-red-500/15 light_sakura:bg-red-50/60 light_sakura:border-red-100",
-    statIncome: "bg-emerald-500/8 border-emerald-500/15 light_sakura:bg-emerald-50/60 light_sakura:border-emerald-100",
-    statBalancePositive: "bg-indigo-500/8 border-indigo-500/15 light_sakura:bg-indigo-50/60 light_sakura:border-indigo-100",
-    statBalanceNegative: "bg-orange-500/8 border-orange-500/15 light_sakura:bg-orange-50/60 light_sakura:border-orange-100",
+    statExpense: "bg-red-500/8 border-red-500/15 light_sakura:bg-red-50 light_sakura:border-red-100",
+    statIncome: "bg-emerald-500/8 border-emerald-500/15 light_sakura:bg-emerald-50 light_sakura:border-emerald-100",
+    statBalancePositive: "bg-indigo-500/8 border-indigo-500/15 light_sakura:bg-indigo-50 light_sakura:border-indigo-100",
+    statBalanceNegative: "bg-orange-500/8 border-orange-500/15 light_sakura:bg-orange-50 light_sakura:border-orange-100",
     typeFilterActiveExpense: "bg-red-500/15 border-red-500/50 text-red-400 light_sakura:bg-red-50 light_sakura:border-red-300 light_sakura:text-red-600",
     typeFilterActiveIncome: "bg-emerald-500/15 border-emerald-500/50 text-emerald-400 light_sakura:bg-emerald-50 light_sakura:border-emerald-300 light_sakura:text-emerald-600",
     typeFilterActiveAll: "bg-indigo-500/15 border-indigo-500/50 text-indigo-400 light_sakura:bg-indigo-50 light_sakura:border-indigo-300 light_sakura:text-indigo-600",
