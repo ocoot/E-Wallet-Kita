@@ -88,14 +88,29 @@ export const RIBBON_WAVE_HEX: Record<RibbonTheme, string> = {
 // CSS mentah untuk `style.backgroundImage`, satu butuh syntax className
 // Tailwind), tapi sekarang cuma disimpan di SATU file ini -- bukan lagi
 // tersebar di tokens.ts (dashboardHeader.heroGradient, sudah dihapus).
+//
+// FIX (mismatch status bar vs ribbon): `160deg` miring ~20 derajat dari
+// vertikal murni. Karena kotak ribbon jauh lebih LEBAR (lebar layar) daripada
+// TINGGI (RIBBON_HEIGHT), kemiringan ini bikin baris paling atas (y=0, persis
+// di bawah status bar) TIDAK seragam dari tepi kiri ke kanan -- sudah mulai
+// blend ke warna kedua sebelum sempat "murni" warna pertama. `meta[name=
+// "theme-color"]` (lihat STATUS_BAR_COLOR di ThemeContext.tsx) cuma bisa
+// pasang SATU warna flat, jadi kelihatan tidak sinkron dengan gradient yang
+// sudah bervariasi itu. Solusinya: stop kedua ditambahkan di posisi yang SAMA
+// dengan stop pertama (hard color-stop / plateau 0%->15%) supaya strip
+// teratas (area yang bersinggungan dengan status bar) tetap SOLID warna
+// pertama di seluruh lebar layar, baru mulai blending diagonal setelah 15%.
+// WAJIB: kalau angka `15%` di sini diubah, `STATUS_BAR_COLOR` di
+// ThemeContext.tsx TETAP memakai warna stop pertama yang sama (tidak perlu
+// ikut berubah -- cuma titik akhir plateau yang disesuaikan).
 export const RIBBON_GRADIENT_CSS: Record<RibbonTheme, string> = {
-  dark_obsidian: "linear-gradient(160deg, var(--color-indigo-500), var(--color-emerald-500) 140%)",
-  light_sakura: "linear-gradient(160deg, var(--color-rose-400), var(--color-rose-600) 140%)",
+  dark_obsidian: "linear-gradient(160deg, var(--color-indigo-500), var(--color-indigo-500) 15%, var(--color-emerald-500) 140%)",
+  light_sakura: "linear-gradient(160deg, var(--color-rose-400), var(--color-rose-400) 15%, var(--color-rose-600) 140%)",
 };
 
 /** Versi className Tailwind dari `RIBBON_GRADIENT_CSS` di atas -- untuk konsumen yang butuh gradient sebagai class (mis. DashboardHeader.tsx), bukan inline style. */
 export const RIBBON_GRADIENT_CLASS =
-  "bg-[linear-gradient(160deg,var(--color-indigo-500),var(--color-emerald-500)_140%)] light_sakura:bg-[linear-gradient(160deg,var(--color-rose-400),var(--color-rose-600)_140%)]";
+  "bg-[linear-gradient(160deg,var(--color-indigo-500),var(--color-indigo-500)_15%,var(--color-emerald-500)_140%)] light_sakura:bg-[linear-gradient(160deg,var(--color-rose-400),var(--color-rose-400)_15%,var(--color-rose-600)_140%)]";
 
 // REVISI: endpoint kiri & kanan diubah dari y=28/y=20 menjadi y=0 supaya
 // fill wave menyentuh SUDUT ATAS SVG di kedua tepi — menghilangkan artefak
