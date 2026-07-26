@@ -47,7 +47,7 @@ export const History: React.FC<HistoryProps> = ({
   const { categories } = useCategories();
   const { tokens, cx } = useThemeTokens();
   const { activeWallets, wallets: allWallets } = useWallets();
-  const locationState = useLocation().state as { filterWalletId?: string } | null;
+  const locationState = useLocation().state as { filterWalletId?: string; filterMonth?: string; filterDate?: string } | null;
   const { user } = useAuth();
 
   const [displayName, setDisplayName] = useState<string>(userDisplayName || "");
@@ -77,9 +77,13 @@ export const History: React.FC<HistoryProps> = ({
   const [historyError, setHistoryError] = useState<unknown>(null);
   const [search, setSearch] = useState("");
   const [filterMonth, setFilterMonth] = useState(() => {
+    if (locationState?.filterMonth) return locationState.filterMonth;
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   });
+  // Deep-link dari halaman Kalender: filter ke satu tanggal spesifik (bukan
+  // sebulan penuh) saat user tap "Lihat Semua" di panel transaksi harian.
+  const [filterDate, setFilterDate] = useState<string | null>(locationState?.filterDate || null);
   const [filterType, setFilterType] = useState<"all" | "income" | "expense">("all");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterWalletId, setFilterWalletId] = useState<string | null>(
@@ -151,10 +155,11 @@ export const History: React.FC<HistoryProps> = ({
     }
     if (filterCategory !== "all") result = result.filter(tx => tx.category === filterCategory);
     if (filterWalletId) result = result.filter(tx => tx.wallet_id === filterWalletId);
+    if (filterDate) result = result.filter(tx => tx.transaction_date === filterDate);
     return result;
-  }, [search, filterCategory, filterType, filterWalletId, transactions, categories, locale]);
+  }, [search, filterCategory, filterType, filterWalletId, filterDate, transactions, categories, locale]);
 
-  useEffect(() => { setCurrentPage(1); }, [search, filterCategory, filterType, filterWalletId]);
+  useEffect(() => { setCurrentPage(1); }, [search, filterCategory, filterType, filterWalletId, filterDate]);
 
   const filteredWalletName = filterWalletId
     ? allWallets.find(w => w.id === filterWalletId)?.name
@@ -374,6 +379,22 @@ export const History: React.FC<HistoryProps> = ({
               <span>{t("wallet.label_pos")}: {filteredWalletName || "-"}</span>
               <button
                 onClick={() => setFilterWalletId(null)}
+                className="ml-auto underline underline-offset-2 cursor-pointer"
+              >
+                {t("common.clear") ?? "Hapus filter"}
+              </button>
+            </div>
+          )}
+
+          {filterDate && (
+            <div className={cx("flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-sans font-semibold", tokens.history.walletFilter)}>
+              <span>{t("calendar.filtering_date")}: {(() => {
+                const parts = filterDate.split("-");
+                if (parts.length === 3) return `${parts[2]} ${t(`months.m${parseInt(parts[1])}`)} ${parts[0]}`;
+                return filterDate;
+              })()}</span>
+              <button
+                onClick={() => setFilterDate(null)}
                 className="ml-auto underline underline-offset-2 cursor-pointer"
               >
                 {t("common.clear") ?? "Hapus filter"}

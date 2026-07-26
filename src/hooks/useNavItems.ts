@@ -10,6 +10,7 @@ import {
   Landmark,
   Vault,
   Coins,
+  CalendarDays,
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAdmin } from "./useAdmin";
@@ -35,6 +36,7 @@ export function useNavItems(): NavItem[] {
 
   const menuItems: NavItem[] = [
     { id: "dashboard", label: t("nav.dashboard"), icon: LayoutDashboard, path: "/dashboard" },
+    { id: "calendar", label: t("nav.calendar"), icon: CalendarDays, path: "/calendar", featureKey: "calendar" },
     { id: "new_transaction", label: t("nav.new_transaction"), icon: PlusCircle, path: "/transactions/new", featureKey: "new_transaction" },
     { id: "wallets", label: t("nav.wallets"), icon: Wallet, path: "/wallets", featureKey: "wallets" },
     { id: "budget", label: t("nav.budget"), icon: PiggyBank, path: "/budget", featureKey: "budget" },

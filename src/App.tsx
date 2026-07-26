@@ -55,6 +55,7 @@ import { User } from "@supabase/supabase-js";
 // below is now its own chunk, fetched on demand the first time its route
 // is visited, instead of every view loading eagerly for every user.
 const Dashboard = lazy(() => import("./views/Dashboard").then(m => ({ default: m.Dashboard })));
+const CalendarPage = lazy(() => import("./views/CalendarPage").then(m => ({ default: m.CalendarPage })));
 const NewTransaction = lazy(() => import("./views/NewTransaction").then(m => ({ default: m.NewTransaction })));
 const History = lazy(() => import("./views/History").then(m => ({ default: m.History })));
 const Settings = lazy(() => import("./views/Settings").then(m => ({ default: m.Settings })));
@@ -514,6 +515,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                 <Suspense fallback={<SkeletonByRoute />}>
                   <Routes location={location}>
                   <Route path="/dashboard" element={<Dashboard transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} userAvatarUrl={userProfile?.avatar_url} />} />
+                  <Route path="/calendar" element={<FeatureLockGate featureKey="calendar"><CalendarPage transactionsUpdatedTrigger={transactionsUpdatedTrigger} /></FeatureLockGate>} />
                   <Route path="/transactions/new" element={<FeatureLockGate featureKey="new_transaction"><NewTransaction onTransactionAdded={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
                   <Route path="/transactions" element={<FeatureLockGate featureKey="history"><History transactionsUpdatedTrigger={transactionsUpdatedTrigger} onTransactionUpdated={handleTransactionChange} userDisplayName={userProfile?.display_name} /></FeatureLockGate>} />
                   <Route path="/wallets" element={<FeatureLockGate featureKey="wallets"><Wallets /></FeatureLockGate>} />

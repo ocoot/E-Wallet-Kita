@@ -18,7 +18,8 @@ import {
   Wallet,
   Landmark,
   Vault,
-  Coins
+  Coins,
+  CalendarDays
 } from "lucide-react";
 
 export const Breadcrumbs: React.FC = () => {
@@ -106,6 +107,12 @@ export const Breadcrumbs: React.FC = () => {
           label: t("nav.gold_savings"),
           path: "/gold-savings",
           icon: <Coins size={14} />
+        });
+      } else if (part === "calendar") {
+        list.push({
+          label: t("nav.calendar"),
+          path: "/calendar",
+          icon: <CalendarDays size={14} />
         });
       }
     } else if (parts.length === 2 && parts[0] === "transactions") {
