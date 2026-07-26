@@ -17,6 +17,7 @@ import {
   CloudFog,
   Sparkles,
   PartyPopper,
+  Cake,
 } from "lucide-react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -27,6 +28,7 @@ import { Transaction } from "../types";
 import { fetchHolidays, NagerHoliday } from "../api/eventCalendar";
 import { audioFeedback } from "../lib/audio";
 import { ErrorState } from "../components/ErrorState";
+import { supabase } from "../lib/supabase";
 
 interface CalendarPageProps {
   transactionsUpdatedTrigger?: number;
@@ -77,6 +79,34 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ transactionsUpdatedT
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<unknown>(null);
   const [holidaysLoading, setHolidaysLoading] = useState(false);
+  // Tanggal lahir (opsional, diisi di Kelola Profil) -- dipakai untuk
+  // menandai "Ulang Tahun Anda" berulang tiap tahun di grid kalender ini.
+  const [birthMonthDay, setBirthMonthDay] = useState<{ month: number; day: number } | null>(null);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    supabase
+      .from("users")
+      .select("birth_date")
+      .eq("id", user.id)
+      .single()
+      .then(({ data, error }) => {
+        if (cancelled || error || !data?.birth_date) return;
+        const [, m, d] = String(data.birth_date).split("-").map((v) => parseInt(v, 10));
+        if (m && d) setBirthMonthDay({ month: m, day: d });
+      });
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  const isBirthday = useCallback(
+    (dateStr: string) => {
+      if (!birthMonthDay) return false;
+      const [, m, d] = dateStr.split("-").map((v) => parseInt(v, 10));
+      return m === birthMonthDay.month && d === birthMonthDay.day;
+    },
+    [birthMonthDay]
+  );
 
   const theme = MONTH_THEMES[viewDate.getMonth()];
   const ThemeIcon = theme.icon;
@@ -304,6 +334,7 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ transactionsUpdatedT
               if (!cell.dateStr) return <div key={idx} className="h-11" />;
               const stat = dayStats.map.get(cell.dateStr);
               const isHoliday = holidayMap.has(cell.dateStr);
+              const isCellBirthday = isBirthday(cell.dateStr);
               const isToday = cell.dateStr === toISODate(today);
               const isSelected = cell.dateStr === selectedDate;
               const volume = stat ? stat.income + stat.expense : 0;
@@ -346,9 +377,15 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ transactionsUpdatedT
                     {isHoliday && !hasIncome && !hasExpense && (
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
                     )}
+                    {isCellBirthday && !hasIncome && !hasExpense && !isHoliday && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-pink-400" />
+                    )}
                   </div>
                   {isHoliday && (hasIncome || hasExpense) && (
                     <span className="absolute top-0 right-1.5 w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  )}
+                  {isCellBirthday && (
+                    <Cake size={10} className="absolute -top-0.5 left-1.5 text-pink-400" strokeWidth={2.5} />
                   )}
                 </button>
               );
@@ -360,6 +397,9 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ transactionsUpdatedT
             <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />{t("calendar.legend_income")}</span>
             <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-red-400" />{t("calendar.legend_expense")}</span>
             <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-400" />{t("calendar.legend_holiday")}</span>
+            {birthMonthDay && (
+              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-pink-400" />{t("calendar.legend_birthday")}</span>
+            )}
             {holidaysLoading && <span className="ml-auto opacity-60">{t("calendar.loading_holidays")}</span>}
           </div>
         </div>
@@ -378,11 +418,18 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ transactionsUpdatedT
           <div className="flex items-center justify-between mb-3">
             <div>
               <p className={cx("font-sans font-bold text-sm", tokens.text.primary)}>{formatSelectedDateLabel()}</p>
-              {selectedHoliday && (
-                <span className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-sans font-bold">
-                  <PartyPopper size={11} /> {selectedHoliday}
-                </span>
-              )}
+              <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                {selectedHoliday && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 text-[10px] font-sans font-bold">
+                    <PartyPopper size={11} /> {selectedHoliday}
+                  </span>
+                )}
+                {isBirthday(selectedDate) && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-500/10 text-pink-400 text-[10px] font-sans font-bold">
+                    <Cake size={11} /> {t("calendar.birthday_badge")}
+                  </span>
+                )}
+              </div>
             </div>
             {hasMore && (
               <button
