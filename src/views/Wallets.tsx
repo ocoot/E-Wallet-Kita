@@ -452,7 +452,7 @@ export const Wallets: React.FC = () => {
               <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                 {t("wallet.total_balance")}
               </p>
-              <p className={cx("font-mono font-black text-5xl tracking-[-0.03em] tabular-nums mt-1 leading-none", tokens.text.primary)}>
+              <p className={cx("font-mono font-black text-[clamp(1.75rem,8.5vw,2.75rem)] tracking-[-0.03em] tabular-nums mt-1 leading-none break-all", tokens.text.primary)}>
                 <AnimatedNumber value={totalBalance} format={formatIDR} />
               </p>
             </div>
