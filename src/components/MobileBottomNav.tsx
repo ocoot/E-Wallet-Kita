@@ -313,20 +313,15 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 {/* Profil ringkas */}
                 <div className={cx("p-4 rounded-xl border", tokens.surface.sunken, tokens.border.accent)}>
                   <div className="flex items-center gap-3">
-                    {/* Avatar bulat -- render foto profil kalau ada (sinkron
-                        dari App.tsx via prop `userAvatarUrl`, sama seperti
-                        di Sidebar desktop), fallback ke inisial huruf kalau
-                        belum pasang foto. */}
+                    {/* Avatar bulat -- selalu pakai inisial huruf, foto
+                        profil sudah ditampilkan di dashboard jadi tidak
+                        perlu diulang di sini. */}
                     <div className={cx(
                       "w-10 h-10 shrink-0 rounded-full flex items-center justify-center overflow-hidden text-sm font-bold",
                       tokens.mobileBottomNav.profileBg,
                       tokens.text.accent
                     )}>
-                      {userAvatarUrl ? (
-                        <img src={userAvatarUrl} alt={displayName} className="w-full h-full object-cover" />
-                      ) : (
-                        displayName.charAt(0).toUpperCase()
-                      )}
+                      {displayName.charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <p className={cx("font-mono text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest", tokens.text.accent)}>

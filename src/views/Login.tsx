@@ -792,12 +792,6 @@ export const Login: React.FC = () => {
             )}
           </AnimatePresence>
         </div>
-
-        <footer className="relative z-10 mt-8 md:absolute md:bottom-6 md:left-0 md:right-0 text-center text-xs text-slate-500 transition-colors duration-300">
-          <p>
-            &copy; {new Date().getFullYear()} E-Wallet Kita App. All Rights Reserved
-          </p>
-        </footer>
       </motion.div>
 
       <Modal

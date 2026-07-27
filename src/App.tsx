@@ -609,13 +609,6 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                 </Suspense>
               </motion.div>
             </AnimatePresence>
-
-            {/* Footer Copyright */}
-            <footer className="mt-12 pt-6 border-t border-slate-900/10 dark:border-slate-800/50 text-center text-xs text-slate-500 transition-colors duration-300">
-              <p>
-                © {new Date().getFullYear()} E-Wallet Kita App. All Rights Reserved
-              </p>
-            </footer>
           </div>
         </div>
       </MainScrollProvider>
