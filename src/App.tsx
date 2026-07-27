@@ -94,6 +94,8 @@ const TelegramSettings = lazy(() => import("./views/settings/TelegramSettings").
 const PrivacySettings = lazy(() => import("./views/settings/PrivacySettings").then(m => ({ default: m.PrivacySettings })));
 const AppLockSettings = lazy(() => import("./views/settings/AppLockSettings").then(m => ({ default: m.AppLockSettings })));
 const SoundHapticsSettings = lazy(() => import("./views/settings/SoundHapticsSettings").then(m => ({ default: m.SoundHapticsSettings })));
+const TermsSettings = lazy(() => import("./views/settings/TermsSettings").then(m => ({ default: m.TermsSettings })));
+const PrivacyPolicySettings = lazy(() => import("./views/settings/PrivacyPolicySettings").then(m => ({ default: m.PrivacyPolicySettings })));
 
 function RouteFallback() {
   // We can't call useLocation() here since Suspense boundary may trigger
@@ -562,6 +564,8 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                   <Route path="/settings/privacy" element={<FeatureLockGate featureKey="settings"><PrivacySettings /></FeatureLockGate>} />
                   <Route path="/settings/app-lock" element={<FeatureLockGate featureKey="settings"><AppLockSettings /></FeatureLockGate>} />
                   <Route path="/settings/sound" element={<FeatureLockGate featureKey="settings"><SoundHapticsSettings /></FeatureLockGate>} />
+                  <Route path="/settings/terms" element={<FeatureLockGate featureKey="settings"><TermsSettings /></FeatureLockGate>} />
+                  <Route path="/settings/privacy-policy" element={<FeatureLockGate featureKey="settings"><PrivacyPolicySettings /></FeatureLockGate>} />
                   <Route path="/onboarding" element={<Onboarding />} />
                   <Route path="/admin" element={
                     adminLoading

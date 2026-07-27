@@ -312,31 +312,19 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
               <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-5 space-y-5">
                 {/* Profil ringkas */}
                 <div className={cx("p-4 rounded-xl border", tokens.surface.sunken, tokens.border.accent)}>
-                  <div className="flex items-center gap-3">
-                    {/* Avatar bulat -- selalu pakai inisial huruf, foto
-                        profil sudah ditampilkan di dashboard jadi tidak
-                        perlu diulang di sini. */}
-                    <div className={cx(
-                      "w-10 h-10 shrink-0 rounded-full flex items-center justify-center overflow-hidden text-sm font-bold",
-                      tokens.mobileBottomNav.profileBg,
-                      tokens.text.accent
-                    )}>
-                      {displayName.charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <p className={cx("font-mono text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest", tokens.text.accent)}>
-                        {isGuest ? t("history.status_guest") : t("history.status_verified")}
-                      </p>
-                      <div className="flex items-center gap-2.5 mt-1">
-                        {isGuest ? (
-                          <ShieldAlert size={16} className="text-amber-400 shrink-0" />
-                        ) : (
-                          <ShieldCheck size={16} className={cx("shrink-0", tokens.text.success)} />
-                        )}
-                        <span className={cx("font-sans font-semibold text-sm truncate max-w-[220px]", tokens.text.primary)}>
-                          {displayName}
-                        </span>
-                      </div>
+                  <div className="min-w-0">
+                    <p className={cx("font-mono text-[clamp(0.5625rem,2.6vw,0.625rem)] uppercase tracking-widest", tokens.text.accent)}>
+                      {isGuest ? t("history.status_guest") : t("history.status_verified")}
+                    </p>
+                    <div className="flex items-center gap-2.5 mt-1">
+                      {isGuest ? (
+                        <ShieldAlert size={16} className="text-amber-400 shrink-0" />
+                      ) : (
+                        <ShieldCheck size={16} className={cx("shrink-0", tokens.text.success)} />
+                      )}
+                      <span className={cx("font-sans font-semibold text-sm truncate max-w-[220px]", tokens.text.primary)}>
+                        {displayName}
+                      </span>
                     </div>
                   </div>
                 </div>

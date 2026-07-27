@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   User as UserIcon,
@@ -13,10 +13,14 @@ import {
   ChevronRight,
   CheckCircle,
   Volume2,
+  FileText,
+  ShieldCheck,
 } from "lucide-react";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeTokens } from "../../hooks/useThemeTokens";
 import { audioFeedback } from "../../lib/audio";
+import { supabase } from "../../lib/supabase";
+import { CHANGELOG_TABLE } from "../../data/changelog";
 
 interface SettingsMobileMenuProps {
   displayName: string;
@@ -100,6 +104,27 @@ export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
 }) => {
   const { t } = useLanguage();
   const { tokens, cx } = useThemeTokens();
+  const [appVersion, setAppVersion] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from(CHANGELOG_TABLE)
+          .select("version")
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (!cancelled && !error && data?.version) {
+          setAppVersion(data.version);
+        }
+      } catch (err) {
+        // Best-effort saja -- kalau gagal, versi cukup disembunyikan.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <div className="lg:hidden space-y-5">
@@ -232,6 +257,47 @@ export const SettingsMobileMenu: React.FC<SettingsMobileMenuProps> = ({
             label={t("settings.menu_privacy")}
             desc={t("settings.privacy_section_desc")}
           />
+        </div>
+      </div>
+      {/* Group: Info Lainnya */}
+      <div className="space-y-2">
+        <span className="px-1 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest text-slate-500">
+          {t("settings.menu_group_info")}
+        </span>
+        <div className={cx("rounded-2xl border divide-y shadow-sm overflow-hidden", tokens.border.subtleRose, tokens.divide.subtleRose, tokens.surface.card)}>
+          <MenuRow
+            to="/settings/terms"
+            icon={<FileText size={16} />}
+            label={t("settings.menu_terms")}
+          />
+          <MenuRow
+            to="/settings/privacy-policy"
+            icon={<ShieldCheck size={16} />}
+            label={t("settings.menu_privacy_policy")}
+          />
+        </div>
+      </div>
+
+      {/* Tentang aplikasi -- info statis, bukan link ke halaman lain */}
+      <div className="space-y-2">
+        <span className="px-1 font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest text-slate-500">
+          {t("settings.about_title")}
+        </span>
+        <div className={cx("rounded-2xl border shadow-sm p-4 space-y-3", tokens.border.subtleRose, tokens.surface.card)}>
+          <div className="flex items-center gap-2.5">
+            <img src="/icon-192.png" alt={t("settings.about_app_name")} className="w-8 h-8 rounded-lg shrink-0" />
+            <span className={cx("font-sans font-bold text-sm", tokens.text.onSurface)}>
+              {t("settings.about_app_name")}
+            </span>
+          </div>
+          <p className="font-sans text-xs leading-relaxed text-slate-500">
+            {t("settings.about_tagline")}
+          </p>
+          {appVersion && (
+            <p className="font-sans text-xs text-slate-500">
+              {t("settings.about_version")} <span className={cx("font-semibold", tokens.text.onSurface)}>{appVersion}</span>
+            </p>
+          )}
         </div>
       </div>
     </div>
