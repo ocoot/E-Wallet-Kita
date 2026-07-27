@@ -428,9 +428,9 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
               />
               {([
-                { key: "receipt", label: "Struk", icon: "📸" },
-                { key: "voice", label: "Suara", icon: "🎙" },
-                { key: "manual", label: "Manual", icon: "✍" },
+                { key: "receipt", label: "Struk" },
+                { key: "voice", label: "Suara" },
+                { key: "manual", label: "Manual" },
               ] as const).map(tab => (
                 <button
                   key={tab.key}
@@ -442,7 +442,6 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                       : cx(tokens.newTransaction.inactiveHoverText, tokens.text.faint)
                   }`}
                 >
-                  <span className="text-sm leading-none">{tab.icon}</span>
                   {tab.label}
                 </button>
               ))}

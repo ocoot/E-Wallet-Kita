@@ -795,15 +795,7 @@ export const Login: React.FC = () => {
 
         <footer className="relative z-10 mt-8 md:absolute md:bottom-6 md:left-0 md:right-0 text-center text-xs text-slate-500 transition-colors duration-300">
           <p>
-            &copy; {new Date().getFullYear()} E-Wallet Kita App. All Rights Reserved | Budi Hertanto |{" "}
-            <a
-              href="https://github.com/ocoot"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cx("transition-colors duration-200 underline inline-flex items-center gap-1", tokens.login.footerLink)}
-            >
-              Github: @ocoot
-            </a>
+            &copy; {new Date().getFullYear()} E-Wallet Kita App. All Rights Reserved
           </p>
         </footer>
       </motion.div>

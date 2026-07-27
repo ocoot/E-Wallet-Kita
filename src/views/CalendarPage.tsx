@@ -244,13 +244,15 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ transactionsUpdatedT
   return (
     <div className="space-y-5 pb-12">
       {/* ── Header halaman ── */}
-      <div>
-        <h1 className={cx("font-sans font-bold text-xl tracking-tight", tokens.text.primary)}>
-          {t("calendar.page_title")}
-        </h1>
-        <p className={cx("text-xs mt-1 max-w-xl leading-relaxed", tokens.text.muted)}>
-          {t("calendar.page_subtitle")}
-        </p>
+      <div className={cx("flex items-start justify-between gap-3.5 flex-wrap rounded-2xl border px-5 py-5", tokens.surface.card, tokens.border.accent)}>
+        <div>
+          <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
+            {t("calendar.page_title")}
+          </h1>
+          <p className={cx("text-xs mt-1 max-w-xl leading-relaxed", tokens.text.muted)}>
+            {t("calendar.page_subtitle")}
+          </p>
+        </div>
       </div>
 
       {/* ── Kartu hero bulan (background bertema musim) ── */}
