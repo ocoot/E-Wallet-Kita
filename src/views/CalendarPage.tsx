@@ -29,6 +29,7 @@ import { fetchHolidays, NagerHoliday } from "../api/eventCalendar";
 import { audioFeedback } from "../lib/audio";
 import { ErrorState } from "../components/ErrorState";
 import { supabase } from "../lib/supabase";
+import { isBirthdayOnDate } from "../lib/birthday";
 
 interface CalendarPageProps {
   transactionsUpdatedTrigger?: number;
@@ -81,7 +82,10 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ transactionsUpdatedT
   const [holidaysLoading, setHolidaysLoading] = useState(false);
   // Tanggal lahir (opsional, diisi di Kelola Profil) -- dipakai untuk
   // menandai "Ulang Tahun Anda" berulang tiap tahun di grid kalender ini.
-  const [birthMonthDay, setBirthMonthDay] = useState<{ month: number; day: number } | null>(null);
+  // Disimpan mentah (YYYY-MM-DD); logic pergeseran 29 Feb -> 1 Mar di
+  // tahun non-kabisat ada di src/lib/birthday.ts (SATU sumber kebenaran,
+  // dipakai juga oleh banner in-app di App.tsx).
+  const [birthDateRaw, setBirthDateRaw] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -92,20 +96,15 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ transactionsUpdatedT
       .eq("id", user.id)
       .single()
       .then(({ data, error }) => {
-        if (cancelled || error || !data?.birth_date) return;
-        const [, m, d] = String(data.birth_date).split("-").map((v) => parseInt(v, 10));
-        if (m && d) setBirthMonthDay({ month: m, day: d });
+        if (cancelled || error) return;
+        setBirthDateRaw(data?.birth_date || null);
       });
     return () => { cancelled = true; };
   }, [user?.id]);
 
   const isBirthday = useCallback(
-    (dateStr: string) => {
-      if (!birthMonthDay) return false;
-      const [, m, d] = dateStr.split("-").map((v) => parseInt(v, 10));
-      return m === birthMonthDay.month && d === birthMonthDay.day;
-    },
-    [birthMonthDay]
+    (dateStr: string) => isBirthdayOnDate(birthDateRaw, dateStr),
+    [birthDateRaw]
   );
 
   const theme = MONTH_THEMES[viewDate.getMonth()];
@@ -397,7 +396,7 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ transactionsUpdatedT
             <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />{t("calendar.legend_income")}</span>
             <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-red-400" />{t("calendar.legend_expense")}</span>
             <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-amber-400" />{t("calendar.legend_holiday")}</span>
-            {birthMonthDay && (
+            {birthDateRaw && (
               <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-pink-400" />{t("calendar.legend_birthday")}</span>
             )}
             {holidaysLoading && <span className="ml-auto opacity-60">{t("calendar.loading_holidays")}</span>}

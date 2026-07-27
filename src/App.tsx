@@ -46,6 +46,7 @@ import { motion, AnimatePresence } from "motion/react";
 import logoUrl from "./assets/images/user_logo_transparent.png";
 import { supabase } from "./lib/supabase";
 import { requestFcmToken, saveFcmToken, clearFcmToken } from "./lib/firebase";
+import { getBirthdayReminderKind } from "./lib/birthday";
 import { User } from "@supabase/supabase-js";
 
 // Code-split the heavier views instead of bundling them all into the main
@@ -190,7 +191,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
     return () => clearTimeout(timer);
   }, []);
 
-  const [userProfile, setUserProfile] = useState<{ display_name: string; avatar_url?: string | null } | null>(null);
+  const [userProfile, setUserProfile] = useState<{ display_name: string; avatar_url?: string | null; birth_date?: string | null } | null>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [transactionsUpdatedTrigger, setTransactionsUpdatedTrigger] = useState(0);
   const lastRealtimeId = useRef<string | null>(null);
@@ -204,7 +205,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
     const fetchProfile = async () => {
       const { data, error } = await supabase
         .from("users")
-        .select("display_name, avatar_url")
+        .select("display_name, avatar_url, birth_date")
         .eq("id", user.id)
         .single();
       if (!error && data) {
@@ -213,6 +214,28 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
     };
     fetchProfile();
   }, [user]);
+
+  // ── Banner in-app "Ulang Tahun Anda" (H-1 / hari-H) ──────────────────
+  // Jalur TERPISAH dari notifikasi Telegram (lihat Edge Function
+  // birthday-reminder-notifier / migration 20260830000000_birthday_reminders.sql)
+  // -- ini murni toast lokal saat user MEMBUKA aplikasi, tidak butuh
+  // infra kirim apa pun. Dedup lewat localStorage per (user, tanggal
+  // lokal perangkat) supaya tidak muncul berkali-kali di hari yang sama
+  // tiap kali pindah halaman (effect ini bisa re-run tiap userProfile
+  // berubah referensinya).
+  useEffect(() => {
+    if (!user?.id || !userProfile?.birth_date) return;
+    const kind = getBirthdayReminderKind(userProfile.birth_date);
+    if (!kind) return;
+    const todayKey = new Date().toISOString().split("T")[0];
+    const dedupKey = `birthday_banner_shown:${user.id}:${todayKey}`;
+    if (localStorage.getItem(dedupKey) === kind) return; // sudah tampil hari ini untuk kind yang sama
+    localStorage.setItem(dedupKey, kind);
+    showToast(
+      kind === "today" ? t("toast.birthday_today") : t("toast.birthday_tomorrow"),
+      "success"
+    );
+  }, [user?.id, userProfile?.birth_date, showToast, t]);
 
   const handleTransactionChange = () => {
     setTransactionsUpdatedTrigger(prev => prev + 1);

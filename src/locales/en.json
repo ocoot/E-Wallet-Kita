@@ -506,6 +506,8 @@
     "toast_test_success": "Diagnostic unit tests passed successfully!",
     "toast_generate_code_error": "Failed to create linking code: {message}",
     "realtime_success_telegram": "New transaction received from Telegram",
+    "birthday_today": "🎂 Happy birthday! Wishing you a wonderful year ahead.",
+    "birthday_tomorrow": "🎉 Your birthday is tomorrow! Don't forget to celebrate.",
     "realtime_success_general": "New transaction logged successfully"
   },
   "months": {

@@ -506,6 +506,8 @@
     "toast_test_success": "Tes unit diagnostik parser berjalan dengan sukses!",
     "toast_generate_code_error": "Gagal membuat kode penghubung: {message}",
     "realtime_success_telegram": "Transaksi baru diterima dari Telegram",
+    "birthday_today": "🎂 Selamat ulang tahun! Semoga tahun ini penuh berkah.",
+    "birthday_tomorrow": "🎉 Besok ulang tahun Anda! Jangan lupa rayakan ya.",
     "realtime_success_general": "Transaksi baru berhasil ditambahkan"
   },
   "months": {
