@@ -210,6 +210,8 @@ export const ReceiptPreview: React.FC<ReceiptPreviewProps> = ({
                   value: cat.key,
                   label: locale === "id" ? (cat.label_id || cat.key) : (cat.label_en || cat.key),
                 }))}
+                surfaceClassName={tokens.surface.card}
+                borderClassName={tokens.border.accent}
               />
             </div>
 

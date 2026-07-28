@@ -25,6 +25,15 @@ interface DropdownFieldProps {
   placeholder?: string;
   className?: string;
   panelClassName?: string;
+  /** Override warna background tombol trigger (default: tokens.surface.subtle).
+   * Dipakai saat dropdown ini ditaruh berdampingan dengan field lain yang
+   * pakai surface berbeda (mis. tokens.surface.card di form struk) supaya
+   * kontrasnya konsisten -- tanpa properti ini, style default tetap sama
+   * seperti sebelumnya untuk semua pemanggil lain. */
+  surfaceClassName?: string;
+  /** Override warna border tombol trigger (default: tokens.border.strong),
+   * pasangan dari surfaceClassName di atas. */
+  borderClassName?: string;
 }
 
 /**
@@ -52,6 +61,8 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
   placeholder = "—",
   className = "",
   panelClassName = "",
+  surfaceClassName,
+  borderClassName,
 }) => {
   const { tokens, cx } = useThemeTokens();
   const [open, setOpen] = useState(false);
@@ -116,7 +127,7 @@ export const DropdownField: React.FC<DropdownFieldProps> = ({
         aria-haspopup="listbox"
         aria-expanded={open}
         onClick={() => { audioFeedback.playClick(); setOpen((v) => !v); }}
-        className={cx("w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl outline-none cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm", focusBorder, tokens.surface.subtle, tokens.text.heading, tokens.border.strong)}
+        className={cx("w-full flex items-center justify-between gap-2 px-4 py-3 rounded-2xl outline-none cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm", focusBorder, surfaceClassName ?? tokens.surface.subtle, tokens.text.heading, borderClassName ?? tokens.border.strong)}
       >
         <span className="truncate text-left">{selected ? selected.label : placeholder}</span>
         <ChevronDown size={14} className={`shrink-0 text-slate-500 transition-transform ${open ? "rotate-180" : ""}`} />
