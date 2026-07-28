@@ -370,6 +370,17 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     ? "Rp\u00A0" + Number(amount).toLocaleString("id-ID")
     : null;
 
+  // Ukuran font nominal besar disusutkan bertahap sesuai panjang teks
+  // (termasuk tanda +/- di depan) supaya angka besar (miliaran+) tidak
+  // meluber keluar kotak "Jumlah Nominal" -- sebelumnya font-size fixed
+  // (text-5xl) tidak peduli berapa digit yang diketik pengguna.
+  const amountCharCount = (amountDisplay?.length ?? 4) + 1; // +1 untuk simbol +/-
+  const amountFontSizeClass =
+    amountCharCount > 16 ? "text-2xl" :
+    amountCharCount > 13 ? "text-3xl" :
+    amountCharCount > 10 ? "text-4xl" :
+    "text-5xl";
+
   const isExpense = type === "expense";
 
   // ── Render ────────────────────────────────────────────────────────────
@@ -520,7 +531,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                           initial={{ opacity: 0, y: -8 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 8 }}
-                          className={cx("font-mono font-black text-5xl tracking-[-0.03em] tabular-nums leading-none", isExpense ? tokens.newTransaction.amountDisplayExpense : tokens.newTransaction.amountDisplayIncome)}
+                          className={cx("font-mono font-black tracking-[-0.03em] tabular-nums leading-none w-full max-w-full overflow-hidden text-ellipsis whitespace-nowrap transition-[font-size] duration-150", amountFontSizeClass, isExpense ? tokens.newTransaction.amountDisplayExpense : tokens.newTransaction.amountDisplayIncome)}
                         >
                           {isExpense ? "−" : "+"}{amountDisplay}
                         </motion.div>
@@ -530,7 +541,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
-                          className={cx("font-mono font-black text-5xl tracking-[-0.03em] leading-none", tokens.newTransaction.amountDisplayPlaceholder)}
+                          className={cx("font-mono font-black text-5xl tracking-[-0.03em] leading-none w-full max-w-full overflow-hidden text-ellipsis whitespace-nowrap", tokens.newTransaction.amountDisplayPlaceholder)}
                         >
                           Rp 0
                         </motion.div>
