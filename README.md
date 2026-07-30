@@ -31,7 +31,7 @@ Aplikasi ini utamanya ditujukan untuk ibu rumah tangga dan pengelola keuangan ke
 - **Notifikasi:** Firebase Cloud Messaging (push notification), Telegram Bot API
 - **PDF:** jsPDF + jsPDF-AutoTable (ekspor laporan & struk)
 - **PWA:** vite-plugin-pwa + Workbox (service worker, offline support)
-
+a
 ## Struktur Foldeaar Singkat
 
 ```
