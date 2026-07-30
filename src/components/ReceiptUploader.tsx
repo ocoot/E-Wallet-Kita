@@ -8,6 +8,7 @@ import { useToast } from "../contexts/ToastContext";
 import { useMaintenance } from "../contexts/MaintenanceContext";
 import { audioFeedback } from "../lib/audio";
 import { reportFrontendError } from "../lib/errorReporter";
+import { withMinDuration } from "../lib/withMinDuration";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "./PremiumModal";
 import { useThemeTokens } from "../hooks/useThemeTokens";
@@ -341,14 +342,14 @@ export const ReceiptUploader: React.FC<ReceiptUploaderProps> = ({ onParsed, shar
         throw new Error("Ukuran data gambar setelah diproses masih terlalu besar. Silakan coba gambar dengan resolusi lebih rendah atau crop gambar.");
       }
         
-      const response = await fetch("/api/receipt?action=parse", {
+      const response = await withMinDuration(fetch("/api/receipt?action=parse", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
         body: payload,
-      });
+      }));
 
       // Fix 4: Improve error handling
       if (!response.ok) {

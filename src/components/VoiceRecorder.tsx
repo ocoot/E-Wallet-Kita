@@ -7,6 +7,7 @@ import { useToast } from "../contexts/ToastContext";
 import { useMaintenance } from "../contexts/MaintenanceContext";
 import { audioFeedback } from "../lib/audio";
 import { reportFrontendError } from "../lib/errorReporter";
+import { withMinDuration } from "../lib/withMinDuration";
 import { usePremium } from "../hooks/usePremium";
 import { PremiumModal } from "./PremiumModal";
 import { VoicePreview, VoiceModalStatus } from "./VoicePreview";
@@ -210,7 +211,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
       const base64Audio = await blobToBase64(blob);
 
       // Step 1: transcribe audio → text
-      const transcribeResp = await fetch("/api/parse?type=voice", {
+      const transcribeResp = await withMinDuration(fetch("/api/parse?type=voice", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -221,7 +222,7 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
           mimeType: blob.type || "audio/webm",
           durationSeconds: seconds,
         }),
-      });
+      }), 500);
 
       if (!transcribeResp.ok) {
         const errData = await transcribeResp.json().catch(() => ({}));
@@ -247,14 +248,14 @@ export const VoiceRecorder: React.FC<VoiceRecorderProps> = ({ onApprove }) => {
       // Step 2: parse the transcript with the SAME pipeline typed text
       // uses (/api/parse?type=text) — no separate amount/category logic
       // for voice.
-      const parseResp = await fetch("/api/parse?type=text", {
+      const parseResp = await withMinDuration(fetch("/api/parse?type=text", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({ query: transcript }),
-      });
+      }), 500);
 
       if (!parseResp.ok) {
         const errData = await parseResp.json().catch(() => ({}));
