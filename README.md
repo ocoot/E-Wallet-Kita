@@ -18,7 +18,7 @@
 - **Guest Mode** — bisa dicoba tanpa perlu mendaftar akun.
 - **Panel Admin** — manajemen kategori, voucher, mode maintenance, broadcast notifikasi, monitoring error & pemakaian AI/premium.
 
-## Target Pengguna
+## Target Penggunaa
 
 Aplikasi ini utamanya ditujukan untuk ibu rumah tangga dan pengelola keuangan keluarga yang butuh pencatatan sederhana dan minim friksi, termasuk pengguna yang lebih nyaman mencatat lewat chat Telegram dibanding membuka aplikasi web.
 
