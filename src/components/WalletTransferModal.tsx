@@ -6,6 +6,7 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
 import { audioFeedback } from "../lib/audio";
 import { dbService } from "../lib/db";
 import { withErrorReporting } from "../lib/errorReporter";
+import { withMinDuration } from "../lib/withMinDuration";
 import { WalletWithBalance } from "../types";
 import { walletDisplayLabel } from "../lib/walletLabel";
 import { Button } from "./ui/Button";
@@ -106,14 +107,14 @@ export const WalletTransferModal: React.FC<WalletTransferModalProps> = ({
       await withErrorReporting(
         "frontend:wallet-transfer",
         async () => {
-          await dbService.transferBetweenWallets(
+          await withMinDuration(dbService.transferBetweenWallets(
             user.id,
             sourceWallet.id,
             targetWallet.id,
             numericAmount,
             t("walletActions.transfer_note_out", { wallet: targetWallet.name }),
             t("walletActions.transfer_note_in", { wallet: sourceWallet.name })
-          );
+          ));
           audioFeedback.playChime();
           setStatus("success");
           onSuccess();

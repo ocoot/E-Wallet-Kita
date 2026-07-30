@@ -8,6 +8,7 @@ import { useToast } from "../contexts/ToastContext";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { motion, useAnimation, AnimatePresence } from "motion/react";
 import { audioFeedback } from "../lib/audio";
+import { withMinDuration } from "../lib/withMinDuration";
 
 import { DropdownField } from "../components/DropdownField";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -329,11 +330,11 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         "frontend:transaction",
         async () => {
           const source = confirmSource === "manual" ? "manual" : "ai_web";
-          const savedTx = await dbService.saveTransaction(
+          const savedTx = await withMinDuration(dbService.saveTransaction(
             currentUser.id, draft.type, draft.category,
             Number(draft.amount), draft.note.trim() || null, source, draft.date, draft.walletId,
             idempotencyKey
-          );
+          ));
           if (savedTx?.id) (window as any).lastSavedTransactionId = savedTx.id;
           if (confirmSource === "receipt" && receiptDraft?.id) {
             await dbService.approveReceiptDraft(receiptDraft.id);

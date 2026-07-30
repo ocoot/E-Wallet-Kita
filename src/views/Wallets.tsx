@@ -8,6 +8,7 @@ import { useWallets } from "../hooks/useWallets";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { dbService } from "../lib/db";
 import { withErrorReporting } from "../lib/errorReporter";
+import { withMinDuration } from "../lib/withMinDuration";
 import { WalletType, WalletWithBalance } from "../types";
 import { useNavigate } from "react-router-dom";
 import { LoadingOverlay } from "../components/LoadingOverlay";
@@ -328,7 +329,7 @@ export const Wallets: React.FC = () => {
           const finalProvider = catalogMatch ? catalogMatch.name : null;
           const phone = type === "ewallet" ? (newContact.trim() || null) : null;
           const account = type === "bank" ? (newContact.trim() || null) : null;
-          await dbService.createWallet(user.id, finalName, type, finalProvider, Number(newStartBalance) || 0, phone, account);
+          await withMinDuration(dbService.createWallet(user.id, finalName, type, finalProvider, Number(newStartBalance) || 0, phone, account));
           showToast(t("wallet.toast_wallet_created"), "success");
           setCreatingType(null);
           setSelectedProviderId("");
@@ -379,7 +380,7 @@ export const Wallets: React.FC = () => {
       await withErrorReporting(
         "frontend:wallet",
         async () => {
-          await dbService.setWalletBalance(user.id, walletId, Number(balanceInput));
+          await withMinDuration(dbService.setWalletBalance(user.id, walletId, Number(balanceInput)));
           showToast(t("wallet.toast_balance_updated"), "success");
           setEditingBalanceId(null);
           await refresh();
