@@ -1,4 +1,3 @@
-import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import React, { useState } from "react";
 import { motion } from "motion/react";
 import { Plus, Pencil, Trash2, History as HistoryIcon, Eye, EyeOff, Phone, CreditCard } from "lucide-react";
@@ -441,18 +440,23 @@ export const Wallets: React.FC = () => {
       <div className="space-y-6">
 
           {/* Hero — merged header + total balance */}
-          <CollapsingPageHeader
-            title={t("wallet.title")}
-            subtitle={t("wallet.desc")}
-          />
-
-          <div className={cx("rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
-            <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
-              {t("wallet.total_balance")}
-            </p>
-            <p className={cx("font-mono font-black text-[clamp(1.75rem,8.5vw,2.75rem)] tracking-[-0.03em] tabular-nums mt-1 leading-none break-all", tokens.text.primary)}>
-              <AnimatedNumber value={totalBalance} format={formatIDR} />
-            </p>
+          <div className={cx("rounded-2xl border px-5 py-6 space-y-4", tokens.surface.card, tokens.border.accent)}>
+            <div>
+              <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
+                {t("wallet.title")}
+              </h1>
+              <p className={cx("text-xs mt-1 leading-relaxed", tokens.text.muted)}>
+                {t("wallet.desc")}
+              </p>
+            </div>
+            <div className={cx("border-t pt-4", tokens.border.accent)}>
+              <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
+                {t("wallet.total_balance")}
+              </p>
+              <p className={cx("font-mono font-black text-[clamp(1.75rem,8.5vw,2.75rem)] tracking-[-0.03em] tabular-nums mt-1 leading-none break-all", tokens.text.primary)}>
+                <AnimatedNumber value={totalBalance} format={formatIDR} />
+              </p>
+            </div>
           </div>
 
           {/* General wallet (Saldo Total) */}

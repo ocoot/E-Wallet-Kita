@@ -1,4 +1,3 @@
-import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -573,7 +572,14 @@ export const Settings: React.FC<SettingsProps> = ({
         <div className="p-6 sm:p-7 lg:p-8 space-y-6">
         
         {/* View Header */}
-        <CollapsingPageHeader title={t("settings.title")} subtitle={t("settings.desc")} />
+        <div className={cx("flex flex-col border-b pb-6", tokens.settings.sectionBorder)}>
+          <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.primary)}>
+            {t("settings.title")}
+          </h1>
+          <p className={cx("font-sans text-xs mt-1 font-medium", tokens.text.heroSubtitle)}>
+            {t("settings.desc")}
+          </p>
+        </div>
 
         {/* ── Formasi: strip profil ringkas ala kartu identitas ─────────── */}
         <div className={cx("flex items-center gap-3.5 p-4 rounded-2xl", tokens.settings.profileCardBgBorder)}>

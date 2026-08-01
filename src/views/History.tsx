@@ -1,4 +1,3 @@
-import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import React, { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -306,20 +305,14 @@ export const History: React.FC<HistoryProps> = ({
     <div className="space-y-5">
       <div className="space-y-6">
 
-          <CollapsingPageHeader
-            title={t("history.title")}
-            subtitle={t("history.desc")}
-            actions={
-              <HistoryExport
-                isExportMenuOpen={isExportMenuOpen}
-                setIsExportMenuOpen={setIsExportMenuOpen}
-                setIsSummaryConfirmOpen={setIsSummaryConfirmOpen}
-                setIsFullExportOpen={setIsFullExportOpen}
-                setIsDeleteAllOpen={setIsDeleteAllOpen}
-                hasTransactions={transactions.length > 0}
-                onRequirePremium={() => setIsPremiumOpen(true)}
-              />
-            }
+          <HistoryExport
+            isExportMenuOpen={isExportMenuOpen}
+            setIsExportMenuOpen={setIsExportMenuOpen}
+            setIsSummaryConfirmOpen={setIsSummaryConfirmOpen}
+            setIsFullExportOpen={setIsFullExportOpen}
+            setIsDeleteAllOpen={setIsDeleteAllOpen}
+            hasTransactions={transactions.length > 0}
+            onRequirePremium={() => setIsPremiumOpen(true)}
           />
 
           {/* ── Stat bar ────────────────────────────────────────────── */}

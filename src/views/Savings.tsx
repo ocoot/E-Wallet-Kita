@@ -1,4 +1,3 @@
-import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import React, { useState, useEffect, useMemo } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -323,20 +322,24 @@ export const Savings: React.FC = () => {
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="space-y-6">
 
-          <CollapsingPageHeader
-            title={t("savings.page_title")}
-            subtitle={t("savings.page_subtitle")}
-            actions={
-              <Button
-                variant="success"
-                onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-                icon={<Plus size={16} />}
-                className="shrink-0 text-xs py-2"
-              >
-                {t("savings.add_button")}
-              </Button>
-            }
-          />
+          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
+            <div>
+              <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
+                {t("savings.page_title")}
+              </h1>
+              <p className={cx("text-xs mt-1 leading-relaxed", tokens.text.muted)}>
+                {t("savings.page_subtitle")}
+              </p>
+            </div>
+            <Button
+              variant="success"
+              onClick={() => { audioFeedback.playClick(); openAddForm(); }}
+              icon={<Plus size={16} />}
+              className="shrink-0"
+            >
+              {t("savings.add_button")}
+            </Button>
+          </div>
 
           <div className="grid grid-cols-3 gap-2">
             <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.card, tokens.border.default)}>

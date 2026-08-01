@@ -1,4 +1,3 @@
-import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import React, { useState, useEffect } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -215,20 +214,24 @@ export const BillReminders: React.FC = () => {
       <div className="space-y-6">
 
           {/* Header */}
-          <CollapsingPageHeader
-            title={t("bill_reminders.page_title")}
-            subtitle={t("bill_reminders.page_subtitle")}
-            actions={
-              <Button
-                variant="success"
-                onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-                icon={<Plus size={16} />}
-                className="shrink-0 rounded-full text-xs py-2"
-              >
-                {t("bill_reminders.add_button")}
-              </Button>
-            }
-          />
+          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border px-5 py-5", tokens.surface.card, tokens.border.accent)}>
+            <div>
+              <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
+                {t("bill_reminders.page_title")}
+              </h1>
+              <p className={cx("text-xs mt-1 leading-relaxed", tokens.text.muted)}>
+                {t("bill_reminders.page_subtitle")}
+              </p>
+            </div>
+            <Button
+              variant="success"
+              onClick={() => { audioFeedback.playClick(); openAddForm(); }}
+              icon={<Plus size={16} />}
+              className="shrink-0 rounded-full"
+            >
+              {t("bill_reminders.add_button")}
+            </Button>
+          </div>
 
           {/* ── Counter stats: formasi strip chip horizontal ─────────── */}
           {/* Catatan: chip ini SENGAJA memakai surface.card (opaque) sebagai

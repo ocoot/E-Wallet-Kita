@@ -37,7 +37,17 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
   const isExportLocked = isGuest || !isPremium;
 
   return (
-    <div id="history-export-header-row" className="flex items-center gap-2 relative">
+    <div id="history-export-header-row" className={cx("flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border shadow-sm px-5 py-4", tokens.surface.card, tokens.border.accent)}>
+      <div>
+        <h2 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
+          {t("history.title")}
+        </h2>
+        <p className={cx("font-sans text-sm mt-1", tokens.text.muted)}>
+          {t("history.desc")}
+        </p>
+      </div>
+      
+      <div className="flex items-center gap-3 self-start md:self-center relative">
         {/* Export PDF dropdown */}
         <div className="relative">
           <button
@@ -142,5 +152,6 @@ export const HistoryExport: React.FC<HistoryExportProps> = ({
           </button>
         )}
       </div>
-  );  
+    </div>
+  );
 };
