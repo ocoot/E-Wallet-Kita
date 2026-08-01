@@ -431,7 +431,33 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
 
   return (
     <div className={cx(
-      "relative min-h-dvh flex flex-col md:flex-row transition-colors duration-300",
+      // FIX (UI/UX, Agu 2026): BUKAN lagi `min-h-dvh` (cuma batas bawah/floor,
+      // bukan langit-langit) -- itu akar masalah kenapa CollapsingPageHeader
+      // (lihat komponennya) tidak pernah kelihatan sama sekali di Monitor
+      // Error walau portal & fix "sticky-terkurung-transform" sebelumnya
+      // sudah benar. Root cause sesungguhnya: di breakpoint mobile (<lg),
+      // `flex-col` membuat axis utama flex jadi VERTIKAL, dan `<main>` di
+      // bawah pakai `flex-1` (flex-basis: 0%). Karena shell pembungkus ini
+      // cuma dikasih floor `min-h-dvh` (boleh lebih tinggi dari viewport,
+      // tidak pernah dibatasi ATASnya), begitu konten halaman lebih tinggi
+      // dari layar, shell ini ikut memanjang mengikuti konten -- lalu
+      // `<main>` (flex-1) ikut "diberi ruang" sebesar konten itu juga oleh
+      // algoritma flex, alih-alih dibatasi setinggi viewport. Akibatnya
+      // `overflow-y-auto` di `<main>` TIDAK PERNAH benar-benar aktif (box
+      // `<main>` tidak pernah overflow terhadap dirinya sendiri) -- yang
+      // scroll sungguhan malah dokumen/window (terverifikasi: scrollTop
+      // `<main>` tetap 0 terus walau halaman sudah discroll, `window.scrollY`
+      // yang berubah). CollapsingPageHeader dengar event scroll dari
+      // `<main>` (lewat `useMainScrollRef`) yang TIDAK PERNAH terpicu, jadi
+      // `isCollapsed` permanen `false`.
+      // Perbaikan: `h-dvh` (langit-langit TEGAS setinggi viewport, bukan
+      // sekadar floor) di shell ini DAN di `<main>` (lihat bawah) --
+      // keduanya harus dua-duanya diubah, ganti salah satu saja tidak cukup
+      // (flex-basis:0% dari `flex-1` mengabaikan height kalau container
+      // pembungkusnya sendiri belum punya tinggi pasti). Sudah direplikasi &
+      // dikonfirmasi di sandbox terpisah (Vite+React+Tailwind+motion identik)
+      // sebelum diterapkan di sini.
+      "relative h-dvh flex flex-col md:flex-row transition-colors duration-300",
       tokens.surface.canvas,
       tokens.text.onSurface
     )}>
@@ -475,7 +501,10 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
       {/* Main active subview frame */}
       <main
         ref={mainScrollRef as React.RefObject<HTMLElement>}
-        className={`flex-1 min-h-dvh overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}
+        // Lihat komentar panjang di shell pembungkus (div `relative h-dvh
+        // flex ...` di atas) -- `h-dvh` di sini (bukan `min-h-dvh`) adalah
+        // separuh kedua dari fix yang sama, wajib berubah bersamaan.
+        className={`flex-1 h-dvh overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
       {/* FIX (UI/UX, Agu 2026): target portal utk CollapsingPageHeader --
