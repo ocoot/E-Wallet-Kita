@@ -137,6 +137,15 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         // begitu progress balik ke 0 (scroll ke atas lagi), bar beneran
         // collapse ke 0px, bukan cuma transparan.
         barRef.current.style.height = `${progress * BAR_HEIGHT_PX}px`;
+        // Border TIDAK ikut ke-clip oleh `overflow-hidden` milik elemen
+        // ini sendiri (overflow-hidden cuma meng-clip KONTEN/child yang
+        // meluber, bukan border box-nya sendiri) -- kalau border-bottom
+        // dibiarkan permanen lewat class Tailwind statis, dia tetap
+        // menambah 1px tinggi walau height & opacity sudah 0, keluar
+        // sebagai garis 1px yang "nyangkut" persis di batas status
+        // bar/ribbon. Makanya lebar border JUGA diinterpolasi manual di
+        // sini (bukan lewat class border-b statis) -- 0 di progress=0.
+        barRef.current.style.borderBottomWidth = progress > 0.02 ? "1px" : "0px";
       }
     };
 
@@ -184,9 +193,9 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
       // tidak kedip "full height/opacity" sekejap sebelum effect di atas
       // sempat jalan pertama kali (mis. kalau render pertama browser
       // sempat paint sebelum JS commit style dari applyProgress()).
-      style={{ opacity: 0, height: 0 }}
+      style={{ opacity: 0, height: 0, borderBottomWidth: 0 }}
       className={cx(
-        "sticky top-0 z-30 w-full overflow-hidden flex items-center px-4 sm:px-6 border-b backdrop-blur-md",
+        "sticky top-0 z-30 w-full overflow-hidden flex items-center px-4 sm:px-6 backdrop-blur-md",
         "bg-slate-900/85 light_sakura:bg-white/85",
         tokens.border.default
       )}
