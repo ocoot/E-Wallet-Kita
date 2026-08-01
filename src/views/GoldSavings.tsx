@@ -1,3 +1,4 @@
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import React, { useState, useMemo } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -496,20 +497,16 @@ export const GoldSavings: React.FC = () => {
           elevation-nya diatur terpusat lewat primitive. */}
       <div className="space-y-6">
 
-          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
-            <div>
-              <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
-                {t("gold.page_title")}
-              </h1>
-              <p className={cx("text-xs mt-1 leading-relaxed", tokens.text.muted)}>
-                {t("gold.page_subtitle")}
-              </p>
-            </div>
-            <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition-all active:scale-95 shadow-lg shadow-amber-500/20 shrink-0 cursor-pointer">
-              <Plus size={16} /> {t("gold.add_button")}
-            </button>
-          </div>
+          <CollapsingPageHeader
+            title={t("gold.page_title")}
+            subtitle={t("gold.page_subtitle")}
+            actions={
+              <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-all active:scale-95 shadow-lg shadow-amber-500/20 shrink-0 cursor-pointer">
+                <Plus size={16} /> {t("gold.add_button")}
+              </button>
+            }
+          />
 
           {/* Pola resmi grid statistik 4-angka: grid-cols-2 sm:grid-cols-4 gap-3 (acuan yang dipakai juga di AdminErrorMonitor, AdminBackup, AdminUserManager) */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

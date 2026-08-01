@@ -1,3 +1,4 @@
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
@@ -113,22 +114,10 @@ export const AdminPanel: React.FC = () => {
       <div className="space-y-6">
 
           {/* Page title */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.35 }}
-            className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}
-          >
-            <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
-            <div className="px-5 py-4">
-              <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
-                {t("nav.admin_panel")}
-              </h1>
-              <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.muted)}>
-                {t("admin.panel_desc")}
-              </p>
-            </div>
-          </motion.div>
+          <CollapsingPageHeader
+            title={t("nav.admin_panel")}
+            subtitle={t("admin.panel_desc")}
+          />
 
           <nav className="space-y-6">
             {groups.map((group, groupIndex) => (

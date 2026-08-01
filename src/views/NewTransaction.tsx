@@ -1,3 +1,4 @@
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { dbService } from "../lib/db";

@@ -1,3 +1,4 @@
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "motion/react";
@@ -244,16 +245,10 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ transactionsUpdatedT
   return (
     <div className="space-y-5 pb-12">
       {/* ── Header halaman ── */}
-      <div className={cx("flex items-start justify-between gap-3.5 flex-wrap rounded-2xl border px-5 py-5", tokens.surface.card, tokens.border.accent)}>
-        <div>
-          <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
-            {t("calendar.page_title")}
-          </h1>
-          <p className={cx("text-xs mt-1 max-w-xl leading-relaxed", tokens.text.muted)}>
-            {t("calendar.page_subtitle")}
-          </p>
-        </div>
-      </div>
+      <CollapsingPageHeader
+        title={t("calendar.page_title")}
+        subtitle={t("calendar.page_subtitle")}
+      />
 
       {/* ── Kartu hero bulan (background bertema musim) ── */}
       <motion.div

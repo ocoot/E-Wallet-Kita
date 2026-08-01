@@ -1,3 +1,4 @@
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import React, { useState } from "react";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -259,28 +260,23 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
       <div className="space-y-6">
 
       {/* Header */}
-      <div className={cx("flex items-start justify-between gap-3.5 flex-wrap rounded-2xl border px-5 py-5", tokens.surface.card, tokens.border.accent)}>
-        <div>
-          <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
-            {t("budget.page_title")}
-          </h1>
-          <p className={cx("text-xs mt-1 max-w-xl leading-relaxed", tokens.text.muted)}>
-            {t("budget.page_subtitle")}
-          </p>
-        </div>
-
-        {!loading && expenseCategories.length > 0 && (
-          <button
-            onClick={openAddModal}
-            disabled={availableCategories.length === 0}
-            title={availableCategories.length === 0 ? t("budget.all_categories_budgeted") : undefined}
-            className={cx("flex items-center gap-2 px-4.5 py-2.5 rounded-full text-xs font-bold text-white transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0", tokens.budget.addBtn)}
-          >
-            <Plus size={15} />
-            {t("budget.add_budget_cta")}
-          </button>
-        )}
-      </div>
+      <CollapsingPageHeader
+        title={t("budget.page_title")}
+        subtitle={t("budget.page_subtitle")}
+        actions={
+          !loading && expenseCategories.length > 0 ? (
+            <button
+              onClick={openAddModal}
+              disabled={availableCategories.length === 0}
+              title={availableCategories.length === 0 ? t("budget.all_categories_budgeted") : undefined}
+              className={cx("flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold text-white transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0", tokens.budget.addBtn)}
+            >
+              <Plus size={15} />
+              {t("budget.add_budget_cta")}
+            </button>
+          ) : undefined
+        }
+      />
 
       {loading ? (
         <div className={cx("text-sm", tokens.text.muted)}>…</div>
