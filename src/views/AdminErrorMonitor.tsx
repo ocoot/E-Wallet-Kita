@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { Card } from "../components/ui/Card";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -237,6 +238,13 @@ export const AdminErrorMonitor: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* PILOT (Agu 2026): CollapsingPageHeader -- sticky compact header
+          yang cuma muncul begitu discroll (lihat komentar lengkap di
+          komponennya). AdminBackBar di bawah TETAP dipertahankan apa
+          adanya untuk posisi normal/belum discroll -- keduanya saling
+          melengkapi, bukan saling gantikan, sampai pola ini terbukti
+          bagus dan disebar ke halaman lain. */}
+      <CollapsingPageHeader title={t("error_monitor.title")} backTo="/admin" />
       <div className="relative">
         <div>
           <AdminBackBar />
