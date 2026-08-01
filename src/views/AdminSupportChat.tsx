@@ -344,26 +344,9 @@ export const AdminSupportChat: React.FC = () => {
         </button>
       }
     >
-      {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
-          langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
-      <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
-        <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
-        <div className="p-6 sm:p-7 lg:p-8">
-          <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={() => {
-              audioFeedback.playClick();
-              loadSessions();
-            }}
-            className={cx("shrink-0 flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200 active:scale-[0.98]", tokens.adminSupportChat.filterBtnBorder, tokens.text.secondary)}
-          >
-            <RefreshCw size={13} />
-            {t("admin_support_chat.refresh")}
-          </button>
-          </div>
-        </div>
-      </div>
+      {/* Card header lama (isinya cuma tombol Refresh) sudah dihapus --
+          aksi itu SUDAH dipindah ke actions slot di sticky toolbar
+          (reachable sejak detik pertama). */}
 
       {/* List + Detail */}
       <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-4 min-h-[520px]">

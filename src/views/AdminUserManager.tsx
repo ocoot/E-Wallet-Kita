@@ -498,25 +498,12 @@ export const AdminUserManager: React.FC = () => {
       <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
         <div className="p-6 sm:p-7 lg:p-8 space-y-6">
-          <div className={cx("flex justify-end border-b pb-6", tokens.border.default)}>
-            <div className="flex flex-wrap items-center gap-2 shrink-0">
-              <button
-                onClick={handleExportCSV}
-                className="px-4 py-2 text-xs font-bold rounded-xl border border-emerald-600 bg-emerald-600 hover:bg-emerald-500 text-white transition-all duration-200 cursor-pointer active:scale-[0.98]"
-              >
-                ↓ Export CSV
-              </button>
-              <button
-                onClick={() => {
-                  fetchUsers();
-                  loadMetrics();
-                }}
-                className={cx("px-4 py-2 text-xs font-bold rounded-xl border transition-all duration-200 cursor-pointer active:scale-[0.98]", tokens.border.default, tokens.hover.surface, tokens.surface.card, tokens.text.secondary)}
-              >
-                {t("admin.refresh")}
-              </button>
-            </div>
-          </div>
+          {/* Tombol Export CSV & Refresh SUDAH dipindah ke actions slot di
+              sticky toolbar (lihat prop `actions` di atas) -- sengaja
+              TIDAK didobel di sini, karena toolbar sekarang reachable
+              sejak detik pertama (mode "toolbar selalu tampil"), jadi
+              versi body ini cuma akan tumpang tindih dengan versi
+              toolbar tanpa nilai tambah. */}
 
           {/* Metrics Cards Grid -- pola resmi grid statistik 4-angka: grid-cols-2 sm:grid-cols-4 gap-3 */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

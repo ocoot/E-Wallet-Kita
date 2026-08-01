@@ -333,16 +333,8 @@ export const Savings: React.FC = () => {
         }
       >
 
-          <div className={cx("flex justify-end rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
-            <Button
-              variant="success"
-              onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              icon={<Plus size={16} />}
-              className="shrink-0"
-            >
-              {t("savings.add_button")}
-            </Button>
-          </div>
+          {/* Tombol Add SUDAH dipindah ke actions slot di sticky toolbar --
+              sengaja TIDAK didobel di sini. */}
 
           <div className="grid grid-cols-3 gap-2">
             <div className={cx("rounded-2xl px-3 py-3 border", tokens.surface.card, tokens.border.default)}>

@@ -184,14 +184,10 @@ export const AdminAiMonitor: React.FC = () => {
               ))}
             </div>
 
-            <button
-              onClick={() => load(true)}
-              disabled={refreshing}
-              className={cx("flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border cursor-pointer transition-all duration-200 disabled:opacity-50 active:scale-[0.98]", tokens.border.default, tokens.surface.subtle, tokens.hover.surface, tokens.text.label)}
-            >
-              <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
-              {t("ai_monitor.refresh")}
-            </button>
+            {/* Tombol Refresh SUDAH dipindah ke actions slot di sticky
+                toolbar (reachable sejak detik pertama) -- sengaja TIDAK
+                didobel di sini. Period selector di atas TETAP di body
+                karena itu filter, bukan actions duplicate. */}
           </div>
         </div>
         </div>

@@ -418,13 +418,10 @@ export const AdminBackup: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={loadStatus}
-              className={cx(tokens.adminBackup.btnSecondary, tokens.text.secondary)}
-            >
-              <RefreshCw className="w-3.5 h-3.5" />
-              {t("admin.refresh")}
-            </button>
+            {/* Tombol Refresh SUDAH dipindah ke actions slot di sticky
+                toolbar -- sengaja TIDAK didobel di sini. Trigger Backup
+                TETAP di body (bukan actions duplicate, dan destructive/
+                stateful jadi sengaja tidak diringkas jadi icon-button). */}
             <Button
               variant="primary"
               size="sm"

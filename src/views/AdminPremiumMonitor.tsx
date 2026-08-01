@@ -238,22 +238,9 @@ export const AdminPremiumMonitor: React.FC = () => {
         </button>
       }
     >
-      {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
-          langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
-      <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
-        <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
-        <div className="p-6 sm:p-7 lg:p-8">
-          <div className="flex justify-end">
-          <button
-            onClick={handleRefresh}
-            className={cx("flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer shrink-0 active:scale-[0.98]", tokens.adminPremium.exportBtn, tokens.text.label, tokens.border.strong)}
-          >
-            <RefreshCw size={16} />
-            {t("admin.refresh_data")}
-          </button>
-          </div>
-        </div>
-      </div>
+      {/* Card header lama (isinya cuma tombol Refresh) sudah dihapus --
+          aksi itu SUDAH dipindah ke actions slot di sticky toolbar
+          (reachable sejak detik pertama). */}
 
       {/* Dummy QRIS active warning banner */}
       {dummyQrisLoaded && dummyQrisEnabled && (

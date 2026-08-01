@@ -265,20 +265,8 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
     >
       <div className="space-y-6 pb-12">
 
-      {/* Header actions */}
-      {!loading && expenseCategories.length > 0 && (
-        <div className={cx("flex justify-end rounded-2xl border px-5 py-5", tokens.surface.card, tokens.border.accent)}>
-          <button
-            onClick={openAddModal}
-            disabled={availableCategories.length === 0}
-            title={availableCategories.length === 0 ? t("budget.all_categories_budgeted") : undefined}
-            className={cx("flex items-center gap-2 px-4.5 py-2.5 rounded-full text-xs font-bold text-white transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0", tokens.budget.addBtn)}
-          >
-            <Plus size={15} />
-            {t("budget.add_budget_cta")}
-          </button>
-        </div>
-      )}
+      {/* Tombol Add (Header actions) SUDAH dipindah ke actions slot di
+          sticky toolbar -- sengaja TIDAK didobel di sini. */}
 
       {loading ? (
         <div className={cx("text-sm", tokens.text.muted)}>…</div>

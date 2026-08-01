@@ -233,17 +233,8 @@ export const Installments: React.FC = () => {
         }
       >
 
-          {/* Header actions */}
-          <div className={cx("flex justify-end rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
-            <Button
-              variant="success"
-              onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              icon={<Plus size={16} />}
-              className="shrink-0"
-            >
-              {t("installments.add_button")}
-            </Button>
-          </div>
+          {/* Tombol Add SUDAH dipindah ke actions slot di sticky toolbar --
+              sengaja TIDAK didobel di sini. */}
 
           {/* Summary */}
           {installments.length > 0 && (

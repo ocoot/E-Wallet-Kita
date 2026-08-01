@@ -274,14 +274,10 @@ export const AdminErrorMonitor: React.FC = () => {
               ))}
             </div>
 
-            <button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className={cx("flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border cursor-pointer transition-all duration-200 disabled:opacity-50 active:scale-[0.98]", tokens.errorMonitor.btnRefresh, tokens.text.label)}
-            >
-              <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
-              {t("admin.refresh_data")}
-            </button>
+            {/* Tombol Refresh SUDAH dipindah ke actions slot di sticky
+                toolbar -- sengaja TIDAK didobel di sini. Period selector
+                di atas TETAP di body karena itu filter, bukan actions
+                duplicate. */}
           </div>
         </div>
         </div>

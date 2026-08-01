@@ -85,10 +85,32 @@ interface CollapsingPageHeaderProps {
  * lintas layout halaman yang beda-beda dibanding FLIP-style shared
  * element transition).
  *
+ * v3 (Agu 2026) -- toolbar (back button + `actions`) sekarang PUNYA DUA
+ * MODE tergantung apakah halaman punya elemen interaktif di toolbar:
+ *   - hasToolbarContent=true (ada backTo dan/atau actions): container bar
+ *     FIXED height sejak mount, reachable dari detik pertama tanpa perlu
+ *     discroll. Cuma background (blur/warna/border) yang di-interpolasi
+ *     terpisah ikut scroll (layer barBgRef). Ini FIX buat masalah dobel:
+ *     sebelumnya `actions` ikut fade bareng seluruh bar (yang baru
+ *     materialize ~60-80px setelah scroll), padahal tombol/card versi
+ *     ASLI-nya di body (di bawah large title) baru keluar viewport JAUH
+ *     lebih dalam dari itu -- jadi ada rentang scroll di mana KEDUANYA
+ *     kelihatan bareng (dobel tombol Add/Refresh di layar yang sama).
+ *     Solusinya: begitu actions dipakai, tombol ASLI di body halaman
+ *     HARUS dihapus/dikondisikan -- actions di toolbar jadi SATU-SATUNYA
+ *     sumber buat aksi itu, bukan duplikat.
+ *   - hasToolbarContent=false (halaman polos, mis. History/Wallets tanpa
+ *     backTo/actions): tetap mode lama "materialize on scroll" (height 0
+ *     -> BAR_HEIGHT_PX ikut progress) -- tidak ada elemen interaktif yang
+ *     perlu dijaga reachable, jadi bar yang baru nongol pas discroll
+ *     masih pas & tidak menyisakan strip kosong permanen di atas ribbon.
+ *
  * MOBILE-ONLY: sama seperti versi sebelumnya, tidak dirender sama sekali
  * di breakpoint desktop (Sidebar persisten sudah jadi konteks navigasi).
  * Di desktop, large title dirender polos tanpa animasi/bar sticky sama
- * sekali (fallback statis).
+ * sekali (fallback statis) -- perubahan v3 di atas TIDAK berlaku di
+ * desktop karena cabang `if (isDesktop)` return lebih dulu, sebelum
+ * `bar`/hasToolbarContent sempat dihitung/dirender sama sekali.
  *
  * Portal ke `HeaderPortalProvider` node (anak langsung `<main>`, DI LUAR
  * `motion.div` transisi route) tetap dipertahankan -- lihat komentar
@@ -113,6 +135,9 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const titleBlockRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
+  // Cuma dipakai/di-mount kalau hasToolbarContent -- lihat komentar di
+  // applyProgress() soal kenapa background bar dipisah dari container-nya.
+  const barBgRef = useRef<HTMLDivElement>(null);
   const smallTitleRef = useRef<HTMLHeadingElement>(null);
   const rafRef = useRef<number | null>(null);
   const willChangeIdleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -154,10 +179,25 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         smallTitleRef.current.style.opacity = String(progress);
         smallTitleRef.current.style.transform = `translateY(${(1 - progress) * 6}px)`;
       }
-      if (barRef.current) {
-        // Background/border/blur bar ikut progress juga (bukan langsung
-        // penuh) -- biar transisinya kelihatan seperti SATU bar yang
-        // "mengembun" jadi solid, bukan bar yang tiba-tiba nongol.
+      if (barBgRef.current) {
+        // MODE "toolbar selalu tampil" (halaman punya back button atau
+        // actions) -- container bar (barRef) SENGAJA tidak disentuh sama
+        // sekali di sini, tingginya fixed BAR_HEIGHT_PX dari awal lewat
+        // style statis di JSX (lihat di bawah), supaya back button &
+        // actions langsung reachable dari detik pertama halaman dibuka --
+        // TIDAK perlu discroll dulu. Cuma layer BACKGROUND (blur+warna+
+        // border) di sini yang di-interpolasi ikut progress, biar tetap
+        // ada efek "mengembun jadi solid" pas discroll -- persis kayak
+        // sebelumnya, cuma sekarang yang fade itu background-nya doang,
+        // bukan seluruh toolbar (termasuk tombol-tombolnya).
+        barBgRef.current.style.opacity = String(Math.min(progress * 1.4, 1));
+        barBgRef.current.style.borderBottomWidth = progress > 0.02 ? "1px" : "0px";
+      } else if (barRef.current) {
+        // MODE lama "materialize on scroll" -- HANYA dipakai halaman yang
+        // sama sekali tidak punya back button maupun actions (murni
+        // small title kosmetik, tidak ada elemen interaktif yang perlu
+        // dijaga reachable) -- lihat komentar panjang di bawah kenapa
+        // height juga diinterpolasi (bukan cuma opacity).
         barRef.current.style.opacity = String(Math.min(progress * 1.4, 1));
         // PENTING: bar ini adalah flow child PALING ATAS di dalam <main>
         // (portal-nya dipasang SEBELUM ribbon/breadcrumb, lihat App.tsx) --
@@ -239,6 +279,13 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   };
 
   const hasBack = backTo !== undefined;
+  // Halaman yang punya elemen INTERAKTIF di toolbar (back button dan/atau
+  // actions) dapat mode "toolbar selalu tampil" -- reachable dari detik
+  // pertama, tidak perlu discroll dulu (lihat cabang `bar` di bawah).
+  // Halaman polos (cuma small title kosmetik, tanpa back/actions) tetap
+  // pakai mode lama "materialize on scroll" -- tidak ada yang perlu
+  // dijaga reachable-nya, jadi bar yang nongol on-scroll masih pas.
+  const hasToolbarContent = hasBack || !!actions;
 
   // Fallback desktop: large title polos tanpa animasi/bar sama sekali.
   if (isDesktop) {
@@ -257,20 +304,31 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     );
   }
 
-  const bar = (
+  const bar = hasToolbarContent ? (
+    // MODE "toolbar selalu tampil" -- dipakai kalau halaman punya back
+    // button dan/atau actions. Container-nya (barRef) SENGAJA fixed
+    // height sejak mount (BUKAN diinterpolasi 0 -> BAR_HEIGHT_PX kayak
+    // mode lama) -- supaya back button & actions langsung reachable dari
+    // detik pertama halaman dibuka, tidak perlu discroll dulu. Sebagai
+    // gantinya, background (blur+warna+border) dipisah ke layer sendiri
+    // (barBgRef, absolute inset-0 di belakang tombol2) yang TETAP
+    // di-interpolasi ikut scroll progress -- efek "mengembun jadi solid"
+    // pas discroll masih kerasa, cuma sekarang backgroundnya doang yang
+    // fade, bukan seluruh toolbar termasuk tombol2 di dalamnya.
     <div
       ref={barRef}
-      // height & opacity awal 0 lewat inline style (bukan class) supaya
-      // tidak kedip "full height/opacity" sekejap sebelum effect di atas
-      // sempat jalan pertama kali (mis. kalau render pertama browser
-      // sempat paint sebelum JS commit style dari applyProgress()).
-      style={{ opacity: 0, height: 0, borderBottomWidth: 0 }}
-      className={cx(
-        "sticky top-0 z-30 w-full overflow-hidden flex items-center px-4 sm:px-6 backdrop-blur-md",
-        "bg-slate-900/85 light_sakura:bg-white/85",
-        tokens.border.default
-      )}
+      style={{ height: BAR_HEIGHT_PX }}
+      className="sticky top-0 z-30 w-full flex items-center px-4 sm:px-6"
     >
+      <div
+        ref={barBgRef}
+        style={{ opacity: 0, borderBottomWidth: 0 }}
+        className={cx(
+          "absolute inset-0 backdrop-blur-md",
+          "bg-slate-900/85 light_sakura:bg-white/85",
+          tokens.border.default
+        )}
+      />
       {hasBack && (
         <button
           type="button"
@@ -282,33 +340,55 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         </button>
       )}
       {actions && (
-        // Sama seperti back button, actions SENGAJA tidak ikut fade
-        // progress -- begitu bar-nya sendiri kelihatan (progress > 0),
-        // actions langsung full terlihat, bukan fade terpisah. ml-auto
-        // dorong ke ujung kanan (back button di sebelah kiri cuma flow
-        // item lain di flex ini, h2 title di tengah posisinya absolute
-        // jadi tidak ikut mendorong).
+        // Sama seperti back button, actions SELALU full terlihat sejak
+        // mount (bukan fade terpisah) -- ml-auto dorong ke ujung kanan
+        // (back button di kiri cuma flow item lain di flex ini, h2 title
+        // di tengah posisinya absolute jadi tidak ikut mendorong).
         <div className="relative z-10 ml-auto shrink-0 flex items-center gap-1">
           {actions}
         </div>
       )}
-      {/* Small title diposisikan absolute & inset-x-0 supaya benar-benar
-          center terhadap lebar bar, bukan center terhadap sisa ruang
-          setelah tombol back/actions. Padding kiri/kanan SEKARANG
-          kondisional -- sebelumnya px-10 statis di kedua sisi walau
-          halaman tanpa backTo (mis. History, Wallets) sama sekali tidak
-          punya tombol back, jadi ada ruang kosong nggak perlu. pl-10
-          cuma dipasang kalau hasBack; pr-16 cuma kalau ada actions (2
-          icon-button ukuran biasa butuh lebih dari 40px). Kalau
-          keduanya kosong, title dapat ruang penuh (pl-4 sm:pl-6/pr-4
-          sm:pr-6 -- senada dengan padding tepi bar sendiri). */}
+      {/* Small title TETAP crossfade ikut scroll progress seperti biasa
+          (ini bagian "Large Title Navigation" yang tidak berubah) --
+          cuma back button/actions/background di sekitarnya yang sekarang
+          beda perilaku. Padding kondisional: pl-10 cuma kalau hasBack;
+          pr-16 cuma kalau ada actions (2 icon-button ukuran biasa butuh
+          lebih dari 40px) supaya title yang truncate tidak ketiban. */}
       <h2
         ref={smallTitleRef}
         style={{ opacity: 0 }}
         className={cx(
-          "absolute inset-x-0 text-center font-sans font-semibold text-sm truncate pointer-events-none",
+          "absolute z-10 inset-x-0 text-center font-sans font-semibold text-sm truncate pointer-events-none",
           hasBack ? "pl-10" : "pl-4 sm:pl-6",
           actions ? "pr-16" : "pr-4 sm:pr-6",
+          tokens.text.heading
+        )}
+      >
+        {title}
+      </h2>
+    </div>
+  ) : (
+    // MODE lama "materialize on scroll" -- halaman tanpa back button
+    // maupun actions (mis. History, Wallets tanpa keduanya). Tidak ada
+    // elemen interaktif yang perlu dijaga reachable, jadi bar yang
+    // benar2 nongol cuma pas discroll (height+opacity+border sama2
+    // diinterpolasi dari 0) masih pas -- lihat komentar panjang di
+    // applyProgress() soal kenapa height juga diinterpolasi, bukan cuma
+    // opacity.
+    <div
+      ref={barRef}
+      style={{ opacity: 0, height: 0, borderBottomWidth: 0 }}
+      className={cx(
+        "sticky top-0 z-30 w-full overflow-hidden flex items-center px-4 sm:px-6 backdrop-blur-md",
+        "bg-slate-900/85 light_sakura:bg-white/85",
+        tokens.border.default
+      )}
+    >
+      <h2
+        ref={smallTitleRef}
+        style={{ opacity: 0 }}
+        className={cx(
+          "absolute inset-x-0 pl-4 sm:pl-6 pr-4 sm:pr-6 text-center font-sans font-semibold text-sm truncate pointer-events-none",
           tokens.text.heading
         )}
       >

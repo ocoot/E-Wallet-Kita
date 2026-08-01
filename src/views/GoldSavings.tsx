@@ -507,12 +507,8 @@ export const GoldSavings: React.FC = () => {
         }
       >
 
-          <div className={cx("flex justify-end rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
-            <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition-all active:scale-95 shadow-lg shadow-amber-500/20 shrink-0 cursor-pointer">
-              <Plus size={16} /> {t("gold.add_button")}
-            </button>
-          </div>
+          {/* Tombol Add SUDAH dipindah ke actions slot di sticky toolbar --
+              sengaja TIDAK didobel di sini. */}
 
           {/* Pola resmi grid statistik 4-angka: grid-cols-2 sm:grid-cols-4 gap-3 (acuan yang dipakai juga di AdminErrorMonitor, AdminBackup, AdminUserManager) */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
