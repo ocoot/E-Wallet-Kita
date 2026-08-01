@@ -14,6 +14,11 @@ import { audioFeedback } from "../lib/audio";
  *  bukan finish lebih awal/lambat dari itu. */
 const COLLAPSE_DISTANCE = 64;
 
+/** Tinggi penuh (px) bar sticky begitu progress = 1. Dipakai untuk
+ *  menginterpolasi `height` bar dari 0 -> nilai ini (BUKAN cuma opacity) --
+ *  lihat komentar panjang soal kenapa di bagian bawah file ini. */
+const BAR_HEIGHT_PX = 48;
+
 interface CollapsingPageHeaderProps {
   /** Judul halaman. Dipakai UNTUK KEDUANYA: large title besar di badan
    *  halaman (progress=0) dan small title di navbar sticky (progress=1). */
@@ -123,6 +128,15 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         // penuh) -- biar transisinya kelihatan seperti SATU bar yang
         // "mengembun" jadi solid, bukan bar yang tiba-tiba nongol.
         barRef.current.style.opacity = String(Math.min(progress * 1.4, 1));
+        // PENTING: bar ini adalah flow child PALING ATAS di dalam <main>
+        // (portal-nya dipasang SEBELUM ribbon/breadcrumb, lihat App.tsx) --
+        // kalau cuma opacity yang dianimasikan, tinggi bar (padding+konten)
+        // tetap "makan tempat" walau progress=0, jadi ada gap kosong di
+        // atas ribbon SEBELUM sempat discroll sama sekali. Makanya height
+        // juga diinterpolasi 0 -> BAR_HEIGHT_PX, bukan cuma opacity --
+        // begitu progress balik ke 0 (scroll ke atas lagi), bar beneran
+        // collapse ke 0px, bukan cuma transparan.
+        barRef.current.style.height = `${progress * BAR_HEIGHT_PX}px`;
       }
     };
 
@@ -166,13 +180,13 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   const bar = (
     <div
       ref={barRef}
-      // opacity awal 0 lewat inline style (bukan class) supaya tidak kedip
-      // "full opacity" sekejap sebelum effect di atas sempat jalan pertama
-      // kali (mis. kalau render pertama browser sempat paint sebelum JS
-      // commit style dari applyProgress()).
-      style={{ opacity: 0 }}
+      // height & opacity awal 0 lewat inline style (bukan class) supaya
+      // tidak kedip "full height/opacity" sekejap sebelum effect di atas
+      // sempat jalan pertama kali (mis. kalau render pertama browser
+      // sempat paint sebelum JS commit style dari applyProgress()).
+      style={{ opacity: 0, height: 0 }}
       className={cx(
-        "sticky top-0 z-30 w-full px-4 sm:px-6 py-2.5 flex items-center border-b backdrop-blur-md",
+        "sticky top-0 z-30 w-full overflow-hidden flex items-center px-4 sm:px-6 border-b backdrop-blur-md",
         "bg-slate-900/85 light_sakura:bg-white/85",
         tokens.border.default
       )}

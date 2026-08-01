@@ -569,7 +569,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                 ada sama sekali, tidak ada z-index/margin overlap yang
                 perlu disesuaikan lagi kalau ribbon berubah ukuran. */}
             {location.pathname !== "/dashboard" && (
-              <div className="relative mb-2 sm:mb-3">
+              <div className="relative mb-2 sm:mb-3 hidden lg:block">
                 <Breadcrumbs />
               </div>
             )}
