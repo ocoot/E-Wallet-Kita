@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useThemeTokens } from "../hooks/useThemeTokens";
-import { useMainScrollRef } from "../contexts/MainScrollContext";
+import { useMainScrollRef, useHeaderPortalNode } from "../contexts/MainScrollContext";
 import { audioFeedback } from "../lib/audio";
 
 interface CollapsingPageHeaderProps {
@@ -47,6 +48,29 @@ interface CollapsingPageHeaderProps {
  * "surface translucent" terpusat di tokens.ts (dipakai baru di 1 tempat
  * ini), jadi ditulis inline dulu -- promosikan ke tokens.ts kalau pola
  * ini nanti disebar ke ≥2 halaman lain sesuai aturan rollout token.
+ *
+ * FIX (UI/UX, Agu 2026): bar sticky di komponen ini SEBELUMNYA render
+ * langsung di tempat (di dalam AdminErrorMonitor, yang notabene dirender
+ * di dalam `motion.div` transisi route di App.tsx). Itu bug -- `motion.div`
+ * transisi itu SELALU punya inline `transform` (Framer Motion tetap
+ * menulis `transform: translateX(0px)` bahkan di state diam "center"), dan
+ * ancestor dengan `transform` apa pun membentuk *containing block* baru
+ * untuk descendant `position: sticky`. Akibatnya `sticky top-0` di sini
+ * dulu tidak pernah benar-benar menempel ke scrollport `<main>` -- state
+ * `isCollapsed` sudah `true` saat discroll, tapi barnya cuma diam di posisi
+ * flow normalnya (paling atas halaman) dan langsung ketutup/kescroll
+ * lewat, jadi kelihatan seolah fiturnya tidak ada.
+ * Perbaikan: komponen ini sekarang di-`createPortal` ke node portal yang
+ * dipasang App.tsx sebagai anak LANGSUNG `<main>`, DI LUAR motion.div
+ * (lihat `useHeaderPortalNode` / `HeaderPortalProvider` di
+ * MainScrollContext.tsx). Dengan begitu tidak ada containing block
+ * transform di antara bar ini dan `<main>`, jadi `position: sticky`
+ * kembali menempel dengan benar. Padding horizontal juga diganti dari
+ * trik `-mx-4 sm:-mx-6 lg:-mx-8` (negative margin, dulu diasumsikan
+ * parent langsungnya adalah div berpadding `p-4 sm:p-6 lg:p-8`) menjadi
+ * `px-4 sm:px-6 lg:px-8` biasa -- sekarang komponen ini sungguhan anak
+ * langsung `<main>` (lebar penuh), bukan lagi bersarang di dalam div
+ * `max-w-7xl mx-auto` yang di App.tsx tidak lagi punya padding sendiri.
  */
 export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   title,
@@ -56,6 +80,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   const navigate = useNavigate();
   const { tokens, cx } = useThemeTokens();
   const scrollRef = useMainScrollRef();
+  const portalNode = useHeaderPortalNode();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
@@ -75,7 +100,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     else navigate(-1);
   };
 
-  return (
+  const content = (
     <AnimatePresence>
       {isCollapsed && (
         <motion.div
@@ -84,7 +109,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.18, ease: "easeOut" }}
           className={cx(
-            "sticky top-0 z-30 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3",
+            "sticky top-0 z-30 w-full px-4 sm:px-6 lg:px-8 py-3",
             "flex items-center gap-3 border-b backdrop-blur-md",
             "bg-slate-900/85 light_sakura:bg-white/85",
             tokens.border.default
@@ -105,4 +130,10 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
       )}
     </AnimatePresence>
   );
+
+  // Fallback (portalNode belum terpasang, mis. render di luar App shell
+  // seperti test/storybook): render di tempat seperti sebelumnya, lebih
+  // baik ada walau berisiko kena bug transform, daripada tidak render
+  // sama sekali.
+  return portalNode ? createPortal(content, portalNode) : content;
 };

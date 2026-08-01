@@ -29,7 +29,7 @@ import { UpdateCheckingIndicator } from "./components/UpdateCheckingIndicator";
 import { Breadcrumbs } from "./components/Breadcrumbs";
 import { usePageRibbonBackground } from "./components/PageRibbonBackground";
 import { SplashScreen } from "./components/SplashScreen";
-import { MainScrollProvider } from "./contexts/MainScrollContext";
+import { MainScrollProvider, HeaderPortalProvider } from "./contexts/MainScrollContext";
 import { AppLockProvider, useAppLock } from "./contexts/AppLockContext";
 import { AppLockScreen } from "./components/AppLockScreen";
 import {
@@ -201,6 +201,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
   // MainScrollProvider supaya usePullToRefresh (dipakai dari Dashboard/
   // History) bisa attach touch listener ke scroll container yang benar.
   const mainScrollRef = useRef<HTMLElement | null>(null);
+  // FIX (UI/UX, Agu 2026): node portal untuk CollapsingPageHeader, dipasang
+  // sebagai anak LANGSUNG <main> di bawah -- lihat komentar panjang di
+  // HeaderPortalContext (MainScrollContext.tsx) soal kenapa ini perlu ada:
+  // motion.div transisi route selalu punya inline `transform`, yang
+  // membentuk containing block baru dan mematahkan `position: sticky` di
+  // dalamnya. State (bukan ref biasa) supaya re-render & context ter-update
+  // begitu callback ref di bawah terpasang saat mount.
+  const [headerPortalNode, setHeaderPortalNode] = useState<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -470,6 +478,15 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
         className={`flex-1 min-h-dvh overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
+      {/* FIX (UI/UX, Agu 2026): target portal utk CollapsingPageHeader --
+          HARUS jadi anak langsung <main> ini, DI LUAR & SEBELUM motion.div
+          transisi route di bawah, supaya sticky di dalamnya tidak
+          "terkurung" containing block dari transform milik motion.div itu.
+          `display: contents` (class Tailwind "contents") dipilih sengaja --
+          div ini murni titik pasang portal, tidak boleh punya box/pengaruh
+          layout sendiri sama sekali. */}
+      <div ref={setHeaderPortalNode} className="contents" />
+      <HeaderPortalProvider node={headerPortalNode}>
       <MainScrollProvider scrollRef={mainScrollRef}>
         {/* Running text maintenance banner, shown globally above all pages */}
         <MaintenanceBanner />
@@ -616,6 +633,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
           </div>
         </div>
       </MainScrollProvider>
+      </HeaderPortalProvider>
       </main>
 
       {/* Safety Sign-out Modal dialog prompt */}

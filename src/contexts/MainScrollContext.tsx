@@ -24,3 +24,41 @@ export const MainScrollProvider: React.FC<{
 export function useMainScrollRef(): React.RefObject<HTMLElement | null> | null {
   return useContext(MainScrollContext);
 }
+
+// ─────────────────────────────────────────────────────────────────────────
+// FIX (UI/UX, Agu 2026): kontainer portal untuk header sticky/fixed halaman
+// (dipakai pertama oleh CollapsingPageHeader).
+//
+// Root cause kenapa CollapsingPageHeader sebelumnya TIDAK PERNAH kelihatan
+// menempel walau state `isCollapsed`-nya sudah `true`: di App.tsx, seluruh
+// konten route dibungkus `motion.div` untuk animasi transisi push/pop-nya
+// (variants pakai `x`, termasuk di state diam "center" yaitu `x: 0`).
+// Framer Motion tetap menulis `transform: translateX(0px)` inline walau
+// nilainya nol -- dan menurut spec CSS, ancestor APA PUN dengan `transform`
+// selain `none` (termasuk translateX(0px)) membentuk *containing block*
+// baru untuk descendant `position: sticky`/`fixed`. Akibatnya `position:
+// sticky; top: 0` di dalam motion.div itu tidak lagi dihitung relatif ke
+// scrollport `<main overflow-y-auto>`, melainkan relatif ke box motion.div
+// itu sendiri -- efektif berperilaku seperti `position: relative` yang diam
+// di posisi flow normalnya (paling atas halaman, langsung terscroll lewat
+// begitu saja), BUKAN menempel ke viewport.
+//
+// Perbaikannya: sediakan satu node portal yang dipasang sebagai anak
+// LANGSUNG `<main>`, SEBELUM motion.div transisi mana pun (lihat App.tsx).
+// Komponen seperti CollapsingPageHeader me-render dirinya lewat
+// `createPortal` ke node ini, sehingga posisi DOM efektifnya berada di LUAR
+// containing block manapun kecuali `<main>` sendiri -- `position: sticky`
+// pun kembali menempel dengan benar ke scrollport `<main>`.
+const HeaderPortalContext = createContext<HTMLDivElement | null>(null);
+
+export const HeaderPortalProvider: React.FC<{
+  node: HTMLDivElement | null;
+  children: React.ReactNode;
+}> = ({ node, children }) => (
+  <HeaderPortalContext.Provider value={node}>{children}</HeaderPortalContext.Provider>
+);
+
+/** Dipakai dari CollapsingPageHeader (dan komponen sticky header sejenis ke depannya). Return `null` kalau dipanggil di luar provider -- caller wajib fallback ke render biasa (tanpa portal) di kondisi itu. */
+export function useHeaderPortalNode(): HTMLDivElement | null {
+  return useContext(HeaderPortalContext);
+}
