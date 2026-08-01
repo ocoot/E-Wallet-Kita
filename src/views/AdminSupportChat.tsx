@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "motion/react";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
@@ -327,6 +328,7 @@ export const AdminSupportChat: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <CollapsingPageHeader title={t("admin_support_chat.title")} backTo="/admin" />
       <div className="relative">
         <div>
           <AdminBackBar />

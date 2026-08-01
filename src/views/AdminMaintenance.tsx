@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -174,6 +175,7 @@ export const AdminMaintenance: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <CollapsingPageHeader title={t("admin.maintenance_title")} backTo="/admin" />
       <div className="relative">
         <div>
           <AdminBackBar />

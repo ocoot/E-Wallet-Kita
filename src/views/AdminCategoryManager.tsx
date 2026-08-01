@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useToast } from "../contexts/ToastContext";
@@ -182,6 +183,7 @@ export const AdminCategoryManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <CollapsingPageHeader title={t("admin.category_manager_title")} backTo="/admin" />
       <div className="relative">
         <div>
           <AdminBackBar />

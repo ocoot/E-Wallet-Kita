@@ -11,6 +11,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { reportFrontendError } from "../lib/errorReporter";
 import {
   User,
@@ -465,6 +466,7 @@ export const AdminUserManager: React.FC = () => {
   return (
     <div className="space-y-5">
 
+      <CollapsingPageHeader title={t("admin.tab_users")} backTo="/admin" />
       <div className="relative">
         <div>
           <AdminBackBar />

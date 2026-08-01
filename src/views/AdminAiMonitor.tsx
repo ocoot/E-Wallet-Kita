@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import { reportFrontendError } from "../lib/errorReporter";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { Card } from "../components/ui/Card";
 import { BADGE_SIZE_CLASSES } from "../components/ui/Badge";
 import { supabase } from "../lib/supabase";
@@ -144,6 +145,7 @@ export const AdminAiMonitor: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      <CollapsingPageHeader title={t("ai_monitor.title")} backTo="/admin" />
       <div className="relative">
         <div>
           <AdminBackBar />

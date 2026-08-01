@@ -5,6 +5,7 @@ import { ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useMainScrollRef, useHeaderPortalNode } from "../contexts/MainScrollContext";
+import { useIsDesktopViewport } from "../hooks/useIsDesktopViewport";
 import { audioFeedback } from "../lib/audio";
 
 interface CollapsingPageHeaderProps {
@@ -24,12 +25,22 @@ interface CollapsingPageHeaderProps {
 }
 
 /**
- * PILOT (Agu 2026): versi pertama pola "Large Title collapse ke sticky
- * compact header" ala native iOS (Settings/Mail bawaan: judul besar di
- * atas mengecil & pindah ke top bar sticky begitu discroll, lengkap
- * tombol back) -- lihat diskusi UI/UX di percakapan ini untuk konteks.
- * Dicoba dulu di SATU halaman (AdminErrorMonitor.tsx) sebelum disebar ke
- * halaman Admin/Settings lain.
+ * Pola "Large Title collapse ke sticky compact header" ala native iOS
+ * (Settings/Mail bawaan: judul besar di atas mengecil & pindah ke top bar
+ * sticky begitu discroll, lengkap tombol back). Awalnya dicoba dulu SATU
+ * halaman (AdminErrorMonitor.tsx) sebagai PILOT, sekarang sudah disebar ke
+ * seluruh halaman turunan Admin Panel (lihat masing-masing view Admin*.tsx).
+ *
+ * MOBILE-ONLY (Agu 2026): sengaja tidak dirender sama sekali di breakpoint
+ * desktop (`lg`, >=1024px, dicek lewat `useIsDesktopViewport` -- breakpoint
+ * yang sama dipakai Sidebar/MobileBottomNav supaya tetap konsisten satu
+ * sumber kebenaran). Alasannya: pola "large title collapse ke top bar
+ * sticky" ini meniru navigasi native iOS/Android yang jarinya menjangkau
+ * status bar atas -- di desktop, Sidebar persisten di kiri sudah selalu
+ * terlihat sebagai konteks navigasi, dan `AdminBackBar` (pill kecil
+ * "Kembali ke Panel", tetap dipertahankan apa adanya) sudah cukup jadi
+ * jalan kembali tanpa perlu lapisan sticky tambahan yang di layar lebar
+ * malah terasa berlebihan/tidak pada tempatnya.
  *
  * Baca posisi scroll dari `<main overflow-y-auto>` di App.tsx lewat
  * `useMainScrollRef()` (context yang sama dipakai `usePullToRefresh`) --
@@ -81,9 +92,16 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   const { tokens, cx } = useThemeTokens();
   const scrollRef = useMainScrollRef();
   const portalNode = useHeaderPortalNode();
+  const isDesktop = useIsDesktopViewport();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
+    // Tidak perlu pasang scroll listener sama sekali di desktop -- lihat
+    // catatan "MOBILE-ONLY" di komentar komponen ini. Guard di DALAM effect
+    // (bukan skip pemanggilan hook-nya) supaya urutan hooks tetap konsisten
+    // antar render sesuai Rules of Hooks.
+    if (isDesktop) { setIsCollapsed(false); return; }
+
     const el = scrollRef?.current;
     if (!el) return;
 
@@ -92,13 +110,18 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
 
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => el.removeEventListener("scroll", handleScroll);
-  }, [scrollRef, threshold]);
+  }, [scrollRef, threshold, isDesktop]);
 
   const handleBack = () => {
     audioFeedback.playClick();
     if (backTo) navigate(backTo);
     else navigate(-1);
   };
+
+  // Guard render di sini (SETELAH semua hooks di atas sudah dipanggil,
+  // bukan sebelumnya) supaya jumlah/urutan hooks tetap sama di setiap
+  // render -- lihat catatan "MOBILE-ONLY" di komentar komponen.
+  if (isDesktop) return null;
 
   const content = (
     <AnimatePresence>

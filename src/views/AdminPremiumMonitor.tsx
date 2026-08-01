@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import { AdminBackBar } from "../components/AdminBackBar";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { Card } from "../components/ui/Card";
 import { BADGE_SIZE_CLASSES } from "../components/ui/Badge";
 import { supabase } from "../lib/supabase";
@@ -207,6 +208,7 @@ export const AdminPremiumMonitor: React.FC = () => {
   return (
     <div className="space-y-6">
 
+      <CollapsingPageHeader title={t("admin.premium_monitor_title")} backTo="/admin" />
       <div className="relative">
         <div>
           <AdminBackBar />
