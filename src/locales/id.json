@@ -1080,7 +1080,17 @@
     "col_time": "Waktu",
     "no_logs_found": "Tidak ada log error untuk filter ini.",
     "just_now": "Baru saja",
-    "showing_all": "Menampilkan semua {count} log"
+    "showing_all": "Menampilkan semua {count} log",
+    "jobs_status_title": "Status Scheduled Jobs (pg_cron)",
+    "jobs_status_error": "Gagal memuat status scheduled jobs.",
+    "jobs_status_empty": "Tidak ada job pg_cron yang terjadwal.",
+    "jobs_inactive": "NONAKTIF",
+    "jobs_last_run": "Terakhir {time} lalu",
+    "jobs_never_run": "Belum pernah jalan",
+    "jobs_interval_15min": "Tiap 15 menit",
+    "jobs_interval_hourly": "Tiap jam",
+    "jobs_interval_daily": "Tiap hari",
+    "jobs_interval_monthly": "Tiap bulan"
   },
   "maintenance": {
     "feature_locked_title": "Fitur Sedang Maintenance",
@@ -1500,6 +1510,7 @@
     "buyback_short": "Buyback",
     "prices_updated_as_of": "Harga acuan per: {date} (indikatif)",
     "prices_updated_mismatch": "Harga acuan per: {date} (indikatif) -- beberapa brand mungkin belum tersinkron",
+    "prices_updated_stale": "Harga acuan per: {date} -- sudah lama tidak diperbarui, mungkin tidak akurat",
     "price_updated_short": "Update {date}",
     "price_stale_brand_hint": "Harga brand ini lebih lama dari brand lain -- kemungkinan belum tersinkron di sinkronisasi terakhir.",
     "price_up_hint": "Naik {amount} dibanding harga hari sebelumnya",

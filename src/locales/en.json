@@ -1080,7 +1080,17 @@
     "col_time": "Time",
     "no_logs_found": "No error logs found for this filter.",
     "just_now": "Just now",
-    "showing_all": "Showing all {count} logs"
+    "showing_all": "Showing all {count} logs",
+    "jobs_status_title": "Scheduled Jobs Status (pg_cron)",
+    "jobs_status_error": "Failed to load scheduled jobs status.",
+    "jobs_status_empty": "No pg_cron jobs scheduled.",
+    "jobs_inactive": "INACTIVE",
+    "jobs_last_run": "Last run {time} ago",
+    "jobs_never_run": "Never run",
+    "jobs_interval_15min": "Every 15 minutes",
+    "jobs_interval_hourly": "Every hour",
+    "jobs_interval_daily": "Every day",
+    "jobs_interval_monthly": "Every month"
   },
   "maintenance": {
     "feature_locked_title": "Under Maintenance",
@@ -1500,6 +1510,7 @@
     "buyback_short": "Buyback",
     "prices_updated_as_of": "Reference price as of {date} (indicative)",
     "prices_updated_mismatch": "Reference price as of {date} (indicative) -- some brands may not have synced yet",
+    "prices_updated_stale": "Reference price as of {date} -- hasn't updated in a while, may be inaccurate",
     "price_updated_short": "Updated {date}",
     "price_stale_brand_hint": "This brand's price is older than the others -- it may not have synced in the latest run yet.",
     "price_up_hint": "Up {amount} from the previous day's price",

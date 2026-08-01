@@ -52,6 +52,27 @@ interface ErrorStats {
   by_source: SourceStat[] | null;
 }
 
+// FIX (UI/UX, Agu 2026): insiden 14/7/2026 -- 4 job pg_cron hilang total
+// dari cron.job selama ~18 hari TANPA satupun baris masuk ke error_logs
+// (kalau job tidak pernah dipanggil, bukan dipanggil-lalu-gagal, tidak ada
+// yang bisa dicatat function-nya sendiri). Halaman ini (Monitor Error)
+// cuma bisa lihat kegagalan yang TERCATAT -- buta terhadap "job-nya
+// sendiri sudah tidak ada". Kartu baru di bawah baca RPC
+// `get_scheduled_jobs_status()` (lihat migration
+// 20260901000000_scheduled_jobs_status_rpc.sql) yang query cron.job +
+// cron.job_run_details LANGSUNG, supaya kelas kegagalan ini kelihatan di
+// UI tanpa perlu SQL Editor manual.
+interface ScheduledJobStatus {
+  jobname: string;
+  schedule: string;
+  active: boolean;
+  last_run_at: string | null;
+  last_run_status: string | null;
+  last_run_message: string | null;
+  expected_interval_minutes: number;
+  is_overdue: boolean;
+}
+
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const PERIOD_OPTIONS = [
@@ -78,6 +99,15 @@ function formatRelativeTime(iso: string, t: (k: string) => string): string {
   return `${Math.floor(hrs / 24)}d`;
 }
 
+// Label kasar interval job dari expected_interval_minutes (lihat CASE di
+// RPC) -- bukan parsing cron expression, cukup untuk ditampilkan di kartu.
+function formatJobInterval(minutes: number, t: (k: string) => string): string {
+  if (minutes <= 15) return t("error_monitor.jobs_interval_15min");
+  if (minutes <= 60) return t("error_monitor.jobs_interval_hourly");
+  if (minutes <= 24 * 60) return t("error_monitor.jobs_interval_daily");
+  return t("error_monitor.jobs_interval_monthly");
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export const AdminErrorMonitor: React.FC = () => {
@@ -93,6 +123,9 @@ export const AdminErrorMonitor: React.FC = () => {
   const [logsLoading, setLogsLoading] = useState(true);
   const [logsError, setLogsError] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [jobsStatus, setJobsStatus] = useState<ScheduledJobStatus[]>([]);
+  const [jobsStatusLoading, setJobsStatusLoading] = useState(true);
+  const [jobsStatusError, setJobsStatusError] = useState(false);
 
   const [periodHours, setPeriodHours] = useState<24 | 168 | 720>(24);
   const [levelFilter, setLevelFilter] = useState<"all" | ErrorLogRow["level"]>("all");
@@ -147,6 +180,25 @@ export const AdminErrorMonitor: React.FC = () => {
     }
   }, [page, pageSize, levelFilter, sourceFilter, showToast, t]);
 
+  const loadJobsStatus = useCallback(async () => {
+    setJobsStatusLoading(true);
+    setJobsStatusError(false);
+    try {
+      const { data, error } = await supabase.rpc("get_scheduled_jobs_status");
+      if (error) throw error;
+      setJobsStatus((data as ScheduledJobStatus[]) || []);
+    } catch (err: any) {
+      void reportFrontendError({
+        source: "frontend:admin-error-monitor",
+        message: err instanceof Error ? err.message : String(err),
+        context: { fn: "loadJobsStatus" },
+      });
+      setJobsStatusError(true);
+    } finally {
+      setJobsStatusLoading(false);
+    }
+  }, []);
+
   useEffect(() => { setPage(0); }, [levelFilter, sourceFilter, pageSize]);
 
   useEffect(() => {
@@ -156,6 +208,10 @@ export const AdminErrorMonitor: React.FC = () => {
   useEffect(() => {
     if (isAdmin) loadLogs();
   }, [isAdmin, loadLogs]);
+
+  useEffect(() => {
+    if (isAdmin) loadJobsStatus();
+  }, [isAdmin, loadJobsStatus]);
 
   if (!isAdmin) return null;
 
@@ -170,7 +226,7 @@ export const AdminErrorMonitor: React.FC = () => {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await Promise.all([loadStats(), loadLogs()]);
+      await Promise.all([loadStats(), loadLogs(), loadJobsStatus()]);
       showToast(t("admin.refresh_success"), "success");
     } catch (err: any) {
       showToast(err.message || t("toast.error_general"), "error");
@@ -259,6 +315,65 @@ export const AdminErrorMonitor: React.FC = () => {
               <span>{t("error_monitor.all_clear")}</span>
             </div>
           )}
+
+          {/* Status Scheduled Jobs (pg_cron) -- lihat komentar di interface
+              ScheduledJobStatus soal kenapa ini perlu ada TERPISAH dari
+              statistik error_logs di atas: kelas kegagalan "job hilang/
+              tidak pernah dipanggil" tidak pernah muncul di error_logs
+              sama sekali. */}
+          <Card padding="md" border="neutral" elevation="sm">
+            <p className={cx("text-sm font-semibold mb-4", tokens.text.secondary)}>
+              {t("error_monitor.jobs_status_title")}
+            </p>
+            {jobsStatusLoading ? (
+              <div className="py-6 flex items-center justify-center">
+                <Activity className="animate-pulse text-red-500" size={20} />
+              </div>
+            ) : jobsStatusError ? (
+              <p className={cx("text-xs", tokens.text.muted)}>{t("error_monitor.jobs_status_error")}</p>
+            ) : jobsStatus.length === 0 ? (
+              <p className={cx("text-xs", tokens.text.muted)}>{t("error_monitor.jobs_status_empty")}</p>
+            ) : (
+              <div className="space-y-2">
+                {jobsStatus.map((job) => (
+                  <div
+                    key={job.jobname}
+                    className={cx(
+                      "flex items-center justify-between gap-3 rounded-xl border px-3 py-2.5",
+                      job.is_overdue ? "border-red-500/30 bg-red-500/10" : tokens.border.default
+                    )}
+                  >
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        {job.is_overdue ? (
+                          <XCircle size={13} className="text-red-400 shrink-0" />
+                        ) : (
+                          <Activity size={13} className="text-emerald-400 shrink-0" />
+                        )}
+                        <span className={cx("font-mono text-xs font-semibold truncate", tokens.text.secondary)}>{job.jobname}</span>
+                        {!job.active && (
+                          <span className="text-[10px] font-semibold text-amber-400 shrink-0">{t("error_monitor.jobs_inactive")}</span>
+                        )}
+                      </div>
+                      <p className={cx("text-[11px] mt-0.5", tokens.text.muted)}>
+                        {formatJobInterval(job.expected_interval_minutes, t)}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={cx("text-xs font-mono font-semibold", job.is_overdue ? "text-red-400" : tokens.text.secondary)}>
+                        {job.last_run_at
+                          ? t("error_monitor.jobs_last_run", { time: formatRelativeTime(job.last_run_at, t) })
+                          : t("error_monitor.jobs_never_run")}
+                      </p>
+                      {job.last_run_status && (
+                        <p className={cx("text-[10px] mt-0.5", tokens.text.muted)}>{job.last_run_status}</p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
 
           {/* By-source breakdown */}
           {sources.length > 0 && (

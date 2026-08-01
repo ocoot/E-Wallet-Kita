@@ -143,6 +143,34 @@ export const GoldSavings: React.FC = () => {
     () => latestPriceDate != null && prices.some(p => p.price_date !== latestPriceDate),
     [prices, latestPriceDate]
   );
+  // FIX (UI/UX, Agu 2026): priceDatesMismatch di atas HANYA mendeteksi
+  // brand yang tanggalnya BEDA satu sama lain -- kalau SEMUA brand
+  // berhenti sync BARENGAN (persis insiden 14/7/2026: pg_cron mati total,
+  // seluruh gold_prices beku di tanggal yang sama untuk semua brand),
+  // priceDatesMismatch tetap FALSE selamanya karena tidak ada mismatch
+  // ANTAR brand -- padahal datanya sendiri sudah basi berhari-hari.
+  // Headline "Harga acuan per: ..." di bawah sebelumnya cuma baca
+  // priceDatesMismatch, jadi buta terhadap kasus ini walau banner amber
+  // `stale_pocket_count` di bagian lain halaman (lihat di bawah) sudah
+  // benar mendeteksinya lewat threshold `fetched_at` (jam), bukan cuma
+  // `price_date` (tanggal). Dua sinyal staleness yang tidak nyambung.
+  //
+  // isPriceDataStale menyamakan ambang batas persis dengan backend
+  // (`gold_price_staleness_hours`, default 60 -- lihat
+  // `_get_fresh_gold_price()` & `get_gold_holdings_summary()` di migration
+  // 20260803000000_gold_savings.sql) TAPI dihitung dari `fetched_at` semua
+  // brand aktif langsung di sini -- BUKAN bergantung ke `summary`, supaya
+  // tetap benar walau user belum punya pos emas sama sekali (pocket_count
+  // 0 -> stale_pocket_count SELALU 0, meski feed harganya sendiri basi).
+  // 60 di-hardcode sengaja (bukan fetch app_settings ke server cuma untuk
+  // 1 angka ini) -- kalaupun admin ubah setting itu di masa depan, dampak
+  // salahnya cuma warna headline sedikit meleset, BUKAN salah blokir
+  // transaksi (guard transaksi tetap baca app_settings asli di server).
+  const GOLD_PRICE_STALE_HOURS = 60;
+  const isPriceDataStale = useMemo(
+    () => prices.some(p => Date.now() - new Date(p.fetched_at).getTime() > GOLD_PRICE_STALE_HOURS * 60 * 60 * 1000),
+    [prices]
+  );
   // Defensif: kalau pos yang sedang diedit brand-nya sudah tidak lagi
   // disinkron (di luar ACTIVE_GOLD_BRANDS -- mis. dibuat sebelum cakupan
   // dipersempit), tetap tampilkan brand itu di dropdown supaya tidak
@@ -536,10 +564,19 @@ export const GoldSavings: React.FC = () => {
               Konten di-duplikasi 2x supaya loop-nya mulus (lihat .gold-marquee-track). */}
           {prices.length > 0 && (
             <div className="space-y-2">
-              <p className={cx("text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold px-1", tokens.text.faint)}>
-                {t(priceDatesMismatch ? "gold.prices_updated_mismatch" : "gold.prices_updated_as_of", {
-                  date: formatPriceDateLong(latestPriceDate as string, locale),
-                })}
+              <p className={cx(
+                "text-[clamp(0.5906rem,2.73vw,0.6562rem)] font-semibold px-1 flex items-center gap-1",
+                isPriceDataStale ? "text-amber-400" : tokens.text.faint
+              )}>
+                {isPriceDataStale && <AlertTriangle size={11} className="shrink-0" />}
+                {t(
+                  isPriceDataStale
+                    ? "gold.prices_updated_stale"
+                    : priceDatesMismatch
+                      ? "gold.prices_updated_mismatch"
+                      : "gold.prices_updated_as_of",
+                  { date: formatPriceDateLong(latestPriceDate as string, locale) }
+                )}
               </p>
               <div className={cx("gold-marquee-viewport overflow-hidden rounded-xl border py-2", tokens.surface.card, tokens.border.default)}>
                 <div className="gold-marquee-track">
