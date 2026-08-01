@@ -6,13 +6,23 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useMainScrollRef, useHeaderPortalNode } from "../contexts/MainScrollContext";
 import { useIsDesktopViewport } from "../hooks/useIsDesktopViewport";
 import { audioFeedback } from "../lib/audio";
+import { useLanguage } from "../contexts/LanguageContext";
 
-/** Jarak scroll (px) supaya large title selesai transisi penuh jadi small
- *  title di navbar (progress 0 -> 1). Angka ini SENGAJA kira-kira setinggi
- *  large title + subtitle itu sendiri, supaya small title baru "landing"
- *  penuh di navbar tepat saat large title sudah scroll keluar dari view --
- *  bukan finish lebih awal/lambat dari itu. */
-const COLLAPSE_DISTANCE = 64;
+/** Fallback (px) dipakai SEBELUM ResizeObserver sempat mengukur tinggi
+ *  large title block yang sesungguhnya (mis. render pertama sebelum efek
+ *  jalan) -- begitu terukur, nilai aktual (lihat `collapseDistanceRef`)
+ *  dipakai, bukan angka ini. Sebelumnya ini angka mati yang dipakai sama
+ *  rata di semua halaman padahal tinggi large title+subtitle beda-beda
+ *  per halaman (subtitle 2 baris vs 1 baris, dst) -- efeknya transisi
+ *  bisa "selesai" sebelum/sesudah large title beneran keluar viewport
+ *  tergantung halaman. Sekarang diukur otomatis dari elemen aslinya. */
+const COLLAPSE_DISTANCE_FALLBACK = 64;
+
+/** Batas bawah jarak collapse (px) supaya progress tidak "meledak" ke 1
+ *  hampir seketika kalau large title block terukur sangat pendek (mis.
+ *  title tanpa subtitle sama sekali) -- collapse yang terlalu instan
+ *  terasa seperti glitch, bukan transisi. */
+const COLLAPSE_DISTANCE_MIN = 32;
 
 /** Tinggi penuh (px) bar sticky begitu progress = 1. Dipakai untuk
  *  menginterpolasi `height` bar dari 0 -> nilai ini (BUKAN cuma opacity) --
@@ -34,6 +44,16 @@ interface CollapsingPageHeaderProps {
    *  ke entry sebelumnya, sama seperti AdminBackBar); isi path spesifik
    *  utk tujuan tetap. */
   backTo?: string;
+  /** Konten opsional yang nempel di kanan sticky bar (mirip tombol "Edit"
+   *  di pojok kanan-atas ala iOS) -- dipakai utk aksi halaman (Export,
+   *  Refresh, dst) yang perlu tetap kejangkau walau large title & tombol
+   *  aksi aslinya di body sudah discroll keluar dari view. TIDAK
+   *  dirender di large title area (body) -- itu tanggung jawab halaman
+   *  masing-masing; slot ini KHUSUS versi ringkas di sticky bar.
+   *  Sengaja dibatasi ke icon-button kecil (bukan tombol berlabel teks
+   *  penuh) -- small title di tengah bar cuma dapat reserved pr-16 kalau
+   *  actions diisi, kalau actions terlalu lebar judulnya bisa ketiban. */
+  actions?: React.ReactNode;
   /** Konten halaman (cards, tabs, list, dst) dirender di bawah large
    *  title, mengikuti flow scroll normal `<main>`. */
   children?: React.ReactNode;
@@ -79,6 +99,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   title,
   subtitle,
   backTo,
+  actions,
   children,
 }) => {
   const navigate = useNavigate();
@@ -86,12 +107,22 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   const scrollRef = useMainScrollRef();
   const portalNode = useHeaderPortalNode();
   const isDesktop = useIsDesktopViewport();
+  const { t } = useLanguage();
 
   const largeTitleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const titleBlockRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
   const smallTitleRef = useRef<HTMLHeadingElement>(null);
   const rafRef = useRef<number | null>(null);
+  const willChangeIdleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Jarak collapse AKTUAL, diukur dari tinggi titleBlockRef via
+  // ResizeObserver (lihat effect di bawah) -- dipakai instead of angka
+  // fixed di applyProgress(). Disimpan di ref (bukan state) karena
+  // dibaca di dalam rAF loop yang jalan di luar siklus render React;
+  // menaruhnya di state akan memicu re-render tiap kali ukurannya
+  // berubah, padahal cuma perlu dibaca, bukan menggambar ulang apa pun.
+  const collapseDistanceRef = useRef<number>(COLLAPSE_DISTANCE_FALLBACK);
 
   useEffect(() => {
     // Tidak perlu pasang scroll listener di desktop -- lihat catatan
@@ -105,7 +136,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
 
     const applyProgress = () => {
       rafRef.current = null;
-      const progress = Math.min(Math.max(el.scrollTop / COLLAPSE_DISTANCE, 0), 1);
+      const progress = Math.min(Math.max(el.scrollTop / collapseDistanceRef.current, 0), 1);
 
       if (largeTitleRef.current) {
         largeTitleRef.current.style.opacity = String(1 - progress);
@@ -149,7 +180,45 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
       }
     };
 
+    // Ukur tinggi title block (h1 + subtitle) yang SEBENARNYA dari DOM,
+    // bukan angka mati -- subtitle 2 baris (mis. History) beda tinggi
+    // dari subtitle 1 baris (mis. GoldSavings), jadi jarak collapse yang
+    // pas juga beda per halaman. ResizeObserver dipakai (bukan cuma
+    // getBoundingClientRect() sekali di mount) karena tinggi subtitle
+    // bisa berubah SETELAH mount juga -- mis. subtitle yang isinya angka
+    // dinamis (jumlah, tanggal) bikin subtitle wrap ke baris ke-2 hanya
+    // setelah data async selesai di-fetch, bukan pas render pertama.
+    // applyProgress() dipanggil ulang tiap kali ukuran berubah supaya
+    // transisi yang sedang berjalan/sudah settle ikut ter-resync ke
+    // jarak collapse yang baru, bukan nunggu scroll event berikutnya.
+    let resizeObserver: ResizeObserver | undefined;
+    if (typeof ResizeObserver !== "undefined" && titleBlockRef.current) {
+      resizeObserver = new ResizeObserver((entries) => {
+        const measured = entries[0]?.contentRect.height;
+        if (measured) {
+          collapseDistanceRef.current = Math.max(measured, COLLAPSE_DISTANCE_MIN);
+          applyProgress();
+        }
+      });
+      resizeObserver.observe(titleBlockRef.current);
+    }
+
     const handleScroll = () => {
+      // willChange cuma diaktifkan SELAMA scroll aktif, lalu di-clear balik
+      // ke "auto" begitu scroll berhenti (idle 200ms) -- kalau dipasang
+      // permanen lewat style statis, browser terus menahan compositing
+      // layer terpisah untuk large title di SEMUA halaman yang pakai
+      // komponen ini sekaligus (22 halaman), walau usernya lagi diam di
+      // satu halaman. Lumayan buat memory/baterai di HP low-end.
+      if (largeTitleRef.current) largeTitleRef.current.style.willChange = "transform, opacity";
+      if (subtitleRef.current) subtitleRef.current.style.willChange = "opacity";
+
+      if (willChangeIdleTimeoutRef.current != null) clearTimeout(willChangeIdleTimeoutRef.current);
+      willChangeIdleTimeoutRef.current = setTimeout(() => {
+        if (largeTitleRef.current) largeTitleRef.current.style.willChange = "auto";
+        if (subtitleRef.current) subtitleRef.current.style.willChange = "auto";
+      }, 200);
+
       if (rafRef.current == null) rafRef.current = requestAnimationFrame(applyProgress);
     };
 
@@ -158,6 +227,8 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     return () => {
       el.removeEventListener("scroll", handleScroll);
       if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+      if (willChangeIdleTimeoutRef.current != null) clearTimeout(willChangeIdleTimeoutRef.current);
+      resizeObserver?.disconnect();
     };
   }, [scrollRef, isDesktop]);
 
@@ -204,21 +275,40 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         <button
           type="button"
           onClick={handleBack}
-          aria-label="Back"
+          aria-label={t("common.back")}
           className="relative z-10 shrink-0 -ml-1.5 p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform"
         >
           <ChevronLeft size={18} className={tokens.text.secondary} />
         </button>
       )}
+      {actions && (
+        // Sama seperti back button, actions SENGAJA tidak ikut fade
+        // progress -- begitu bar-nya sendiri kelihatan (progress > 0),
+        // actions langsung full terlihat, bukan fade terpisah. ml-auto
+        // dorong ke ujung kanan (back button di sebelah kiri cuma flow
+        // item lain di flex ini, h2 title di tengah posisinya absolute
+        // jadi tidak ikut mendorong).
+        <div className="relative z-10 ml-auto shrink-0 flex items-center gap-1">
+          {actions}
+        </div>
+      )}
       {/* Small title diposisikan absolute & inset-x-0 supaya benar-benar
           center terhadap lebar bar, bukan center terhadap sisa ruang
-          setelah tombol back. px-10 menyisakan jarak aman dari tombol
-          back kalau ada. */}
+          setelah tombol back/actions. Padding kiri/kanan SEKARANG
+          kondisional -- sebelumnya px-10 statis di kedua sisi walau
+          halaman tanpa backTo (mis. History, Wallets) sama sekali tidak
+          punya tombol back, jadi ada ruang kosong nggak perlu. pl-10
+          cuma dipasang kalau hasBack; pr-16 cuma kalau ada actions (2
+          icon-button ukuran biasa butuh lebih dari 40px). Kalau
+          keduanya kosong, title dapat ruang penuh (pl-4 sm:pl-6/pr-4
+          sm:pr-6 -- senada dengan padding tepi bar sendiri). */}
       <h2
         ref={smallTitleRef}
         style={{ opacity: 0 }}
         className={cx(
-          "absolute inset-x-0 px-10 text-center font-sans font-semibold text-sm truncate pointer-events-none",
+          "absolute inset-x-0 text-center font-sans font-semibold text-sm truncate pointer-events-none",
+          hasBack ? "pl-10" : "pl-4 sm:pl-6",
+          actions ? "pr-16" : "pr-4 sm:pr-6",
           tokens.text.heading
         )}
       >
@@ -231,16 +321,16 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     <>
       {portalNode ? createPortal(bar, portalNode) : bar}
       <div className="space-y-6">
-        <div>
+        <div ref={titleBlockRef}>
           <h1
             ref={largeTitleRef}
-            style={{ transformOrigin: "left top", willChange: "transform, opacity" }}
+            style={{ transformOrigin: "left top" }}
             className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.primary)}
           >
             {title}
           </h1>
           {subtitle && (
-            <p ref={subtitleRef} style={{ willChange: "opacity" }} className={cx("text-sm mt-1", tokens.text.heroSubtitle)}>
+            <p ref={subtitleRef} className={cx("text-sm mt-1", tokens.text.heroSubtitle)}>
               {subtitle}
             </p>
           )}

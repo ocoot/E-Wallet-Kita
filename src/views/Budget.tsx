@@ -245,7 +245,24 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
   const loading = loadingCategories || loadingBudgets;
 
   return (
-    <CollapsingPageHeader title={t("budget.page_title")} subtitle={t("budget.page_subtitle")}>
+    <CollapsingPageHeader
+      title={t("budget.page_title")}
+      subtitle={t("budget.page_subtitle")}
+      actions={
+        !loading && expenseCategories.length > 0 ? (
+          <button
+            type="button"
+            onClick={openAddModal}
+            disabled={availableCategories.length === 0}
+            aria-label={t("budget.add_budget_cta")}
+            title={availableCategories.length === 0 ? t("budget.all_categories_budgeted") : undefined}
+            className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform disabled:opacity-40 disabled:cursor-not-allowed", tokens.text.secondary)}
+          >
+            <Plus size={18} />
+          </button>
+        ) : undefined
+      }
+    >
       <div className="space-y-6 pb-12">
 
       {/* Header actions */}

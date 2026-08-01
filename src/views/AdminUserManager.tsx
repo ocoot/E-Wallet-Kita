@@ -22,6 +22,8 @@ import {
   UserCheck,
   UserX,
   Shield,
+  Download,
+  RefreshCw,
 } from "lucide-react";
 import { Modal } from "../components/Modal";
 import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
@@ -463,7 +465,34 @@ export const AdminUserManager: React.FC = () => {
   };
 
   return (
-    <CollapsingPageHeader title={t("admin.tab_users")} subtitle={t("admin.tab_users_desc")} backTo="/admin">
+    <CollapsingPageHeader
+      title={t("admin.tab_users")}
+      subtitle={t("admin.tab_users_desc")}
+      backTo="/admin"
+      actions={
+        <>
+          <button
+            type="button"
+            onClick={handleExportCSV}
+            aria-label={t("admin.export_csv")}
+            className="p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform text-emerald-500 hover:text-emerald-400"
+          >
+            <Download size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              fetchUsers();
+              loadMetrics();
+            }}
+            aria-label={t("admin.refresh")}
+            className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform", tokens.text.secondary)}
+          >
+            <RefreshCw size={18} />
+          </button>
+        </>
+      }
+    >
       {/* Header + quick actions -- Wrapped in One Card Container, konsisten
           dengan pola header di halaman Admin* lainnya (mis. AdminPremiumMonitor). */}
       <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>

@@ -236,7 +236,22 @@ export const AdminErrorMonitor: React.FC = () => {
   };
 
   return (
-    <CollapsingPageHeader title={t("error_monitor.title")} subtitle={t("error_monitor.desc")} backTo="/admin">
+    <CollapsingPageHeader
+      title={t("error_monitor.title")}
+      subtitle={t("error_monitor.desc")}
+      backTo="/admin"
+      actions={
+        <button
+          type="button"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          aria-label={t("admin.refresh_data")}
+          className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform disabled:opacity-50", tokens.text.secondary)}
+        >
+          <RefreshCw size={18} className={refreshing ? "animate-spin" : ""} />
+        </button>
+      }
+    >
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
       <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>

@@ -143,7 +143,22 @@ export const AdminAiMonitor: React.FC = () => {
   const grandTotal = byProvider.reduce((s, p) => s + p.total_calls, 0);
 
   return (
-    <CollapsingPageHeader title={t("ai_monitor.title")} subtitle={t("ai_monitor.desc")} backTo="/admin">
+    <CollapsingPageHeader
+      title={t("ai_monitor.title")}
+      subtitle={t("ai_monitor.desc")}
+      backTo="/admin"
+      actions={
+        <button
+          type="button"
+          onClick={() => load(true)}
+          disabled={refreshing}
+          aria-label={t("ai_monitor.refresh")}
+          className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform disabled:opacity-50", tokens.text.secondary)}
+        >
+          <RefreshCw size={18} className={refreshing ? "animate-spin" : ""} />
+        </button>
+      }
+    >
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
       <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>

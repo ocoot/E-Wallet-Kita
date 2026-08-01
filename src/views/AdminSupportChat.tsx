@@ -326,7 +326,24 @@ export const AdminSupportChat: React.FC = () => {
   if (!isAdmin) return null;
 
   return (
-    <CollapsingPageHeader title={t("admin_support_chat.title")} subtitle={t("admin_support_chat.desc")} backTo="/admin">
+    <CollapsingPageHeader
+      title={t("admin_support_chat.title")}
+      subtitle={t("admin_support_chat.desc")}
+      backTo="/admin"
+      actions={
+        <button
+          type="button"
+          onClick={() => {
+            audioFeedback.playClick();
+            loadSessions();
+          }}
+          aria-label={t("admin_support_chat.refresh")}
+          className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform", tokens.text.secondary)}
+        >
+          <RefreshCw size={18} />
+        </button>
+      }
+    >
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
       <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>

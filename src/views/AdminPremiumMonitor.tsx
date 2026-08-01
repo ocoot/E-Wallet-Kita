@@ -204,8 +204,40 @@ export const AdminPremiumMonitor: React.FC = () => {
     });
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([loadMetrics(), loadTransactions(), loadDummyQrisSetting()]);
+      showToast(t("admin.refresh_success"), "success");
+    } catch (err: any) {
+      showToast(err.message || t("toast.error_general"), "error");
+      void reportFrontendError({
+        source: "frontend:admin-premium-monitor",
+        message: err?.message || String(err),
+        context: { action: "manual-refresh" },
+      });
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
-    <CollapsingPageHeader title={t("admin.premium_monitor_title")} subtitle={t("admin.premium_monitor_desc")} backTo="/admin">
+    <CollapsingPageHeader
+      title={t("admin.premium_monitor_title")}
+      subtitle={t("admin.premium_monitor_desc")}
+      backTo="/admin"
+      actions={
+        <button
+          type="button"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          aria-label={t("admin.refresh_data")}
+          className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform disabled:opacity-50", tokens.text.secondary)}
+        >
+          <RefreshCw size={18} className={refreshing ? "animate-spin" : ""} />
+        </button>
+      }
+    >
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
       <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
@@ -213,22 +245,7 @@ export const AdminPremiumMonitor: React.FC = () => {
         <div className="p-6 sm:p-7 lg:p-8">
           <div className="flex justify-end">
           <button
-            onClick={async () => {
-              setRefreshing(true);
-              try {
-                await Promise.all([loadMetrics(), loadTransactions(), loadDummyQrisSetting()]);
-                showToast(t("admin.refresh_success"), "success");
-              } catch (err: any) {
-                showToast(err.message || t("toast.error_general"), "error");
-                void reportFrontendError({
-                  source: "frontend:admin-premium-monitor",
-                  message: err?.message || String(err),
-                  context: { action: "manual-refresh" },
-                });
-              } finally {
-                setRefreshing(false);
-              }
-            }}
+            onClick={handleRefresh}
             className={cx("flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 cursor-pointer shrink-0 active:scale-[0.98]", tokens.adminPremium.exportBtn, tokens.text.label, tokens.border.strong)}
           >
             <RefreshCw size={16} />

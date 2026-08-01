@@ -212,7 +212,20 @@ export const BillReminders: React.FC = () => {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
       {/* ── Main content ───────────────────────────────────────────── */}
-      <CollapsingPageHeader title={t("bill_reminders.page_title")} subtitle={t("bill_reminders.page_subtitle")}>
+      <CollapsingPageHeader
+        title={t("bill_reminders.page_title")}
+        subtitle={t("bill_reminders.page_subtitle")}
+        actions={
+          <button
+            type="button"
+            onClick={() => { audioFeedback.playClick(); openAddForm(); }}
+            aria-label={t("bill_reminders.add_button")}
+            className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform", tokens.text.secondary)}
+          >
+            <Plus size={18} />
+          </button>
+        }
+      >
 
           {/* Header actions */}
           <div className={cx("flex justify-end rounded-2xl border px-5 py-5", tokens.surface.card, tokens.border.accent)}>

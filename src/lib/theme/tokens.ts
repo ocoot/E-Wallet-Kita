@@ -1067,13 +1067,6 @@ export const themeTokens = {
     chevronBtnHover: "hover:text-white light_sakura:hover:text-rose-600",
   },
   /**
-   * Sesi 54: token untuk `AdminBackBar.tsx`. Genuinely 1x-pakai (dicek
-   * cross-file, tidak ada exact match).
-   */
-  adminBackBar: {
-    btnBg: "bg-slate-900/60 border-slate-800 hover:bg-slate-800 hover:text-white light_sakura:bg-white light_sakura:border-rose-200 light_sakura:hover:bg-rose-100",
-  },
-  /**
    * Sesi 54: token per-file untuk `PrivacySettings.tsx`. Genuinely
    * 1x-pakai (dicek cross-file, tidak ada exact match).
    */

@@ -181,7 +181,31 @@ export const AdminCategoryManager: React.FC = () => {
   };
 
   return (
-    <CollapsingPageHeader title={t("admin.category_manager_title")} subtitle={t("admin.category_manager_desc")} backTo="/admin">
+    <CollapsingPageHeader
+      title={t("admin.category_manager_title")}
+      subtitle={t("admin.category_manager_desc")}
+      backTo="/admin"
+      actions={
+        <>
+          <button
+            type="button"
+            onClick={loadCategories}
+            aria-label={t("admin.refresh")}
+            className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform", tokens.text.secondary)}
+          >
+            <RefreshCw size={18} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowAddForm(v => !v)}
+            aria-label={t("admin.add_category")}
+            className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform", tokens.text.secondary)}
+          >
+            <Plus size={18} />
+          </button>
+        </>
+      }
+    >
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
       <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>

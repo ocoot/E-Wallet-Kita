@@ -492,7 +492,20 @@ export const GoldSavings: React.FC = () => {
         />
       )}
 
-      <CollapsingPageHeader title={t("gold.page_title")} subtitle={t("gold.page_subtitle")}>
+      <CollapsingPageHeader
+        title={t("gold.page_title")}
+        subtitle={t("gold.page_subtitle")}
+        actions={
+          <button
+            type="button"
+            onClick={() => { audioFeedback.playClick(); openAddForm(); }}
+            aria-label={t("gold.add_button")}
+            className="p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform text-amber-500 hover:text-amber-400"
+          >
+            <Plus size={18} />
+          </button>
+        }
+      >
 
           <div className={cx("flex justify-end rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
             <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}

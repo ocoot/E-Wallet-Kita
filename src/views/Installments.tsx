@@ -218,7 +218,20 @@ export const Installments: React.FC = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
-      <CollapsingPageHeader title={t("installments.page_title")} subtitle={t("installments.page_subtitle")}>
+      <CollapsingPageHeader
+        title={t("installments.page_title")}
+        subtitle={t("installments.page_subtitle")}
+        actions={
+          <button
+            type="button"
+            onClick={() => { audioFeedback.playClick(); openAddForm(); }}
+            aria-label={t("installments.add_button")}
+            className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform", tokens.text.secondary)}
+          >
+            <Plus size={18} />
+          </button>
+        }
+      >
 
           {/* Header actions */}
           <div className={cx("flex justify-end rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
