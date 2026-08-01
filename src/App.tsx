@@ -504,7 +504,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
         // Lihat komentar panjang di shell pembungkus (div `relative h-dvh
         // flex ...` di atas) -- `h-dvh` di sini (bukan `min-h-dvh`) adalah
         // separuh kedua dari fix yang sama, wajib berubah bersamaan.
-        className={`flex-1 h-dvh overflow-y-auto w-full transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}
+        className={`flex-1 h-dvh overflow-y-auto w-full scrollbar-hide-mobile transition-all duration-300 ${isSidebarCollapsed ? 'lg:pl-20' : 'lg:pl-64'}`}
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
       {/* FIX (UI/UX, Agu 2026): target portal utk CollapsingPageHeader --

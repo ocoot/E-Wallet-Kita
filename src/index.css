@@ -254,6 +254,29 @@ img, a {
 }
 
 /*
+ * Utility scrollbar-hide-mobile -- sama seperti scrollbar-hide di atas,
+ * TAPI cuma aktif di breakpoint < lg (1024px, diselaraskan dengan
+ * useIsDesktopViewport & breakpoint Sidebar/MobileBottomNav). Dipakai
+ * khusus di `<main overflow-y-auto>` (App.tsx) -- scroll container utama
+ * seluruh halaman. Native app mobile tidak pernah menampilkan scrollbar
+ * vertikal di layar utamanya (itulah yang bikin garis putih tipis di tepi
+ * kanan layar pada screenshot mobile terlihat "aneh"/bukan native), tapi
+ * scrollbar tetap dipertahankan di desktop -- konsisten dengan alasan yang
+ * sama kenapa scrollbar-hide TIDAK dipakai di data table desktop: di layar
+ * lebar, scrollbar justru membantu affordance "halaman ini panjang &
+ * bisa digeser", terutama pakai mouse/trackpad. */
+@media (max-width: 1023px) {
+  .scrollbar-hide-mobile {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide-mobile::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/*
  * P4 4.8: crossfade halus saat berpindah tema (dark_obsidian <-> light_sakura)
  * lewat View Transitions API (dipicu dari ThemeContext.tsx). Tanpa aturan ini,
  * browser yang mendukung API tetap akan pakai durasi default (lebih lama /
