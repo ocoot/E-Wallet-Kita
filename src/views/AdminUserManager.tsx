@@ -10,7 +10,6 @@ import { audioFeedback } from "../lib/audio";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
-import { AdminBackBar } from "../components/AdminBackBar";
 import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { reportFrontendError } from "../lib/errorReporter";
 import {
@@ -464,30 +463,13 @@ export const AdminUserManager: React.FC = () => {
   };
 
   return (
-    <div className="space-y-5">
-
-      <CollapsingPageHeader title={t("admin.tab_users")} backTo="/admin" />
-      <div className="relative">
-        <div>
-          <AdminBackBar />
-        </div>
-      </div>
-
+    <CollapsingPageHeader title={t("admin.tab_users")} subtitle={t("admin.tab_users_desc")} backTo="/admin">
       {/* Header + quick actions -- Wrapped in One Card Container, konsisten
           dengan pola header di halaman Admin* lainnya (mis. AdminPremiumMonitor). */}
       <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
         <div className="p-6 sm:p-7 lg:p-8 space-y-6">
-          <div className={cx("flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6", tokens.border.default)}>
-            <div>
-              <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.heading)}>
-                <User className={cx(tokens.text.accent)} size={24} />
-                {t("admin.tab_users")}
-              </h1>
-              <p className={cx("font-sans text-sm mt-1 font-medium", tokens.text.muted)}>
-                {t("admin.tab_users_desc")}
-              </p>
-            </div>
+          <div className={cx("flex justify-end border-b pb-6", tokens.border.default)}>
             <div className="flex flex-wrap items-center gap-2 shrink-0">
               <button
                 onClick={handleExportCSV}
@@ -925,6 +907,6 @@ export const AdminUserManager: React.FC = () => {
       {/* Loading overlay for in-progress actions */}
       <LoadingOverlay isOpen={actionLoading.isOpen} message={actionLoading.message} />
 
-    </div>
+    </CollapsingPageHeader>
   );
 };

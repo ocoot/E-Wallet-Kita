@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { AdminBackBar } from "../components/AdminBackBar";
 import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
@@ -304,14 +303,7 @@ export const AdminVoucherManager: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <CollapsingPageHeader title={t("admin.tab_voucher")} backTo="/admin" />
-      <div className="relative">
-        <div>
-          <AdminBackBar />
-        </div>
-      </div>
-
+    <CollapsingPageHeader title={t("admin.tab_voucher")} backTo="/admin">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {[
           {t: t("voucher.total"), v: stats.total, color: "text-indigo-500"},
@@ -526,6 +518,6 @@ export const AdminVoucherManager: React.FC = () => {
       />
 
       <LoadingOverlay isOpen={savingAction.isOpen} message={savingAction.message} />
-    </div>
+    </CollapsingPageHeader>
   );
 };

@@ -21,6 +21,7 @@ import { Input } from "../components/ui/Input";
 import { Button } from "../components/ui/Button";
 import { AnimatedNumber } from "../components/ui/AnimatedNumber";
 import { DashboardCardSwiper } from "../components/DashboardCardSwiper";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { PROVIDER_CATALOG, OTHER_PROVIDER_ID } from "../data/walletProviders";
 
 const GROUP_META: Record<Exclude<WalletType, "general">, { icon: string; labelKey: string; addKey: string; placeholderKey: string }> = {
@@ -436,20 +437,11 @@ export const Wallets: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-6">
+    <CollapsingPageHeader title={t("wallet.title")} subtitle={t("wallet.desc")}>
 
-          {/* Hero — merged header + total balance */}
-          <div className={cx("rounded-2xl border px-5 py-6 space-y-4", tokens.surface.card, tokens.border.accent)}>
+          {/* Hero — total balance */}
+          <div className={cx("rounded-2xl border px-5 py-6", tokens.surface.card, tokens.border.accent)}>
             <div>
-              <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
-                {t("wallet.title")}
-              </h1>
-              <p className={cx("text-xs mt-1 leading-relaxed", tokens.text.muted)}>
-                {t("wallet.desc")}
-              </p>
-            </div>
-            <div className={cx("border-t pt-4", tokens.border.accent)}>
               <p className={cx("font-sans text-[clamp(0.5625rem,2.6vw,0.625rem)] font-bold uppercase tracking-widest", tokens.text.muted)}>
                 {t("wallet.total_balance")}
               </p>
@@ -470,8 +462,6 @@ export const Wallets: React.FC = () => {
               </div>
             </div>
           )}
-
-      </div>
 
       {/* E-Wallet / Bank / Cash groups -- masing-masing section terpisah, tanpa dibungkus Card */}
       {(["ewallet", "bank", "cash"] as const).map((type) => {
@@ -622,6 +612,6 @@ export const Wallets: React.FC = () => {
       />
 
       <LoadingOverlay isOpen={busy} message={t("common.loading")} />
-    </div>
+    </CollapsingPageHeader>
   );
 };

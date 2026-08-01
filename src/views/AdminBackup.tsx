@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion } from "motion/react";
-import { AdminBackBar } from "../components/AdminBackBar";
 import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -386,14 +385,7 @@ export const AdminBackup: React.FC = () => {
   const restorableLabel = (tbl: RestorableTable) => (locale === "id" ? tbl.label_id : tbl.label_en);
 
   return (
-    <div className="space-y-6">
-      <CollapsingPageHeader title={t("admin.backup_title")} backTo="/admin" />
-      <div className="relative">
-        <div>
-          <AdminBackBar />
-        </div>
-      </div>
-
+    <CollapsingPageHeader title={t("admin.backup_title")} backTo="/admin">
       <LoadingOverlay isOpen={triggering} message={t("admin.backup_triggering")} />
 
       {/* Card status terakhir */}
@@ -940,6 +932,6 @@ export const AdminBackup: React.FC = () => {
           </div>
         </div>
       )}
-    </div>
+    </CollapsingPageHeader>
   );
 };

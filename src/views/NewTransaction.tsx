@@ -13,6 +13,7 @@ import { withMinDuration } from "../lib/withMinDuration";
 import { DropdownField } from "../components/DropdownField";
 import { useNavigate, useLocation } from "react-router-dom";
 import { LoadingOverlay } from "../components/LoadingOverlay";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { ReceiptUploader } from "../components/ReceiptUploader";
 import { getPendingSharedFile, clearPendingSharedFile } from "../lib/shareTarget";
 import { ReceiptPreview } from "../components/ReceiptPreview";
@@ -386,7 +387,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
 
   // ── Render ────────────────────────────────────────────────────────────
   return (
-    <div className="space-y-4">
+    <CollapsingPageHeader title={t("transaction.add_title")} subtitle={receiptDraft ? undefined : t("transaction.add_subtitle")}>
       {receiptDraft ? (
         <ReceiptPreview
           draft={receiptDraft}
@@ -395,27 +396,16 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         />
       ) : (
         <div className="space-y-7">
-          {/* ── Page header ──────────────────────────────────────────── */}
-          <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
-            <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
-            <div className="px-5 py-4">
-            <h1 className={cx("font-sans font-bold text-2xl tracking-[-0.025em]", tokens.text.heading)}>
-              {t("transaction.add_title")}
-            </h1>
-            <p className={cx("text-sm mt-1 leading-relaxed", tokens.text.muted)}>
-              {t("transaction.add_subtitle")}
-            </p>
-
-            {/* Today mini summary — shows daily running total */}
-            {todaySummary && (todaySummary.income > 0 || todaySummary.expense > 0) && (
-              <div className={cx("flex items-center gap-3 mt-3 text-xs font-mono tabular-nums", tokens.text.muted)}>
-                {todaySummary.expense > 0 && (
-                  <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
-                    <span className="text-red-400 font-semibold">−{formatIDR(todaySummary.expense)}</span>
-                    <span className="opacity-60">{t("transaction.today_label") || "hari ini"}</span>
-                  </span>
-                )}
+          {/* ── Today mini summary — shows daily running total ─────────── */}
+          {todaySummary && (todaySummary.income > 0 || todaySummary.expense > 0) && (
+            <div className={cx("flex items-center gap-3 -mt-2 text-xs font-mono tabular-nums", tokens.text.muted)}>
+              {todaySummary.expense > 0 && (
+                <span className="flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400" />
+                  <span className="text-red-400 font-semibold">−{formatIDR(todaySummary.expense)}</span>
+                  <span className="opacity-60">{t("transaction.today_label") || "hari ini"}</span>
+                </span>
+              )}
                 {todaySummary.income > 0 && (
                   <span className="flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
@@ -424,8 +414,6 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
                 )}
               </div>
             )}
-            </div>
-          </div>
 
             {/* ── Formasi tab: pilih satu metode input ──────────────────── */}
             <div className={cx("relative grid grid-cols-3 gap-1 p-1 rounded-2xl border", tokens.surface.card, tokens.border.accent)}>
@@ -691,6 +679,6 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
       />
 
       <LoadingOverlay isOpen={isLoading} message={t("common.loading")} />
-    </div>
+    </CollapsingPageHeader>
   );
 };

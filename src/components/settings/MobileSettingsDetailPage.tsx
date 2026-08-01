@@ -1,10 +1,8 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "lucide-react";
 import { motion } from "motion/react";
-import { useThemeTokens } from "../../hooks/useThemeTokens";
 import { useIsDesktopViewport } from "../../hooks/useIsDesktopViewport";
-import { audioFeedback } from "../../lib/audio";
+import { CollapsingPageHeader } from "../CollapsingPageHeader";
 
 interface MobileSettingsDetailPageProps {
   title: string;
@@ -23,6 +21,16 @@ interface MobileSettingsDetailPageProps {
  * jadi kalau shell ini somehow diakses dari layar desktop (mis. buka link
  * langsung), kita arahkan balik ke `/settings` alih-alih menampilkan
  * halaman detail yang tidak didesain untuk layar lebar.
+ *
+ * REDESIGN (Agu 2026): header card statis (title+back dalam satu box
+ * solid) diganti `CollapsingPageHeader` v2 -- title sekarang jadi large
+ * title ala iOS yang mengecil+fade+"pindah" jadi small title di navbar
+ * sticky begitu discroll, `backTo="/settings"` tetap konstan di kiri
+ * navbar sejak awal. Karena shell ini dipakai SEMUA 11 halaman detail
+ * settings (Profil, Keamanan, Notifikasi, Bahasa, Tema, PWA, Telegram,
+ * Privasi, App Lock, Suara & Haptik, Syarat, Kebijakan Privasi), satu
+ * perubahan di sini otomatis konsisten di semuanya -- tidak perlu sentuh
+ * 11 file itu satu-satu.
  */
 export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> = ({
   title,
@@ -30,7 +38,6 @@ export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> =
   children,
 }) => {
   const navigate = useNavigate();
-  const { tokens, cx } = useThemeTokens();
   const isDesktop = useIsDesktopViewport();
 
   useEffect(() => {
@@ -41,47 +48,17 @@ export const MobileSettingsDetailPage: React.FC<MobileSettingsDetailPageProps> =
 
   if (isDesktop) return null;
 
-  const handleBack = () => {
-    audioFeedback.playClick();
-    navigate("/settings");
-  };
-
   return (
     <motion.div
       initial={{ opacity: 0, x: 12 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -12 }}
       transition={{ duration: 0.18 }}
-      className="max-w-4xl mx-auto space-y-5 pb-24 lg:hidden"
+      className="max-w-4xl mx-auto pb-24 lg:hidden"
     >
-      <div className="space-y-5">
-          {/* Header: back button + title, dibungkus card solid (bukan lagi
-              teks mengambang langsung di atas ribbon gradient) supaya
-              kontras subtitle terjamin di semua kondisi, dan visualnya
-              menyatu dengan card-card konten di bawahnya. */}
-          <div className={cx("flex items-center gap-3 rounded-2xl border shadow-sm px-4 py-3.5", tokens.settings.profileCardBgBorder)}>
-            <button
-              type="button"
-              onClick={handleBack}
-              aria-label="back"
-              className={cx("shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-colors cursor-pointer", tokens.mobileSettingsDetailPage.backBtn)}
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <div className="min-w-0">
-              <h1 className={cx("font-sans font-bold text-lg tracking-tight truncate", tokens.text.heading)}>
-                {title}
-              </h1>
-              {description && (
-                <p className={cx("font-sans text-xs truncate", tokens.text.muted)}>
-                  {description}
-                </p>
-              )}
-            </div>
-          </div>
-
-          {children}
-      </div>
+      <CollapsingPageHeader title={title} subtitle={description} backTo="/settings">
+        {children}
+      </CollapsingPageHeader>
     </motion.div>
   );
 };

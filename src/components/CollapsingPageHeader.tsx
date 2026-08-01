@@ -1,116 +1,142 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { useMainScrollRef, useHeaderPortalNode } from "../contexts/MainScrollContext";
 import { useIsDesktopViewport } from "../hooks/useIsDesktopViewport";
 import { audioFeedback } from "../lib/audio";
 
+/** Jarak scroll (px) supaya large title selesai transisi penuh jadi small
+ *  title di navbar (progress 0 -> 1). Angka ini SENGAJA kira-kira setinggi
+ *  large title + subtitle itu sendiri, supaya small title baru "landing"
+ *  penuh di navbar tepat saat large title sudah scroll keluar dari view --
+ *  bukan finish lebih awal/lambat dari itu. */
+const COLLAPSE_DISTANCE = 64;
+
 interface CollapsingPageHeaderProps {
-  /** Judul singkat yang muncul di sticky bar begitu di-scroll (BUKAN judul
-   *  besar halaman itu sendiri -- itu tetap dirender halaman masing-masing
-   *  seperti sebelumnya, komponen ini cuma menambah lapisan sticky di
-   *  atasnya saat discroll). */
+  /** Judul halaman. Dipakai UNTUK KEDUANYA: large title besar di badan
+   *  halaman (progress=0) dan small title di navbar sticky (progress=1). */
   title: string;
-  /** Path tujuan tombol back. Kalau tidak diisi, pakai `navigate(-1)`
-   *  (kembali ke entry history sebelumnya) -- sama seperti AdminBackBar. */
+  /** Subtitle opsional di bawah large title. Ikut fade keluar bareng large
+   *  title (malah sedikit lebih cepat, lihat pengali di applyProgress) --
+   *  TIDAK pernah muncul di navbar kecil (navbar cuma judul singkat). */
+  subtitle?: string;
+  /** Path tujuan tombol back. Kalau tidak diisi sama sekali (undefined),
+   *  tombol back tidak dirender (dipakai utk halaman tab utama seperti
+   *  Riwayat/Anggaran yang diakses lewat bottom-nav, bukan navigasi push
+   *  bertingkat). Isi string kosong "" utk pakai `navigate(-1)` (kembali
+   *  ke entry sebelumnya, sama seperti AdminBackBar); isi path spesifik
+   *  utk tujuan tetap. */
   backTo?: string;
-  /** Jarak scroll (px) sebelum sticky bar mulai muncul. Default 48 --
-   *  kira-kira setinggi 1 baris judul besar + sedikit margin, supaya bar
-   *  baru muncul SETELAH judul asli benar-benar mulai keluar dari view,
-   *  bukan tumpang tindih dengan judul asli yang masih terlihat. */
-  threshold?: number;
+  /** Konten halaman (cards, tabs, list, dst) dirender di bawah large
+   *  title, mengikuti flow scroll normal `<main>`. */
+  children?: React.ReactNode;
 }
 
 /**
- * Pola "Large Title collapse ke sticky compact header" ala native iOS
- * (Settings/Mail bawaan: judul besar di atas mengecil & pindah ke top bar
- * sticky begitu discroll, lengkap tombol back). Awalnya dicoba dulu SATU
- * halaman (AdminErrorMonitor.tsx) sebagai PILOT, sekarang sudah disebar ke
- * seluruh halaman turunan Admin Panel (lihat masing-masing view Admin*.tsx).
+ * v2 (Agu 2026) -- REDESIGN dari versi pilot sebelumnya (dulu cuma sticky
+ * bar on/off berdasar threshold biner, large title-nya dirender terpisah
+ * oleh tiap halaman di dalam card bersolid border). Sekarang komponen ini
+ * MEMILIKI kedua title (large & small) sekaligus, dan transisinya
+ * diinterpolasi TERUS-MENERUS mengikuti scrollTop -- bukan lagi on/off,
+ * biar pola "Large Title Navigation Bar" ala iOS Settings/Mail beneran
+ * kerasa halus (judul besar mengecil+fade+naik jadi small title di
+ * navbar, bukan langsung muncul/hilang).
  *
- * MOBILE-ONLY (Agu 2026): sengaja tidak dirender sama sekali di breakpoint
- * desktop (`lg`, >=1024px, dicek lewat `useIsDesktopViewport` -- breakpoint
- * yang sama dipakai Sidebar/MobileBottomNav supaya tetap konsisten satu
- * sumber kebenaran). Alasannya: pola "large title collapse ke top bar
- * sticky" ini meniru navigasi native iOS/Android yang jarinya menjangkau
- * status bar atas -- di desktop, Sidebar persisten di kiri sudah selalu
- * terlihat sebagai konteks navigasi, dan `AdminBackBar` (pill kecil
- * "Kembali ke Panel", tetap dipertahankan apa adanya) sudah cukup jadi
- * jalan kembali tanpa perlu lapisan sticky tambahan yang di layar lebar
- * malah terasa berlebihan/tidak pada tempatnya.
+ * Interpolasi ditulis LANGSUNG ke DOM lewat ref (bukan React state) di
+ * dalam scroll handler yang di-throttle rAF -- scroll-linked animation
+ * yang re-render tiap frame lewat setState akan berat & patah-patah,
+ * sedangkan commit langsung ke `style` tidak lewat reconciliation React
+ * sama sekali, jadi tetap 60fps walau dipasang di banyak halaman
+ * sekaligus.
  *
- * Baca posisi scroll dari `<main overflow-y-auto>` di App.tsx lewat
- * `useMainScrollRef()` (context yang sama dipakai `usePullToRefresh`) --
- * BUKAN dari `window`, karena scroll container sesungguhnya di app ini
- * adalah `<main>`, bukan window (lihat komentar di MainScrollContext.tsx).
+ * Back button (kalau `backTo` diisi) SENGAJA selalu terlihat penuh dari
+ * awal (tidak ikut fade) -- constant di kiri bar, cuma small title di
+ * tengah bar yang fade-in seiring scroll. Large title (fade+scale+naik)
+ * dirender terpisah di badan halaman, bukan di dalam bar portal ini --
+ * jadi transisinya berupa CROSSFADE dua elemen berbeda posisi, bukan satu
+ * elemen yang benar-benar berpindah tempat (lebih murah & lebih robust
+ * lintas layout halaman yang beda-beda dibanding FLIP-style shared
+ * element transition).
  *
- * `top: 0` (BUKAN `env(safe-area-inset-top)`) sengaja -- `<main>` sudah
- * diberi `paddingTop: env(safe-area-inset-top)` sekali di App.tsx sebelum
- * konten halaman manapun dirender, jadi menambahkannya lagi di sini akan
- * DOBEL menjorok ke bawah status bar saat sticky.
+ * MOBILE-ONLY: sama seperti versi sebelumnya, tidak dirender sama sekali
+ * di breakpoint desktop (Sidebar persisten sudah jadi konteks navigasi).
+ * Di desktop, large title dirender polos tanpa animasi/bar sticky sama
+ * sekali (fallback statis).
  *
- * Background translucent + `backdrop-blur` (bukan `tokens.surface.card`
- * yang solid) sengaja dipilih di sini secara spesifik supaya konten yang
- * lewat di baliknya samar-samar kelihatan sekilas sebelum scroll
- * berhenti -- efek yang sama dipakai top bar native iOS. Belum ada token
- * "surface translucent" terpusat di tokens.ts (dipakai baru di 1 tempat
- * ini), jadi ditulis inline dulu -- promosikan ke tokens.ts kalau pola
- * ini nanti disebar ke ≥2 halaman lain sesuai aturan rollout token.
- *
- * FIX (UI/UX, Agu 2026): bar sticky di komponen ini SEBELUMNYA render
- * langsung di tempat (di dalam AdminErrorMonitor, yang notabene dirender
- * di dalam `motion.div` transisi route di App.tsx). Itu bug -- `motion.div`
- * transisi itu SELALU punya inline `transform` (Framer Motion tetap
- * menulis `transform: translateX(0px)` bahkan di state diam "center"), dan
- * ancestor dengan `transform` apa pun membentuk *containing block* baru
- * untuk descendant `position: sticky`. Akibatnya `sticky top-0` di sini
- * dulu tidak pernah benar-benar menempel ke scrollport `<main>` -- state
- * `isCollapsed` sudah `true` saat discroll, tapi barnya cuma diam di posisi
- * flow normalnya (paling atas halaman) dan langsung ketutup/kescroll
- * lewat, jadi kelihatan seolah fiturnya tidak ada.
- * Perbaikan: komponen ini sekarang di-`createPortal` ke node portal yang
- * dipasang App.tsx sebagai anak LANGSUNG `<main>`, DI LUAR motion.div
- * (lihat `useHeaderPortalNode` / `HeaderPortalProvider` di
- * MainScrollContext.tsx). Dengan begitu tidak ada containing block
- * transform di antara bar ini dan `<main>`, jadi `position: sticky`
- * kembali menempel dengan benar. Padding horizontal juga diganti dari
- * trik `-mx-4 sm:-mx-6 lg:-mx-8` (negative margin, dulu diasumsikan
- * parent langsungnya adalah div berpadding `p-4 sm:p-6 lg:p-8`) menjadi
- * `px-4 sm:px-6 lg:px-8` biasa -- sekarang komponen ini sungguhan anak
- * langsung `<main>` (lebar penuh), bukan lagi bersarang di dalam div
- * `max-w-7xl mx-auto` yang di App.tsx tidak lagi punya padding sendiri.
+ * Portal ke `HeaderPortalProvider` node (anak langsung `<main>`, DI LUAR
+ * `motion.div` transisi route) tetap dipertahankan -- lihat komentar
+ * panjang soal bug containing-block transform di MainScrollContext.tsx,
+ * masih berlaku identik di v2 ini.
  */
 export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   title,
+  subtitle,
   backTo,
-  threshold = 48,
+  children,
 }) => {
   const navigate = useNavigate();
   const { tokens, cx } = useThemeTokens();
   const scrollRef = useMainScrollRef();
   const portalNode = useHeaderPortalNode();
   const isDesktop = useIsDesktopViewport();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const largeTitleRef = useRef<HTMLHeadingElement>(null);
+  const subtitleRef = useRef<HTMLParagraphElement>(null);
+  const barRef = useRef<HTMLDivElement>(null);
+  const smallTitleRef = useRef<HTMLHeadingElement>(null);
+  const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    // Tidak perlu pasang scroll listener sama sekali di desktop -- lihat
-    // catatan "MOBILE-ONLY" di komentar komponen ini. Guard di DALAM effect
-    // (bukan skip pemanggilan hook-nya) supaya urutan hooks tetap konsisten
-    // antar render sesuai Rules of Hooks.
-    if (isDesktop) { setIsCollapsed(false); return; }
+    // Tidak perlu pasang scroll listener di desktop -- lihat catatan
+    // "MOBILE-ONLY" di komentar komponen. Guard di DALAM effect (bukan
+    // skip pemanggilan hook) supaya urutan hooks tetap konsisten antar
+    // render sesuai Rules of Hooks.
+    if (isDesktop) return;
 
     const el = scrollRef?.current;
     if (!el) return;
 
-    const handleScroll = () => setIsCollapsed(el.scrollTop > threshold);
-    handleScroll(); // sinkron begitu mount, kalau halaman dibuka sudah dalam posisi scroll (mis. balik dari detail lain)
+    const applyProgress = () => {
+      rafRef.current = null;
+      const progress = Math.min(Math.max(el.scrollTop / COLLAPSE_DISTANCE, 0), 1);
 
+      if (largeTitleRef.current) {
+        largeTitleRef.current.style.opacity = String(1 - progress);
+        largeTitleRef.current.style.transform =
+          `translateY(${-progress * 10}px) scale(${1 - progress * 0.22})`;
+      }
+      if (subtitleRef.current) {
+        // Subtitle fade lebih cepat (dikali 1.6) supaya sudah hilang
+        // duluan sebelum large title benar-benar keluar -- kalau samaan
+        // kecepatan, subtitle yang font-nya lebih kecil jadi kelihatan
+        // "nyangkut" paling akhir & terasa aneh dibanding judulnya sendiri.
+        subtitleRef.current.style.opacity = String(Math.max(0, 1 - progress * 1.6));
+      }
+      if (smallTitleRef.current) {
+        smallTitleRef.current.style.opacity = String(progress);
+        smallTitleRef.current.style.transform = `translateY(${(1 - progress) * 6}px)`;
+      }
+      if (barRef.current) {
+        // Background/border/blur bar ikut progress juga (bukan langsung
+        // penuh) -- biar transisinya kelihatan seperti SATU bar yang
+        // "mengembun" jadi solid, bukan bar yang tiba-tiba nongol.
+        barRef.current.style.opacity = String(Math.min(progress * 1.4, 1));
+      }
+    };
+
+    const handleScroll = () => {
+      if (rafRef.current == null) rafRef.current = requestAnimationFrame(applyProgress);
+    };
+
+    applyProgress(); // sinkron begitu mount, kalau halaman dibuka sudah dalam posisi scroll (mis. balik dari sub-halaman)
     el.addEventListener("scroll", handleScroll, { passive: true });
-    return () => el.removeEventListener("scroll", handleScroll);
-  }, [scrollRef, threshold, isDesktop]);
+    return () => {
+      el.removeEventListener("scroll", handleScroll);
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+    };
+  }, [scrollRef, isDesktop]);
 
   const handleBack = () => {
     audioFeedback.playClick();
@@ -118,56 +144,86 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     else navigate(-1);
   };
 
-  // Guard render di sini (SETELAH semua hooks di atas sudah dipanggil,
-  // bukan sebelumnya) supaya jumlah/urutan hooks tetap sama di setiap
-  // render -- lihat catatan "MOBILE-ONLY" di komentar komponen.
-  if (isDesktop) return null;
+  const hasBack = backTo !== undefined;
 
-  const content = (
-    <AnimatePresence>
-      {isCollapsed && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.18, ease: "easeOut" }}
-          className={cx(
-            "sticky top-0 z-30 w-full px-4 sm:px-6 lg:px-8 py-2 relative",
-            "flex items-center border-b backdrop-blur-md",
-            "bg-slate-900/85 light_sakura:bg-white/85",
-            tokens.border.default
-          )}
-        >
-          <button
-            type="button"
-            onClick={handleBack}
-            aria-label="Back"
-            className="relative z-10 shrink-0 -ml-1.5 p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform"
-          >
-            <ChevronLeft size={18} className={tokens.text.secondary} />
-          </button>
-          {/* Judul diposisikan absolute & inset-x-0 (bukan cuma mengikuti
-              flex di sebelah tombol back) supaya benar-benar center
-              terhadap lebar bar, bukan center terhadap sisa ruang setelah
-              tombol back. px-10 menyisakan jarak aman dari tombol back di
-              kiri (≈ ukuran tombol + padding) sekaligus menjaga simetri di
-              kanan supaya truncate tidak condong ke satu sisi. */}
-          <h2
-            className={cx(
-              "absolute inset-x-0 px-10 text-center font-sans font-semibold text-sm truncate pointer-events-none",
-              tokens.text.heading
-            )}
-          >
+  // Fallback desktop: large title polos tanpa animasi/bar sama sekali.
+  if (isDesktop) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.primary)}>
             {title}
-          </h2>
-        </motion.div>
+          </h1>
+          {subtitle && (
+            <p className={cx("text-sm mt-1", tokens.text.heroSubtitle)}>{subtitle}</p>
+          )}
+        </div>
+        {children}
+      </div>
+    );
+  }
+
+  const bar = (
+    <div
+      ref={barRef}
+      // opacity awal 0 lewat inline style (bukan class) supaya tidak kedip
+      // "full opacity" sekejap sebelum effect di atas sempat jalan pertama
+      // kali (mis. kalau render pertama browser sempat paint sebelum JS
+      // commit style dari applyProgress()).
+      style={{ opacity: 0 }}
+      className={cx(
+        "sticky top-0 z-30 w-full px-4 sm:px-6 py-2.5 flex items-center border-b backdrop-blur-md",
+        "bg-slate-900/85 light_sakura:bg-white/85",
+        tokens.border.default
       )}
-    </AnimatePresence>
+    >
+      {hasBack && (
+        <button
+          type="button"
+          onClick={handleBack}
+          aria-label="Back"
+          className="relative z-10 shrink-0 -ml-1.5 p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform"
+        >
+          <ChevronLeft size={18} className={tokens.text.secondary} />
+        </button>
+      )}
+      {/* Small title diposisikan absolute & inset-x-0 supaya benar-benar
+          center terhadap lebar bar, bukan center terhadap sisa ruang
+          setelah tombol back. px-10 menyisakan jarak aman dari tombol
+          back kalau ada. */}
+      <h2
+        ref={smallTitleRef}
+        style={{ opacity: 0 }}
+        className={cx(
+          "absolute inset-x-0 px-10 text-center font-sans font-semibold text-sm truncate pointer-events-none",
+          tokens.text.heading
+        )}
+      >
+        {title}
+      </h2>
+    </div>
   );
 
-  // Fallback (portalNode belum terpasang, mis. render di luar App shell
-  // seperti test/storybook): render di tempat seperti sebelumnya, lebih
-  // baik ada walau berisiko kena bug transform, daripada tidak render
-  // sama sekali.
-  return portalNode ? createPortal(content, portalNode) : content;
+  return (
+    <>
+      {portalNode ? createPortal(bar, portalNode) : bar}
+      <div className="space-y-6">
+        <div>
+          <h1
+            ref={largeTitleRef}
+            style={{ transformOrigin: "left top", willChange: "transform, opacity" }}
+            className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.primary)}
+          >
+            {title}
+          </h1>
+          {subtitle && (
+            <p ref={subtitleRef} style={{ willChange: "opacity" }} className={cx("text-sm mt-1", tokens.text.heroSubtitle)}>
+              {subtitle}
+            </p>
+          )}
+        </div>
+        {children}
+      </div>
+    </>
+  );
 };

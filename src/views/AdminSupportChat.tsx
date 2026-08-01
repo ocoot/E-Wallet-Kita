@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "motion/react";
-import { AdminBackBar } from "../components/AdminBackBar";
 import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -327,28 +326,13 @@ export const AdminSupportChat: React.FC = () => {
   if (!isAdmin) return null;
 
   return (
-    <div className="space-y-6">
-      <CollapsingPageHeader title={t("admin_support_chat.title")} backTo="/admin" />
-      <div className="relative">
-        <div>
-          <AdminBackBar />
-        </div>
-      </div>
-
+    <CollapsingPageHeader title={t("admin_support_chat.title")} subtitle={t("admin_support_chat.desc")} backTo="/admin">
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
       <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
         <div className="p-6 sm:p-7 lg:p-8">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
-              {t("admin_support_chat.title")}
-            </h1>
-            <p className={cx("text-sm mt-1 max-w-xl", tokens.text.muted)}>
-              {t("admin_support_chat.desc")}
-            </p>
-          </div>
+          <div className="flex justify-end">
           <button
             type="button"
             onClick={() => {
@@ -621,6 +605,6 @@ export const AdminSupportChat: React.FC = () => {
         onConfirm={handleCloseSession}
         onCancel={() => setIsConfirmCloseOpen(false)}
       />
-    </div>
+    </CollapsingPageHeader>
   );
 };

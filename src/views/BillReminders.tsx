@@ -26,6 +26,7 @@ import {
   Edit2, CalendarDays, Send, Info, AlertTriangle
 } from "lucide-react";
 import { BillReminder } from "../types";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { useNavigate } from "react-router-dom";
 
 const REMINDER_HOUR_OPTIONS = [9, 12, 15, 18, 21] as const;
@@ -211,18 +212,10 @@ export const BillReminders: React.FC = () => {
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
       {/* ── Main content ───────────────────────────────────────────── */}
-      <div className="space-y-6">
+      <CollapsingPageHeader title={t("bill_reminders.page_title")} subtitle={t("bill_reminders.page_subtitle")}>
 
-          {/* Header */}
-          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border px-5 py-5", tokens.surface.card, tokens.border.accent)}>
-            <div>
-              <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
-                {t("bill_reminders.page_title")}
-              </h1>
-              <p className={cx("text-xs mt-1 leading-relaxed", tokens.text.muted)}>
-                {t("bill_reminders.page_subtitle")}
-              </p>
-            </div>
+          {/* Header actions */}
+          <div className={cx("flex justify-end rounded-2xl border px-5 py-5", tokens.surface.card, tokens.border.accent)}>
             <Button
               variant="success"
               onClick={() => { audioFeedback.playClick(); openAddForm(); }}
@@ -370,7 +363,7 @@ export const BillReminders: React.FC = () => {
               </div>
             </AnimatePresence>
           )}
-      </div>
+      </CollapsingPageHeader>
 
       {/* ── Form modal ──────────────────────────────────────────────── */}
       <ModalShell

@@ -19,6 +19,7 @@ import { Input } from "../components/ui/Input";
 import { CurrencyInput } from "../components/ui/CurrencyInput";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ModalShell } from "../components/ui/ModalShell";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 
 interface BudgetProps {
   // Root cause / why: sebelumnya Budget.tsx tidak menerima prop ini sama
@@ -244,32 +245,12 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
   const loading = loadingCategories || loadingBudgets;
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Header card — pola sama dengan History/Wallets/Settings/BillReminders/
-          Installments/Savings/GoldSavings: wrapper rounded-3xl BERSIH (tanpa
-          padding) + overflow-hidden, accent stripe warna di paling atas, lalu
-          padding sesungguhnya ada di div anak. Sebelumnya halaman ini punya
-          border-slate-900 (identik dgn bg-slate-900 sehingga border tidak
-          kelihatan sama sekali) dan tanpa accent stripe -- beda sendiri dari
-          semua halaman list lainnya.
-          Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
-          div manual ke <Card elevation="lg" padding="none"> supaya shadow
-          elevation-nya diatur terpusat lewat primitive, bukan hardcode
-          shadow-lg lagi di sini. */}
-      <div className="space-y-6">
+    <CollapsingPageHeader title={t("budget.page_title")} subtitle={t("budget.page_subtitle")}>
+      <div className="space-y-6 pb-12">
 
-      {/* Header */}
-      <div className={cx("flex items-start justify-between gap-3.5 flex-wrap rounded-2xl border px-5 py-5", tokens.surface.card, tokens.border.accent)}>
-        <div>
-          <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
-            {t("budget.page_title")}
-          </h1>
-          <p className={cx("text-xs mt-1 max-w-xl leading-relaxed", tokens.text.muted)}>
-            {t("budget.page_subtitle")}
-          </p>
-        </div>
-
-        {!loading && expenseCategories.length > 0 && (
+      {/* Header actions */}
+      {!loading && expenseCategories.length > 0 && (
+        <div className={cx("flex justify-end rounded-2xl border px-5 py-5", tokens.surface.card, tokens.border.accent)}>
           <button
             onClick={openAddModal}
             disabled={availableCategories.length === 0}
@@ -279,8 +260,8 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
             <Plus size={15} />
             {t("budget.add_budget_cta")}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {loading ? (
         <div className={cx("text-sm", tokens.text.muted)}>…</div>
@@ -448,6 +429,6 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
         onCancel={() => setDeleteTarget(null)}
         confirmDisabled={isDeleting}
       />
-    </div>
+    </CollapsingPageHeader>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
-import { AdminBackBar } from "../components/AdminBackBar";
 import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { supabase } from "../lib/supabase";
@@ -174,27 +173,11 @@ export const AdminMaintenance: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
-      <CollapsingPageHeader title={t("admin.maintenance_title")} backTo="/admin" />
-      <div className="relative">
-        <div>
-          <AdminBackBar />
-        </div>
-      </div>
-
+    <CollapsingPageHeader title={t("admin.maintenance_title")} subtitle={t("admin.maintenance_desc")} backTo="/admin">
       {/* ── Global Maintenance Toggle ── */}
       <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
         <div className="p-6 sm:p-7 lg:p-8 space-y-6">
-        <div className={cx("border-b pb-5", tokens.border.default)}>
-          <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
-            {t("admin.maintenance_title")}
-          </h1>
-          <p className={cx("text-sm mt-1", tokens.text.muted)}>
-            {t("admin.maintenance_desc")}
-          </p>
-        </div>
-
         {/* Info: admin always bypass */}
         <div className={cx("flex items-start gap-3 px-4 py-3 rounded-2xl", tokens.adminMaintenance.bypassNoteBanner)}>
           <Info size={16} className={cx("mt-0.5 shrink-0", tokens.adminMaintenance.bypassNoteIcon)} />
@@ -356,6 +339,6 @@ export const AdminMaintenance: React.FC = () => {
       </div>
 
       <LoadingOverlay isOpen={savingAction.isOpen} message={savingAction.message} />
-    </div>
+    </CollapsingPageHeader>
   );
 };

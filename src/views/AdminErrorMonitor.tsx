@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
-import { AdminBackBar } from "../components/AdminBackBar";
 import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { Card } from "../components/ui/Card";
 import { supabase } from "../lib/supabase";
@@ -237,35 +236,13 @@ export const AdminErrorMonitor: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* PILOT (Agu 2026): CollapsingPageHeader -- sticky compact header
-          yang cuma muncul begitu discroll (lihat komentar lengkap di
-          komponennya). AdminBackBar di bawah TETAP dipertahankan apa
-          adanya untuk posisi normal/belum discroll -- keduanya saling
-          melengkapi, bukan saling gantikan, sampai pola ini terbukti
-          bagus dan disebar ke halaman lain. */}
-      <CollapsingPageHeader title={t("error_monitor.title")} backTo="/admin" />
-      <div className="relative">
-        <div>
-          <AdminBackBar />
-        </div>
-      </div>
-
+    <CollapsingPageHeader title={t("error_monitor.title")} subtitle={t("error_monitor.desc")} backTo="/admin">
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
       <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
         <div className="p-6 sm:p-7 lg:p-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
-              {t("error_monitor.title")}
-            </h1>
-            <p className={cx("text-sm mt-1", tokens.text.muted)}>
-              {t("error_monitor.desc")}
-            </p>
-          </div>
-
+        <div className="flex justify-end">
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             <div className={cx("flex rounded-xl border p-1", tokens.errorMonitor.tabBorder, tokens.surface.subtle)}>
               {PERIOD_OPTIONS.map((p) => (
@@ -562,6 +539,6 @@ export const AdminErrorMonitor: React.FC = () => {
       </div>
 
       <LoadingOverlay isOpen={refreshing} message={t("admin.loading_data")} />
-    </div>
+    </CollapsingPageHeader>
   );
 };

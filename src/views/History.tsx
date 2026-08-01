@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useLocation } from "react-router-dom";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { useLanguage } from "../contexts/LanguageContext";
 import { dbService } from "../lib/db";
 import { supabase } from "../lib/supabase";
@@ -303,7 +304,7 @@ export const History: React.FC<HistoryProps> = ({
   return (
     <PullToRefresh onRefresh={loadTransactions}>
     <div className="space-y-5">
-      <div className="space-y-6">
+      <CollapsingPageHeader title={t("history.title")} subtitle={t("history.desc")}>
 
           <HistoryExport
             isExportMenuOpen={isExportMenuOpen}
@@ -453,7 +454,7 @@ export const History: React.FC<HistoryProps> = ({
             paginatedCount={paginatedTransactions.length}
             totalItems={totalItems}
           />
-      </div>
+      </CollapsingPageHeader>
 
       {/* ── Modals ──────────────────────────────────────────────────── */}
       <HistoryDeleteModal

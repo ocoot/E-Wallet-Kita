@@ -11,6 +11,7 @@ import { SavingsPocketType } from "../types";
 import { Modal } from "../components/Modal";
 import { DropdownField } from "../components/DropdownField";
 import { EmptyState } from "../components/EmptyState";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { ErrorState } from "../components/ErrorState";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useBackGestureTrap } from "../hooks/useBackGestureTrap";
@@ -317,20 +318,9 @@ export const Savings: React.FC = () => {
   return (
     <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
 
-      {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
-          div manual ke <Card elevation="lg" padding="none"> supaya shadow
-          elevation-nya diatur terpusat lewat primitive. */}
-      <div className="space-y-6">
+      <CollapsingPageHeader title={t("savings.page_title")} subtitle={t("savings.page_subtitle")}>
 
-          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
-            <div>
-              <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
-                {t("savings.page_title")}
-              </h1>
-              <p className={cx("text-xs mt-1 leading-relaxed", tokens.text.muted)}>
-                {t("savings.page_subtitle")}
-              </p>
-            </div>
+          <div className={cx("flex justify-end rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
             <Button
               variant="success"
               onClick={() => { audioFeedback.playClick(); openAddForm(); }}
@@ -377,7 +367,7 @@ export const Savings: React.FC = () => {
               </div>
             </AnimatePresence>
           )}
-      </div>
+      </CollapsingPageHeader>
 
       {/* Add/Edit pocket form modal */}
       <ModalShell

@@ -10,6 +10,7 @@ import { useWallets } from "../hooks/useWallets";
 import { GoldPocket, GoldBrand, ACTIVE_GOLD_BRANDS } from "../types";
 import { Modal } from "../components/Modal";
 import { EmptyState } from "../components/EmptyState";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { ErrorState } from "../components/ErrorState";
 import { InfoTooltip } from "../components/InfoTooltip";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
@@ -491,20 +492,9 @@ export const GoldSavings: React.FC = () => {
         />
       )}
 
-      {/* Perbaikan prioritas 1 (AUDIT-konsistensi-komponen.md): migrasi dari
-          div manual ke <Card elevation="lg" padding="none"> supaya shadow
-          elevation-nya diatur terpusat lewat primitive. */}
-      <div className="space-y-6">
+      <CollapsingPageHeader title={t("gold.page_title")} subtitle={t("gold.page_subtitle")}>
 
-          <div className={cx("flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
-            <div>
-              <h1 className={cx("font-sans font-extrabold text-2xl tracking-[-0.025em] leading-tight", tokens.text.heading)}>
-                {t("gold.page_title")}
-              </h1>
-              <p className={cx("text-xs mt-1 leading-relaxed", tokens.text.muted)}>
-                {t("gold.page_subtitle")}
-              </p>
-            </div>
+          <div className={cx("flex justify-end rounded-2xl border px-5 py-4", tokens.surface.card, tokens.border.accent)}>
             <button onClick={() => { audioFeedback.playClick(); openAddForm(); }}
               className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm transition-all active:scale-95 shadow-lg shadow-amber-500/20 shrink-0 cursor-pointer">
               <Plus size={16} /> {t("gold.add_button")}
@@ -626,7 +616,7 @@ export const GoldSavings: React.FC = () => {
               </div>
             </AnimatePresence>
           )}
-      </div>
+      </CollapsingPageHeader>
 
       {/* Add/Edit pocket form modal */}
       <ModalShell

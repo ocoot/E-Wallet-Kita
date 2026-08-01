@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "motion/react";
 import { reportFrontendError } from "../lib/errorReporter";
-import { AdminBackBar } from "../components/AdminBackBar";
 import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { Card } from "../components/ui/Card";
 import { BADGE_SIZE_CLASSES } from "../components/ui/Badge";
@@ -144,29 +143,13 @@ export const AdminAiMonitor: React.FC = () => {
   const grandTotal = byProvider.reduce((s, p) => s + p.total_calls, 0);
 
   return (
-    <div className="space-y-6">
-      <CollapsingPageHeader title={t("ai_monitor.title")} backTo="/admin" />
-      <div className="relative">
-        <div>
-          <AdminBackBar />
-        </div>
-      </div>
-
+    <CollapsingPageHeader title={t("ai_monitor.title")} subtitle={t("ai_monitor.desc")} backTo="/admin">
       {/* Header wrapped in a solid card surface (bukan lagi teks mengambang
           langsung di atas ribbon gradient) supaya kontras subtitle terjamin. */}
       <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
         <div className="p-6 sm:p-7 lg:p-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className={cx("font-sans font-bold text-2xl tracking-tight", tokens.text.heading)}>
-              {t("ai_monitor.title")}
-            </h1>
-            <p className={cx("text-sm mt-1", tokens.text.muted)}>
-              {t("ai_monitor.desc")}
-            </p>
-          </div>
-
+        <div className="flex justify-end">
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">
             {/* Period selector */}
             <div className={cx("flex rounded-xl border p-1", tokens.border.default, tokens.surface.subtle)}>
@@ -443,6 +426,6 @@ export const AdminAiMonitor: React.FC = () => {
       )}
 
       <LoadingOverlay isOpen={refreshing || loading} message={t("ai_monitor.loading")} />
-    </div>
+    </CollapsingPageHeader>
   );
 };

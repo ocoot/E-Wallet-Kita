@@ -48,6 +48,7 @@ import { useThemeTokens } from "../hooks/useThemeTokens";
 import { ToggleSwitch } from "../components/ui/ToggleSwitch";
 import { useNotificationPreferences, NotificationPreferenceKey } from "../hooks/useNotificationPreferences";
 import { SettingsMobileMenu } from "../components/settings/SettingsMobileMenu";
+import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 
 interface SettingsProps {
   onUserPrefUpdated: (user: UserSession) => void;
@@ -542,7 +543,7 @@ export const Settings: React.FC<SettingsProps> = ({
           `absolute` di dekat tepi atas ribbon -- lihat App.tsx); label
           halaman sekarang cukup diwakili oleh item terakhir breadcrumb. */}
       <div className="relative lg:hidden">
-        <div>
+        <CollapsingPageHeader title={t("settings.title")} subtitle={t("settings.desc")}>
           <SettingsMobileMenu
             displayName={displayName}
             email={user?.email || null}
@@ -557,7 +558,7 @@ export const Settings: React.FC<SettingsProps> = ({
             locale={locale}
             theme={theme}
           />
-        </div>
+        </CollapsingPageHeader>
       </div>
 
       {/* Main Card -- tampilan desktop lama, tidak diubah, hanya

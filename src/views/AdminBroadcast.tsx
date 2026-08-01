@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
-import { AdminBackBar } from "../components/AdminBackBar";
 import { CollapsingPageHeader } from "../components/CollapsingPageHeader";
 import { supabase } from "../lib/supabase";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -178,28 +177,10 @@ export const AdminBroadcast: React.FC = () => {
     (linkedCount ?? 0) + (pushTokenCount ?? 0);
 
   return (
-    <div className="space-y-6">
-      <CollapsingPageHeader title={t("admin.broadcast_title")} backTo="/admin" />
-      <div className="relative">
-        <div>
-          <AdminBackBar />
-        </div>
-      </div>
-
+    <CollapsingPageHeader title={t("admin.broadcast_title")} subtitle={t("admin.broadcast_desc")} backTo="/admin">
       <div className={cx("overflow-hidden rounded-2xl border shadow-sm", tokens.surface.card, tokens.border.accent)}>
         <div className="h-1 w-full bg-gradient-to-r from-emerald-600/80 via-indigo-500/60 to-emerald-400/80" />
         <div className="p-8 space-y-6">
-        {/* Header inside Card Container */}
-        <div className={cx("border-b pb-5", tokens.border.default)}>
-          <h1 className={cx("font-sans font-bold text-2xl tracking-tight flex items-center gap-2", tokens.text.heading)}>
-            <Send className="text-indigo-500" size={24} />
-            {t("admin.broadcast_title")}
-          </h1>
-          <p className={cx("text-sm mt-1", tokens.text.muted)}>
-            {t("admin.broadcast_desc")}
-          </p>
-        </div>
-
         {/* Channel selector */}
         <div>
           <label className={cx("block text-sm font-medium mb-3", tokens.text.secondary)}>
@@ -391,6 +372,6 @@ export const AdminBroadcast: React.FC = () => {
 
       {/* Loading overlay for mass notifications */}
       <LoadingOverlay isOpen={sending} message={t("admin.sending_broadcast")} />
-    </div>
+    </CollapsingPageHeader>
   );
 };
