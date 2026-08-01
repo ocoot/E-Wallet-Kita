@@ -109,8 +109,8 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.18, ease: "easeOut" }}
           className={cx(
-            "sticky top-0 z-30 w-full px-4 sm:px-6 lg:px-8 py-3",
-            "flex items-center gap-3 border-b backdrop-blur-md",
+            "sticky top-0 z-30 w-full px-4 sm:px-6 lg:px-8 py-2 relative",
+            "flex items-center border-b backdrop-blur-md",
             "bg-slate-900/85 light_sakura:bg-white/85",
             tokens.border.default
           )}
@@ -119,11 +119,22 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
             type="button"
             onClick={handleBack}
             aria-label="Back"
-            className="shrink-0 -ml-1.5 p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform"
+            className="relative z-10 shrink-0 -ml-1.5 p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform"
           >
-            <ChevronLeft size={20} className={tokens.text.secondary} />
+            <ChevronLeft size={18} className={tokens.text.secondary} />
           </button>
-          <h2 className={cx("font-sans font-bold text-base truncate", tokens.text.heading)}>
+          {/* Judul diposisikan absolute & inset-x-0 (bukan cuma mengikuti
+              flex di sebelah tombol back) supaya benar-benar center
+              terhadap lebar bar, bukan center terhadap sisa ruang setelah
+              tombol back. px-10 menyisakan jarak aman dari tombol back di
+              kiri (≈ ukuran tombol + padding) sekaligus menjaga simetri di
+              kanan supaya truncate tidak condong ke satu sisi. */}
+          <h2
+            className={cx(
+              "absolute inset-x-0 px-10 text-center font-sans font-semibold text-sm truncate pointer-events-none",
+              tokens.text.heading
+            )}
+          >
             {title}
           </h2>
         </motion.div>
