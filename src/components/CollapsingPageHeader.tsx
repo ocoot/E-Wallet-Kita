@@ -146,6 +146,15 @@ interface CollapsingPageHeaderProps {
  * opacity) supaya area icon actions tidak bisa kepencet tak sengaja
  * waktu masih transparan/nyaris tak terlihat di atas ribbon.
  *
+ * v8 (Agu 2026) -- KOREKSI atas v7: permintaan eksplisit lanjutan, back
+ * button SEKARANG JUGA fade in/out ikut scroll progress (via
+ * `backButtonRef`), sama persis logic-nya dengan actionsRef -- tidak ada
+ * lagi elemen yang konstan full-visible dari mount di dalam bar ini
+ * (cuma container `barRef` sendiri yang tetap fixed-position, TANPA
+ * fade, supaya tetap tidak makan ruang flow -- lihat v4). Alasan v7
+ * (back = navigasi, harus selalu reachable) TIDAK berlaku lagi di sini
+ * atas keputusan eksplisit pemilik produk.
+ *
  * MOBILE-ONLY: sama seperti versi sebelumnya, tidak dirender sama sekali
  * di breakpoint desktop (Sidebar persisten sudah jadi konteks navigasi).
  * Di desktop, large title dirender polos tanpa animasi/bar sticky sama
@@ -180,11 +189,13 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   // applyProgress() soal kenapa background bar dipisah dari container-nya.
   const barBgRef = useRef<HTMLDivElement>(null);
   const smallTitleRef = useRef<HTMLHeadingElement>(null);
-  // Dipakai kalau ada `actions` -- wrapper-nya sekarang fade in/out ikut
-  // scroll progress (lihat applyProgress()), BEDA dari back button yang
-  // tetap konstan full-visible. Back button = navigasi, selalu perlu
-  // reachable; actions = aksi sekunder (Add/Refresh/dst), oke kalau baru
-  // muncul begitu user mulai discroll (sesuai permintaan eksplisit).
+  // Dipakai kalau ada back button -- SEKARANG fade in/out ikut scroll
+  // progress juga (sebelumnya konstan full-visible dari mount; diubah
+  // atas permintaan eksplisit supaya perilakunya seragam dengan actions).
+  const backButtonRef = useRef<HTMLButtonElement>(null);
+  // Dipakai kalau ada `actions` -- wrapper-nya fade in/out ikut scroll
+  // progress (lihat applyProgress()), SEKARANG SAMA seperti back button
+  // di atas (keduanya fade bareng, tidak ada lagi yang konstan).
   const actionsRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
   const willChangeIdleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -266,16 +277,22 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         barRef.current.style.borderBottomWidth = progress > 0.02 ? "1px" : "0px";
       }
 
+      if (backButtonRef.current) {
+        // Back button SEKARANG fade in/out ikut scroll progress juga --
+        // sebelumnya konstan full-visible dari mount, diubah atas
+        // permintaan eksplisit supaya seragam dengan actions (lihat blok
+        // actionsRef di bawah, logic-nya sama persis).
+        backButtonRef.current.style.opacity = String(progress);
+        backButtonRef.current.style.pointerEvents = progress > 0.3 ? "auto" : "none";
+      }
+
       if (actionsRef.current) {
-        // `actions` (kalau diisi) fade in/out ikut scroll progress -- SAMA
-        // seperti small title, BEDA dari back button yang tetap konstan
-        // full-visible dari awal. Ini permintaan eksplisit: back = navigasi
-        // (harus selalu reachable), actions = aksi sekunder (Add/Refresh/
-        // dst) yang oke baru muncul begitu user mulai discroll, bukan
-        // nongol dari detik pertama nutupin ribbon. pointerEvents ikut
-        // ditoggle (bukan cuma opacity) supaya area icon-nya TIDAK bisa
-        // kepencet tak sengaja waktu masih transparan/nyaris tak terlihat
-        // di atas ribbon.
+        // `actions` (kalau diisi) fade in/out ikut scroll progress --
+        // SAMA seperti small title & back button di atas (semuanya fade
+        // bareng sekarang, tidak ada lagi yang konstan). pointerEvents
+        // ikut ditoggle (bukan cuma opacity) supaya area icon-nya TIDAK
+        // bisa kepencet tak sengaja waktu masih transparan/nyaris tak
+        // terlihat di atas ribbon.
         actionsRef.current.style.opacity = String(progress);
         actionsRef.current.style.pointerEvents = progress > 0.3 ? "auto" : "none";
       }
@@ -415,17 +432,23 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         )}
       />
       {hasBack && (
+        // Back button sekarang fade in/out ikut scroll progress (lihat
+        // applyProgress()) -- opacity awal 0 + pointerEvents none lewat
+        // inline style (bukan class) supaya tidak "kedip" full visible
+        // sekejap sebelum effect di atas sempat jalan pertama kali.
         <button
+          ref={backButtonRef}
           type="button"
           onClick={handleBack}
           aria-label={t("common.back")}
+          style={{ opacity: 0, pointerEvents: "none" }}
           className="relative z-10 shrink-0 -ml-1.5 p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none"
         >
           <ChevronLeft size={18} className={tokens.text.secondary} />
         </button>
       )}
       {actions && (
-        // BEDA dari back button: actions fade in/out ikut scroll progress
+        // Sama seperti back button di atas: actions fade in/out ikut scroll progress
         // (lihat applyProgress()) -- opacity awal 0 + pointerEvents none
         // lewat inline style (bukan class) supaya tidak "kedip" full
         // visible sekejap sebelum effect di atas sempat jalan pertama

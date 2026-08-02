@@ -475,7 +475,7 @@ export const AdminUserManager: React.FC = () => {
             type="button"
             onClick={handleExportCSV}
             aria-label={t("admin.export_csv")}
-            className="p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none text-emerald-500 hover:text-emerald-400"
+            className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
           >
             <Download size={18} />
           </button>
