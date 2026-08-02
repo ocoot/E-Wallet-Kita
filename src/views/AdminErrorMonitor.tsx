@@ -246,7 +246,7 @@ export const AdminErrorMonitor: React.FC = () => {
           onClick={handleRefresh}
           disabled={refreshing}
           aria-label={t("admin.refresh_data")}
-          className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform disabled:opacity-50", tokens.text.secondary)}
+          className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none disabled:opacity-50", tokens.text.secondary)}
         >
           <RefreshCw size={18} className={refreshing ? "animate-spin" : ""} />
         </button>

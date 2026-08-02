@@ -382,7 +382,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
           type="button"
           onClick={handleBack}
           aria-label={t("common.back")}
-          className="relative z-10 shrink-0 -ml-1.5 p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform"
+          className="relative z-10 shrink-0 -ml-1.5 p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none"
         >
           <ChevronLeft size={18} className={tokens.text.secondary} />
         </button>

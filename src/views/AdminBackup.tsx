@@ -393,7 +393,7 @@ export const AdminBackup: React.FC = () => {
           type="button"
           onClick={loadStatus}
           aria-label={t("admin.refresh")}
-          className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform", tokens.text.secondary)}
+          className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
         >
           <RefreshCw size={18} />
         </button>
