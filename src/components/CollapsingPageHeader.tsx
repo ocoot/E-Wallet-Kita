@@ -309,16 +309,25 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     // button dan/atau actions. Container-nya (barRef) SENGAJA fixed
     // height sejak mount (BUKAN diinterpolasi 0 -> BAR_HEIGHT_PX kayak
     // mode lama) -- supaya back button & actions langsung reachable dari
-    // detik pertama halaman dibuka, tidak perlu discroll dulu. Sebagai
-    // gantinya, background (blur+warna+border) dipisah ke layer sendiri
-    // (barBgRef, absolute inset-0 di belakang tombol2) yang TETAP
-    // di-interpolasi ikut scroll progress -- efek "mengembun jadi solid"
-    // pas discroll masih kerasa, cuma sekarang backgroundnya doang yang
-    // fade, bukan seluruh toolbar termasuk tombol2 di dalamnya.
+    // detik pertama halaman dibuka, tidak perlu discroll dulu.
+    //
+    // FIX (visual, Agu 2026): barRef diberi `tokens.surface.canvas`
+    // PERMANEN (bukan transparan) sejak mount -- sebelumnya container ini
+    // transparan penuh sampai discroll, jadi warna asli di baliknya
+    // (canvas app, `bg-slate-950`/`bg-rose-50` -- background <main> yang
+    // TIDAK PERNAH kelihatan dulu waktu bar masih height:0) malah
+    // nongol sebagai strip kosong "mengambang" terpisah dari ribbon di
+    // bawahnya (lihat screenshot report -- toolbar kelihatan aneh,
+    // disconnected). Sekarang toolbar SELALU solid warna canvas dari
+    // awal, jadi kebaca sebagai bagian chrome yang disengaja, bukan gap
+    // kosong. Layer background TERPISAH (barBgRef, blur+border lebih
+    // pekat) tetap di-interpolasi ikut scroll progress DI ATAS canvas
+    // ini -- efek "mengembun jadi lebih solid" pas discroll masih kerasa,
+    // cuma sekarang base-nya udah nggak pernah transparan-kosong lagi.
     <div
       ref={barRef}
       style={{ height: BAR_HEIGHT_PX }}
-      className="sticky top-0 z-30 w-full flex items-center px-4 sm:px-6"
+      className={cx("sticky top-0 z-30 w-full flex items-center px-4 sm:px-6", tokens.surface.canvas)}
     >
       <div
         ref={barBgRef}
