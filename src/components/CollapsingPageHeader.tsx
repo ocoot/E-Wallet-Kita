@@ -129,6 +129,23 @@ interface CollapsingPageHeaderProps {
  * kebaca di atas ribbon tertentu) penyesuaian lanjutan berdasarkan
  * screenshot, bukan backdrop generik yang malah mengganggu visual.
  *
+ * v6 (Agu 2026) -- lingkaran abu-abu yang masih kelihatan di beberapa
+ * tombol (dilaporkan lewat screenshot, muncul/hilang tidak konsisten
+ * antar tombol) TERNYATA bukan dari style kita -- itu default browser
+ * focus-ring Android/Chrome di elemen `<button>` yang tidak di-reset,
+ * kerender solid di tombol kecil `rounded-full`. Pola established di
+ * codebase (banyak tombol lain sudah pakai `focus:outline-none`) diikuti
+ * konsisten sekarang di back button & semua tombol `actions` per-halaman.
+ *
+ * v7 (Agu 2026) -- permintaan eksplisit: `actions` sekarang FADE IN/OUT
+ * ikut scroll progress (opacity 0 di progress=0, opacity mengikuti
+ * progress) via `actionsRef`, mirip small title -- BEDA dari back button
+ * yang TETAP konstan full-visible dari mount (back = navigasi, harus
+ * selalu reachable; actions = aksi sekunder yang oke baru muncul begitu
+ * user mulai discroll). `pointerEvents` ikut ditoggle (bukan cuma
+ * opacity) supaya area icon actions tidak bisa kepencet tak sengaja
+ * waktu masih transparan/nyaris tak terlihat di atas ribbon.
+ *
  * MOBILE-ONLY: sama seperti versi sebelumnya, tidak dirender sama sekali
  * di breakpoint desktop (Sidebar persisten sudah jadi konteks navigasi).
  * Di desktop, large title dirender polos tanpa animasi/bar sticky sama
@@ -163,6 +180,12 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   // applyProgress() soal kenapa background bar dipisah dari container-nya.
   const barBgRef = useRef<HTMLDivElement>(null);
   const smallTitleRef = useRef<HTMLHeadingElement>(null);
+  // Dipakai kalau ada `actions` -- wrapper-nya sekarang fade in/out ikut
+  // scroll progress (lihat applyProgress()), BEDA dari back button yang
+  // tetap konstan full-visible. Back button = navigasi, selalu perlu
+  // reachable; actions = aksi sekunder (Add/Refresh/dst), oke kalau baru
+  // muncul begitu user mulai discroll (sesuai permintaan eksplisit).
+  const actionsRef = useRef<HTMLDivElement>(null);
   const rafRef = useRef<number | null>(null);
   const willChangeIdleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Jarak collapse AKTUAL, diukur dari tinggi titleBlockRef via
@@ -207,13 +230,13 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         // MODE "toolbar selalu tampil" (halaman punya back button atau
         // actions) -- container bar (barRef) SENGAJA tidak disentuh sama
         // sekali di sini, tingginya fixed BAR_HEIGHT_PX dari awal lewat
-        // style statis di JSX (lihat di bawah), supaya back button &
-        // actions langsung reachable dari detik pertama halaman dibuka --
-        // TIDAK perlu discroll dulu. Cuma layer BACKGROUND (blur+warna+
-        // border) di sini yang di-interpolasi ikut progress, biar tetap
-        // ada efek "mengembun jadi solid" pas discroll -- persis kayak
-        // sebelumnya, cuma sekarang yang fade itu background-nya doang,
-        // bukan seluruh toolbar (termasuk tombol-tombolnya).
+        // style statis di JSX (lihat di bawah), supaya BACK BUTTON
+        // langsung reachable dari detik pertama halaman dibuka -- TIDAK
+        // perlu discroll dulu. Cuma layer BACKGROUND (blur+warna+border)
+        // di sini yang di-interpolasi ikut progress, biar tetap ada efek
+        // "mengembun jadi solid" pas discroll -- persis kayak sebelumnya,
+        // cuma sekarang yang fade itu background-nya doang, bukan seluruh
+        // toolbar (termasuk back button).
         barBgRef.current.style.opacity = String(Math.min(progress * 1.4, 1));
         barBgRef.current.style.borderBottomWidth = progress > 0.02 ? "1px" : "0px";
       } else if (barRef.current) {
@@ -241,6 +264,20 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         // bar/ribbon. Makanya lebar border JUGA diinterpolasi manual di
         // sini (bukan lewat class border-b statis) -- 0 di progress=0.
         barRef.current.style.borderBottomWidth = progress > 0.02 ? "1px" : "0px";
+      }
+
+      if (actionsRef.current) {
+        // `actions` (kalau diisi) fade in/out ikut scroll progress -- SAMA
+        // seperti small title, BEDA dari back button yang tetap konstan
+        // full-visible dari awal. Ini permintaan eksplisit: back = navigasi
+        // (harus selalu reachable), actions = aksi sekunder (Add/Refresh/
+        // dst) yang oke baru muncul begitu user mulai discroll, bukan
+        // nongol dari detik pertama nutupin ribbon. pointerEvents ikut
+        // ditoggle (bukan cuma opacity) supaya area icon-nya TIDAK bisa
+        // kepencet tak sengaja waktu masih transparan/nyaris tak terlihat
+        // di atas ribbon.
+        actionsRef.current.style.opacity = String(progress);
+        actionsRef.current.style.pointerEvents = progress > 0.3 ? "auto" : "none";
       }
     };
 
@@ -388,11 +425,18 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         </button>
       )}
       {actions && (
-        // Sama seperti back button, actions SELALU full terlihat sejak
-        // mount (bukan fade terpisah) -- ml-auto dorong ke ujung kanan
-        // (back button di kiri cuma flow item lain di flex ini, h2 title
-        // di tengah posisinya absolute jadi tidak ikut mendorong).
-        <div className="relative z-10 ml-auto shrink-0 flex items-center gap-1">
+        // BEDA dari back button: actions fade in/out ikut scroll progress
+        // (lihat applyProgress()) -- opacity awal 0 + pointerEvents none
+        // lewat inline style (bukan class) supaya tidak "kedip" full
+        // visible sekejap sebelum effect di atas sempat jalan pertama
+        // kali. ml-auto dorong ke ujung kanan (back button di kiri cuma
+        // flow item lain di flex ini, h2 title di tengah posisinya
+        // absolute jadi tidak ikut mendorong).
+        <div
+          ref={actionsRef}
+          style={{ opacity: 0, pointerEvents: "none" }}
+          className="relative z-10 ml-auto shrink-0 flex items-center gap-1"
+        >
           {actions}
         </div>
       )}
