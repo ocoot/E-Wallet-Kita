@@ -155,6 +155,23 @@ interface CollapsingPageHeaderProps {
  * (back = navigasi, harus selalu reachable) TIDAK berlaku lagi di sini
  * atas keputusan eksplisit pemilik produk.
  *
+ * v9 (Agu 2026) -- EDGE CASE penting yang ketemu setelah v7/v8: fade-on-
+ * scroll bikin back/actions TIDAK PERNAH reachable di halaman yang
+ * kontennya lebih pendek dari viewport (mis. EmptyState buat user baru
+ * yang belum punya transaksi/wallet/cicilan/anggaran) -- karena scroll
+ * event yang men-trigger fade itu sendiri tidak pernah terjadi kalau
+ * tidak ada yang bisa discroll. Fix: `isScrollableRef`, dihitung dari
+ * `el.scrollHeight > el.clientHeight`, di-recompute setiap kali
+ * `contentWrapperRef` (total tinggi title+children, lewat ResizeObserver
+ * yang sama dengan titleBlockRef) berubah ukuran -- mis. loading spinner
+ * berganti EmptyState pendek. Kalau halaman TIDAK scrollable,
+ * `toolbarButtonsProgress` dipaksa 1 (full-visible) buat back & actions
+ * SAJA, terlepas dari scroll progress asli -- small title & background
+ * bar TETAP pakai progress asli (tidak dipaksa), jadi large title masih
+ * kelihatan penuh, cuma back/actions-nya yang di-override supaya tetap
+ * reachable dari detik pertama di halaman-halaman yang memang tidak
+ * bisa discroll.
+ *
  * MOBILE-ONLY: sama seperti versi sebelumnya, tidak dirender sama sekali
  * di breakpoint desktop (Sidebar persisten sudah jadi konteks navigasi).
  * Di desktop, large title dirender polos tanpa animasi/bar sticky sama
@@ -206,6 +223,23 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   // menaruhnya di state akan memicu re-render tiap kali ukurannya
   // berubah, padahal cuma perlu dibaca, bukan menggambar ulang apa pun.
   const collapseDistanceRef = useRef<number>(COLLAPSE_DISTANCE_FALLBACK);
+  // Ref ke wrapper TOTAL konten body (title block + children) -- diukur
+  // via ResizeObserver yang sama di bawah, buat tau apakah halaman ini
+  // BISA discroll sama sekali. Kasus nyata: user baru gabung, belum ada
+  // transaksi/wallet/cicilan/anggaran -- konten (cuma title + EmptyState
+  // pendek) lebih pendek dari viewport, jadi `el.scrollTop` TIDAK PERNAH
+  // berubah dari 0 -- kalau back/actions cuma reachable lewat fade-on-
+  // scroll (lihat v7/v8 di atas), pengguna baru itu TIDAK PUNYA cara
+  // sama sekali buka tombol Add/Refresh/back, karena scroll event yang
+  // men-trigger fade itu tidak pernah terjadi.
+  const contentWrapperRef = useRef<HTMLDivElement>(null);
+  // true = halaman ini scrollable normal (fade-on-scroll back/actions
+  // berlaku apa adanya). false = konten lebih pendek dari viewport --
+  // back/actions DIPAKSA tetap full-visible terlepas dari scroll
+  // progress (lihat applyProgress()), supaya tetap reachable. Default
+  // true (optimistic) supaya tidak sempat "kedip" force-visible sekejap
+  // sebelum ResizeObserver pertama kali sempat mengukur.
+  const isScrollableRef = useRef<boolean>(true);
 
   useEffect(() => {
     // Tidak perlu pasang scroll listener di desktop -- lihat catatan
@@ -277,24 +311,38 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         barRef.current.style.borderBottomWidth = progress > 0.02 ? "1px" : "0px";
       }
 
+      // Progress "efektif" KHUSUS buat back button & actions -- kalau
+      // halaman ini tidak scrollable sama sekali (konten lebih pendek
+      // dari viewport, mis. EmptyState buat user baru yang belum punya
+      // transaksi/wallet/cicilan/anggaran), scroll event yang men-trigger
+      // fade TIDAK PERNAH terjadi -- progress asli permanen 0, jadi
+      // back/actions permanen tak-terlihat & tak-terjangkau kalau cuma
+      // ikut progress asli. Di kondisi itu, paksa full-visible (seolah
+      // progress=1) terlepas dari scroll beneran. Small title & background
+      // bar TIDAK ikut dipaksa (tetap pakai `progress` asli di bawah) --
+      // large title tetap kelihatan penuh di kondisi ini, cuma back/
+      // actions-nya yang di-override supaya tetap reachable.
+      const toolbarButtonsProgress = isScrollableRef.current ? progress : 1;
+
       if (backButtonRef.current) {
-        // Back button SEKARANG fade in/out ikut scroll progress juga --
-        // sebelumnya konstan full-visible dari mount, diubah atas
-        // permintaan eksplisit supaya seragam dengan actions (lihat blok
-        // actionsRef di bawah, logic-nya sama persis).
-        backButtonRef.current.style.opacity = String(progress);
-        backButtonRef.current.style.pointerEvents = progress > 0.3 ? "auto" : "none";
+        // Back button fade in/out ikut scroll progress (efektif, lihat
+        // toolbarButtonsProgress di atas) -- sebelumnya konstan
+        // full-visible dari mount, diubah atas permintaan eksplisit
+        // supaya seragam dengan actions (lihat blok actionsRef di bawah,
+        // logic-nya sama persis).
+        backButtonRef.current.style.opacity = String(toolbarButtonsProgress);
+        backButtonRef.current.style.pointerEvents = toolbarButtonsProgress > 0.3 ? "auto" : "none";
       }
 
       if (actionsRef.current) {
-        // `actions` (kalau diisi) fade in/out ikut scroll progress --
-        // SAMA seperti small title & back button di atas (semuanya fade
-        // bareng sekarang, tidak ada lagi yang konstan). pointerEvents
-        // ikut ditoggle (bukan cuma opacity) supaya area icon-nya TIDAK
-        // bisa kepencet tak sengaja waktu masih transparan/nyaris tak
-        // terlihat di atas ribbon.
-        actionsRef.current.style.opacity = String(progress);
-        actionsRef.current.style.pointerEvents = progress > 0.3 ? "auto" : "none";
+        // `actions` (kalau diisi) fade in/out ikut scroll progress
+        // (efektif) -- SAMA seperti back button di atas (keduanya fade
+        // bareng, dan sama-sama di-override kalau halaman tidak
+        // scrollable). pointerEvents ikut ditoggle (bukan cuma opacity)
+        // supaya area icon-nya TIDAK bisa kepencet tak sengaja waktu
+        // masih transparan/nyaris tak terlihat di atas ribbon.
+        actionsRef.current.style.opacity = String(toolbarButtonsProgress);
+        actionsRef.current.style.pointerEvents = toolbarButtonsProgress > 0.3 ? "auto" : "none";
       }
     };
 
@@ -309,16 +357,35 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     // applyProgress() dipanggil ulang tiap kali ukuran berubah supaya
     // transisi yang sedang berjalan/sudah settle ikut ter-resync ke
     // jarak collapse yang baru, bukan nunggu scroll event berikutnya.
+    //
+    // Instance yang SAMA juga dipakai observe contentWrapperRef (total
+    // tinggi title+children) -- setiap kali ukurannya berubah (mis.
+    // loading spinner berganti jadi EmptyState pendek, atau list yang
+    // ke-fetch), isScrollableRef di-recompute dari
+    // `el.scrollHeight > el.clientHeight`. Dua ResizeObserver target
+    // beda tujuan (collapseDistance vs isScrollable) tapi digabung satu
+    // instance -- lebih murah daripada bikin observer terpisah, dan
+    // keduanya sama-sama perlu applyProgress() dipanggil ulang setelahnya.
     let resizeObserver: ResizeObserver | undefined;
-    if (typeof ResizeObserver !== "undefined" && titleBlockRef.current) {
+    if (typeof ResizeObserver !== "undefined") {
       resizeObserver = new ResizeObserver((entries) => {
-        const measured = entries[0]?.contentRect.height;
-        if (measured) {
-          collapseDistanceRef.current = Math.max(measured, COLLAPSE_DISTANCE_MIN);
-          applyProgress();
+        for (const entry of entries) {
+          if (entry.target === titleBlockRef.current) {
+            const measured = entry.contentRect.height;
+            if (measured) {
+              collapseDistanceRef.current = Math.max(measured, COLLAPSE_DISTANCE_MIN);
+            }
+          }
         }
+        // isScrollableRef di-recompute REGARDLESS entry mana yang
+        // berubah -- lebih murah & lebih robust daripada nebak entry
+        // spesifik mana yang relevan, dan operasinya sendiri murah
+        // (baca 2 properti DOM, bukan reflow tambahan).
+        isScrollableRef.current = el.scrollHeight > el.clientHeight;
+        applyProgress();
       });
-      resizeObserver.observe(titleBlockRef.current);
+      if (titleBlockRef.current) resizeObserver.observe(titleBlockRef.current);
+      if (contentWrapperRef.current) resizeObserver.observe(contentWrapperRef.current);
     }
 
     const handleScroll = () => {
@@ -340,6 +407,10 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
       if (rafRef.current == null) rafRef.current = requestAnimationFrame(applyProgress);
     };
 
+    // Sinkron di sini juga (bukan cuma nunggu callback async pertama dari
+    // ResizeObserver di atas) -- supaya render pertama sudah langsung
+    // pakai nilai yang benar, bukan default optimistic `true` sekejap.
+    isScrollableRef.current = el.scrollHeight > el.clientHeight;
     applyProgress(); // sinkron begitu mount, kalau halaman dibuka sudah dalam posisi scroll (mis. balik dari sub-halaman)
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
@@ -515,7 +586,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   return (
     <>
       {portalNode ? createPortal(bar, portalNode) : bar}
-      <div className="space-y-6">
+      <div ref={contentWrapperRef} className="space-y-6">
         <div ref={titleBlockRef}>
           <h1
             ref={largeTitleRef}
