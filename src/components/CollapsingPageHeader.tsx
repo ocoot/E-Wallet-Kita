@@ -105,10 +105,27 @@ interface CollapsingPageHeaderProps {
  *     perlu dijaga reachable, jadi bar yang baru nongol pas discroll
  *     masih pas & tidak menyisakan strip kosong permanen di atas ribbon.
  *
+ * v4 (Agu 2026) -- KOREKSI atas v3: mode hasToolbarContent=true di v3 pakai
+ * `position: sticky` (reserved-flow), yang di percobaan pertama dikasih
+ * background canvas permanen supaya nggak transparan -- ternyata TETAP
+ * kelihatan sebagai strip kosong terpisah antara status bar & ribbon
+ * (dilaporkan lewat screenshot), independen dari warnanya. Akar masalahnya
+ * `sticky` itu sendiri: container-nya menempati ruang SENDIRI di flow
+ * SEBELUM ribbon sempat mulai. Fix final: `position: fixed` (bukan
+ * sticky) -- dikeluarkan total dari flow, ribbon mulai persis di posisi
+ * yang sama seperti sebelum fitur ini ada, back button/actions jadi
+ * OVERLAY/mengambang di ATAS ribbon (bukan strip terpisah sebelum
+ * ribbon). Konsekuensi: background balik transparan by default (kalau
+ * solid permanen, nutupin ribbon di baliknya) -- tiap tombol (back &
+ * wrapper actions) diberi backdrop bulat sendiri (`bg-black/15
+ * backdrop-blur-sm`) supaya kontras tetap terjaga independen dari
+ * progress scroll, baik pas masih di atas ribbon (progress 0) maupun pas
+ * barBgRef belum full opaque (0 < progress < 1).
+ *
  * MOBILE-ONLY: sama seperti versi sebelumnya, tidak dirender sama sekali
  * di breakpoint desktop (Sidebar persisten sudah jadi konteks navigasi).
  * Di desktop, large title dirender polos tanpa animasi/bar sticky sama
- * sekali (fallback statis) -- perubahan v3 di atas TIDAK berlaku di
+ * sekali (fallback statis) -- perubahan v3/v4 di atas TIDAK berlaku di
  * desktop karena cabang `if (isDesktop)` return lebih dulu, sebelum
  * `bar`/hasToolbarContent sempat dihitung/dirender sama sekali.
  *
@@ -306,28 +323,45 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
 
   const bar = hasToolbarContent ? (
     // MODE "toolbar selalu tampil" -- dipakai kalau halaman punya back
-    // button dan/atau actions. Container-nya (barRef) SENGAJA fixed
-    // height sejak mount (BUKAN diinterpolasi 0 -> BAR_HEIGHT_PX kayak
-    // mode lama) -- supaya back button & actions langsung reachable dari
-    // detik pertama halaman dibuka, tidak perlu discroll dulu.
+    // button dan/atau actions. Back button & actions harus reachable dari
+    // detik pertama halaman dibuka, tanpa perlu discroll dulu.
     //
-    // FIX (visual, Agu 2026): barRef diberi `tokens.surface.canvas`
-    // PERMANEN (bukan transparan) sejak mount -- sebelumnya container ini
-    // transparan penuh sampai discroll, jadi warna asli di baliknya
-    // (canvas app, `bg-slate-950`/`bg-rose-50` -- background <main> yang
-    // TIDAK PERNAH kelihatan dulu waktu bar masih height:0) malah
-    // nongol sebagai strip kosong "mengambang" terpisah dari ribbon di
-    // bawahnya (lihat screenshot report -- toolbar kelihatan aneh,
-    // disconnected). Sekarang toolbar SELALU solid warna canvas dari
-    // awal, jadi kebaca sebagai bagian chrome yang disengaja, bukan gap
-    // kosong. Layer background TERPISAH (barBgRef, blur+border lebih
-    // pekat) tetap di-interpolasi ikut scroll progress DI ATAS canvas
-    // ini -- efek "mengembun jadi lebih solid" pas discroll masih kerasa,
-    // cuma sekarang base-nya udah nggak pernah transparan-kosong lagi.
+    // FIX v2 (visual, Agu 2026) -- percobaan pertama (kasih barRef warna
+    // canvas PERMANEN, masih posisi `sticky` reserved-flow) TERNYATA masih
+    // kelihatan sebagai strip kosong terpisah dari ribbon (dilaporkan lewat
+    // screenshot) -- akar masalah sebenarnya BUKAN soal warna, tapi soal
+    // POSITIONING: `sticky` ikut reserved-flow, jadi container-nya nempatin
+    // ruang SENDIRI sebelum ribbon sempat mulai, membentuk "pemisah" visual
+    // antara status bar & ribbon apapun warnanya.
+    //
+    // Fix yang benar: barRef sekarang `position: fixed` (BUKAN sticky) --
+    // dikeluarkan total dari document flow, tidak makan tempat SAMA SEKALI.
+    // Ribbon di bawahnya jadi mulai persis di posisi yang sama seperti
+    // sebelum fitur toolbar-selalu-tampil ini ada (langsung di bawah status
+    // bar/notch) -- back button & actions sekarang OVERLAY/mengambang di
+    // ATAS ribbon (bukan di strip terpisah SEBELUM ribbon). `top` di-set ke
+    // `env(safe-area-inset-top)` (bukan 0) supaya sejajar dengan titik mulai
+    // konten <main> yang juga di-padding sejumlah sama (lihat
+    // `style={{paddingTop: ...}}` di App.tsx) -- z-30 memastikan tetap di
+    // atas ribbon/konten yang discroll di baliknya.
+    //
+    // Konsekuensinya: background TIDAK bisa lagi permanen solid dari awal
+    // (kalau iya, bakal nutupin ribbon di baliknya, balik jadi masalah
+    // serupa) -- balik transparan by default, ribbon keliatan tembus di
+    // baliknya (seperti nav bar overlay di atas hero image, pola umum).
+    // barBgRef (blur+solid) tetap fade-in ikut scroll SEKARANG JADI
+    // ESENSIAL (bukan cuma polish) -- begitu ribbon discroll keluar dari
+    // balik toolbar, konten lain (list, card) yang lewat di baliknya perlu
+    // backdrop solid supaya ikon tetap kebaca, bukan cuma efek estetika.
+    // Sebagai lapisan kontras TAMBAHAN yang tidak bergantung progress sama
+    // sekali, tiap tombol icon (back/actions) sekarang punya backdrop
+    // bulat tipis sendiri (bg-black/15 blur) -- jaga kontras minimal
+    // walau barBgRef masih transparan (mis. progress 0, ikon masih di
+    // atas ribbon) ATAU baru separuh fade (progress di antara 0 dan 1).
     <div
       ref={barRef}
-      style={{ height: BAR_HEIGHT_PX }}
-      className={cx("sticky top-0 z-30 w-full flex items-center px-4 sm:px-6", tokens.surface.canvas)}
+      style={{ top: "env(safe-area-inset-top)", height: BAR_HEIGHT_PX }}
+      className="fixed inset-x-0 z-30 w-full flex items-center px-4 sm:px-6"
     >
       <div
         ref={barBgRef}
@@ -343,7 +377,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
           type="button"
           onClick={handleBack}
           aria-label={t("common.back")}
-          className="relative z-10 shrink-0 -ml-1.5 p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform"
+          className="relative z-10 shrink-0 -ml-1.5 p-1.5 rounded-full bg-black/15 backdrop-blur-sm cursor-pointer active:scale-[0.92] transition-transform"
         >
           <ChevronLeft size={18} className={tokens.text.secondary} />
         </button>
@@ -353,7 +387,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         // mount (bukan fade terpisah) -- ml-auto dorong ke ujung kanan
         // (back button di kiri cuma flow item lain di flex ini, h2 title
         // di tengah posisinya absolute jadi tidak ikut mendorong).
-        <div className="relative z-10 ml-auto shrink-0 flex items-center gap-1">
+        <div className="relative z-10 ml-auto shrink-0 flex items-center gap-1 rounded-full bg-black/15 backdrop-blur-sm">
           {actions}
         </div>
       )}
