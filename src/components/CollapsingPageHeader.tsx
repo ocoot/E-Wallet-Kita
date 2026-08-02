@@ -111,16 +111,23 @@ interface CollapsingPageHeaderProps {
  * kelihatan sebagai strip kosong terpisah antara status bar & ribbon
  * (dilaporkan lewat screenshot), independen dari warnanya. Akar masalahnya
  * `sticky` itu sendiri: container-nya menempati ruang SENDIRI di flow
- * SEBELUM ribbon sempat mulai. Fix final: `position: fixed` (bukan
- * sticky) -- dikeluarkan total dari flow, ribbon mulai persis di posisi
- * yang sama seperti sebelum fitur ini ada, back button/actions jadi
- * OVERLAY/mengambang di ATAS ribbon (bukan strip terpisah sebelum
- * ribbon). Konsekuensi: background balik transparan by default (kalau
- * solid permanen, nutupin ribbon di baliknya) -- tiap tombol (back &
- * wrapper actions) diberi backdrop bulat sendiri (`bg-black/15
- * backdrop-blur-sm`) supaya kontras tetap terjaga independen dari
- * progress scroll, baik pas masih di atas ribbon (progress 0) maupun pas
- * barBgRef belum full opaque (0 < progress < 1).
+ * SEBELUM ribbon sempat mulai. Fix: `position: fixed` (bukan sticky) --
+ * dikeluarkan total dari flow, ribbon mulai persis di posisi yang sama
+ * seperti sebelum fitur ini ada, back button/actions jadi OVERLAY/
+ * mengambang di ATAS ribbon (bukan strip terpisah sebelum ribbon).
+ * Konsekuensi: background balik transparan by default (kalau solid
+ * permanen, nutupin ribbon di baliknya).
+ *
+ * v5 (Agu 2026) -- v4 sempat menambah backdrop bulat (`bg-black/15
+ * backdrop-blur-sm`) di tiap tombol icon buat jaga kontras, TAPI
+ * dilaporkan (screenshot) kelihatan aneh/nggak menyatu -- bentuk bulat
+ * gelap "nempel" terpisah dari ribbon maupun dari bar solid pas sudah
+ * discroll (efek "double circle" pas actions per-halaman juga sudah
+ * bulat sendiri, mis. tombol + di Budget/Savings/dst). Backdrop itu
+ * DIHAPUS lagi -- ikon sekarang polos tanpa backdrop sendiri, mengandalkan
+ * kontras dari tokens.text.secondary + (nanti, kalau ternyata kurang
+ * kebaca di atas ribbon tertentu) penyesuaian lanjutan berdasarkan
+ * screenshot, bukan backdrop generik yang malah mengganggu visual.
  *
  * MOBILE-ONLY: sama seperti versi sebelumnya, tidak dirender sama sekali
  * di breakpoint desktop (Sidebar persisten sudah jadi konteks navigasi).
@@ -353,11 +360,9 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     // ESENSIAL (bukan cuma polish) -- begitu ribbon discroll keluar dari
     // balik toolbar, konten lain (list, card) yang lewat di baliknya perlu
     // backdrop solid supaya ikon tetap kebaca, bukan cuma efek estetika.
-    // Sebagai lapisan kontras TAMBAHAN yang tidak bergantung progress sama
-    // sekali, tiap tombol icon (back/actions) sekarang punya backdrop
-    // bulat tipis sendiri (bg-black/15 blur) -- jaga kontras minimal
-    // walau barBgRef masih transparan (mis. progress 0, ikon masih di
-    // atas ribbon) ATAU baru separuh fade (progress di antara 0 dan 1).
+    // (v5: sempat dicoba tambah backdrop bulat sendiri per-tombol buat
+    // jaga kontras independen dari progress, tapi dilaporkan kelihatan
+    // aneh/nggak menyatu -- DIHAPUS lagi, ikon polos tanpa backdrop.)
     <div
       ref={barRef}
       style={{ top: "env(safe-area-inset-top)", height: BAR_HEIGHT_PX }}
@@ -377,7 +382,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
           type="button"
           onClick={handleBack}
           aria-label={t("common.back")}
-          className="relative z-10 shrink-0 -ml-1.5 p-1.5 rounded-full bg-black/15 backdrop-blur-sm cursor-pointer active:scale-[0.92] transition-transform"
+          className="relative z-10 shrink-0 -ml-1.5 p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform"
         >
           <ChevronLeft size={18} className={tokens.text.secondary} />
         </button>
@@ -387,7 +392,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         // mount (bukan fade terpisah) -- ml-auto dorong ke ujung kanan
         // (back button di kiri cuma flow item lain di flex ini, h2 title
         // di tengah posisinya absolute jadi tidak ikut mendorong).
-        <div className="relative z-10 ml-auto shrink-0 flex items-center gap-1 rounded-full bg-black/15 backdrop-blur-sm">
+        <div className="relative z-10 ml-auto shrink-0 flex items-center gap-1">
           {actions}
         </div>
       )}
