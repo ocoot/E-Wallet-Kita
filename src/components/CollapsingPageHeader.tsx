@@ -217,6 +217,29 @@ interface CollapsingPageHeaderProps {
  * -- itu sinyal wajib subtract/exclude kontribusi diri-sendiri dari
  * pengukuran, atau siap-siap kena feedback loop.
  *
+ * v12 (Agu 2026) -- tap target back button & semua `actions` per-halaman
+ * diperbesar dari p-1.5 (30x30px, di bawah minimum Apple HIG 44pt) ke
+ * p-3.5 (46x46px). Kebetulan juga membenarkan distorsi tersembunyi: CSS
+ * global di index.css maksa `min-height: 44px` di semua `<button>`
+ * mobile (kecuali `.btn-exact`) -- tombol lama (30px lebar, dipaksa 44px
+ * tinggi) jadi KAPSUL/OVAL, bukan lingkaran, walau `rounded-full`.
+ * Ukuran baru (46x46, simetris) otomatis lolos rule itu tanpa distorsi.
+ * Clearance small title direkalkulasi presisi (bukan cuma nebak angka
+ * lebih besar): pl-10 -> pl-14 (back button 46px, tepi kanan ~48px dari
+ * tepi bar, +8px buffer), pr-16 -> pr-32 (skenario 2-tombol actions:
+ * 46*2+gap-1(4px)+padding bar(16px) = ~112px, +16px buffer). Nilai pr-32
+ * dipakai SERAGAM baik utk halaman 1 maupun 2 actions -- halaman
+ * 1-tombol cuma dapat sisa ruang lebih lega, lebih aman drpd hitung
+ * jumlah children `actions` (rapuh, ReactNode opaque).
+ *
+ * v13 (Agu 2026) -- a11y: small title (`h2`) MURNI duplikat visual dari
+ * large title (`h1`) -- teksnya identik, cuma beda kapan terlihat
+ * (crossfade). Tanpa `aria-hidden`, screen reader (VoiceOver/TalkBack)
+ * membaca judul halaman DUA KALI (dua heading terpisah dengan teks
+ * sama). Fix: `aria-hidden="true"` di kedua h2 (mode toolbar & mode
+ * materialize-on-scroll) -- h1 tetap satu-satunya heading yang
+ * diumumkan assistive tech, h2 murni dekorasi visual.
+ *
  * MOBILE-ONLY: sama seperti versi sebelumnya, tidak dirender sama sekali
  * di breakpoint desktop (Sidebar persisten sudah jadi konteks navigasi).
  * Di desktop, large title dirender polos tanpa animasi/bar sticky sama
@@ -655,6 +678,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
           dapat sisa ruang lebih lega, bukan masalah. */}
       <h2
         ref={smallTitleRef}
+        aria-hidden="true"
         style={{ opacity: 0 }}
         className={cx(
           "absolute z-10 inset-x-0 text-center font-sans font-semibold text-sm truncate pointer-events-none",
@@ -685,6 +709,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     >
       <h2
         ref={smallTitleRef}
+        aria-hidden="true"
         style={{ opacity: 0 }}
         className={cx(
           "absolute inset-x-0 pl-4 sm:pl-6 pr-4 sm:pr-6 text-center font-sans font-semibold text-sm truncate pointer-events-none",
