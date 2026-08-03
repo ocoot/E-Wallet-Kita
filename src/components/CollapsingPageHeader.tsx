@@ -172,6 +172,27 @@ interface CollapsingPageHeaderProps {
  * reachable dari detik pertama di halaman-halaman yang memang tidak
  * bisa discroll.
  *
+ * v10 (Agu 2026) -- EFEK SAMPING dari v9: begitu back/actions dipaksa
+ * full-visible di halaman tidak-scrollable, ikonnya (yang overlay
+ * `position: fixed` di atas ribbon, lihat v4) jadi NABRAK large title --
+ * large title cuma punya ~16px jarak dari atas (padding bawaan App.tsx),
+ * jauh lebih kecil dari tinggi toolbar (BAR_HEIGHT_PX, 48px), dan di
+ * kondisi tidak-scrollable large title TIDAK ikut mengecil/bergeser
+ * (progress asli tetap 0) jadi overlap-nya kelihatan jelas (dilaporkan
+ * lewat screenshot, referensi pembanding: Xiaomi HyperAI settings --
+ * back button punya baris sendiri, title di bawahnya). Fix:
+ * `syncTitleClearance()`, dipanggil bareng setiap kali `isScrollableRef`
+ * di-recompute -- nge-set `paddingTop: BAR_HEIGHT_PX` di titleBlockRef
+ * KHUSUS kalau hasToolbarContent DAN tidak-scrollable; 0 di kondisi
+ * lain. SENGAJA tidak diterapkan universal ke semua halaman
+ * hasToolbarContent -- di halaman yang scrollable, large title sudah
+ * otomatis mengecil & bergeser ke atas seiring toolbar fade-in
+ * (translateY+scale di applyProgress(), progress yang sama), jadi
+ * overlap-nya sendiri sudah teratasi oleh animasi collapse itu; kalau
+ * clearance dipasang permanen di situ juga, large title jadi punya
+ * jarak kosong aneh di atasnya padahal toolbar-nya sendiri transparan
+ * (balik ke masalah "gap" ala v3).
+ *
  * MOBILE-ONLY: sama seperti versi sebelumnya, tidak dirender sama sekali
  * di breakpoint desktop (Sidebar persisten sudah jadi konteks navigasi).
  * Di desktop, large title dirender polos tanpa animasi/bar sticky sama
@@ -366,6 +387,41 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     // beda tujuan (collapseDistance vs isScrollable) tapi digabung satu
     // instance -- lebih murah daripada bikin observer terpisah, dan
     // keduanya sama-sama perlu applyProgress() dipanggil ulang setelahnya.
+    const syncTitleClearance = () => {
+      // Reserve ruang ekstra di ATAS title block KHUSUS kalau toolbar
+      // (back button dan/atau actions) di-paksa full-visible di kondisi
+      // halaman tidak-scrollable (lihat v9) -- soalnya toolbar itu
+      // `position: fixed` OVERLAY di atas ribbon (lihat v4), jadi kalau
+      // large title dibiarkan mulai dari posisi natural-nya (cuma ~16px
+      // dari atas, padding bawaan App.tsx), ikonnya numpuk/nabrak title
+      // (dilaporkan lewat screenshot -- back arrow nabrak huruf pertama
+      // judul). Referensi yang benar (dicontohkan user): back button
+      // punya baris sendiri, title di bawahnya, tidak overlap.
+      //
+      // SENGAJA hanya diterapkan di kondisi tidak-scrollable, BUKAN
+      // universal ke semua halaman hasToolbarContent -- di halaman yang
+      // scrollable, begitu toolbar mulai fade-in (discroll dikit),
+      // large title JUGA otomatis mengecil & bergeser ke atas
+      // (translateY+scale, lihat largeTitleRef di atas) mengikuti
+      // progress yang SAMA, jadi overlap-nya sendiri sudah teratasi oleh
+      // animasi collapse itu -- kalau clearance ini dipasang permanen di
+      // semua halaman, large title jadi punya jarak kosong aneh di
+      // ataznya padahal toolbar-nya sendiri transparan/tidak kelihatan
+      // (balik ke masalah "gap" ala v3).
+      //
+      // Deteksi hasToolbarContent lewat KEBERADAAN ref (bukan closure
+      // variable `hasToolbarContent`) -- refs SELALU sinkron ke render
+      // TERAKHIR regardless kapan effect ini terakhir jalan (dependency
+      // array effect ini cuma [scrollRef, isDesktop]), jadi lebih akurat
+      // daripada baca closure yang berpotensi stale kalau backTo/actions
+      // berubah tanpa scrollRef/isDesktop ikut berubah.
+      const hasToolbarContentNow = backButtonRef.current !== null || actionsRef.current !== null;
+      if (titleBlockRef.current) {
+        titleBlockRef.current.style.paddingTop =
+          hasToolbarContentNow && !isScrollableRef.current ? `${BAR_HEIGHT_PX}px` : "0px";
+      }
+    };
+
     let resizeObserver: ResizeObserver | undefined;
     if (typeof ResizeObserver !== "undefined") {
       resizeObserver = new ResizeObserver((entries) => {
@@ -382,6 +438,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         // spesifik mana yang relevan, dan operasinya sendiri murah
         // (baca 2 properti DOM, bukan reflow tambahan).
         isScrollableRef.current = el.scrollHeight > el.clientHeight;
+        syncTitleClearance();
         applyProgress();
       });
       if (titleBlockRef.current) resizeObserver.observe(titleBlockRef.current);
@@ -411,6 +468,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     // ResizeObserver di atas) -- supaya render pertama sudah langsung
     // pakai nilai yang benar, bukan default optimistic `true` sekejap.
     isScrollableRef.current = el.scrollHeight > el.clientHeight;
+    syncTitleClearance();
     applyProgress(); // sinkron begitu mount, kalau halaman dibuka sudah dalam posisi scroll (mis. balik dari sub-halaman)
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
