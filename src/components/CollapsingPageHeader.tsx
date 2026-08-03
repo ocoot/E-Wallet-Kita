@@ -193,6 +193,30 @@ interface CollapsingPageHeaderProps {
  * jarak kosong aneh di atasnya padahal toolbar-nya sendiri transparan
  * (balik ke masalah "gap" ala v3).
  *
+ * v11 (Agu 2026) -- BUG KRITIS di v10, dilaporkan sebagai "seluruh
+ * konten bergerak-gerak sendiri" (tidak bisa di-screenshot karena
+ * constant/rapid): v10 menghitung `isScrollableRef` dari `el.scrollHeight`
+ * MENTAH-MENTAH, padahal `el.scrollHeight` itu SENDIRI ikut berubah
+ * setiap kali `syncTitleClearance()` nambah/hapus padding -- membentuk
+ * feedback loop TAK BERHENTI: padding ditambah -> scrollHeight naik ->
+ * kehitung "scrollable" -> padding dihapus -> scrollHeight turun ->
+ * kehitung "tidak scrollable" lagi -> padding ditambah lagi -> ulang
+ * tanpa henti. Paling kentara di halaman yang tinggi kontennya PAS-PASAN
+ * di ambang batas viewport (mis. Savings dengan 1 pocket -- cukup dekat
+ * ke threshold sehingga +/-48px cukup buat nyebrang batas itu bolak-
+ * balik). Fix: `appliedClearanceRef`, lacak padding yang KITA SENDIRI
+ * terapkan (bukan baca balik dari inline style), lalu di-SUBTRACT dari
+ * `el.scrollHeight` SEBELUM menghitung isScrollableRef di kedua lokasi
+ * (`(el.scrollHeight - appliedClearanceRef.current) > el.clientHeight`)
+ * -- jadi keputusan "scrollable atau tidak" selalu berbasis tinggi
+ * konten NATURAL (tanpa campur tangan padding kita sendiri), stabil/
+ * idempotent berapa kali pun observer ke-trigger ulang, memutus loop
+ * total. Prinsip umum buat komponen serupa ke depan: kalau sebuah effect
+ * MENGUKUR sesuatu untuk memutuskan MENGUBAH tata letak, dan perubahan
+ * tata letak itu sendiri kebetulan mempengaruhi ukuran yang tadi diukur
+ * -- itu sinyal wajib subtract/exclude kontribusi diri-sendiri dari
+ * pengukuran, atau siap-siap kena feedback loop.
+ *
  * MOBILE-ONLY: sama seperti versi sebelumnya, tidak dirender sama sekali
  * di breakpoint desktop (Sidebar persisten sudah jadi konteks navigasi).
  * Di desktop, large title dirender polos tanpa animasi/bar sticky sama
@@ -261,6 +285,18 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   // true (optimistic) supaya tidak sempat "kedip" force-visible sekejap
   // sebelum ResizeObserver pertama kali sempat mengukur.
   const isScrollableRef = useRef<boolean>(true);
+  // Lacak padding-top yang KITA SENDIRI terapkan ke titleBlockRef lewat
+  // syncTitleClearance() (0 atau BAR_HEIGHT_PX) -- WAJIB dikeluarkan
+  // (subtract) dari `el.scrollHeight` sebelum menghitung isScrollableRef,
+  // supaya tidak muter (v10 sempat rilis TANPA ini dan bikin feedback
+  // loop: padding nambah -> scrollHeight naik -> jadi "scrollable" ->
+  // padding dihapus -> scrollHeight turun -> jadi "tidak scrollable" lagi
+  // -> padding ditambah lagi -> ulang tanpa henti, kelihatan sebagai
+  // "seluruh konten bergerak-gerak sendiri" khususnya di halaman yang
+  // tingginya pas-pasan di ambang batas viewport, mis. Savings dengan
+  // 1 pocket). Disimpan di ref (bukan dibaca balik dari inline style
+  // via parseFloat) supaya tidak rapuh ke perubahan format string CSS.
+  const appliedClearanceRef = useRef<number>(0);
 
   useEffect(() => {
     // Tidak perlu pasang scroll listener di desktop -- lihat catatan
@@ -416,9 +452,10 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
       // daripada baca closure yang berpotensi stale kalau backTo/actions
       // berubah tanpa scrollRef/isDesktop ikut berubah.
       const hasToolbarContentNow = backButtonRef.current !== null || actionsRef.current !== null;
+      const clearance = hasToolbarContentNow && !isScrollableRef.current ? BAR_HEIGHT_PX : 0;
+      appliedClearanceRef.current = clearance;
       if (titleBlockRef.current) {
-        titleBlockRef.current.style.paddingTop =
-          hasToolbarContentNow && !isScrollableRef.current ? `${BAR_HEIGHT_PX}px` : "0px";
+        titleBlockRef.current.style.paddingTop = `${clearance}px`;
       }
     };
 
@@ -437,7 +474,12 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         // berubah -- lebih murah & lebih robust daripada nebak entry
         // spesifik mana yang relevan, dan operasinya sendiri murah
         // (baca 2 properti DOM, bukan reflow tambahan).
-        isScrollableRef.current = el.scrollHeight > el.clientHeight;
+        //
+        // `- appliedClearanceRef.current` WAJIB ada (v11 fix) -- tanpa
+        // ini, padding yang KITA SENDIRI tambahkan di syncTitleClearance()
+        // ikut kehitung sebagai bagian scrollHeight, bikin feedback loop
+        // tak berhenti (lihat komentar panjang di appliedClearanceRef).
+        isScrollableRef.current = (el.scrollHeight - appliedClearanceRef.current) > el.clientHeight;
         syncTitleClearance();
         applyProgress();
       });
@@ -467,7 +509,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     // Sinkron di sini juga (bukan cuma nunggu callback async pertama dari
     // ResizeObserver di atas) -- supaya render pertama sudah langsung
     // pakai nilai yang benar, bukan default optimistic `true` sekejap.
-    isScrollableRef.current = el.scrollHeight > el.clientHeight;
+    isScrollableRef.current = (el.scrollHeight - appliedClearanceRef.current) > el.clientHeight;
     syncTitleClearance();
     applyProgress(); // sinkron begitu mount, kalau halaman dibuka sudah dalam posisi scroll (mis. balik dari sub-halaman)
     el.addEventListener("scroll", handleScroll, { passive: true });
