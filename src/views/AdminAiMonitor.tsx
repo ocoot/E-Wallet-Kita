@@ -12,6 +12,7 @@ import { ScrollableTableWrapper } from "../components/ScrollableTableWrapper";
 import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
+import { audioFeedback } from "../lib/audio";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 import {
   RefreshCw,
@@ -150,10 +151,10 @@ export const AdminAiMonitor: React.FC = () => {
       actions={
         <button
           type="button"
-          onClick={() => load(true)}
+          onClick={() => { audioFeedback.playClick(); load(true); }}
           disabled={refreshing}
           aria-label={t("ai_monitor.refresh")}
-          className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none disabled:opacity-50", tokens.text.secondary)}
+          className={cx("p-3.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none disabled:opacity-50", tokens.text.secondary)}
         >
           <RefreshCw size={18} className={refreshing ? "animate-spin" : ""} />
         </button>

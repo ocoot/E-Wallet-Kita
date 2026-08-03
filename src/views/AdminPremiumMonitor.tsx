@@ -15,6 +15,7 @@ import { EmptyState } from "../components/EmptyState";
 import { ErrorState } from "../components/ErrorState";
 import { DropdownField } from "../components/DropdownField";
 import { reportFrontendError } from "../lib/errorReporter";
+import { audioFeedback } from "../lib/audio";
 import {
   CheckCircle, Clock, XCircle, AlertCircle,
   TrendingUp, RefreshCw, ChevronLeft, ChevronRight, FlaskConical, AlertTriangle
@@ -205,6 +206,7 @@ export const AdminPremiumMonitor: React.FC = () => {
   };
 
   const handleRefresh = async () => {
+    audioFeedback.playClick();
     setRefreshing(true);
     try {
       await Promise.all([loadMetrics(), loadTransactions(), loadDummyQrisSetting()]);
@@ -232,7 +234,7 @@ export const AdminPremiumMonitor: React.FC = () => {
           onClick={handleRefresh}
           disabled={refreshing}
           aria-label={t("admin.refresh_data")}
-          className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none disabled:opacity-50", tokens.text.secondary)}
+          className={cx("p-3.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none disabled:opacity-50", tokens.text.secondary)}
         >
           <RefreshCw size={18} className={refreshing ? "animate-spin" : ""} />
         </button>

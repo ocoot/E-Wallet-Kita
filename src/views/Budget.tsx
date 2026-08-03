@@ -257,7 +257,7 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
             disabled={availableCategories.length === 0}
             aria-label={t("budget.add_budget_cta")}
             title={availableCategories.length === 0 ? t("budget.all_categories_budgeted") : undefined}
-            className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed", tokens.text.secondary)}
+            className={cx("p-3.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed", tokens.text.secondary)}
           >
             <Plus size={18} />
           </button>

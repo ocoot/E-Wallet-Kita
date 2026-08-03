@@ -17,6 +17,7 @@ import { DropdownField } from "../components/DropdownField";
 import { useLockBodyScroll } from "../hooks/useLockBodyScroll";
 import { useDialogA11y } from "../hooks/useDialogA11y";
 import { reportFrontendError } from "../lib/errorReporter";
+import { audioFeedback } from "../lib/audio";
 import {
   DatabaseBackup,
   CheckCircle2,
@@ -391,9 +392,9 @@ export const AdminBackup: React.FC = () => {
       actions={
         <button
           type="button"
-          onClick={loadStatus}
+          onClick={() => { audioFeedback.playClick(); loadStatus(); }}
           aria-label={t("admin.refresh")}
-          className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
+          className={cx("p-3.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
         >
           <RefreshCw size={18} />
         </button>

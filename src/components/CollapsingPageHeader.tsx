@@ -613,7 +613,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
           onClick={handleBack}
           aria-label={t("common.back")}
           style={{ opacity: 0, pointerEvents: "none" }}
-          className="relative z-10 shrink-0 -ml-1.5 p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none"
+          className="relative z-10 shrink-0 -ml-3.5 p-3.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none"
         >
           <ChevronLeft size={18} className={tokens.text.secondary} />
         </button>
@@ -637,16 +637,29 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
       {/* Small title TETAP crossfade ikut scroll progress seperti biasa
           (ini bagian "Large Title Navigation" yang tidak berubah) --
           cuma back button/actions/background di sekitarnya yang sekarang
-          beda perilaku. Padding kondisional: pl-10 cuma kalau hasBack;
-          pr-16 cuma kalau ada actions (2 icon-button ukuran biasa butuh
-          lebih dari 40px) supaya title yang truncate tidak ketiban. */}
+          beda perilaku. Padding kondisional: pl-14 cuma kalau hasBack;
+          pr-32 cuma kalau ada actions.
+          v12 (Agu 2026): tap target back/actions diperbesar dari p-1.5
+          (30x30px, di bawah standar) ke p-3.5 (46x46px, lolos minimum
+          Apple HIG 44pt & mendekati Material Design 48dp) -- lihat juga
+          className tiap tombol actions per-halaman (semuanya ikut
+          diseragamkan p-1.5 -> p-3.5). Clearance dihitung ulang presisi:
+          back button (padding 14px, -ml-14px, lebar total 46px) -> tepi
+          kanannya jatuh di ~48px dari tepi bar sebenarnya (bar px-4 16px
+          - margin 14px + lebar 46px), pl-14 (56px) kasih ~8px buffer.
+          actions (ml-auto, TIDAK pakai margin-offset kayak back) -> 2
+          tombol 46px + gap-1 (4px) + padding bar sendiri (16px) = ~112px
+          dari tepi kanan sebenarnya, pr-32 (128px) kasih ~16px buffer.
+          Nilai SAMA dipakai baik halaman 1 actions maupun 2 actions
+          (skenario 2-tombol yang menentukan) -- halaman 1-tombol cuma
+          dapat sisa ruang lebih lega, bukan masalah. */}
       <h2
         ref={smallTitleRef}
         style={{ opacity: 0 }}
         className={cx(
           "absolute z-10 inset-x-0 text-center font-sans font-semibold text-sm truncate pointer-events-none",
-          hasBack ? "pl-10" : "pl-4 sm:pl-6",
-          actions ? "pr-16" : "pr-4 sm:pr-6",
+          hasBack ? "pl-14" : "pl-4 sm:pl-6",
+          actions ? "pr-32" : "pr-4 sm:pr-6",
           tokens.text.heading
         )}
       >

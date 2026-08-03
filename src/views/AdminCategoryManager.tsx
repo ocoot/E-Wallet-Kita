@@ -14,6 +14,7 @@ import { Button } from "../components/ui/Button";
 import { BADGE_SIZE_CLASSES } from "../components/ui/Badge";
 import { Plus, Pencil, Check, X, RefreshCw, ChevronLeft, ChevronRight } from "lucide-react";
 import { reportFrontendError } from "../lib/errorReporter";
+import { audioFeedback } from "../lib/audio";
 
 interface Category {
   id: string;
@@ -189,17 +190,17 @@ export const AdminCategoryManager: React.FC = () => {
         <>
           <button
             type="button"
-            onClick={loadCategories}
+            onClick={() => { audioFeedback.playClick(); loadCategories(); }}
             aria-label={t("admin.refresh")}
-            className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
+            className={cx("p-3.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
           >
             <RefreshCw size={18} />
           </button>
           <button
             type="button"
-            onClick={() => setShowAddForm(v => !v)}
+            onClick={() => { audioFeedback.playClick(); setShowAddForm(v => !v); }}
             aria-label={t("admin.add_category")}
-            className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
+            className={cx("p-3.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
           >
             <Plus size={18} />
           </button>

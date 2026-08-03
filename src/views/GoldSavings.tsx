@@ -501,7 +501,7 @@ export const GoldSavings: React.FC = () => {
             type="button"
             onClick={() => { audioFeedback.playClick(); openAddForm(); }}
             aria-label={t("gold.add_button")}
-            className="p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none text-amber-500 hover:text-amber-400"
+            className="p-3.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none text-amber-500 hover:text-amber-400"
           >
             <Plus size={18} />
           </button>

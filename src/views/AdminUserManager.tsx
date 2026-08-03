@@ -423,6 +423,7 @@ export const AdminUserManager: React.FC = () => {
 
   // Export CSV Handler
   const handleExportCSV = async () => {
+    audioFeedback.playClick();
     try {
       const { data, error } = await supabase
         .from("users")
@@ -475,18 +476,19 @@ export const AdminUserManager: React.FC = () => {
             type="button"
             onClick={handleExportCSV}
             aria-label={t("admin.export_csv")}
-            className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
+            className={cx("p-3.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
           >
             <Download size={18} />
           </button>
           <button
             type="button"
             onClick={() => {
+              audioFeedback.playClick();
               fetchUsers();
               loadMetrics();
             }}
             aria-label={t("admin.refresh")}
-            className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
+            className={cx("p-3.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
           >
             <RefreshCw size={18} />
           </button>

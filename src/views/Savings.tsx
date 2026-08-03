@@ -327,7 +327,7 @@ export const Savings: React.FC = () => {
             type="button"
             onClick={() => { audioFeedback.playClick(); openAddForm(); }}
             aria-label={t("savings.add_button")}
-            className={cx("p-1.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
+            className={cx("p-3.5 rounded-full cursor-pointer active:scale-[0.92] transition-transform focus:outline-none", tokens.text.secondary)}
           >
             <Plus size={18} />
           </button>
