@@ -243,7 +243,7 @@ export const CalendarPage: React.FC<CalendarPageProps> = ({ transactionsUpdatedT
   }
 
   return (
-    <CollapsingPageHeader title={t("calendar.page_title")} subtitle={t("calendar.page_subtitle")}>
+    <CollapsingPageHeader title={t("calendar.page_title")} subtitle={t("calendar.page_subtitle")} backTo="">
       <div className="space-y-5 pb-12">
 
       {/* ── Kartu hero bulan (background bertema musim) ── */}

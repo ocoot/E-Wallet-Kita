@@ -221,6 +221,7 @@ export const Installments: React.FC = () => {
       <CollapsingPageHeader
         title={t("installments.page_title")}
         subtitle={t("installments.page_subtitle")}
+        backTo=""
         actions={
           <button
             type="button"

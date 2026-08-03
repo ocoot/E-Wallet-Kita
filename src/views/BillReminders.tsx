@@ -215,6 +215,7 @@ export const BillReminders: React.FC = () => {
       <CollapsingPageHeader
         title={t("bill_reminders.page_title")}
         subtitle={t("bill_reminders.page_subtitle")}
+        backTo=""
         actions={
           <button
             type="button"

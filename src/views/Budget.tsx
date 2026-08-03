@@ -248,6 +248,7 @@ export const Budget: React.FC<BudgetProps> = ({ transactionsUpdatedTrigger }) =>
     <CollapsingPageHeader
       title={t("budget.page_title")}
       subtitle={t("budget.page_subtitle")}
+      backTo=""
       actions={
         !loading && expenseCategories.length > 0 ? (
           <button

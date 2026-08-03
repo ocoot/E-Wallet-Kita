@@ -543,7 +543,7 @@ export const Settings: React.FC<SettingsProps> = ({
           `absolute` di dekat tepi atas ribbon -- lihat App.tsx); label
           halaman sekarang cukup diwakili oleh item terakhir breadcrumb. */}
       <div className="relative lg:hidden">
-        <CollapsingPageHeader title={t("settings.title")} subtitle={t("settings.desc")}>
+        <CollapsingPageHeader title={t("settings.title")} subtitle={t("settings.desc")} backTo="">
           <SettingsMobileMenu
             displayName={displayName}
             email={user?.email || null}

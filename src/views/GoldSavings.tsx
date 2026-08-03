@@ -495,6 +495,7 @@ export const GoldSavings: React.FC = () => {
       <CollapsingPageHeader
         title={t("gold.page_title")}
         subtitle={t("gold.page_subtitle")}
+        backTo=""
         actions={
           <button
             type="button"
