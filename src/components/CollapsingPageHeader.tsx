@@ -285,6 +285,26 @@ interface CollapsingPageHeaderProps {
  * cuma toolbar buttons. Immune total dari noise scrollTop sekecil apa
  * pun di halaman yang memang tidak didesain buat discroll.
  *
+ * v16 (Agu 2026) -- KOREKSI FUNDAMENTAL atas v10, dilaporkan lewat
+ * screenshot di halaman Settings/Privasi (yang scrollable-nya legitimate,
+ * BUKAN kasus edge-case borderline v9/v11/v14/v15): back button masih
+ * nabrak large title. Akar masalahnya: asumsi v10 ("di halaman
+ * scrollable, animasi shrink+geser large title sudah cukup buat
+ * menghindari overlap begitu toolbar fade-in") SALAH -- shrink
+ * maksimalnya cuma scale(0.78)+translateY(-10px), TIDAK PERNAH cukup
+ * jauh buat beneran mengeluarkan title dari area icon 46px. Overlap bisa
+ * kejadian KAPAN PUN back/actions punya opacity > 0 -- bukan cuma kasus
+ * edge-case, tapi juga di TENGAH transisi scroll normal manapun (0 <
+ * progress < 1), ke-screenshot kalau progress-nya "istirahat" di nilai
+ * tengah. Fix: clearance di `syncTitleClearance()` SEKARANG PERMANEN
+ * setiap kali hasToolbarContent (tidak lagi digate `!isScrollableRef`).
+ * Trade-off yang diterima: large title dapat jarak kosong kecil
+ * (BAR_HEIGHT_PX) di atasnya di SEMUA halaman berback/actions, konstan
+ * terlepas status scroll -- match pola referensi native (back button
+ * baris sendiri, title di bawahnya). Efek samping positif: clearance
+ * sekarang independen total dari isScrollableRef, jadi tidak ada lagi
+ * kemungkinan sirkular antara keduanya sama sekali.
+ *
  * MOBILE-ONLY: sama seperti versi sebelumnya, tidak dirender sama sekali
  * di breakpoint desktop (Sidebar persisten sudah jadi konteks navigasi).
  * Di desktop, large title dirender polos tanpa animasi/bar sticky sama
@@ -522,35 +542,34 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     // instance -- lebih murah daripada bikin observer terpisah, dan
     // keduanya sama-sama perlu applyProgress() dipanggil ulang setelahnya.
     const syncTitleClearance = () => {
-      // Reserve ruang ekstra di ATAS title block KHUSUS kalau toolbar
-      // (back button dan/atau actions) di-paksa full-visible di kondisi
-      // halaman tidak-scrollable (lihat v9) -- soalnya toolbar itu
-      // `position: fixed` OVERLAY di atas ribbon (lihat v4), jadi kalau
-      // large title dibiarkan mulai dari posisi natural-nya (cuma ~16px
-      // dari atas, padding bawaan App.tsx), ikonnya numpuk/nabrak title
-      // (dilaporkan lewat screenshot -- back arrow nabrak huruf pertama
-      // judul). Referensi yang benar (dicontohkan user): back button
-      // punya baris sendiri, title di bawahnya, tidak overlap.
+      // v16 (Agu 2026) -- KOREKSI FUNDAMENTAL atas v10: clearance
+      // SEBELUMNYA cuma diterapkan kondisional (khusus halaman tidak-
+      // scrollable), dengan asumsi di halaman yang scrollable, animasi
+      // shrink+geser large title (translateY+scale, lihat largeTitleRef
+      // di applyProgress()) "sudah cukup" buat menghindari overlap
+      // begitu toolbar mulai fade-in. Asumsi itu TERNYATA SALAH --
+      // dilaporkan lewat screenshot BERULANG di halaman berbeda-beda
+      // (termasuk halaman Settings/Privasi yang scrollable-nya
+      // legitimate, bukan edge-case borderline): shrink maksimalnya
+      // cuma scale(0.78) + translateY(-10px) -- TIDAK PERNAH cukup jauh
+      // buat beneran mengeluarkan title dari area icon 46px. Akibatnya,
+      // KAPAN PUN back/actions punya opacity > 0 (bukan cuma di kondisi
+      // edge-case tidak-scrollable, tapi juga di TENGAH transisi normal
+      // scroll manapun -- 0 < progress < 1), collision masih bisa
+      // kejadian & ke-screenshot kalau progress-nya "istirahat" di nilai
+      // tengah (mis. pengguna scroll dikit lalu stop).
       //
-      // SENGAJA hanya diterapkan di kondisi tidak-scrollable, BUKAN
-      // universal ke semua halaman hasToolbarContent -- di halaman yang
-      // scrollable, begitu toolbar mulai fade-in (discroll dikit),
-      // large title JUGA otomatis mengecil & bergeser ke atas
-      // (translateY+scale, lihat largeTitleRef di atas) mengikuti
-      // progress yang SAMA, jadi overlap-nya sendiri sudah teratasi oleh
-      // animasi collapse itu -- kalau clearance ini dipasang permanen di
-      // semua halaman, large title jadi punya jarak kosong aneh di
-      // ataznya padahal toolbar-nya sendiri transparan/tidak kelihatan
-      // (balik ke masalah "gap" ala v3).
-      //
-      // Deteksi hasToolbarContent lewat KEBERADAAN ref (bukan closure
-      // variable `hasToolbarContent`) -- refs SELALU sinkron ke render
-      // TERAKHIR regardless kapan effect ini terakhir jalan (dependency
-      // array effect ini cuma [scrollRef, isDesktop]), jadi lebih akurat
-      // daripada baca closure yang berpotensi stale kalau backTo/actions
-      // berubah tanpa scrollRef/isDesktop ikut berubah.
+      // Fix: clearance SEKARANG PERMANEN setiap kali hasToolbarContent,
+      // TIDAK LAGI digate oleh isScrollableRef. Trade-off yang diterima:
+      // large title dapat jarak kosong kecil (BAR_HEIGHT_PX) di atasnya
+      // di SEMUA halaman yang punya back/actions, konstan terlepas dari
+      // status scroll -- persis pola referensi native (back button dapat
+      // baris sendiri, title di bawahnya, lihat contoh Xiaomi HyperAI
+      // yang pernah di-share). Ini jauh lebih aman & predictable
+      // dibanding terus ngejar variasi baru dari bug collision yang sama
+      // di halaman demi halaman.
       const hasToolbarContentNow = backButtonRef.current !== null || actionsRef.current !== null;
-      const clearance = hasToolbarContentNow && !isScrollableRef.current ? BAR_HEIGHT_PX : 0;
+      const clearance = hasToolbarContentNow ? BAR_HEIGHT_PX : 0;
       appliedClearanceRef.current = clearance;
       if (titleBlockRef.current) {
         titleBlockRef.current.style.paddingTop = `${clearance}px`;
