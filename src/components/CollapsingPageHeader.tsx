@@ -264,6 +264,27 @@ interface CollapsingPageHeaderProps {
  * children JUGA mengubah maxScrollDistance walau title block sendiri
  * tidak resize -- + sync awal di mount).
  *
+ * v15 (Agu 2026) -- v14 TERNYATA BELUM cukup (dilaporkan lewat screenshot
+ * ulang, gejala identik masih terjadi) -- akar masalah sebenarnya bukan
+ * cuma soal clamp collapseDistanceRef, tapi soal `el.scrollTop` yang
+ * TIDAK SELALU persis 0 di halaman yang isScrollableRef.current-nya
+ * FALSE (dianggap "tidak bisa discroll"). Rubber-band bounce/momentum
+ * overshoot browser bisa menghasilkan scrollTop kecil (beberapa px)
+ * sesaat walau halaman "secara teknis" tidak scrollable -- dan di v14,
+ * `syncCollapseDistance()` SENGAJA TIDAK meng-clamp collapseDistanceRef
+ * untuk kasus maxScrollDistance <= 0 (fallback ke `desired`, tinggi
+ * title block mentah yang BESAR) -- kombinasi scrollTop kecil dibagi
+ * collapseDistance besar itu menghasilkan progress kecil-tapi-nonzero
+ * yang NYANGKUT di situ (large title & small title SAMA-SAMA separuh
+ * terlihat, tumpang tindih, tidak pernah resolve ke salah satu state
+ * bersih -- persis gejala yang dilaporkan berulang). Fix: `progress`
+ * MENTAH (dipakai large title/small title/background bar) SEKARANG
+ * JUGA dipaksa 0 kalau `!isScrollableRef.current` -- konsisten dengan
+ * cara `toolbarButtonsProgress` (back/actions) sudah ditangani sejak v9,
+ * cuma sekarang diterapkan ke SEMUA elemen yang scroll-linked, bukan
+ * cuma toolbar buttons. Immune total dari noise scrollTop sekecil apa
+ * pun di halaman yang memang tidak didesain buat discroll.
+ *
  * MOBILE-ONLY: sama seperti versi sebelumnya, tidak dirender sama sekali
  * di breakpoint desktop (Sidebar persisten sudah jadi konteks navigasi).
  * Di desktop, large title dirender polos tanpa animasi/bar sticky sama
@@ -365,7 +386,29 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
 
     const applyProgress = () => {
       rafRef.current = null;
-      const progress = Math.min(Math.max(el.scrollTop / collapseDistanceRef.current, 0), 1);
+      let progress = Math.min(Math.max(el.scrollTop / collapseDistanceRef.current, 0), 1);
+      // v15 fix: kalau halaman ini TIDAK scrollable beneran
+      // (isScrollableRef.current === false), progress mentah di atas
+      // TETAP dipaksa 0 di sini -- sebelumnya cuma toolbarButtonsProgress
+      // (back/actions) yang dipaksa (lihat v9), sementara progress
+      // MENTAH yang dipakai large title/small title/background bar
+      // dibiarkan apa adanya. Masalahnya: `el.scrollTop` TIDAK SELALU
+      // persis 0 di halaman "tidak scrollable" -- rubber-band bounce/
+      // momentum overshoot browser bisa menghasilkan scrollTop kecil
+      // (beberapa px) sesaat, dan kalau itu kebagi collapseDistanceRef
+      // yang (di v14) TIDAK di-clamp untuk kasus ini (branch `else
+      // desired` di syncCollapseDistance(), collapseDistance-nya besar
+      // -- tinggi title block mentah, BUKAN di-clamp ke maxScrollDistance
+      // karena maxScrollDistance <= 0 di kondisi ini), hasilnya progress
+      // kecil-tapi-nonzero yang NYANGKUT di situ (dilaporkan lewat
+      // screenshot berulang -- large title & small title SAMA-SAMA
+      // separuh terlihat, tumpang tindih, tidak pernah resolve ke salah
+      // satu state bersih). Fix: konsisten dengan cara back/actions sudah
+      // ditangani -- large/small title & background bar JUGA dipaksa
+      // "seolah selalu di posisi paling atas" (progress=0) di halaman
+      // yang memang tidak bisa discroll, immune dari noise scrollTop
+      // sekecil apa pun.
+      if (!isScrollableRef.current) progress = 0;
 
       if (largeTitleRef.current) {
         largeTitleRef.current.style.opacity = String(1 - progress);
