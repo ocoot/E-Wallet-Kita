@@ -240,6 +240,30 @@ interface CollapsingPageHeaderProps {
  * materialize-on-scroll) -- h1 tetap satu-satunya heading yang
  * diumumkan assistive tech, h2 murni dekorasi visual.
  *
+ * v14 (Agu 2026) -- BUG lain di kelas yang sama dengan v9/v11 (halaman
+ * yang tinggi kontennya pas-pasan/borderline), dilaporkan lewat
+ * screenshot: "title/subtitle tidak sepenuhnya hilang pas discroll".
+ * `collapseDistanceRef` (jarak scroll yang dianggap perlu buat large
+ * title collapse penuh) SEBELUMNYA cuma diukur dari tinggi title block
+ * mentah (subtitle panjang, mis. Savings 3 baris teks, bisa bikin
+ * ~150-180px), TANPA PERNAH di-clamp ke jarak scroll yang BENERAN
+ * tersedia di halaman itu. Kalau subtitle-nya lebih tinggi dari total
+ * ruang yang bisa discroll (mis. cuma ~80px sisa 1 pocket card),
+ * progress (`scrollTop / collapseDistanceRef`) TIDAK PERNAH nyampe 1
+ * bahkan pas discroll sampai mentok -- large title/subtitle "nyangkut"
+ * ghosted selamanya di opacity parsial. Fix: `rawTitleHeightRef`
+ * (tinggi title mentah, terpisah) + `syncCollapseDistance()` yang
+ * meng-clamp `collapseDistanceRef` supaya TIDAK PERNAH melebihi
+ * `el.scrollHeight - appliedClearanceRef.current - el.clientHeight`
+ * (jarak scroll maksimum aktual, dikurangi kontribusi padding kita
+ * sendiri -- alasan sama dengan v11) -- begitu discroll sampai mentok,
+ * progress DIJAMIN nyampe 1 berapa pun tinggi title block-nya.
+ * syncCollapseDistance() dipanggil di KEDUA titik yang sama dengan
+ * syncTitleClearance() (ResizeObserver callback, REGARDLESS entry mana
+ * yang berubah -- termasuk contentWrapperRef, karena perubahan tinggi
+ * children JUGA mengubah maxScrollDistance walau title block sendiri
+ * tidak resize -- + sync awal di mount).
+ *
  * MOBILE-ONLY: sama seperti versi sebelumnya, tidak dirender sama sekali
  * di breakpoint desktop (Sidebar persisten sudah jadi konteks navigasi).
  * Di desktop, large title dirender polos tanpa animasi/bar sticky sama
@@ -291,6 +315,14 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
   // menaruhnya di state akan memicu re-render tiap kali ukurannya
   // berubah, padahal cuma perlu dibaca, bukan menggambar ulang apa pun.
   const collapseDistanceRef = useRef<number>(COLLAPSE_DISTANCE_FALLBACK);
+  // Tinggi title block MENTAH (belum di-clamp) -- terpisah dari
+  // collapseDistanceRef final supaya clamp-nya (lihat komentar di
+  // syncCollapseDistance() di bawah) bisa direkalkulasi ulang kapan pun
+  // el.scrollHeight berubah, TANPA harus nunggu titleBlockRef sendiri
+  // ikut resize (mis. children di bawahnya berubah tinggi karena data
+  // baru ke-load -- itu mengubah jarak scroll maksimum yang tersedia,
+  // walau tinggi title block-nya sendiri tidak berubah sama sekali).
+  const rawTitleHeightRef = useRef<number>(COLLAPSE_DISTANCE_FALLBACK);
   // Ref ke wrapper TOTAL konten body (title block + children) -- diukur
   // via ResizeObserver yang sama di bawah, buat tau apakah halaman ini
   // BISA discroll sama sekali. Kasus nyata: user baru gabung, belum ada
@@ -482,6 +514,32 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
       }
     };
 
+    const syncCollapseDistance = () => {
+      // v14 fix: collapseDistanceRef SEBELUMNYA cuma diukur dari tinggi
+      // title block mentah (rawTitleHeightRef), TANPA pernah di-clamp ke
+      // jarak scroll yang BENERAN tersedia di halaman ini
+      // (`el.scrollHeight - el.clientHeight`) -- dilaporkan lewat
+      // screenshot sebagai "title/subtitle tidak sepenuhnya hilang pas
+      // discroll". Akar masalahnya: kalau subtitle panjang (mis. Savings,
+      // 3 baris teks) bikin title block tinggi (~150-180px), TAPI total
+      // ruang yang bisa discroll di halaman itu lebih pendek dari itu
+      // (mis. cuma ~80px, sisa 1 pocket card), maka progress
+      // (`scrollTop / collapseDistanceRef.current`) TIDAK PERNAH nyampe 1
+      // bahkan pas discroll sampai mentok -- large title/subtitle jadi
+      // "nyangkut" ghosted selamanya (opacity berhenti di, mis., ~0.5).
+      //
+      // Fix: collapseDistanceRef di-clamp supaya TIDAK PERNAH melebihi
+      // jarak scroll maksimum aktual -- begitu user scroll sampai mentok,
+      // progress DIJAMIN nyampe 1 (collapse penuh), berapa pun tinggi
+      // title block-nya. `- appliedClearanceRef.current` di sini SAMA
+      // alasannya dengan di isScrollableRef (v11) -- keluarkan kontribusi
+      // padding yang kita sendiri tambahkan dari pengukuran, biar nggak
+      // ikut kena feedback loop.
+      const maxScrollDistance = el.scrollHeight - appliedClearanceRef.current - el.clientHeight;
+      const desired = Math.max(rawTitleHeightRef.current, COLLAPSE_DISTANCE_MIN);
+      collapseDistanceRef.current = maxScrollDistance > 0 ? Math.min(desired, maxScrollDistance) : desired;
+    };
+
     let resizeObserver: ResizeObserver | undefined;
     if (typeof ResizeObserver !== "undefined") {
       resizeObserver = new ResizeObserver((entries) => {
@@ -489,14 +547,20 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
           if (entry.target === titleBlockRef.current) {
             const measured = entry.contentRect.height;
             if (measured) {
-              collapseDistanceRef.current = Math.max(measured, COLLAPSE_DISTANCE_MIN);
+              rawTitleHeightRef.current = measured;
             }
           }
         }
-        // isScrollableRef di-recompute REGARDLESS entry mana yang
-        // berubah -- lebih murah & lebih robust daripada nebak entry
-        // spesifik mana yang relevan, dan operasinya sendiri murah
-        // (baca 2 properti DOM, bukan reflow tambahan).
+        // isScrollableRef & collapseDistanceRef DUA-DUANYA di-recompute
+        // REGARDLESS entry mana yang berubah -- lebih murah & lebih
+        // robust daripada nebak entry spesifik mana yang relevan, dan
+        // operasinya sendiri murah (baca 2 properti DOM, bukan reflow
+        // tambahan). PENTING: perubahan di contentWrapperRef (mis.
+        // children lain berubah tinggi karena data baru ke-load) JUGA
+        // mengubah `maxScrollDistance` yang dipakai syncCollapseDistance()
+        // di atas, walau titleBlockRef sendiri tidak resize -- makanya
+        // kedua sync ini dipanggil tiap kali observer manapun ke-trigger,
+        // bukan cuma di dalam if-block titleBlockRef di atas.
         //
         // `- appliedClearanceRef.current` WAJIB ada (v11 fix) -- tanpa
         // ini, padding yang KITA SENDIRI tambahkan di syncTitleClearance()
@@ -504,6 +568,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
         // tak berhenti (lihat komentar panjang di appliedClearanceRef).
         isScrollableRef.current = (el.scrollHeight - appliedClearanceRef.current) > el.clientHeight;
         syncTitleClearance();
+        syncCollapseDistance();
         applyProgress();
       });
       if (titleBlockRef.current) resizeObserver.observe(titleBlockRef.current);
@@ -534,6 +599,7 @@ export const CollapsingPageHeader: React.FC<CollapsingPageHeaderProps> = ({
     // pakai nilai yang benar, bukan default optimistic `true` sekejap.
     isScrollableRef.current = (el.scrollHeight - appliedClearanceRef.current) > el.clientHeight;
     syncTitleClearance();
+    syncCollapseDistance();
     applyProgress(); // sinkron begitu mount, kalau halaman dibuka sudah dalam posisi scroll (mis. balik dari sub-halaman)
     el.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
