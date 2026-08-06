@@ -5,6 +5,7 @@ import { sendPushNotificationBatch } from '../_lib/fcm.js';
 import { sendTelegramMessageOrThrow } from '../_lib/telegram.js';
 import { logError } from '../_lib/errorLogger.js';
 import { getUsersWithDisabledPreference } from '../_lib/notificationPreferences.js';
+import { enforceRateLimit } from '../_lib/rateLimiter.js';
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
@@ -135,6 +136,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(403).json({ error: 'Forbidden: Only admins or owners can broadcast' });
     return;
   }
+
+  // Broadcast bisa mengirim ke SELURUH user (push/Telegram) sekaligus --
+  // tanpa limit, satu token admin yang bocor/disalahgunakan bisa dipakai
+  // spam semua user berkali-kali dalam hitungan detik. RPC rate-limit
+  // hanya di-grant ke service_role, jadi pakai client service-role
+  // (bukan userSupabase yang anon-key + JWT) untuk memanggilnya.
+  const allowedBroadcast = await enforceRateLimit(
+    createClient(supabaseUrl, supabaseServiceKey),
+    res,
+    `admin:broadcast:${user.id}`,
+    5,
+    300
+  );
+  if (!allowedBroadcast) return;
 
   // ── Validate body ──────────────────────────────────────────────────────────
   const { channel, title, message } = req.body;

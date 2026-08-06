@@ -38,6 +38,7 @@ type FrontendErrorSource =
   | "frontend:admin-broadcast"
   | "frontend:admin-support-chat"
   | "frontend:admin-ai-monitor"
+  | "frontend:admin-security-monitor"
   | "frontend:admin-maintenance"
   | "frontend:admin-backup"
   | "frontend:settings-profile"

@@ -16,11 +16,12 @@ import {
   Bot,
   AlertTriangle,
   Wrench,
-  HardDrive
+  HardDrive,
+  ShieldAlert
 } from "lucide-react";
 import { useThemeTokens } from "../hooks/useThemeTokens";
 
-type AdminTab = "users" | "premium" | "voucher" | "categories" | "broadcast" | "ai_monitor" | "error_monitor" | "maintenance" | "support_chat" | "backup";
+type AdminTab = "users" | "premium" | "voucher" | "categories" | "broadcast" | "ai_monitor" | "error_monitor" | "security" | "maintenance" | "support_chat" | "backup";
 
 // Peta key tab -> segmen path route halaman detailnya (lihat App.tsx).
 // Sebagian besar sama persis dengan key tab, kecuali beberapa yang pakai
@@ -33,6 +34,7 @@ const TAB_ROUTES: Record<AdminTab, string> = {
   broadcast: "broadcast",
   ai_monitor: "ai-monitor",
   error_monitor: "error-monitor",
+  security: "security",
   maintenance: "maintenance",
   support_chat: "support-chat",
   backup: "backup",
@@ -101,6 +103,7 @@ export const AdminPanel: React.FC = () => {
       tabs: [
         { key: "ai_monitor" as AdminTab,    icon: <Bot size={16} />,           label: t("admin.tab_ai_monitor"),    desc: t("admin.tab_ai_monitor_desc") },
         { key: "error_monitor" as AdminTab, icon: <AlertTriangle size={16} />, label: t("admin.tab_error_monitor"), desc: t("admin.tab_error_monitor_desc") },
+        { key: "security" as AdminTab, icon: <ShieldAlert size={16} />, label: t("admin.tab_security"), desc: t("admin.tab_security_desc") },
         { key: "maintenance" as AdminTab,   icon: <Wrench size={16} />,        label: t("admin.tab_maintenance"),   desc: t("admin.tab_maintenance_desc") },
         { key: "backup" as AdminTab,        icon: <HardDrive size={16} />,     label: t("admin.tab_backup"),        desc: t("admin.tab_backup_desc") },
       ],

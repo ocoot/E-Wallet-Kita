@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { logError } from '../_lib/errorLogger.js';
+import { enforceRateLimit } from '../_lib/rateLimiter.js';
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -51,6 +52,11 @@ async function getUserFromAuth(req: VercelRequest) {
 async function handleExport(req: VercelRequest, res: VercelResponse) {
   const user = await getUserFromAuth(req);
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+  // Ekspor menggabungkan banyak query ke banyak tabel sekaligus -- tanpa
+  // limit ini bisa dipakai untuk membebani DB lewat permintaan berulang.
+  const allowedExport = await enforceRateLimit(supabase, res, `privacy:export:${user.id}`, 3, 300);
+  if (!allowedExport) return;
 
   try {
     const [
@@ -117,6 +123,11 @@ async function handleExport(req: VercelRequest, res: VercelResponse) {
 async function handleDeleteAccount(req: VercelRequest, res: VercelResponse) {
   const user = await getUserFromAuth(req);
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+  // Aksi destruktif & ireversibel -- limit ketat murni sebagai lapisan
+  // pertahanan tambahan (bukan pengganti konfirmasi di bawah).
+  const allowedDelete = await enforceRateLimit(supabase, res, `privacy:delete:${user.id}`, 3, 300);
+  if (!allowedDelete) return;
 
   // Konfirmasi eksplisit dari body request, bukan cuma method DELETE --
   // mencegah penghapusan tidak sengaja lewat panggilan otomatis/replay.

@@ -78,6 +78,7 @@ const AdminBroadcast = lazy(() => import("./views/AdminBroadcast").then(m => ({ 
 const AdminSupportChat = lazy(() => import("./views/AdminSupportChat").then(m => ({ default: m.AdminSupportChat })));
 const AdminAiMonitor = lazy(() => import("./views/AdminAiMonitor").then(m => ({ default: m.AdminAiMonitor })));
 const AdminErrorMonitor = lazy(() => import("./views/AdminErrorMonitor").then(m => ({ default: m.AdminErrorMonitor })));
+const AdminSecurityMonitor = lazy(() => import("./views/AdminSecurityMonitor").then(m => ({ default: m.AdminSecurityMonitor })));
 const AdminMaintenance = lazy(() => import("./views/AdminMaintenance").then(m => ({ default: m.AdminMaintenance })));
 const AdminBackup = lazy(() => import("./views/AdminBackup").then(m => ({ default: m.AdminBackup })));
 
@@ -653,6 +654,9 @@ const MainLayout: React.FC<MainLayoutProps> = ({ user, loading, signOut }) => {
                   } />
                   <Route path="/admin/backup" element={
                     adminLoading ? <AdminSkeleton /> : isAdmin ? <AdminBackup /> : <Navigate to="/dashboard" replace />
+                  } />
+                  <Route path="/admin/security" element={
+                    adminLoading ? <AdminSkeleton /> : isAdmin ? <AdminSecurityMonitor /> : <Navigate to="/dashboard" replace />
                   } />
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                   </Routes>

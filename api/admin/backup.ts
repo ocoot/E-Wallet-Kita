@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { logError } from '../_lib/errorLogger.js';
+import { enforceRateLimit } from '../_lib/rateLimiter.js';
 
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
@@ -74,6 +75,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.status(403).json({ error: 'Forbidden: Only admins or owners can manage backup' });
     return;
   }
+
+  // Endpoint ini bisa memicu restore/delete database via GitHub Actions --
+  // limit ketat sebagai lapisan pertahanan tambahan seandainya token admin
+  // bocor/disalahgunakan. RPC rate-limit hanya di-grant ke service_role.
+  const allowedBackup = await enforceRateLimit(
+    createClient(supabaseUrl, supabaseServiceKey),
+    res,
+    `admin:backup:${user.id}`,
+    10,
+    300
+  );
+  if (!allowedBackup) return;
 
   if (!githubToken || !githubRepo) {
     res.status(500).json({

@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { logError } from './_lib/errorLogger.js';
+import { enforceRateLimit } from './_lib/rateLimiter.js';
 
 const supabase = createClient(
   process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '',
@@ -196,6 +197,14 @@ function handleHealth(req: VercelRequest, res: VercelResponse) {
 }
 
 async function handleWeather(req: VercelRequest, res: VercelResponse) {
+  // Endpoint ini publik (tanpa auth) dan memanggil 2-3 API pihak ketiga
+  // gratis per request -- tanpa limit, bisa dipakai untuk membebani kuota
+  // gratis provider tsb atau sebagai vektor DoS murah. Dibatasi per-IP
+  // (bukan per-user) karena memang tidak ada user yang login di jalur ini.
+  const clientIp = getClientIp(req) || 'unknown';
+  const allowedWeather = await enforceRateLimit(supabase, res, `weather:${clientIp}`, 20, 60);
+  if (!allowedWeather) return;
+
   try {
     const latParam = req.query.lat;
     const lonParam = req.query.lon;

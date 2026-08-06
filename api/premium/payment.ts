@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { logError } from '../_lib/errorLogger.js';
+import { enforceRateLimit } from '../_lib/rateLimiter.js';
 
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
 
@@ -90,6 +91,13 @@ async function isDummyQrisEnabled(): Promise<boolean> {
 async function handleCreate(req: VercelRequest, res: VercelResponse) {
   const user = await getUserFromAuth(req);
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+  // Endpoint pembuatan transaksi pembayaran ini sebelumnya TIDAK punya
+  // rate limit sama sekali -- endpoint sensitif (memicu transaksi QRIS)
+  // seharusnya dibatasi ketat per user untuk cegah spam/abuse percobaan
+  // pembayaran berulang.
+  const allowed = await enforceRateLimit(supabase, res, `payment:create:${user.id}`, 5, 60);
+  if (!allowed) return;
 
   const { data: existing } = await supabase
     .from('users')
@@ -246,6 +254,12 @@ async function handleStatus(req: VercelRequest, res: VercelResponse) {
 
   const user = await getUserFromAuth(req);
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
+
+  // Status-check di-poll berkali-kali secara wajar oleh UI selama proses
+  // pembayaran, jadi limit-nya lebih longgar daripada handleCreate --
+  // tetap ada supaya tidak bisa dijadikan endpoint untuk polling agresif.
+  const allowedStatus = await enforceRateLimit(supabase, res, `payment:status:${user.id}`, 30, 60);
+  if (!allowedStatus) return;
 
   const orderId = req.query.order_id as string;
   if (!orderId) return res.status(400).json({ error: 'order_id required' });

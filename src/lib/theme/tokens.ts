@@ -434,6 +434,16 @@ export const themeTokens = {
     rowMessage: "text-slate-200 light_sakura:text-slate-800",
     paginationBtn: "border-slate-800 light_sakura:border-slate-200",
   },
+  securityMonitor: {
+    eventSuspiciousColor: "text-red-400 light_sakura:text-red-600",
+    eventSuspiciousBg: "bg-red-500/10 border-red-500/30 light_sakura:bg-red-50 light_sakura:border-red-200",
+    eventBlockedColor: "text-amber-400 light_sakura:text-amber-600",
+    eventBlockedBg: "bg-amber-500/10 border-amber-500/30 light_sakura:bg-amber-50 light_sakura:border-amber-200",
+    eventRateLimitColor: "text-indigo-400 light_sakura:text-indigo-600",
+    eventRateLimitBg: "bg-indigo-500/10 border-indigo-500/30 light_sakura:bg-indigo-50 light_sakura:border-indigo-200",
+    eventAuthFailureColor: "text-orange-400 light_sakura:text-orange-600",
+    eventAuthFailureBg: "bg-orange-500/10 border-orange-500/30 light_sakura:bg-orange-50 light_sakura:border-orange-200",
+  },
   adminBackup: {
     heading: "text-slate-100 light_sakura:text-slate-800",
     btnSecondary: "px-3 py-2 text-xs font-bold rounded-xl border border-slate-800 hover:bg-slate-800 transition-colors cursor-pointer light_sakura:border-rose-200 light_sakura:hover:bg-rose-100",
