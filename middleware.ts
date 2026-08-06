@@ -40,7 +40,7 @@ import { next, ipAddress } from '@vercel/functions';
  */
 
 export const config = {
-  runtime: 'edge' as const,
+  runtime: 'edge',
   // Jalan di semua path KECUALI asset statis yang jelas legit (JS/CSS/
   // gambar/font hasil build) supaya tidak menambah latency ke aset yang
   // sudah pasti aman dan sering di-fetch.
