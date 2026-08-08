@@ -226,7 +226,14 @@ export interface NagerHoliday {
   types: string[];
 }
 
-const CACHE_KEY = "ewk_holiday_cache_v1";
+// v2 (2026-08-08): dinaikkan dari v1 supaya cache lama yang tersimpan dari
+// SEBELUM fetch dipindah ke backend proxy (api/utils.ts?type=holidays) --
+// yang isinya cuma hasil fallback Nager.Date tanpa Maulid Nabi -- otomatis
+// dianggap invalid dan di-fetch ulang. Tanpa ini, user yang sudah pernah
+// buka Kalender sebelum fix akan tetap lihat data lama sampai 24 jam
+// walau kode & backend sudah diperbaiki, karena readCache() tidak tahu
+// bedanya "cache lama yang salah" dengan "cache baru yang benar".
+const CACHE_KEY = "ewk_holiday_cache_v2";
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 jam
 
 interface HolidayCache {
