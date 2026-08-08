@@ -259,91 +259,41 @@ function writeCache(countryCode: string, holidays: NagerHoliday[]) {
   }
 }
 
-async function fetchCountryHolidays(
+/* ──────────────────────────────────────────────────────
+ * Backend proxy (api/utils.ts?type=holidays) — TIDAK fetch API pihak
+ * ketiga langsung dari browser lagi.
+ *
+ * CATATAN PENTING (kenapa ini diubah dari fetch langsung ke backend):
+ * Percobaan awal fetch api-harilibur & Nager.Date langsung dari browser
+ * ternyata diblokir CORS (api-harilibur.vercel.app tidak mengirim header
+ * Access-Control-Allow-Origin) — request selalu gagal sebelum sempat
+ * dapat respons, otomatis fallback ke Nager.Date yang tidak punya data
+ * Maulid Nabi untuk Indonesia. Panggilan server-ke-server (dari Vercel
+ * function) tidak kena CORS sama sekali, jadi logic fetch pihak ketiga +
+ * fallback-nya dipindah ke situ. Lihat api/utils.ts untuk detail.
+ * ────────────────────────────────────────────────────── */
+
+async function fetchHolidaysFromBackend(
   countryCode: string,
   year: number
 ): Promise<NagerHoliday[]> {
-  const resp = await fetch(
-    `https://date.nager.at/api/v3/publicholidays/${year}/${countryCode}`,
-    { signal: AbortSignal.timeout(5000) }
-  );
-  if (!resp.ok) throw new Error(`Nager.Date responded ${resp.status}`);
-  const data: NagerHoliday[] = await resp.json();
-  return data;
-}
-
-/* ──────────────────────────────────────────────────────
- * API api-harilibur (kresnasatya) — sumber utama untuk hari libur
- * nasional Indonesia. 3 mirror dicoba berurutan supaya tetap resilient
- * kalau salah satu platform hosting sedang down.
- *
- * Docs: https://github.com/kresnasatya/api-harilibur
- * Format response: [{ holiday_date, holiday_name, is_national_holiday }]
- * ────────────────────────────────────────────────────── */
-
-const HARILIBUR_MIRRORS = [
-  "https://api-harilibur.vercel.app/api",
-  "https://api-harilibur.pages.dev/api",
-  "https://api-harilibur.netlify.app/api",
-];
-
-interface HariLiburEntry {
-  holiday_date: string; // "2026-08-25"
-  holiday_name: string;
-  is_national_holiday: boolean;
-}
-
-async function fetchIndonesiaHolidaysFromMirror(
-  baseUrl: string,
-  year: number
-): Promise<HariLiburEntry[]> {
-  const resp = await fetch(`${baseUrl}?year=${year}`, {
-    signal: AbortSignal.timeout(5000),
+  const resp = await fetch(`/api/utils?type=holidays&country=${countryCode}&year=${year}`, {
+    signal: AbortSignal.timeout(8000),
   });
-  if (!resp.ok) throw new Error(`${baseUrl} responded ${resp.status}`);
-  const data: HariLiburEntry[] = await resp.json();
-  if (!Array.isArray(data)) throw new Error(`${baseUrl} format tidak dikenali`);
-  return data;
-}
-
-/**
- * Ambil hari libur nasional Indonesia dari api-harilibur, coba tiap
- * mirror berurutan sampai salah satu berhasil. Hanya entri dengan
- * is_national_holiday === true yang dipakai (API ini juga menyertakan
- * hari libur daerah Bali yang bukan hari libur nasional).
- *
- * Melempar error kalau semua mirror gagal — dipakai oleh fetchHolidays
- * untuk lanjut ke fallback Nager.Date lalu data statis.
- */
-async function fetchIndonesiaHolidays(year: number): Promise<NagerHoliday[]> {
-  let lastError: unknown = null;
-  for (const baseUrl of HARILIBUR_MIRRORS) {
-    try {
-      const data = await fetchIndonesiaHolidaysFromMirror(baseUrl, year);
-      return data
-        .filter((h) => h.is_national_holiday)
-        .map((h) => ({
-          date: h.holiday_date,
-          localName: h.holiday_name,
-          name: h.holiday_name,
-          countryCode: "ID",
-          global: true,
-          types: ["Public"],
-        }));
-    } catch (err) {
-      lastError = err;
-      console.warn(`[eventCalendar] Mirror api-harilibur gagal (${baseUrl}):`, err);
-    }
-  }
-  throw lastError ?? new Error("Semua mirror api-harilibur gagal");
+  if (!resp.ok) throw new Error(`/api/utils?type=holidays responded ${resp.status}`);
+  const data = await resp.json();
+  if (!Array.isArray(data.holidays)) throw new Error("Format response holidays tidak dikenali");
+  return data.holidays;
 }
 
 /**
  * Ambil data hari libur untuk suatu negara, dengan cache localStorage
- * 24 jam.
+ * 24 jam di sisi client (di atas cache edge 6 jam di backend).
  *
- * Untuk "ID": api-harilibur (3 mirror) → Nager.Date → data statis.
- * Untuk negara lain: Nager.Date → array kosong kalau gagal.
+ * Fetch pihak ketiga (api-harilibur + Nager.Date, dengan fallback
+ * berurutan) dilakukan di backend (api/utils.ts) — lihat catatan di atas.
+ * Kalau backend sendiri tidak terjangkau (mis. offline total), baru
+ * fallback ke data statis di sini untuk negara "ID".
  */
 export async function fetchHolidays(
   countryCode: string,
@@ -352,34 +302,31 @@ export async function fetchHolidays(
   const cached = readCache();
   if (cached?.[countryCode]) return cached[countryCode];
 
-  if (countryCode === "ID") {
-    try {
-      const data = await fetchIndonesiaHolidays(year);
+  try {
+    const data = await fetchHolidaysFromBackend(countryCode, year);
+    if (data.length > 0) {
       writeCache(countryCode, data);
       return data;
-    } catch (err) {
-      console.warn("[eventCalendar] api-harilibur gagal total, coba Nager.Date:", err);
-      try {
-        const data = await fetchCountryHolidays(countryCode, year);
-        writeCache(countryCode, data);
-        return data;
-      } catch (err2) {
-        console.warn("[eventCalendar] Nager.Date juga gagal, pakai data statis:", err2);
-        const fallback = STATIC_HOLIDAYS_2026_ID.map((h) => ({
-          ...h,
-          date: h.date.replace("2026", String(year)),
-        }));
-        return fallback;
-      }
     }
-  }
-
-  try {
-    const data = await fetchCountryHolidays(countryCode, year);
-    writeCache(countryCode, data);
+    // Backend berhasil dipanggil tapi hasilnya kosong (semua sumber di
+    // server pun gagal) — jangan di-cache supaya percobaan berikutnya
+    // bisa coba fetch ulang, dan pakai fallback statis untuk ID saja.
+    if (countryCode === "ID") {
+      return STATIC_HOLIDAYS_2026_ID.map((h) => ({
+        ...h,
+        date: h.date.replace("2026", String(year)),
+      }));
+    }
     return data;
   } catch (err) {
-    console.warn(`[eventCalendar] Gagal fetch hari libur ${countryCode}:`, err);
+    console.warn(`[eventCalendar] Gagal fetch hari libur ${countryCode} dari backend:`, err);
+    if (countryCode === "ID") {
+      const fallback = STATIC_HOLIDAYS_2026_ID.map((h) => ({
+        ...h,
+        date: h.date.replace("2026", String(year)),
+      }));
+      return fallback;
+    }
     return [];
   }
 }

@@ -294,6 +294,136 @@ async function handleWeather(req: VercelRequest, res: VercelResponse) {
   }
 }
 
+/**
+ * GET /api/utils?type=holidays&country=ID&year=2026
+ *
+ * Endpoint hari libur nasional -- dipanggil dari CalendarPage & event
+ * overlay Dashboard (lihat src/api/eventCalendar.ts). SEBELUMNYA fetch ini
+ * dilakukan langsung dari browser ke API pihak ketiga (api-harilibur,
+ * Nager.Date), dan itu menyebabkan bug: browser mem-block request karena
+ * api-harilibur.vercel.app (dan mirror-nya) tidak mengirim header
+ * `Access-Control-Allow-Origin`, jadi fetch selalu gagal dengan CORS error
+ * lalu diam-diam fallback ke Nager.Date -- yang TIDAK punya data Maulid
+ * Nabi untuk Indonesia. Hasilnya: kalender cuma nampilin 1 dari 2 hari
+ * libur Agustus 2026.
+ *
+ * Fix: pindahkan fetch ke server. Panggilan server-ke-server tidak kena
+ * CORS sama sekali (CORS cuma aturan browser), jadi lebih reliable.
+ *
+ * Sumber (untuk country=ID):
+ *   1. api-harilibur (kresnasatya) -- 3 mirror dicoba berurutan.
+ *   2. Nager.Date -- fallback kedua.
+ * Untuk negara lain: langsung Nager.Date.
+ *
+ * Response di-cache lama di edge (6 jam, stale-while-revalidate 1 hari)
+ * karena hari libur nasional praktis tidak pernah berubah dalam jangka
+ * pendek.
+ */
+
+interface RawHoliday {
+  date: string;
+  localName: string;
+  name: string;
+  countryCode: string;
+  global: boolean;
+  types: string[];
+}
+
+const HARILIBUR_MIRRORS = [
+  'https://api-harilibur.vercel.app/api',
+  'https://api-harilibur.pages.dev/api',
+  'https://api-harilibur.netlify.app/api',
+];
+
+async function fetchIndonesiaHolidaysServer(year: number): Promise<RawHoliday[]> {
+  let lastError: any;
+  for (const baseUrl of HARILIBUR_MIRRORS) {
+    try {
+      const resp = await fetchWithTimeout(
+        `${baseUrl}?year=${year}`,
+        { headers: { 'User-Agent': 'e-wallet-kita-app/1.0' } },
+        6000
+      );
+      if (!resp.ok) throw new Error(`${baseUrl} responded ${resp.status}`);
+      const data = await resp.json();
+      if (!Array.isArray(data)) throw new Error(`${baseUrl} format tidak dikenali`);
+      return data
+        .filter((h: any) => h.is_national_holiday)
+        .map((h: any) => ({
+          date: h.holiday_date,
+          localName: h.holiday_name,
+          name: h.holiday_name,
+          countryCode: 'ID',
+          global: true,
+          types: ['Public'],
+        }));
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`[api/holidays] Mirror gagal (${baseUrl}):`, err?.message);
+    }
+  }
+  throw lastError ?? new Error('Semua mirror api-harilibur gagal');
+}
+
+async function fetchNagerHolidays(countryCode: string, year: number): Promise<RawHoliday[]> {
+  const resp = await fetchWithTimeout(
+    `https://date.nager.at/api/v3/publicholidays/${year}/${countryCode}`,
+    { headers: { 'User-Agent': 'e-wallet-kita-app/1.0' } },
+    6000
+  );
+  if (!resp.ok) throw new Error(`Nager.Date responded ${resp.status}`);
+  return resp.json();
+}
+
+async function handleHolidays(req: VercelRequest, res: VercelResponse) {
+  // Endpoint publik tanpa auth, panggil API pihak ketiga -- rate limit
+  // per-IP seperti cabang weather di atas.
+  const clientIp = getClientIp(req) || 'unknown';
+  const allowedHolidays = await enforceRateLimit(supabase, res, `holidays:${clientIp}`, 30, 60);
+  if (!allowedHolidays) return;
+
+  const countryCode = typeof req.query.country === 'string' ? req.query.country.toUpperCase() : 'ID';
+  const yearParam = req.query.year;
+  const year =
+    typeof yearParam === 'string' && /^\d{4}$/.test(yearParam)
+      ? parseInt(yearParam, 10)
+      : new Date().getFullYear();
+
+  try {
+    let holidays: RawHoliday[];
+    let source: string;
+
+    if (countryCode === 'ID') {
+      try {
+        holidays = await fetchIndonesiaHolidaysServer(year);
+        source = 'api-harilibur';
+      } catch (err: any) {
+        console.warn('[api/holidays] api-harilibur gagal total, coba Nager.Date:', err?.message);
+        holidays = await fetchNagerHolidays(countryCode, year);
+        source = 'nager';
+      }
+    } else {
+      holidays = await fetchNagerHolidays(countryCode, year);
+      source = 'nager';
+    }
+
+    res.setHeader('Cache-Control', 's-maxage=21600, stale-while-revalidate=86400');
+    return res.status(200).json({ countryCode, year, source, holidays });
+  } catch (err: any) {
+    const errMsg = err?.message || String(err);
+    console.error('[api/holidays] error:', errMsg);
+    await logError(supabase, {
+      source: 'holidays',
+      level: 'warning',
+      message: `Gagal fetch hari libur ${countryCode}/${year}, frontend akan pakai fallback statis: ${errMsg}`,
+    });
+    // 200 dengan array kosong (bukan 500) -- frontend (eventCalendar.ts)
+    // tahu cara fallback ke data statis kalau holidays kosong.
+    res.setHeader('Cache-Control', 's-maxage=60');
+    return res.status(200).json({ countryCode, year, source: 'error', holidays: [], _error: errMsg });
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {
     res.setHeader('Allow', 'GET');
@@ -308,5 +438,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (type === 'weather') {
     return handleWeather(req, res);
   }
-  return res.status(400).json({ error: 'Parameter type wajib diisi: "health" atau "weather".' });
+  if (type === 'holidays') {
+    return handleHolidays(req, res);
+  }
+  return res.status(400).json({ error: 'Parameter type wajib diisi: "health", "weather", atau "holidays".' });
 }
