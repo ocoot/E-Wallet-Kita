@@ -1,11 +1,30 @@
 /**
- * Kalender event dinamis — menggabungkan data hari libur nasional dari
- * Nager.Date API (+ fallback statis) dengan event tematik manual (Valentine,
- * Piala Dunia, dll) untuk overlay dekoratif di Dashboard.
+ * Kalender event dinamis — menggabungkan data hari libur nasional dengan
+ * event tematik manual (Valentine, Piala Dunia, dll) untuk overlay
+ * dekoratif di Dashboard & grid kalender penuh di CalendarPage.
  *
- * API: https://date.nager.at (gratis, tanpa API key)
+ * Sumber hari libur nasional Indonesia (countryCode "ID"):
+ *   1. api-harilibur (kresnasatya) — https://api-harilibur.vercel.app
+ *      (+ 2 mirror: Cloudflare Pages & Netlify, dicoba berurutan).
+ *      Data hari libur nasional Indonesia, termasuk hari besar Islam
+ *      (Idul Fitri, Idul Adha, Maulid Nabi, dst) yang tanggalnya
+ *      mengikuti penetapan SKB 3 Menteri — di-scrape otomatis via
+ *      GitHub Actions dari kalenderbali.com.
+ *   2. Nager.Date (https://date.nager.at) — fallback kedua. CATATAN:
+ *      Nager.Date terbukti TIDAK lengkap untuk hari libur keagamaan
+ *      Islam Indonesia yang tanggalnya bergerak (mis. Maulid Nabi
+ *      25 Agustus 2026 tidak muncul di response-nya untuk ID), jadi
+ *      jangan jadikan sumber utama untuk negara ID.
+ *   3. STATIC_HOLIDAYS_2026_* — jaring pengaman terakhir kalau kedua
+ *      API di atas gagal/offline. Sudah diverifikasi ulang Agustus
+ *      2026 agar mencakup 2 hari libur nasional bulan Agustus
+ *      (17 Agustus & 25 Agustus / Maulid Nabi).
+ *
+ * Untuk negara lain (mis. "US"), Nager.Date tetap dipakai sebagai
+ * sumber utama karena cakupannya untuk hari libur fixed-date/Kristen
+ * sudah cukup baik.
+ *
  * API: https://thesportsdb.com (gratis, tanpa API key — jadwal sepakbola)
- * Fallback: data statis untuk hari libur & event olahraga utama.
  *
  * Cache: hasil fetch API disimpan di localStorage 24 jam.
  */
@@ -180,6 +199,18 @@ const HOLIDAY_OVERLAY_MAP: Record<string, HolidayMapEntry> = {
   "martin luther": { overlay: "sparkles", emoji: "" },
   "columbus": { overlay: "confetti", emoji: "" },
   "presidents": { overlay: "confetti", emoji: "" },
+  // Varian nama Indonesia (dari api-harilibur, teks aslinya Bahasa Indonesia)
+  "tahun baru masehi": { overlay: "fireworks", emoji: "" },
+  "natal": { overlay: "sparkles", emoji: "" },
+  "kemerdekaan": { overlay: "confetti", emoji: "" },
+  "hari buruh": { overlay: "confetti", emoji: "" },
+  "kenaikan isa": { overlay: "sparkles", emoji: "" },
+  "wafat isa": { overlay: "sparkles", emoji: "" },
+  "maulid nabi": { overlay: "sparkles", emoji: "" },
+  "isra mikraj": { overlay: "sparkles", emoji: "" },
+  "isra' mi'raj": { overlay: "sparkles", emoji: "" },
+  "tahun baru islam": { overlay: "sparkles", emoji: "" },
+  "tahun baru imlek": { overlay: "fireworks", emoji: "" },
 };
 
 /* ──────────────────────────────────────────────────────
@@ -241,9 +272,78 @@ async function fetchCountryHolidays(
   return data;
 }
 
+/* ──────────────────────────────────────────────────────
+ * API api-harilibur (kresnasatya) — sumber utama untuk hari libur
+ * nasional Indonesia. 3 mirror dicoba berurutan supaya tetap resilient
+ * kalau salah satu platform hosting sedang down.
+ *
+ * Docs: https://github.com/kresnasatya/api-harilibur
+ * Format response: [{ holiday_date, holiday_name, is_national_holiday }]
+ * ────────────────────────────────────────────────────── */
+
+const HARILIBUR_MIRRORS = [
+  "https://api-harilibur.vercel.app/api",
+  "https://api-harilibur.pages.dev/api",
+  "https://api-harilibur.netlify.app/api",
+];
+
+interface HariLiburEntry {
+  holiday_date: string; // "2026-08-25"
+  holiday_name: string;
+  is_national_holiday: boolean;
+}
+
+async function fetchIndonesiaHolidaysFromMirror(
+  baseUrl: string,
+  year: number
+): Promise<HariLiburEntry[]> {
+  const resp = await fetch(`${baseUrl}?year=${year}`, {
+    signal: AbortSignal.timeout(5000),
+  });
+  if (!resp.ok) throw new Error(`${baseUrl} responded ${resp.status}`);
+  const data: HariLiburEntry[] = await resp.json();
+  if (!Array.isArray(data)) throw new Error(`${baseUrl} format tidak dikenali`);
+  return data;
+}
+
 /**
- * Ambil data hari libur dari Nager.Date untuk suatu negara, dengan cache
- * localStorage 24 jam. Fallback ke array kosong kalau gagal (offline/down).
+ * Ambil hari libur nasional Indonesia dari api-harilibur, coba tiap
+ * mirror berurutan sampai salah satu berhasil. Hanya entri dengan
+ * is_national_holiday === true yang dipakai (API ini juga menyertakan
+ * hari libur daerah Bali yang bukan hari libur nasional).
+ *
+ * Melempar error kalau semua mirror gagal — dipakai oleh fetchHolidays
+ * untuk lanjut ke fallback Nager.Date lalu data statis.
+ */
+async function fetchIndonesiaHolidays(year: number): Promise<NagerHoliday[]> {
+  let lastError: unknown = null;
+  for (const baseUrl of HARILIBUR_MIRRORS) {
+    try {
+      const data = await fetchIndonesiaHolidaysFromMirror(baseUrl, year);
+      return data
+        .filter((h) => h.is_national_holiday)
+        .map((h) => ({
+          date: h.holiday_date,
+          localName: h.holiday_name,
+          name: h.holiday_name,
+          countryCode: "ID",
+          global: true,
+          types: ["Public"],
+        }));
+    } catch (err) {
+      lastError = err;
+      console.warn(`[eventCalendar] Mirror api-harilibur gagal (${baseUrl}):`, err);
+    }
+  }
+  throw lastError ?? new Error("Semua mirror api-harilibur gagal");
+}
+
+/**
+ * Ambil data hari libur untuk suatu negara, dengan cache localStorage
+ * 24 jam.
+ *
+ * Untuk "ID": api-harilibur (3 mirror) → Nager.Date → data statis.
+ * Untuk negara lain: Nager.Date → array kosong kalau gagal.
  */
 export async function fetchHolidays(
   countryCode: string,
@@ -251,6 +351,29 @@ export async function fetchHolidays(
 ): Promise<NagerHoliday[]> {
   const cached = readCache();
   if (cached?.[countryCode]) return cached[countryCode];
+
+  if (countryCode === "ID") {
+    try {
+      const data = await fetchIndonesiaHolidays(year);
+      writeCache(countryCode, data);
+      return data;
+    } catch (err) {
+      console.warn("[eventCalendar] api-harilibur gagal total, coba Nager.Date:", err);
+      try {
+        const data = await fetchCountryHolidays(countryCode, year);
+        writeCache(countryCode, data);
+        return data;
+      } catch (err2) {
+        console.warn("[eventCalendar] Nager.Date juga gagal, pakai data statis:", err2);
+        const fallback = STATIC_HOLIDAYS_2026_ID.map((h) => ({
+          ...h,
+          date: h.date.replace("2026", String(year)),
+        }));
+        return fallback;
+      }
+    }
+  }
+
   try {
     const data = await fetchCountryHolidays(countryCode, year);
     writeCache(countryCode, data);
@@ -266,17 +389,27 @@ export async function fetchHolidays(
  * (2026 — andalkan API untuk update, ini jaring pengaman)
  * ────────────────────────────────────────────────────── */
 
+// Diverifikasi ulang Agustus 2026 terhadap SKB 3 Menteri (17 hari libur
+// nasional 2026). Idul Adha sebelumnya salah tercatat 7 Juni — seharusnya
+// 27 Mei. Maulid Nabi (25 Agustus) sebelumnya hilang total dari daftar —
+// inilah penyebab utama kalender hanya menampilkan 1 hari libur di
+// Agustus padahal seharusnya 2 (17 & 25 Agustus).
 const STATIC_HOLIDAYS_2026_ID: NagerHoliday[] = [
   { date: "2026-01-01", localName: "Tahun Baru Masehi", name: "New Year's Day", countryCode: "ID", global: true, types: ["Public"] },
+  { date: "2026-01-16", localName: "Isra Mikraj Nabi Muhammad SAW", name: "Isra Mikraj", countryCode: "ID", global: true, types: ["Public"] },
+  { date: "2026-02-17", localName: "Tahun Baru Imlek 2577 Kongzili", name: "Chinese New Year", countryCode: "ID", global: true, types: ["Public"] },
   { date: "2026-03-29", localName: "Hari Raya Nyepi", name: "Nyepi", countryCode: "ID", global: true, types: ["Public"] },
-  { date: "2026-04-03", localName: "Wafat Isa Almasih", name: "Good Friday", countryCode: "ID", global: true, types: ["Public"] },
   { date: "2026-03-31", localName: "Idul Fitri", name: "Idul Fitri", countryCode: "ID", global: true, types: ["Public"] },
   { date: "2026-04-01", localName: "Idul Fitri", name: "Idul Fitri", countryCode: "ID", global: true, types: ["Public"] },
+  { date: "2026-04-03", localName: "Wafat Isa Almasih", name: "Good Friday", countryCode: "ID", global: true, types: ["Public"] },
   { date: "2026-05-01", localName: "Hari Buruh", name: "Labour Day", countryCode: "ID", global: true, types: ["Public"] },
   { date: "2026-05-21", localName: "Kenaikan Isa Almasih", name: "Ascension Day", countryCode: "ID", global: true, types: ["Public"] },
+  { date: "2026-05-27", localName: "Idul Adha", name: "Idul Adha", countryCode: "ID", global: true, types: ["Public"] },
+  { date: "2026-05-31", localName: "Hari Raya Waisak", name: "Vesak", countryCode: "ID", global: true, types: ["Public"] },
   { date: "2026-06-01", localName: "Hari Lahir Pancasila", name: "Pancasila Day", countryCode: "ID", global: true, types: ["Public"] },
-  { date: "2026-06-07", localName: "Idul Adha", name: "Idul Adha", countryCode: "ID", global: true, types: ["Public"] },
+  { date: "2026-06-17", localName: "Tahun Baru Islam", name: "Islamic New Year", countryCode: "ID", global: true, types: ["Public"] },
   { date: "2026-08-17", localName: "Hari Kemerdekaan", name: "Independence Day", countryCode: "ID", global: true, types: ["Public"] },
+  { date: "2026-08-25", localName: "Maulid Nabi Muhammad SAW", name: "Prophet Muhammad's Birthday", countryCode: "ID", global: true, types: ["Public"] },
   { date: "2026-12-25", localName: "Hari Natal", name: "Christmas Day", countryCode: "ID", global: true, types: ["Public"] },
 ];
 
