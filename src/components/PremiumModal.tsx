@@ -60,7 +60,7 @@ export const PremiumModal: React.FC<PremiumModalProps> = ({ isOpen, onClose, onP
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   
-  const { getActiveVouchers, getClaimedVoucher } = useVoucher();
+  const { getActiveVouchers } = useVoucher();
   const [activeVouchers, setActiveVouchers] = useState<PremiumVoucher[]>([]);
   const [selectedVoucher, setSelectedVoucher] = useState<PremiumVoucher | null>(null);
   const [basePrice, setBasePrice] = useState(PREMIUM_AMOUNT);

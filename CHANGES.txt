@@ -1,0 +1,33 @@
+Patch: Hapus dead code voucher-claim di useVoucher.ts
+=======================================================
+
+File yang diubah:
+- src/hooks/useVoucher.ts
+- src/components/PremiumModal.tsx
+
+Yang dihapus (tidak ada call site di seluruh repo):
+- getClaimedVoucher()  -- baca tabel user_voucher_claims
+- claimVoucher()       -- insert ke tabel user_voucher_claims
+- revokeVoucher()      -- versi di dalam hook (BUKAN yang di
+                          AdminVoucherManager.tsx, itu fungsi lokal
+                          terpisah dan TETAP ADA, tidak disentuh)
+- import type UserVoucherClaim di useVoucher.ts (jadi tidak terpakai
+  setelah getClaimedVoucher dihapus)
+- destructuring getClaimedVoucher di PremiumModal.tsx:63 (di-destructure
+  tapi tidak pernah dipanggil)
+
+Yang TETAP DIPERTAHANKAN:
+- getActiveVouchers() di useVoucher.ts -- masih dipakai PremiumModal.tsx
+- Tabel user_voucher_claims di Supabase beserta RLS policy
+  (migration 20260809041029_user_voucher_claims_rls_policies.sql)
+  -- sengaja tidak dihapus, sebagai fondasi kalau fitur klaim-per-user
+  suatu saat benar-benar dibangun
+- interface UserVoucherClaim di src/types.ts -- dibiarkan (harmless,
+  cocok dengan struktur tabel), tidak diminta untuk dihapus
+
+Verifikasi:
+- npx tsc --noEmit -> 0 error (termasuk di 2 file yang diedit)
+
+Cara apply:
+- Copy src/hooks/useVoucher.ts dan src/components/PremiumModal.tsx
+  di zip ini, timpa file yang sama di repo Anda.
