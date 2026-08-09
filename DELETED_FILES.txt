@@ -1,7 +1,0 @@
-File berikut DIHAPUS selama sesi ini (tidak bisa direpresentasikan dalam zip berisi file yang diubah -- silakan hapus manual di project kamu):
-
-- src/components/AdminBackBar.tsx
-  (dead code -- cuma disebut di komentar, tidak ada import aktif)
-
-Token terkait di src/lib/theme/tokens.ts (adminBackBar) juga sudah
-dihapus -- itu SUDAH tercermin di tokens.ts yang ada di zip ini.
