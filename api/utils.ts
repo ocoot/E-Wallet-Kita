@@ -78,6 +78,10 @@ export interface WeatherData {
     weatherCode: number;
     isDay: boolean;
     condition: WeatherCondition;
+    // v0.67.0: level intensitas untuk scene native (0-3 hujan, 0-2 salju, 0-1 pasir).
+    rainLevel: number;
+    snowLevel: number;
+    sandLevel: number;
   };
   updatedAt: string;
 }
@@ -98,6 +102,9 @@ function getFallbackWeather(): WeatherData {
       weatherCode: 3, // cloudy fallback
       isDay: true,
       condition: "cloudy",
+      rainLevel: 1,
+      snowLevel: 1,
+      sandLevel: 0,
     },
     updatedAt: new Date().toISOString(),
   };
@@ -122,6 +129,37 @@ function mapWeatherCode(code: number): WeatherCondition {
   if ([71, 73, 75, 77, 85, 86].includes(code)) return 'snow';
   if ([95, 96, 99].includes(code)) return 'thunderstorm';
   return 'cloudy';
+}
+
+// Level intensitas untuk scene cuaca native (v0.67.0).
+// Open-Meteo `precipitation` (current) = curah hujan mm pada langkah waktu
+// berjalan (efektif mm/jam); `snowfall` (current) = cm pada langkah berjalan.
+// Ambang hujan disetel untuk hujan tropis Indonesia (badai 10+ mm/jam itu
+// lazim), bukan ambang lintang sedang (>50 mm/jam = "violent") yang membuat
+// level XL hampir tidak pernah tercapai di aplikasi.
+function mapRainLevel(condition: WeatherCondition, precipitationMm: number): number {
+  if (condition === 'thunderstorm') return 3; // badai = paling deras
+  if (condition === 'drizzle') return 0; // gerimis = paling ringan
+  if (condition !== 'rain') return 1; // bukan hujan: tidak dipakai scene
+  if (!Number.isFinite(precipitationMm)) return 1; // data hilang -> default M
+  if (precipitationMm < 1) return 0; // S: <1 mm/jam
+  if (precipitationMm < 4) return 1; // M: 1-4 mm/jam
+  if (precipitationMm < 10) return 2; // L: 4-10 mm/jam
+  return 3; // XL: >10 mm/jam
+}
+
+function mapSnowLevel(condition: WeatherCondition, snowfallCm: number): number {
+  if (condition !== 'snow') return 1; // bukan salju: tidak dipakai scene
+  if (!Number.isFinite(snowfallCm)) return 1; // data hilang -> default M
+  if (snowfallCm < 0.5) return 0; // S: <0,5 cm/jam
+  if (snowfallCm < 2) return 1; // M: 0,5-2 cm/jam
+  return 2; // L: >2 cm/jam
+}
+
+// Pasir: Open-Meteo forecast API tidak menyediakan data debu/pasir
+// (butuh CAMS air-quality API yang belum tersambung) -> selalu default S.
+function mapSandLevel(): number {
+  return 0;
 }
 
 function getClientIp(req: VercelRequest): string | null {
@@ -239,7 +277,7 @@ async function handleWeather(req: VercelRequest, res: VercelResponse) {
       };
     }
 
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day&timezone=auto`;
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,is_day,precipitation,snowfall&timezone=auto`;
     const weatherResp = await fetchWithTimeout(weatherUrl, { headers: { 'User-Agent': 'e-wallet-kita-app/1.0' } }, 6000);
     if (!weatherResp.ok) throw new Error(`open-meteo responded ${weatherResp.status}`);
     const weatherData = await weatherResp.json();
@@ -263,13 +301,17 @@ async function handleWeather(req: VercelRequest, res: VercelResponse) {
       res.setHeader('Cache-Control', 'private, no-store');
     }
 
+    const condition = mapWeatherCode(current.weather_code);
     return res.status(200).json({
       location,
       current: {
         temperatureC: Math.round(current.temperature_2m),
         weatherCode: current.weather_code,
         isDay: current.is_day === 1,
-        condition: mapWeatherCode(current.weather_code),
+        condition,
+        rainLevel: mapRainLevel(condition, current.precipitation),
+        snowLevel: mapSnowLevel(condition, current.snowfall),
+        sandLevel: mapSandLevel(),
       },
       updatedAt: new Date().toISOString(),
     });
