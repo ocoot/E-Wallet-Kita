@@ -117,6 +117,7 @@ interface ResolvedLocation {
   source: 'gps' | 'ip';
 }
 // Redeploy trigger: level intensitas sudah ada di main.
+// Redeploy trigger: level intensitas sudah ada di main.
 // Kode cuaca WMO (dipakai Open-Meteo) -> kategori yang kita pakai di UI.
 // Referensi: https://open-meteo.com/en/docs (WMO Weather interpretation codes)
 function mapWeatherCode(code: number): WeatherCondition {
