@@ -17,7 +17,7 @@ const RECEIPT_RATE_LIMIT = 5;               // requests per window, per user
 const RECEIPT_RATE_LIMIT_WINDOW = 60000;    // 1 minute
 
 /**
- * POST /api/receipt  { action: "parse", imageBase64 }
+ * POST /api/receipt  { action: "parse", imageBase64, source? }
  *   → OCR struk (dulu: api/parse-receipt.ts). Premium-only.
  * POST /api/receipt  { action: "send", email, orderId, pdfBase64, ... }
  *   → kirim struk pembelian premium via email (dulu: api/send-receipt.ts)
@@ -26,6 +26,19 @@ const RECEIPT_RATE_LIMIT_WINDOW = 60000;    // 1 minute
  * Hobby plan (limit 12 function/project). Keduanya sama-sama butuh
  * Bearer auth, jadi auth check dilakukan sekali di awal handler().
  */
+
+// Fix loop v0.77.0 (I-2): tanggal struk dari AI bisa berupa string sampah
+// yang truthy tapi tak-terurai — `new Date(...).toISOString()` melempar
+// RangeError sebelum draf + penanda R2 (`receipt_date_suspect`) tersimpan.
+// Tanggal tak-terurai → null (bukan throw); validator di receipt-parser
+// sudah menandai kasus itu di `raw_ai_response`. Idiom sama seperti
+// validateParsedReceipt: `new Date()` sendiri tidak pernah throw, hanya
+// `.toISOString()` yang throw untuk Invalid Date.
+function toIsoDateOrNull(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d.toISOString();
+}
 
 async function handleParse(req: VercelRequest, res: VercelResponse, user: { id: string; is_anonymous?: boolean }) {
   const userId = user.id;
@@ -87,7 +100,13 @@ async function handleParse(req: VercelRequest, res: VercelResponse, user: { id: 
   }
 
   try {
-    const { imageBase64 } = req.body;
+    const { imageBase64, source } = req.body;
+    // v0.77.0 (Item 7): kanal asal draf — native mengirim 'ai_native',
+    // web tidak mengirim apa-apa (default 'ai_web' supaya web lama tidak
+    // rusak). Nilai lain diteruskan apa adanya: receipt_drafts.source
+    // TIDAK punya CHECK constraint (terverifikasi live 2026-11-10).
+    const draftSource =
+      typeof source === 'string' && source.trim() !== '' ? source.trim() : 'ai_web';
     if (!imageBase64 || typeof imageBase64 !== 'string') {
       res.status(400).json({ error: 'Missing imageBase64 string of the receipt' });
       return;
@@ -101,13 +120,13 @@ async function handleParse(req: VercelRequest, res: VercelResponse, user: { id: 
       .insert({
         user_id: userId,
         merchant_name: parsedJSON.merchant_name || 'Toko Tidak Dikenal',
-        receipt_date: parsedJSON.receipt_date ? new Date(parsedJSON.receipt_date).toISOString() : new Date().toISOString(),
+        receipt_date: toIsoDateOrNull(parsedJSON.receipt_date),
         total_amount: parsedJSON.total_amount || 0,
         total_items: parsedJSON.total_items || (parsedJSON.items ? parsedJSON.items.length : 0),
         items: parsedJSON.items || [],
         raw_ai_response: parsedJSON,
         category: parsedJSON.category || 'other',
-        source: 'ai_web',
+        source: draftSource,
         approved: false
       })
       .select()
@@ -120,7 +139,7 @@ async function handleParse(req: VercelRequest, res: VercelResponse, user: { id: 
         id: null,
         user_id: userId,
         merchant_name: parsedJSON.merchant_name || 'Toko Tidak Dikenal',
-        receipt_date: parsedJSON.receipt_date || new Date().toISOString(),
+        receipt_date: parsedJSON.receipt_date || null,
         total_amount: parsedJSON.total_amount || 0,
         total_items: parsedJSON.total_items || 0,
         items: parsedJSON.items || [],
@@ -139,6 +158,18 @@ async function handleParse(req: VercelRequest, res: VercelResponse, user: { id: 
       message: err?.message ? String(err.message) : 'Terjadi kesalahan internal ketika melakukan OCR struk',
       userId: userId ?? null,
     });
+    // v0.77.0 (Item 8, R4): kuota AI habis (semua provider 429/503) BUKAN
+    // "server rusak" — kembalikan 503 supaya klien bisa menampilkan pesan
+    // kuota yang benar, bukan pesan error generik. Sebelumnya semua
+    // kegagalan parse mengembalikan 500 generik.
+    const errMessage = err?.message ? String(err.message) : '';
+    if (errMessage.includes('All receipt parsing services are currently unavailable')) {
+      res.status(503).json({
+        error: 'Layanan AI sedang sibuk atau kuota habis, coba lagi beberapa menit lagi.',
+        code: 'AI_QUOTA_EXHAUSTED',
+      });
+      return;
+    }
     res.status(500).json({ error: err.message || 'Terjadi kesalahan internal ketika melakukan OCR struk' });
   }
 }

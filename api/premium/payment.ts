@@ -510,12 +510,20 @@ async function handleReconcile(req: VercelRequest, res: VercelResponse) {
     }
   }
 
-  await logError(supabase, {
-    source: 'premium/payment:reconcile',
-    level: 'info',
-    message: `Reconciliation selesai: ${stuckTx?.length ?? 0} dicek, ${reconciled} diperbaiki, ${stillPending} masih pending, ${checkFailed} gagal dicek.`,
-    context: { checked: stuckTx?.length ?? 0, reconciled, stillPending, checkFailed },
-  });
+  // v0.77.0 Item 9: baris info "semuanya baik-baik saja" (153/173 baris
+  // error_logs, ~5/hari) hanya ditulis bila ada sinyal — ada yang
+  // diperbaiki, masih pending, atau gagal dicek. Run kosong (0/0/0/0)
+  // tetap terlihat di respons HTTP workflow + log GitHub Actions, jadi
+  // tidak ada sinyal yang hilang; Monitor Error berhenti didominasi
+  // heartbeat sukses. Baris error/warning di atas TIDAK diubah.
+  if (reconciled > 0 || stillPending > 0 || checkFailed > 0) {
+    await logError(supabase, {
+      source: 'premium/payment:reconcile',
+      level: 'info',
+      message: `Reconciliation selesai: ${stuckTx?.length ?? 0} dicek, ${reconciled} diperbaiki, ${stillPending} masih pending, ${checkFailed} gagal dicek.`,
+      context: { checked: stuckTx?.length ?? 0, reconciled, stillPending, checkFailed },
+    });
+  }
 
   return res.status(200).json({
     checked: stuckTx?.length ?? 0,

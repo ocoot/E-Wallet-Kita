@@ -8,6 +8,19 @@ if (!supabaseServiceKey) {
 }
 const supabaseBackend = createClient(supabaseUrl, supabaseServiceKey);
 
+// Fix loop v0.77.0 (I-2): tanggal struk dari AI bisa berupa string sampah
+// yang truthy tapi tak-terurai — `new Date(...).toISOString()` melempar
+// RangeError sebelum draf + penanda R2 (`receipt_date_suspect`) tersimpan.
+// Tanggal tak-terurai → null (bukan throw); validator di receipt-parser
+// sudah menandai kasus itu di `raw_ai_response`. Idiom sama seperti
+// validateParsedReceipt: `new Date()` sendiri tidak pernah throw, hanya
+// `.toISOString()` yang throw untuk Invalid Date.
+function toIsoDateOrNull(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d.toISOString();
+}
+
 export async function createReceiptDraft(
   userId: string,
   parsed: any,
@@ -38,7 +51,9 @@ export async function createReceiptDraft(
     .insert({
       user_id: userId,
       merchant_name: parsed.merchant_name || 'Toko Tidak Dikenal',
-      receipt_date: parsed.receipt_date ? new Date(parsed.receipt_date).toISOString() : new Date().toISOString(),
+      // v0.77.0 (Item 8, R3): tanggal tak-terbaca = null, bukan hari ini.
+      // Kolom receipt_drafts.receipt_date NULLABLE (terverifikasi live).
+      receipt_date: toIsoDateOrNull(parsed.receipt_date),
       total_amount: parsed.total_amount || 0,
       total_items: parsed.total_items || (parsed.items ? parsed.items.length : 0),
       items: parsed.items || [],
@@ -111,8 +126,22 @@ export async function approveReceiptDraft(id: string) {
       amount: draft.total_amount || 0,
       note: `${draft.total_items || 0} item barang (${draft.merchant_name || 'Toko Tidak Dikenal'})`,
       source: 'telegram',
-      transaction_date: draft.receipt_date ? new Date(draft.receipt_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      wallet_id: walletId
+      // v0.77.0 (Item 8, R3): tanggal draf kosong (null) JANGAN diam-diam
+      // jadi "hari ini saat approve" (approve bisa berhari-hari sesudah
+      // pindai). Pakai tanggal draf dibuat (saat struk dipindai) — tanggal
+      // kejadian nyata yang terdekat. transactions.transaction_date NOT NULL
+      // (terverifikasi live), jadi null tidak bisa disimpan; created_at
+      // ber-DEFAULT now() sehingga fallback hari ini di ujung praktis
+      // tidak pernah terjangkau.
+      transaction_date: draft.receipt_date
+        ? new Date(draft.receipt_date).toISOString().split('T')[0]
+        : (draft.created_at ? new Date(draft.created_at).toISOString().split('T')[0] : new Date().toISOString().split('T')[0]),
+      wallet_id: walletId,
+      // v0.77.0 (Item 4): teruskan penanda manual draf struk — trigger
+      // `trg_apply_category_rule` melewati baris ini bila true (kategori
+      // diubah user di bot). Default false = eligible (kategori hasil
+      // AI yang diterima tanpa diubah boleh dikoreksi aturan, R-4).
+      is_manual_category: draft.category_manual ?? false
     })
     .select()
     .single();
@@ -153,8 +182,10 @@ export async function cancelReceiptDraft(id: string) {
 export async function updateReceiptCategory(id: string, category: string) {
   const { data, error } = await supabaseBackend
     .from('receipt_drafts')
-    .update({ 
+    .update({
       category: category,
+      // v0.77.0 (Item 4): ubah kategori draf = pilihan manual user.
+      category_manual: true,
     })
     .eq('id', id)
     .select()

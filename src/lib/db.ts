@@ -144,7 +144,13 @@ export const dbService = {
     // di bawah ini kegagalan itu ditangkap dan diperlakukan sebagai
     // "sudah tersimpan", bukan error, sehingga retry bersifat no-op alih-
     // alih menghasilkan transaksi duplikat.
-    idempotencyKey?: string | null
+    idempotencyKey?: string | null,
+    // v0.77.0 (Item 4): true = kategori dipilih/diubah eksplisit oleh
+    // manusia — trigger `trg_apply_category_rule` melewati baris ini
+    // (G6). Kategori hasil AI yang diterima tanpa diubah = false
+    // (aturan boleh mengoreksi tebakan AI, R-4). Default false =
+    // eligible — perilaku sementara sampai pemanggil mengisinya.
+    isManualCategory?: boolean
   ): Promise<Transaction> {
     // Kalau tidak ada wallet dipilih, tetap arahkan ke pos "Saldo Total"
     // supaya setiap transaksi selalu punya rumah -- konsisten dengan
@@ -162,7 +168,8 @@ export const dbService = {
         source,
         transaction_date: transactionDate,
         wallet_id: resolvedWalletId,
-        idempotency_key: idempotencyKey ?? null
+        idempotency_key: idempotencyKey ?? null,
+        is_manual_category: isManualCategory ?? false
       })
       .select()
       .single();

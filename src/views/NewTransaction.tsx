@@ -149,6 +149,13 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
   // karena tidak perlu memicu render dan harus terbaca sinkron oleh
   // kedua pemanggilan yang berpotensi race.
   const pendingIdempotencyKeyRef = useRef<string | null>(null);
+  // v0.77.0 (Item 4): kategori yang disarankan AI (struk/suara/prefill)
+  // untuk percobaan simpan ini. Di handleExecuteSave, isManualCategory
+  // = true bila kategori akhir BERBEDA dari saran ini (user mengubah),
+  // atau bila tidak ada saran AI sama sekali (tab manual murni: user
+  // memilih sendiri lewat pill). Kategori AI yang diterima tanpa
+  // diubah = false — trigger aturan boleh mengoreksi tebakan AI (R-4).
+  const aiSuggestedCategoryRef = useRef<string | null>(null);
   const newIdempotencyKey = () =>
     (typeof crypto !== "undefined" && "randomUUID" in crypto)
       ? crypto.randomUUID()
@@ -233,6 +240,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     amount: number; merchant_name: string; category: string; date: string; note: string;
   }) => {
     pendingIdempotencyKeyRef.current = newIdempotencyKey();
+    aiSuggestedCategoryRef.current = finalData.category;
     setConfirmSource("receipt");
     setConfirmDraft({
       type: "expense",
@@ -248,6 +256,7 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
     type: "income" | "expense"; category_key: string; amount: number; note: string;
   }) => {
     pendingIdempotencyKeyRef.current = newIdempotencyKey();
+    aiSuggestedCategoryRef.current = finalData.category_key;
     setConfirmSource("voice");
     setConfirmDraft({
       type: finalData.type,
@@ -277,6 +286,9 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
       return;
     }
     pendingIdempotencyKeyRef.current = newIdempotencyKey();
+    // Tab manual: saran hanya ada bila form dibuka dengan prefill
+    // kategori (mis. dari AI); tanpa prefill, user memilih sendiri.
+    aiSuggestedCategoryRef.current = prefill?.prefillCategoryKey ?? null;
     setConfirmSource("manual");
     setConfirmDraft({
       type,
@@ -331,10 +343,18 @@ export const NewTransaction: React.FC<NewTransactionProps> = ({
         "frontend:transaction",
         async () => {
           const source = confirmSource === "manual" ? "manual" : "ai_web";
+          // v0.77.0 (Item 4): manual = user mengubah kategori dari
+          // saran AI (modal konfirmasi bisa mengubah kategori draf),
+          // atau tidak ada saran AI (tab manual murni). Kategori AI
+          // yang diterima tanpa diubah = false (eligible untuk aturan).
+          const isManualCategory =
+            aiSuggestedCategoryRef.current == null
+              ? true
+              : draft.category !== aiSuggestedCategoryRef.current;
           const savedTx = await withMinDuration(dbService.saveTransaction(
             currentUser.id, draft.type, draft.category,
             Number(draft.amount), draft.note.trim() || null, source, draft.date, draft.walletId,
-            idempotencyKey
+            idempotencyKey, isManualCategory
           ));
           if (savedTx?.id) (window as any).lastSavedTransactionId = savedTx.id;
           if (confirmSource === "receipt" && receiptDraft?.id) {

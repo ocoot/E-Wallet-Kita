@@ -111,7 +111,10 @@ const CLAUDE_MODELS = ["claude-haiku-4-5", "claude-sonnet-4-6"];
 
 export interface ParsedReceipt {
   merchant_name: string;
-  receipt_date: string;
+  // v0.77.0 (Item 8, R3): null bila tanggal tidak terbaca dari struk —
+  // JANGAN lagi diam-diam diisi tanggal hari ini (data palsu yang lolos
+  // semua banner karena tahunnya "benar").
+  receipt_date: string | null;
   total_amount: number;
   total_items: number;
   category: string;
@@ -121,6 +124,12 @@ export interface ParsedReceipt {
     unit_price: number;
     subtotal: number;
   }>;
+  // v0.77.0 (Item 8, R2): penanda hasil validasi server-side (diisi
+  // validateParsedReceipt, ikut tersimpan di `raw_ai_response` karena
+  // ParsedReceipt disimpan utuh oleh pemanggil).
+  total_mismatch?: boolean;
+  items_sum?: number;
+  receipt_date_suspect?: boolean;
 }
 
 function shouldFallback(err: any) {
@@ -135,14 +144,86 @@ function shouldFallback(err: any) {
   );
 }
 
+/**
+ * v0.77.0 (Item 8, R2): validasi server-side sesudah parse — JANGAN tolak,
+ * hanya beri penanda. Ini melindungi jalur TANPA layar review (Telegram):
+ * draf Telegram bisa langsung jadi transaksi, jadi ketidakcocokan harus
+ * tercatat di server, bukan hanya di banner aplikasi.
+ *
+ * - `total_mismatch` + `items_sum`: |Σ subtotal item − total_amount| > Rp1.
+ *   Total TIDAK pernah dikoreksi menjadi Σ item (keputusan v0.76.0 tetap
+ *   berlaku: total tercetak 37.400 ≠ Σ 39.700 pada kasus nyata — tidak
+ *   diketahui mana yang benar, keduanya mungkin salah baca).
+ * - `receipt_date_suspect`: tanggal tidak bisa diurai, ATAU tahunnya bukan
+ *   tahun berjalan, ATAU tanggalnya di masa depan. Struk Desember tahun
+ *   lalu yang dipindai Januari memang kena flag ini — flag ini peringatan,
+ *   bukan penolakan.
+ *
+ * Penanda ikut tersimpan di `raw_ai_response` (ParsedReceipt disimpan utuh
+ * oleh pemanggil: receipt.ts / receipt-service.ts) dan satu baris warning
+ * ke `error_logs` (soft-fail, tidak pernah menggagalkan parse).
+ */
+function validateParsedReceipt(parsed: ParsedReceipt): ParsedReceipt {
+  const items = parsed.items || [];
+  const itemsSum = items.reduce((acc, it) => acc + (Number(it?.subtotal) || 0), 0);
+  const total = Number(parsed.total_amount) || 0;
+  const totalMismatch = Math.abs(itemsSum - total) > 1; // toleransi Rp1 (pembulatan)
+
+  let dateSuspect = false;
+  if (parsed.receipt_date) {
+    const d = new Date(parsed.receipt_date);
+    if (isNaN(d.getTime())) {
+      dateSuspect = true; // tanggal tidak bisa diurai = patut dicurigai
+    } else {
+      const now = new Date();
+      if (d.getUTCFullYear() !== now.getUTCFullYear() || d.getTime() > now.getTime()) {
+        dateSuspect = true;
+      }
+    }
+  }
+
+  const flagged: ParsedReceipt = {
+    ...parsed,
+    items_sum: itemsSum,
+    total_mismatch: totalMismatch,
+    receipt_date_suspect: dateSuspect,
+  };
+
+  if (totalMismatch || dateSuspect) {
+    void logError(supabaseLogger, {
+      source: "receipt-parser",
+      level: "warning",
+      message: totalMismatch
+        ? `Total struk tidak cocok dengan jumlah item (total Rp${total}, Σ item Rp${itemsSum}).`
+        : `Tanggal struk patut dicurigai: ${parsed.receipt_date ?? "null"}.`,
+      context: {
+        merchant_name: parsed.merchant_name ?? null,
+        total_amount: total,
+        items_sum: itemsSum,
+        total_mismatch: totalMismatch,
+        receipt_date: parsed.receipt_date ?? null,
+        receipt_date_suspect: dateSuspect,
+      },
+    });
+  }
+
+  return flagged;
+}
+
 function generateSystemInstruction(categories: Category[]) {
   const categoryMapping = generateCategoryPrompt(categories, "expense");
   
   return `Anda adalah OCR parser struk belanja Indonesia tepercaya.
 Analisis gambar struk belanja yang diberikan dan ekstrak detail berikut dalam bentuk JSON terstruktur:
 1. 'merchant_name': Nama toko/merchant (misal: Indomaret, Alfamart, dll.).
-2. 'receipt_date': Tanggal di struk belanja dalam format ISO (YYYY-MM-DD).
-3. 'total_amount': Total nominal uang yang dibayarkan.
+2. 'receipt_date': Tanggal yang TERCETAK di struk ini, dalam format ISO (YYYY-MM-DD).
+   ATURAN WAJIB: tahun HARUS tahun yang tercetak di struk; jangan memakai tahun lain, jangan menebak.
+   Bila tanggal tidak terbaca sama sekali dari struk, isi dengan null (bukan tanggal hari ini, bukan tahun lain).
+3. 'total_amount': Total nominal uang yang dibayarkan — AMBIL dari baris TOTAL yang tercetak di struk
+   (biasanya "TOTAL" / "Total Bayar" / "Jumlah"), BUKAN hasil hitung sendiri.
+   ATURAN WAJIB: hitung Σ (qty × unit_price) semua item; total_amount HARUS sama dengan Σ tersebut.
+   Bila angka TOTAL tercetak BERBEDA dengan Σ item, tetap pakai angka TOTAL tercetak, JANGAN ubah
+   item, dan JANGAN paksa menyamakan — ketidakcocokan itu data, bukan kesalahanmu.
 4. 'total_items': Jumlah total item barang.
 5. 'category': Kategori transaksi yang paling relevan. Gunakan HANYA salah satu key dari daftar di bawah.
 6. 'items': Daftar barang belanjaan, masing-masing berisi 'name', 'qty', 'unit_price', dan 'subtotal'.
@@ -150,7 +231,9 @@ Analisis gambar struk belanja yang diberikan dan ekstrak detail berikut dalam be
 Kategori pengeluaran yang valid:
 ${categoryMapping}
 
-Kembalikan data kosong atau nilai default yang logis jika ada kolom informasi yang tidak terbaca sama sekali dari struk. JANGAN mengarang data fiktif.
+Bila ada kolom informasi yang tidak terbaca sama sekali dari struk, isi dengan null (untuk tanggal)
+atau nilai kosong yang wajar (untuk teks/daftar). JANGAN mengarang data fiktif dan JANGAN mengisi
+tanggal hari ini sebagai pengganti tanggal struk.
 PENTING: Nilai 'category' HARUS berupa key dari daftar di atas. Jika tidak yakin, gunakan 'other'.`;
 }
 
@@ -193,7 +276,7 @@ async function parseWithGemini(
 
     return {
       merchant_name: parsedJSON.merchant_name || "Toko Tidak Dikenal",
-      receipt_date: parsedJSON.receipt_date || new Date().toISOString().split("T")[0],
+      receipt_date: parsedJSON.receipt_date || null,
       total_amount: parsedJSON.total_amount || 0,
       total_items: parsedJSON.total_items || (parsedJSON.items ? parsedJSON.items.length : 0),
       category: validateCategoryKey(parsedJSON.category, categories),
@@ -242,7 +325,7 @@ async function parseWithOpenAI(
 
     return {
       merchant_name: parsedJSON.merchant_name || "Toko Tidak Dikenal",
-      receipt_date: parsedJSON.receipt_date || new Date().toISOString().split("T")[0],
+      receipt_date: parsedJSON.receipt_date || null,
       total_amount: parsedJSON.total_amount || 0,
       total_items: parsedJSON.total_items || (parsedJSON.items ? parsedJSON.items.length : 0),
       category: validateCategoryKey(parsedJSON.category, categories),
@@ -289,7 +372,7 @@ async function parseWithClaude(
 
     return {
       merchant_name: parsedJSON.merchant_name || "Toko Tidak Dikenal",
-      receipt_date: parsedJSON.receipt_date || new Date().toISOString().split("T")[0],
+      receipt_date: parsedJSON.receipt_date || null,
       total_amount: parsedJSON.total_amount || 0,
       total_items: parsedJSON.total_items || (parsedJSON.items ? parsedJSON.items.length : 0),
       category: validateCategoryKey(parsedJSON.category, categories),
@@ -300,6 +383,38 @@ async function parseWithClaude(
     logAiUsage("anthropic", keyAlias, model, source, false, extractErrorCode(err));
     throw err;
   }
+}
+
+/**
+ * v0.77.0 (Item 8, R6): coba satu provider (semua key × semua model).
+ * Error FALLBACK (429/503/overload) tetap mencoba kombinasi berikutnya —
+ * key lain mungkin masih punya kuota. Error NON-fallback (400, JSON parse
+ * error, gambar bermasalah, ...) BERHENTI setelah 1 percobaan per provider:
+ * struk yang gagal total tidak lagi membakar 24 panggilan berbayar (maks
+ * 3 percobaan non-fallback: 1 per provider), lalu parseReceipt gagal.
+ * Mengembalikan null bila provider ini tidak menghasilkan apa-apa.
+ */
+async function tryProvider(
+  keys: string[],
+  models: string[],
+  keyPrefix: string,
+  parseFn: (key: string, keyAlias: string, model: string) => Promise<ParsedReceipt>
+): Promise<ParsedReceipt | null> {
+  for (let i = 0; i < keys.length; i++) {
+    const keyAlias = `${keyPrefix}_key_${i + 1}`;
+    for (const model of models) {
+      try {
+        return await parseFn(keys[i], keyAlias, model);
+      } catch (err: any) {
+        if (!shouldFallback(err)) {
+          console.log(`${keyAlias} (${model}) error non-fallback, berhenti mencoba provider ini (maks 1 percobaan/provider untuk error non-fallback).`);
+          return null;
+        }
+        console.log(`${keyAlias} (${model}) unavailable, trying next model...`);
+      }
+    }
+  }
+  return null;
 }
 
 export async function parseReceipt(imageBase64: string, source = "receipt_parser"): Promise<ParsedReceipt> {
@@ -315,53 +430,20 @@ export async function parseReceipt(imageBase64: string, source = "receipt_parser
   const categories = await getActiveCategories();
 
   // Gemini: untuk setiap key, coba semua model di GEMINI_MODELS sebelum pindah key.
-  for (let i = 0; i < GEMINI_KEYS.length; i++) {
-    const keyAlias = `gemini_key_${i + 1}`;
-    for (const model of GEMINI_MODELS) {
-      try {
-        return await parseWithGemini(cleanBase64, mimeType, GEMINI_KEYS[i], keyAlias, source, model, categories);
-      } catch (err: any) {
-        if (!shouldFallback(err)) {
-          console.log(`${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
-          continue;
-        }
-        console.log(`${keyAlias} (${model}) unavailable, trying next model...`);
-      }
-    }
-  }
+  const geminiResult = await tryProvider(GEMINI_KEYS, GEMINI_MODELS, "gemini",
+    (key, keyAlias, model) => parseWithGemini(cleanBase64, mimeType, key, keyAlias, source, model, categories));
+  if (geminiResult) return validateParsedReceipt(geminiResult);
 
   // OpenAI: sama, coba semua model di OPENAI_MODELS per key.
-  for (let i = 0; i < OPENAI_KEYS.length; i++) {
-    const keyAlias = `openai_key_${i + 1}`;
-    for (const model of OPENAI_MODELS) {
-      try {
-        return await parseWithOpenAI(cleanBase64, OPENAI_KEYS[i], keyAlias, source, model, categories);
-      } catch (err: any) {
-        if (!shouldFallback(err)) {
-          console.log(`${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
-          continue;
-        }
-        console.log(`${keyAlias} (${model}) unavailable, trying next model...`);
-      }
-    }
-  }
+  const openaiResult = await tryProvider(OPENAI_KEYS, OPENAI_MODELS, "openai",
+    (key, keyAlias, model) => parseWithOpenAI(cleanBase64, key, keyAlias, source, model, categories));
+  if (openaiResult) return validateParsedReceipt(openaiResult);
 
   // Claude: sama, coba semua model di CLAUDE_MODELS per key.
-  for (let i = 0; i < CLAUDE_KEYS.length; i++) {
-    const keyAlias = `anthropic_key_${i + 1}`;
-    for (const model of CLAUDE_MODELS) {
-      try {
-        return await parseWithClaude(cleanBase64, CLAUDE_KEYS[i], keyAlias, source, model, categories);
-      } catch (err: any) {
-        if (!shouldFallback(err)) {
-          console.log(`${keyAlias} (${model}) error non-fallback, lanjut ke model berikutnya...`);
-          continue;
-        }
-        console.log(`${keyAlias} (${model}) unavailable, trying next model...`);
-      }
-    }
-  }
-  
+  const claudeResult = await tryProvider(CLAUDE_KEYS, CLAUDE_MODELS, "claude",
+    (key, keyAlias, model) => parseWithClaude(cleanBase64, key, keyAlias, source, model, categories));
+  if (claudeResult) return validateParsedReceipt(claudeResult);
+
   const attemptedProviders = {
     gemini: GEMINI_KEYS.length,
     openai: OPENAI_KEYS.length,
