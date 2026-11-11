@@ -144,7 +144,7 @@ jobs:
           # lebih baru tidak bisa dibaca oleh pg_restore versi lebih lama.
           # Kalau sengaja mau upgrade, ubah versi ini BERSAMAAN dengan
           # db-restore.yml.
-          PG_CLIENT_VERSION="17.10-1.pgdg24.04+1"
+          PG_CLIENT_VERSION="17.11-1.pgdg26.04+2"
           sudo apt-get update -qq
           sudo apt-get install -y -qq curl ca-certificates gnupg
           sudo install -d /usr/share/postgresql-common/pgdg
